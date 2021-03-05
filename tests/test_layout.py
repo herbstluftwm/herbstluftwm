@@ -1386,8 +1386,9 @@ def test_shift_to_other_monitor_if_allowed_by_setting(hlwm, cross_monitor_bounds
 
     hlwm.call('rule focus=on switchtag=off')
     winid, _ = hlwm.create_client()
-    # put another windo on the other tag
+    # put another window on the other tag
     hlwm.call('rule tag=othertag')
+    hlwm.create_client()
     # but the 'winid' is focused on monitor 0
     assert hlwm.attr.clients.focus.winid() == winid
     assert hlwm.attr.monitors.focus.index() == '0'
@@ -1436,7 +1437,7 @@ def test_shift_stays_on_monitor(hlwm, floating):
     if floating:
         hlwm.attr.tags.focus.floating = 'on'
     else:
-        # create empty from at the bottom
+        # create empty frame at the bottom
         hlwm.call('split bottom')
 
     winid, _ = hlwm.create_client(position=(0, 0))
@@ -1444,7 +1445,7 @@ def test_shift_stays_on_monitor(hlwm, floating):
     assert hlwm.attr.monitors.focus.index() == '0'
 
     # the new client is far away from the bottom edge of monitor 0.
-    # so shifting it downwards make it stay on monitor 0
+    # so shifting it downwards makes it stay on monitor 0
     hlwm.call('shift down')
 
     assert hlwm.attr.clients.focus.winid() == winid
