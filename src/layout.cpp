@@ -710,6 +710,12 @@ string FrameLeaf::userSetsLayout(LayoutAlgorithm algo)
 
 string FrameLeaf::userSetsSelection(int index)
 {
+    if (clients.size() == 0 && index == 0) {
+        // if there is no client in this frame
+        // then index 0 is the fallback value and
+        // there is nothing to be done here
+        return {};
+    }
     if (index < 0 || static_cast<size_t>(index) >= clients.size()) {
         return "index out of range";
     }

@@ -1450,6 +1450,21 @@ def test_frame_leaf_selection_change(hlwm):
         assert hlwm.call('dump').stdout == layout(i)
 
 
+def test_frame_leaf_selection_if_empty(hlwm):
+    assert hlwm.attr.tags.focus.tiling.root.selection() == '0'
+    hlwm.attr.tags.focus.tiling.root.selection = 0
+    assert hlwm.attr.tags.focus.tiling.root.selection() == '0'
+
+    hlwm.call_xfail('attr tags.focus.tiling.root.selection 1') \
+        .expect_stderr('out of range')
+
+    hlwm.call_xfail('attr tags.focus.tiling.root.selection 2') \
+        .expect_stderr('out of range')
+
+    hlwm.call_xfail('attr tags.focus.tiling.root.selection -1') \
+        .expect_stderr('out of range')
+
+
 def test_frame_split_selection_change(hlwm):
     """test the attribute FrameSplit::selection"""
     clients = hlwm.create_clients(2)
