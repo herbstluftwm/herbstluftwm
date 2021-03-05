@@ -68,13 +68,8 @@ private:
 // adds a new monitor to the monitors list and returns a pointer to it
 Monitor* find_monitor_with_tag(HSTag* tag);
 void monitor_focus_by_index(unsigned new_selection);
-int monitor_cycle_command(int argc, char** argv);
-int monitor_focus_command(int argc, char** argv, Output output);
 Monitor* find_monitor_by_name(const char* name);
 Monitor* string_to_monitor(const char* string);
-int remove_monitor_command(int argc, char** argv, Output output);
-int remove_monitor(int index);
-int monitor_rect_command(int argc, char** argv, Output output);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);
 int monitor_set_tag_command(int argc, char** argv, Output output);
@@ -86,7 +81,6 @@ void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void monitor_update_focus_objects();
 
-int shift_to_monitor(int argc, char** argv, Output output);
 
 #endif
 

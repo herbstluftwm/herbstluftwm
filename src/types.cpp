@@ -26,7 +26,12 @@ void Converter<Direction>::complete(Completion& complete, const Direction* relat
 template<>
 unsigned long Converter<unsigned long>::parse(const string& source)
 {
-    long value = std::stol(source);
+    size_t pos = 0;
+    long value = std::stol(source, &pos);
+    if (pos < source.size()) {
+        throw std::invalid_argument("unparsable suffix: "
+                                    + source.substr(pos));
+    }
     if (value < 0) {
         throw std::invalid_argument("negative number is out of range");
     } else {
