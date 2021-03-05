@@ -51,3 +51,21 @@ def test_color_names(hlwm):
     for name, rgb in colors:
         hlwm.attr.theme.color = name
         assert hlwm.attr.theme.color() == rgb
+
+
+def test_int_uint_unparsable_suffix(hlwm):
+    for attrtype in ['int', 'uint']:
+        attr = 'my_' + attrtype
+        hlwm.call(['new_attr', attrtype, attr])
+
+        hlwm.call_xfail(['set_attr', attr, '3f']) \
+            .expect_stderr('unparsable suffix: f')
+
+        hlwm.call_xfail(['set_attr', attr, '3+']) \
+            .expect_stderr('unparsable suffix')
+
+        hlwm.call_xfail(['set_attr', attr, '3.0']) \
+            .expect_stderr('unparsable suffix')
+
+        hlwm.call_xfail(['set_attr', attr, '+3x']) \
+            .expect_stderr('unparsable suffix')

@@ -646,6 +646,60 @@ void MonitorManager::detectMonitorsCompletion(Completion& complete)
     complete.full({"-l", "--list", "--list-all", "--no-disjoin"});
 }
 
+void MonitorManager::focusCommand(CallOrComplete invoc)
+{
+    Monitor* monitor = nullptr;
+    ArgParse().mandatory(monitor)
+              .command(invoc, [&](Output)
+    {
+        monitor_focus_by_index(monitor->index);
+        return 0;
+    });
+}
+
+void MonitorManager::cycleCommand(CallOrComplete invoc)
+{
+    int delta = 0;
+    ArgParse().mandatory(delta, {"-1", "+1"})
+              .command(invoc, [&](Output)
+    {
+        int new_selection = cur_monitor + delta; // signed for delta calculations
+        monitor_focus_by_index((unsigned)MOD(new_selection, size()));
+        return 0;
+    });
+}
+
+void MonitorManager::rectCommand(CallOrComplete invoc)
+{
+    Monitor* m = focus();
+    bool subtractPad = false;
+    ArgParse().optional(m)
+              .flags({{"-p", &subtractPad}})
+              .command(invoc, [&](Output output)
+    {
+        auto rect = m->rect();
+        if (subtractPad) {
+            rect.x += m->pad_left;
+            rect.width -= m->pad_left + m->pad_right;
+            rect.y += m->pad_up;
+            rect.height -= m->pad_up + m->pad_down;
+        }
+        output << rect.x << " " << rect.y << " " << rect.width << " " << rect.height;
+        return 0;
+    });
+}
+
+void MonitorManager::shiftToMonitorCommand(CallOrComplete invoc)
+{
+    Monitor* monitor = nullptr;
+    ArgParse().mandatory(monitor)
+              .command(invoc, [&](Output)
+    {
+        tags_->moveFocusedClient(monitor->tag);
+        return 0;
+    });
+}
+
 int MonitorManager::detectMonitorsCommand(Input input, Output output)
 {
     bool list_all = false;

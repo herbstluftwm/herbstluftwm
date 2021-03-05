@@ -129,7 +129,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"focus",          monitors->tagCommand(&HSTag::focusInDirCommand)},
         {"shift_edge",     frame_move_window_edge},
         {"shift",          monitors->tagCommand(&HSTag::shiftInDirCommand)},
-        {"shift_to_monitor",shift_to_monitor},
+        {"shift_to_monitor",{ monitors, &MonitorManager::shiftToMonitorCommand }},
         {"remove",         { tags->frameCommand(&FrameTree::removeFrameCommand) }},
         {"set",            { settings, &Settings::set_cmd,
                                        &Settings::set_complete }},
@@ -139,8 +139,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                        &Settings::toggle_complete}},
         {"cycle_value",    { settings, &Settings::cycle_value_cmd,
                                        &Settings::cycle_value_complete}},
-        {"cycle_monitor",  monitor_cycle_command},
-        {"focus_monitor",  monitor_focus_command},
+        {"cycle_monitor",  { monitors, &MonitorManager::cycleCommand }},
+        {"focus_monitor",  { monitors, &MonitorManager::focusCommand }},
         {"add",            BIND_OBJECT(tags, tag_add_command) },
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
@@ -165,7 +165,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"remove_monitor", { monitors, &MonitorManager::removeMonitorCommand }},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd, &Monitor::move_complete) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand, &Monitor::renameComplete) },
-        {"monitor_rect",   monitor_rect_command},
+        {"monitor_rect",   { monitors, &MonitorManager::rectCommand }},
         {"pad",            { monitors, &MonitorManager::padCommand }},
         {"raise",          raise_command},
         {"rule",           {rules, &RuleManager::addRuleCommand,
@@ -481,7 +481,8 @@ int main(int argc, char* argv[]) {
         delete X;
         exit(EXIT_FAILURE);
     }
-    if (X->checkotherwm()) {
+    Ewmh* ewmh = new Ewmh(*X);
+    if (X->otherWmListensRoot()) {
         std::cerr << "herbstluftwm: another window manager is already running" << endl;
         delete X;
         exit(EXIT_FAILURE);
@@ -498,11 +499,12 @@ int main(int argc, char* argv[]) {
     g_screen = X->screen();
     g_root = X->root();
     XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
+    ewmh->installWmWindow();
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
     FontData::s_xconnection = X;
-    auto root = make_shared<Root>(g, *X, *ipcServer);
+    auto root = make_shared<Root>(g, *X, *ewmh, *ipcServer);
     Root::setRoot(root);
     //test_object_system();
 
@@ -513,7 +515,7 @@ int main(int argc, char* argv[]) {
 
     // setup
     if (g.importTagsFromEwmh) {
-        const auto& initialState = root->ewmh->initialState();
+        const auto& initialState = ewmh->initialState();
         for (auto n : initialState.desktopNames) {
             root->tags->add_tag(n.c_str());
         }
@@ -522,7 +524,7 @@ int main(int argc, char* argv[]) {
     mainloop.scanExistingClients();
     tag_force_update_flags();
     all_monitors_apply_layout();
-    root->ewmh->updateAll();
+    ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
@@ -537,6 +539,7 @@ int main(int argc, char* argv[]) {
     // and then close the x connection
     FontData::s_xconnection = nullptr;
     delete ipcServer;
+    delete ewmh;
     delete X;
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {

@@ -26,7 +26,7 @@ public:
     int depth() { return depth_; }
     Visual* visual() { return visual_; }
 
-    bool checkotherwm(); // return whether another WM is running
+    bool otherWmListensRoot(); // return whether another WM is running
     void tryInitTransparency();
     bool usesTransparency() { return usesTransparency_; }
 
