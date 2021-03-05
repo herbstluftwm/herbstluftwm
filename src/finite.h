@@ -20,13 +20,13 @@ public:
     using ValueListPlain = std::vector<std::pair<T, std::string>>;
     class ValueList : public ValueListPlain {
     public:
-        ValueList(ValueListPlain values)
-            : ValueListPlain(values)
+        ValueList(ValueListPlain plainValueList)
+            : ValueListPlain(plainValueList)
         {}
 
-        ValueList(bool allowIndicesAsNames, ValueListPlain values)
+        ValueList(bool allowIndicesAsNames, ValueListPlain plainValueList)
             : allowIndicesAsNames_(allowIndicesAsNames)
-            , ValueListPlain(values)
+            , ValueListPlain(plainValueList)
         {}
 
         /**
