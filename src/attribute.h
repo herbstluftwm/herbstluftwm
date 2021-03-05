@@ -46,7 +46,6 @@ public:
     Attribute(const std::string &name,
               bool writable)
         : Entity(name), writable_(writable) {}
-    ~Attribute() override = default;
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
@@ -59,7 +58,7 @@ public:
     bool hookable() const { return hookable_; }
     virtual Signal& changed() = 0;
 
-    virtual std::string str() { return {}; }
+    virtual std::string str() = 0;
     virtual std::string change(const std::string &payload) = 0;
     //! suggestions for a new value of the attribute
     virtual void complete(Completion& complete) = 0;
