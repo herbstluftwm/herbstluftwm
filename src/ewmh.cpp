@@ -22,6 +22,7 @@
 
 using std::pair;
 using std::string;
+using std::to_string;
 using std::vector;
 
 /* list of names of all _NET-atoms */
@@ -203,7 +204,7 @@ bool Ewmh::acquireScreenSelection(bool replaceExistingWm)
 
 Atom Ewmh::windowManagerSelection()
 {
-    string atomName = "WM_S" + std::to_string(X_.screen());
+    string atomName = "WM_S" + to_string(X_.screen());
     return XInternAtom(X_.display(), atomName.c_str(), False);
 }
 
