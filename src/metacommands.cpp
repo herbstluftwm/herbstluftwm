@@ -526,7 +526,7 @@ using CompareOperator = pair<bool, vector<int> >;
 
 template <>
 struct is_finite<CompareOperator> : std::true_type {};
-template<> Finite<CompareOperator>::ValueList Finite<CompareOperator>::values = {
+template<> Finite<CompareOperator>::ValueList Finite<CompareOperator>::values = ValueListPlain {
     // map operator names to "for numeric types only" and possible return codes
     { { false, { 0 }, }, "=", },
     { { false, { -1, 1 } }, "!=", },
