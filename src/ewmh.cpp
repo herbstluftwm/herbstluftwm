@@ -177,7 +177,7 @@ bool Ewmh::acquireScreenSelection(bool replaceExistingWm)
     // make ourselves the owner of the selection.
     if (!XSetSelectionOwner(X_.display(), wmSnAtom, windowManagerWindow_, CurrentTime))
     {
-        HSDebug("Can not aquire ownership on screen %d\n", X_.screen());
+        HSDebug("Can not acquire ownership on screen %d\n", X_.screen());
         return false;
     }
     // if the old window manager looses ownership, it should shut down
