@@ -2,9 +2,9 @@
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <unistd.h>
 #include <algorithm>
 #include <cstdio>
-#include <unistd.h>
 
 #include "client.h"
 #include "globals.h"
