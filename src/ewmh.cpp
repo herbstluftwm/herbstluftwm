@@ -2,6 +2,7 @@
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <unistd.h>
 #include <algorithm>
 #include <cstdio>
 
@@ -21,6 +22,7 @@
 
 using std::pair;
 using std::string;
+using std::to_string;
 using std::vector;
 
 /* list of names of all _NET-atoms */
@@ -94,8 +96,13 @@ Ewmh::Ewmh(XConnection& xconnection)
     readInitialEwmhState();
 
     /* init for the supporting wm check */
-    windowManagerWindow_ = XCreateSimpleWindow(X_.display(), X_.root(),
-                                      -100, -100, 1, 1, 0, 0, CWOverrideRedirect | CWEventMask);
+    XSetWindowAttributes attr = {};
+    attr.override_redirect = true;
+    attr.event_mask = 0;
+    windowManagerWindow_ = XCreateWindow(X_.display(), X_.root(),
+                                         -100, -100, 1, 1, 0, 0, 0, nullptr,
+                                         CWOverrideRedirect | CWEventMask,
+                                         &attr);
     X_.setPropertyWindow(windowManagerWindow_, netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
     XMapWindow(X_.display(), windowManagerWindow_);
 }
@@ -145,6 +152,60 @@ long Ewmh::windowGetInitialDesktop(Window win)
         return maybe_idx.value()[0];
     }
     return -1;
+}
+
+bool Ewmh::acquireScreenSelection(bool replaceExistingWm)
+{
+    // strongly inspired by the xfwm4 implementation
+    // https://git.xfce.org/xfce/xfwm4/commit/?h=xfce-4.4&id=4ed599c097aad946513f46b670b966dce2c1c0e2
+    Atom wmSnAtom = windowManagerSelection();
+    Window current_wm = XGetSelectionOwner (X_.display(), wmSnAtom);
+    if (current_wm) {
+        if (!replaceExistingWm) {
+            return false;
+        }
+        // get events when current wm shuts down
+        XSetWindowAttributes attrs;
+        attrs.event_mask = StructureNotifyMask;
+        if (!XChangeWindowAttributes(X_.display(), current_wm, CWEventMask, &attrs))
+        {
+            // if there was an error in XChangeWindowAttributes, then
+            // the current_wm disappeared in the mean time.
+            current_wm = 0;
+        }
+    }
+    // make ourselves the owner of the selection.
+    if (!XSetSelectionOwner(X_.display(), wmSnAtom, windowManagerWindow_, CurrentTime))
+    {
+        HSDebug("Can not acquire ownership on screen %d\n", X_.screen());
+        return false;
+    }
+    // if the old window manager looses ownership, it should shut down
+    if (current_wm) {
+        // wait for the window 'current_wm' to be destroyed.
+        int timeout = 10;
+        while (timeout > 0) {
+            HSDebug("Granting the old WM (0x%lx) %d seconds to shut down\n", current_wm, timeout);
+            XEvent event;
+            if (XCheckWindowEvent(X_.display(), current_wm, StructureNotifyMask, &event)) {
+                if (event.type == DestroyNotify) {
+                    return true;
+                }
+            }
+            timeout -= 1;
+            sleep(1);
+        }
+        // if the timeout is reached, then it didn't shut down fast enough
+        HSDebug("Previous window manager (window 0x%lx) did not shut down\n", current_wm);
+        return false;
+    }
+    return true;
+}
+
+Atom Ewmh::windowManagerSelection()
+{
+    string atomName = "WM_S" + to_string(X_.screen());
+    return XInternAtom(X_.display(), atomName.c_str(), False);
 }
 
 void Ewmh::InitialState::print(FILE *file)

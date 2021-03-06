@@ -116,6 +116,16 @@ public:
     const InitialState &initialState();
     long windowGetInitialDesktop(Window win);
 
+    /**
+     * @brief Check that no other window manager owns the screen
+     * selection according to ICCCM 2.8
+     * https://tronche.com/gui/x/icccm/sec-2.html#s-2.8
+     * @param whether to ask the other WM to stop
+     * @return if no other WM is running
+     */
+    bool acquireScreenSelection(bool replaceExistingWm);
+    Atom windowManagerSelection();
+    Window windowManagerWindow() { return windowManagerWindow_; }
     enum class WM { Name, Protocols, Delete, State, ChangeState, TakeFocus, Last };
 
     void injectDependencies(Root* root);

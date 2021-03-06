@@ -31,6 +31,7 @@ class Globals {
 public:
     Globals() = default;
     int initial_monitors_locked = 0;
+    bool replaceExistingWm = false;
     bool exitOnXlibError = false;
     bool importTagsFromEwmh = true;
     bool trueTransparency = true; // try true transparency via xrender

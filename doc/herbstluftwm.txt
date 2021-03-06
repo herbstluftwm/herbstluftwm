@@ -28,6 +28,8 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
         print a short help and exit
     *-c*, *--autostart* 'PATH'::
         use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
+    *--replace*::
+        Replace existing window manager.
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--exit-on-xerror*::
