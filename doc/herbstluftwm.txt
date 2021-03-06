@@ -54,13 +54,13 @@ exactly one of the following conditions:
 
 [[LIST_LAYOUT_ALGORITHMS]]
     . Frame contains windows: +
-        It shows some clients and arranges them. The current layout algorithms
+        It shows some clients and arranges them. The available layout algorithms
         are:
 
-        * 0: 'vertical' - clients are placed below each other
-        * 1: 'horizontal' - clients are placed next to each other
-        * 2: 'max' - all clients are maximized in this frame
-        * 3: 'grid' - clients are arranged in an almost quadratic grid
+        * 'vertical' - clients are placed below each other
+        * 'horizontal' - clients are placed next to each other
+        * 'max' - all clients are maximized in this frame
+        * 'grid' - clients are arranged in an almost quadratic grid
 
     . Frame is split into subframes: +
         It is split into exactly two *subframes* in a configurable 'fraction'
@@ -1097,10 +1097,10 @@ frame_normal_opacity (Integer)::
     Unfocused frame opacity in percent. Requires a running compositing manager
     to take actual effect.
 
-default_frame_layout (Integer)::
-    Index of the frame layout, which is used if a new frame is created (by split
-    or on a new tag). For a list of valid indices and their meanings, check the
-    <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms above>>.
+default_frame_layout (LayoutAlgorithm)::
+    Name of the layout algorithm, which is used if a new frame is created (on a
+    new tag or by a non-trivial split). See above for the
+    <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms>>.
 
 default_direction_external_only (Boolean)::
     This setting controls the behaviour of focus and shift if no '-e' or '-i'

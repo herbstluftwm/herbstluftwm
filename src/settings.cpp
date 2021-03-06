@@ -118,13 +118,6 @@ Settings::Settings()
     }
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
 
-    default_frame_layout.setValidator([] (size_t layout) {
-        if (layout >= layoutAlgorithmCount()) {
-            return "layout number must be at most "
-                + to_string(layoutAlgorithmCount() - 1);
-        }
-        return string();
-    });
     tree_style.setValidator([] (string new_value) {
         if (utf8_string_length(new_value) < 8) {
             return string("tree_style needs 8 characters");

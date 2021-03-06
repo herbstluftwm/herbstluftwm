@@ -17,7 +17,26 @@ template<typename T>
 class Finite {
 public:
 
-    using ValueList = std::vector<std::pair<T, std::string>>;
+    using ValueListPlain = std::vector<std::pair<T, std::string>>;
+    class ValueList : public ValueListPlain {
+    public:
+        ValueList(ValueListPlain plainValueList)
+            : ValueListPlain(plainValueList)
+        {}
+
+        ValueList(bool allowIndicesAsNames, ValueListPlain plainValueList)
+            : ValueListPlain(plainValueList)
+            , allowIndicesAsNames_(allowIndicesAsNames)
+        {}
+
+        /**
+         * @brief Specifies whether the parsing accepts integer
+         * indices in the value list. Usually, this should only be
+         * activated (return true) for the sake of compatibility.
+         * Thus, there is no completion for indices.
+         */
+        bool allowIndicesAsNames_ = false;
+    };
     static ValueList values;
     static std::string str(T cp) {
         for (const auto& p : values) {
@@ -28,6 +47,22 @@ public:
         return "Internal error: Unknown value (this must not happen!)";
     }
     static T parse(const std::string& payload) {
+        if (values.allowIndicesAsNames_) {
+            bool isInteger =
+                    !payload.empty() &&
+                    payload.find_first_not_of("0123456789") == std::string::npos;
+            if (isInteger) {
+                size_t index = static_cast<size_t>(std::stoi(payload));
+                if (index >= values.size()) {
+                    std::string msg
+                            = "index \"" + payload + "\" out of range"
+                            + " (must be less than "
+                            + std::to_string(values.size()) + ")";
+                    throw std::invalid_argument(msg);
+                }
+                return values[index].first;
+            }
+        }
         for (const auto& p : values) {
             if (payload == p.second) {
                 return p.first;
@@ -81,6 +116,9 @@ public:
     static T parse(const std::string& source) {
         return Finite<T>::parse(source);
     }
+    static T parse(const std::string& source, const T&) {
+        return parse(source);
+    };
     static std::string str(T payload) {
         return Finite<T>::str(payload);
     }

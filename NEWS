@@ -16,6 +16,7 @@ Current git version
   * The frame attributes ('selection', 'algorithm', 'fraction', 'split_type')
     are now writable.
   * The setting 'monitors_locked' is now explicitly an unsigned integer.
+  * The setting 'default_frame_layout' now holds an algorithm name.
   * The 'shift' command now moves the window to a neighboured monitor if
     the window cannot be moved within a tag in the desired direction.
   * Bug fixes:

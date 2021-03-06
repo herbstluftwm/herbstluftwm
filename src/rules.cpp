@@ -373,7 +373,7 @@ void Consequence::applyFloatplacement(const Client* client, ClientChanges* chang
 }
 
 template<>
-Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
+Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = ValueListPlain {
     { ClientPlacement::Center, "center" },
     { ClientPlacement::Unchanged, "none" },
     { ClientPlacement::Smart, "smart" },

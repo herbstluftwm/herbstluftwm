@@ -4,16 +4,19 @@
 
 using std::string;
 
-template<> Finite<SplitAlign>::ValueList Finite<SplitAlign>::values = {
+template<> Finite<SplitAlign>::ValueList Finite<SplitAlign>::values = ValueListPlain {
     { SplitAlign::vertical, "vertical" },
     { SplitAlign::horizontal, "horizontal" },
 };
 
 template<> Finite<LayoutAlgorithm>::ValueList Finite<LayoutAlgorithm>::values = {
+  true, // allow indices as names
+  {
     { LayoutAlgorithm::vertical, "vertical" },
     { LayoutAlgorithm::horizontal, "horizontal" },
     { LayoutAlgorithm::max, "max" },
     { LayoutAlgorithm::grid, "grid" },
+  }
 };
 
 size_t layoutAlgorithmCount() {

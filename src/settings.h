@@ -5,6 +5,7 @@
 
 #include "attribute_.h"
 #include "commandio.h"
+#include "framedata.h"
 #include "globals.h"
 #include "object.h"
 #include "x11-types.h"
@@ -49,7 +50,7 @@ public:
     Attribute_<bool>          focus_crosses_monitor_boundaries = {"focus_crosses_monitor_boundaries", true};
     Attribute_<bool>          always_show_frame = {"always_show_frame", false};
     Attribute_<bool>          default_direction_external_only = {"default_direction_external_only", false};
-    Attribute_<unsigned long> default_frame_layout = {"default_frame_layout", 0};
+    Attribute_<LayoutAlgorithm> default_frame_layout = {"default_frame_layout", LayoutAlgorithm::vertical};
     Attribute_<bool>          focus_follows_mouse = {"focus_follows_mouse", false};
     Attribute_<bool>          focus_stealing_prevention = {"focus_stealing_prevention", true};
     Attribute_<bool>          swap_monitors_to_get_tag = {"swap_monitors_to_get_tag", true};
