@@ -36,7 +36,7 @@ public:
         } else {
             return onB(data_.b_);
         }
-    };
+    }
 
     // since 'void' is not a typename, we need to handle this explicitly:
     void cases(std::function<void(const A&)> onA, std::function<void(const B&)> onB) const {
