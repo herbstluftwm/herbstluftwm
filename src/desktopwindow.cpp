@@ -4,6 +4,7 @@
 
 #include "globals.h"
 
+using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::vector;
@@ -38,7 +39,7 @@ void DesktopWindow::unregisterDesktop(Window win) {
                   windows.end());
 }
 
-void DesktopWindow::foreachDesktopWindow(std::function<void (DesktopWindow&)> loopbody)
+void DesktopWindow::foreachDesktopWindow(function<void (DesktopWindow&)> loopbody)
 {
     for (auto& dw : windows) {
         loopbody(*dw.get());
