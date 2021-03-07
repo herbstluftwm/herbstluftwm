@@ -53,8 +53,7 @@ public:
         : data_(b), isA_(false)
     {}
 private:
-    Either() {
-    };
+    Either() = delete;
     union UnionAB {
         UnionAB(A a) : a_(a) {}
         UnionAB(B b) : b_(b) {}
