@@ -29,12 +29,6 @@ void DesktopWindow::registerDesktop(Window win) {
     windows.push_back(dw);
 }
 
-void DesktopWindow::lowerDesktopWindows() {
-    for (auto dw : windows) {
-        XLowerWindow(g_display, dw->win_);
-    }
-}
-
 void DesktopWindow::unregisterDesktop(Window win) {
     windows.erase(std::remove_if(
                    windows.begin(), windows.end(),
@@ -42,4 +36,11 @@ void DesktopWindow::unregisterDesktop(Window win) {
                         return win == dw->window();
                    }),
                   windows.end());
+}
+
+void DesktopWindow::foreachDesktopWindow(std::function<void (DesktopWindow&)> loopbody)
+{
+    for (auto& dw : windows) {
+        loopbody(*dw.get());
+    }
 }
