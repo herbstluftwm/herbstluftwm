@@ -61,7 +61,6 @@ static XMainLoop* g_main_loop = nullptr;
 int quit();
 int version(Output output);
 void execute_autostart_file();
-int raise_command(int argc, char** argv, Output output);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
@@ -167,7 +166,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand, &Monitor::renameComplete) },
         {"monitor_rect",   { monitors, &MonitorManager::rectCommand }},
         {"pad",            { monitors, &MonitorManager::padCommand }},
-        {"raise",          raise_command},
+        {"raise",          { global_cmds, &GlobalCommands::raiseCommand }},
         {"rule",           {rules, &RuleManager::addRuleCommand,
                                    &RuleManager::addRuleCompletion}},
         {"unrule",         {rules, &RuleManager::unruleCommand,
@@ -312,26 +311,6 @@ int wmexec(int argc, char** argv) {
     g_exec_before_quit = true;
     g_main_loop->quit();
     return EXIT_SUCCESS;
-}
-
-int raise_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto client = get_client(argv[1]);
-    if (client) {
-        client->raise();
-        client->needsRelayout.emit(client->tag());
-    } else {
-        auto window = get_window(argv[1]);
-        if (window) {
-            XRaiseWindow(g_display, window);
-        } else {
-            output << argv[0] << ": Could not find client \"" << argv[1] << "\".\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-    return 0;
 }
 
 void execute_autostart_file() {

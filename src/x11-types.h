@@ -109,7 +109,12 @@ inline std::string Converter<WindowID>::str(WindowID payload) {
 template<>
 inline WindowID Converter<WindowID>::parse(const std::string &payload) {
     size_t bytes_read = 0;
-    unsigned long winid = std::stoul(payload, &bytes_read, 0);
+    unsigned long winid;
+    try {
+        winid = std::stoul(payload, &bytes_read, 0);
+    }  catch (...) {
+        throw std::invalid_argument("Window id is not numeric (decimal or 0xHEX)");
+    }
     if (bytes_read != payload.size()) {
         std::stringstream message;
         message << "invalid characters at position " << bytes_read

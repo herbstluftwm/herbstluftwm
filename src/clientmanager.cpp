@@ -109,7 +109,12 @@ Client* ClientManager::parse(const string& identifier)
         }
         throw std::invalid_argument("No client is urgent");
     }
-    Window win = Converter<WindowID>::parse(identifier);
+    Window win = {};
+    try {
+        win = Converter<WindowID>::parse(identifier);
+    } catch (const std::exception&) {
+        throw std::invalid_argument("Invalid format, expecting 0xWINID or \'urgent\' or \'\'");
+    }
     auto entry = clients_.find(win);
     if (entry != clients_.end()) {
         return entry->second;

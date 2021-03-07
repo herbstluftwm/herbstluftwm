@@ -3,6 +3,7 @@
 #include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
+#include "either.h"
 #include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
@@ -10,6 +11,7 @@
 #include "root.h"
 #include "tag.h"
 #include "tagmanager.h"
+#include "xconnection.h"
 
 using std::string;
 
@@ -99,5 +101,22 @@ void GlobalCommands::bring(Client* client)
         tag->frame->focusedFrame()->insertClient(client, true);
     }
     focus_client(client, false, false, true);
+}
+
+void GlobalCommands::raiseCommand(CallOrComplete invoc)
+{
+    Either<Client*,WindowID> clientOrWin = {nullptr};
+    ArgParse().mandatory(clientOrWin).command(invoc,
+                                              [&] (Output output) {
+        auto forClients = [] (Client* client) {
+            client->raise();
+            client->needsRelayout.emit(client->tag());
+        };
+        auto forWindowIDs = [&] (WindowID window) {
+            XRaiseWindow(root_.X.display(), window);
+        };
+        clientOrWin.cases(forClients, forWindowIDs);
+        return 0;
+    });
 }
 

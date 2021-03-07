@@ -25,6 +25,8 @@ public:
 
     void bringCommand(CallOrComplete invoc);
     void bring(Client* client);
+
+    void raiseCommand(CallOrComplete invoc);
 private:
     Root& root_;
 };
