@@ -367,9 +367,16 @@ def test_list_padding_invalid_monitor(hlwm):
 
 @pytest.mark.parametrize("mon_num,focus_idx", [
     (num, focus) for num in [1, 2, 3, 4, 5] for focus in [0, num - 1]])
-@pytest.mark.parametrize("delta", ['-1', '+1'])
-@pytest.mark.parametrize("command", ['cycle_monitor', 'focus_monitor'])
-def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
+@pytest.mark.parametrize("command, delta", [
+    ('cycle_monitor', '-1'),
+    ('cycle_monitor', '+1'),
+    ('cycle_monitor', '1'),
+    ('cycle_monitor', None),
+
+    ('focus_monitor', '-1'),
+    ('focus_monitor', '+1'),
+])
+def test_cycle_monitor(hlwm, mon_num, focus_idx, command, delta):
     """the present test also tests the MOD() function in utility.cpp"""
     for i in range(1, mon_num):
         hlwm.call('add tag' + str(i))
@@ -378,7 +385,11 @@ def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
     assert hlwm.get_attr('monitors.focus.index') == str(focus_idx)
     assert hlwm.get_attr('monitors.count') == str(mon_num)
 
-    hlwm.call([command, delta])
+    if delta is None:
+        hlwm.call([command])
+        delta = 1  # For new_index calculation
+    else:
+        hlwm.call([command, delta])
 
     new_index = (focus_idx + int(delta) + mon_num) % mon_num
     assert hlwm.get_attr('monitors.focus.index') == str(new_index)

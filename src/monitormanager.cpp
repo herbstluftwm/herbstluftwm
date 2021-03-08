@@ -7,6 +7,7 @@
 #include "argparse.h"
 #include "command.h"
 #include "completion.h"
+#include "desktopwindow.h"
 #include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
@@ -520,6 +521,9 @@ void MonitorManager::extractWindowStack(bool real_clients, function<void(Window)
 void MonitorManager::restack() {
     vector<Window> buf;
     extractWindowStack(false, [&buf](Window w) { buf.push_back(w); });
+    DesktopWindow::foreachDesktopWindow([&buf](DesktopWindow& dw) {
+        buf.push_back(dw.window());
+    });
     XRestackWindows(g_display, buf.data(), buf.size());
     Ewmh::get().updateClientListStacking();
 }
@@ -568,6 +572,15 @@ int MonitorManager::stackCommand(Output output) {
 
         monitors.push_back(make_shared<StringTree>(monitor->getDescription(), layers));
     }
+    vector<shared_ptr<StringTree>> desktopWins;
+    XConnection& X_ = XConnection::get();
+    DesktopWindow::foreachDesktopWindow([&desktopWins,&X_](DesktopWindow& dw) {
+        string txt = Converter<WindowID>::str(dw.window());
+        auto info = X_.getClassHint(dw.window());
+        txt += " " + info.first + " " + info.second;
+        desktopWins.push_back(make_shared<StringTree>(txt));
+    });
+    monitors.push_back(make_shared<StringTree>("Desktop Windows", desktopWins));
 
     auto stackRoot = make_shared<StringTree>("", monitors);
     tree_print_to(stackRoot, output);
@@ -659,8 +672,8 @@ void MonitorManager::focusCommand(CallOrComplete invoc)
 
 void MonitorManager::cycleCommand(CallOrComplete invoc)
 {
-    int delta = 0;
-    ArgParse().mandatory(delta, {"-1", "+1"})
+    int delta = 1;
+    ArgParse().optional(delta, {"-1", "+1"})
               .command(invoc, [&](Output)
     {
         int new_selection = cur_monitor + delta; // signed for delta calculations

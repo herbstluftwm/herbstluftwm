@@ -225,8 +225,33 @@ def test_stack_tree(hlwm):
         - Client <windowid> "bash"
       - Frame Layer
         - Window <windowid>
+    - Desktop Windows
 '''
     assert strip_winids(stack.stdout) == expected_stack
+
+
+def test_stack_tree_desktop_windows(hlwm, x11):
+
+    _, winid = x11.create_client(wm_class=('TestDesktop', 'TestDeskClass'),
+                                 window_type='_NET_WM_WINDOW_TYPE_DESKTOP')
+
+    # Simplified tree style:
+    hlwm.call('set tree_style "     - -"')
+    framewindows = [x11.winid_str(w) for w in x11.get_hlwm_frames()]
+    expected_stack = f'''\
+  -
+    - Monitor 0 with tag "default"
+      - Focus-Layer
+      - Fullscreen-Layer
+      - Floating-Layer
+      - Tiling-Layer
+      - Frame Layer
+        - Window {framewindows[0]}
+    - Desktop Windows
+      - {winid} TestDesktop TestDeskClass
+'''
+    stack = hlwm.call('stack')
+    assert stack.stdout == expected_stack
 
 
 @pytest.mark.parametrize("focus_idx", range(0, 4))
