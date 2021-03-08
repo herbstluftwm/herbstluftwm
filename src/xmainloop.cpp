@@ -117,7 +117,7 @@ void XMainLoop::scanExistingClients() {
         if (root_->ewmh_.getWindowType(win) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(win);
-            DesktopWindow::lowerDesktopWindows();
+            root_->monitors->restack();
             XMapWindow(X_.display(), win);
         }
         else if (root_->ewmh_.getWindowType(win) == NetWmWindowTypeDock)
@@ -147,6 +147,7 @@ void XMainLoop::scanExistingClients() {
         XReparentWindow(X_.display(), win, X_.root(), 0,0);
         clientmanager->manage_client(win, true, false, findTagForWindow(win));
     }
+    root_->monitors->restack();
 }
 
 
@@ -479,7 +480,7 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
         if (root_->ewmh_.getWindowType(window) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(window);
-            DesktopWindow::lowerDesktopWindows();
+            root_->monitors->restack();
             XMapWindow(X_.display(), window);
         }
         else if (root_->ewmh_.getWindowType(window) == NetWmWindowTypeDock)
