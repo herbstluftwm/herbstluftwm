@@ -38,6 +38,22 @@ def create_tag_with_all_links(hlwm):
     return 'tags.0'
 
 
+def create_panel(hlwm):
+    """
+    Connect to the display; we only need x11 here, so
+    let us not introduce it as a dependency for the all
+    test cases but instead connect to the X display manually.
+
+    Unfortunately, we never have the chance to proplerly close
+    the display, but I hope it's OK for this single test.
+    """
+    display = conftest.xlib_connect_to_display(hlwm.env['DISPLAY'])
+    x11 = conftest.X11(display)
+    _, winid = x11.create_client(geometry=(0, 0, 800, 30),
+                                 window_type='_NET_WM_WINDOW_TYPE_DOCK')
+    return f'panels.{winid}'
+
+
 # map every c++ class name to a function ("constructor") accepting an hlwm
 # fixture and returning the path to an example object of the C++ class
 classname2examplepath = [
@@ -51,6 +67,7 @@ classname2examplepath = [
     ('HSTag', create_tag_with_all_links),
     ('Monitor', lambda _: 'monitors.0'),
     ('MonitorManager', lambda _: 'monitors'),
+    ('Panel', create_panel),
     ('Root', lambda _: ''),
     ('Settings', lambda _: 'settings'),
     ('TagManager', lambda _: 'tags'),
@@ -93,6 +110,7 @@ def types_and_shorthands():
         'LayoutAlgorithm': 'n',
         'font': 'f',
         'Rectangle': 'R',
+        'WindowID': 'w',
     }
 
 
@@ -112,7 +130,10 @@ def test_documented_children_exist(hlwm, clsname, object_path, json_doc):
     object_path = object_path(hlwm)
     object_path_dot = object_path + '.' if object_path != '' else ''
     for _, child in json_doc['objects'][clsname]['children'].items():
-        hlwm.call(['object_tree', object_path_dot + child['name']])
+        if child['name'] is not None:
+            hlwm.call(['object_tree', object_path_dot + child['name']])
+        else:
+            assert child['name_patern'] is not None
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)

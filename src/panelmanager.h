@@ -3,6 +3,8 @@
 #include <X11/X.h>
 #include <unordered_map>
 
+#include "attribute_.h"
+#include "object.h"
 #include "rectangle.h"
 #include "signal.h"
 
@@ -10,7 +12,7 @@ class Panel;
 class Settings;
 class XConnection;
 
-class PanelManager {
+class PanelManager : public Object {
 public:
     class ReservedSpace {
     public:
@@ -42,8 +44,12 @@ public:
     ReservedSpace computeReservedSpace(Rectangle monitorDimension);
     Signal panels_changed_;
     void rootWindowChanged(int width, int height);
+    DynAttribute_<unsigned long> count;
 private:
     friend Panel;
+    unsigned long getCount() {
+        return static_cast<unsigned long>(panels_.size());
+    };
     bool updateReservedSpace(Panel* p, Rectangle geometry);
 
     std::unordered_map<Window, Panel*> panels_;

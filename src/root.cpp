@@ -31,6 +31,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     , keys(*this, "keys")
     , monitors(*this, "monitors")
     , mouse(*this, "mouse")
+    , panels(*this, "panels")
     , rules(*this, "rules")
     , settings(*this, "settings")
     , tags(*this, "tags")
@@ -42,7 +43,6 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     , global_commands(make_unique<GlobalCommands>(*this))
     , X(xconnection)
     , ipcServer_(ipcServer)
-    , panels(make_unique<PanelManager>(xconnection))
     , ewmh_(ewmh)
 {
     // initialize root children (alphabetically)
@@ -50,6 +50,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     keys.init();
     monitors.init();
     mouse.init();
+    panels.init(xconnection);
     rules.init();
     settings.init();
     tags.init();
@@ -62,9 +63,9 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     settings->injectDependencies(this);
     tags->injectDependencies(monitors(), settings());
     clients->injectDependencies(settings(), theme(), &ewmh_);
-    monitors->injectDependencies(settings(), tags(), panels.get());
-    mouse->injectDependencies(clients(), monitors());
     panels->injectDependencies(settings());
+    monitors->injectDependencies(settings(), tags(), panels());
+    mouse->injectDependencies(clients(), monitors());
     watchers->injectDependencies(this);
 
     // set temporary globals
@@ -91,6 +92,8 @@ void Root::shutdown()
     // ClientManager and MonitorManager have circular dependencies, but only
     // MonitorManager needs the other for shutting down, so we do that first:
     monitors.reset();
+
+    panels.reset(); // needs to be reset after monitors
 
     // Shut down children with dependencies first:
     clients.reset();

@@ -207,6 +207,8 @@ template<>
 inline Type Attribute_<Color>::staticType() { return Type::COLOR; }
 template<>
 inline Type Attribute_<Rectangle>::staticType() { return Type::RECTANGLE; }
+template<>
+inline Type Attribute_<WindowID>::staticType() { return Type::WINDOW; }
 
 template<typename T>
 class DynAttribute_ : public Attribute {

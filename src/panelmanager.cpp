@@ -8,12 +8,33 @@ using std::make_pair;
 using std::string;
 using std::vector;
 
-class Panel {
+class Panel : public Object {
 public:
-    Panel(Window winid, PanelManager& pm) : winid_(winid), pm_(pm) {}
-    Window winid_;
+    Panel(Window winid, PanelManager& pm)
+        : winid_(this, "winid", winid)
+        , windowInstance_(this, "instance", {})
+        , windowClass_(this, "class", {})
+        , pm_(pm)
+        , size_(this, "geometry", {})
+    {
+        auto hint = pm.xcon_.getClassHint(winid);
+        windowInstance_ = hint.first;
+        windowClass_ = hint.second;
+        winid_.setDoc("the ID of the panel window");
+        windowInstance_.setDoc("the window instance (first entry of WM_CLASS)");
+        windowClass_.setDoc("the window class (second entry of WM_CLASS)");
+        size_.setDoc("the size and position of the window");
+        setDoc("a panel is an unmanaged window that reserves space at "
+               "the edge of the monitor it is on. The space depends on "
+               "the _NET_WM_STRUT defined by the panel. If it is however "
+               "not defined explicitly, then the amount of reserved space "
+               "is infered from the window geometry.");
+    }
+    Attribute_<WindowID> winid_;
+    Attribute_<string> windowInstance_;
+    Attribute_<string> windowClass_;
     PanelManager& pm_;
-    Rectangle size_;
+    Attribute_<Rectangle> size_;
     vector<long> wmStrut_ = {};
     using WmStrut = PanelManager::WmStrut;
 
@@ -76,11 +97,14 @@ public:
 };
 
 PanelManager::PanelManager(XConnection& xcon)
-    : xcon_(xcon)
+    : count(this, "count", &PanelManager::getCount)
+    , xcon_(xcon)
 {
     atomWmStrut_ = xcon_.atom("_NET_WM_STRUT");
     atomWmStrutPartial_ = xcon_.atom("_NET_WM_STRUT_PARTIAL");
     rootWindowGeometry_ = xcon_.windowSize(xcon_.root());
+    setDoc("For every panel window, there is an entry with "
+           "the panel's window id here.");
 }
 
 PanelManager::~PanelManager()
@@ -94,6 +118,7 @@ void PanelManager::registerPanel(Window win)
 {
     Panel* p = new Panel(win, *this);
     panels_.insert(make_pair(win, p));
+    addChild(p, Converter<WindowID>::str(win));
     updateReservedSpace(p, xcon_.windowSize(win));
     panels_changed_.emit();
 }
@@ -106,6 +131,7 @@ void PanelManager::unregisterPanel(Window win)
     }
     Panel* p = it->second;
     panels_.erase(win);
+    removeChild(Converter<WindowID>::str(win));
     delete p;
     panels_changed_.emit();
 }
@@ -155,9 +181,9 @@ void PanelManager::injectDependencies(Settings* settings)
  */
 bool PanelManager::updateReservedSpace(Panel* p, Rectangle size)
 {
-    auto optionalWmStrut = xcon_.getWindowPropertyCardinal(p->winid_, atomWmStrutPartial_);
+    auto optionalWmStrut = xcon_.getWindowPropertyCardinal(p->winid_(), atomWmStrutPartial_);
     if (!optionalWmStrut) {
-        optionalWmStrut= xcon_.getWindowPropertyCardinal(p->winid_, atomWmStrut_);
+        optionalWmStrut= xcon_.getWindowPropertyCardinal(p->winid_(), atomWmStrut_);
     }
     vector<long> wmStrut = optionalWmStrut.value_or(vector<long>());
     if (p->wmStrut_ != wmStrut || p->size_ != size) {
