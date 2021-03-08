@@ -100,6 +100,40 @@ def test_raise_bottom_client(hlwm):
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == [c1, c2]
 
 
+def test_raise_unmanaged_window(hlwm, x11):
+    hlwm.call('rule once manage=off')
+    _, winid = x11.create_client()
+
+    assert len(hlwm.list_children('clients')) == 0, \
+        "there must not be any managed client"
+
+    # we cannot test much, but at least it does not crash
+    # or throw any error:
+    hlwm.call(['raise', winid])
+
+    assert len(hlwm.list_children('clients')) == 0, \
+        "there must not be any managed client"
+
+
+def test_raise_invalid_arg(hlwm):
+    # both the error messages for WindowID and client should be shown:
+    hlwm.call_xfail('raise foobar') \
+        .expect_stderr('Window id is not numeric') \
+        .expect_stderr('; or:') \
+        .expect_stderr("expecting 0xWINID or 'urgent'")
+
+    hlwm.call_xfail('raise 01two') \
+        .expect_stderr('invalid characters at position 2')
+
+
+def test_raise_completion(hlwm):
+    assert 'urgent' in hlwm.complete('raise')
+
+    winid, _ = hlwm.create_client()
+
+    assert winid in hlwm.complete('raise')
+
+
 def create_two_monitors_with_client_each(hlwm):
     hlwm.call('add tag2')
     hlwm.call('set_attr tags.0.floating on')

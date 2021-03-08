@@ -36,7 +36,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
-static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
@@ -65,7 +64,6 @@ struct {
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
-    { "raise",          2,  no_completion },
     { "focus_edge",     2,  no_completion },
     { "shift_edge",     2,  no_completion },
     { "cycle_monitor",  2,  no_completion },
@@ -121,8 +119,6 @@ struct {
     { "move",           EQ, 1,  complete_against_tags, 0 },
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
-    { "raise",          EQ, 1,  nullptr, completion_special_winids },
-    { "raise",          EQ, 1,  complete_against_winids, 0 },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },

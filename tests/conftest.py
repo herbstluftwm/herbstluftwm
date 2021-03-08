@@ -98,6 +98,8 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
 
         def f(self2, reg):
             assert re.search(reg, self2.stderr)
+            # allow to list multiple 'expect_stderr()' statements:
+            return self2
 
         proc.expect_stderr = types.MethodType(f, proc)
         return proc
