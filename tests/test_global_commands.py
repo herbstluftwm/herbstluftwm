@@ -51,7 +51,7 @@ def test_tag_status_completion(hlwm):
 def test_jumpto_bring_invalid_client(hlwm):
     for cmd in ['jumpto', 'bring']:
         hlwm.call_xfail([cmd, 'foobar']) \
-            .expect_stderr('Cannot parse argument "foobar": stoul')
+            .expect_stderr('Cannot parse argument "foobar": Invalid format, expecting')
 
         hlwm.call_xfail([cmd, 'urgent']) \
             .expect_stderr('No client is urgent')
