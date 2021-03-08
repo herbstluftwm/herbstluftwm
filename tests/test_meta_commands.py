@@ -555,7 +555,7 @@ def test_raise_winid_missing(hlwm):
 
 def test_raise_invalid_winid(hlwm):
     hlwm.call_xfail('raise foobar') \
-        .expect_stderr('Could not find client "foobar".')
+        .expect_stderr('Invalid format, expecting')
 
 
 def test_argparse_too_few_range(hlwm):
