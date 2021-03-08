@@ -581,11 +581,21 @@ def running_clients(hlwm, running_clients_num):
 @pytest.fixture()
 def x11_connection(xvfb):
     """Connect to the given xvfb display and return a Xlib.display handle"""
+    display = xlib_connect_to_display(xvfb.display)
+    yield display
+    display.close()
+
+
+def xlib_connect_to_display(display):
+    """try to connect to a display using Xlib.display.Display
+    and work around a bug in python-xlib.
+    The resuling display object still needs to be closed on shut down.
+    """
     display = None
     attempts_left = 10
     while display is None and attempts_left > 0:
         try:
-            display = Xlib.display.Display(xvfb.display)
+            display = Xlib.display.Display(display)
             # the above call may result in an exception:
             # ConnectionResetError: [Errno 104] Connection reset by peer
             # However, the handling of this error in the above function results in a
@@ -603,8 +613,7 @@ def x11_connection(xvfb):
             # wait for a moment, and then try again..
             time.sleep(2)
             attempts_left -= 1
-    yield display
-    display.close()
+    return display
 
 
 class RawImage:
@@ -634,238 +643,240 @@ class RawImage:
         return '#%02x%02x%02x' % rgb_triple
 
 
+class X11:
+    def __init__(self, x11_connection):
+        self.display = x11_connection
+        self.windows = set()
+        self.screen = self.display.screen()
+        self.root = self.screen.root
+        self.ewmh = ewmh.EWMH(self.display, self.root)
+        self.hlwm = hlwm
+
+    def window(self, winid_string):
+        """return python-xlib window wrapper for a string window id"""
+        winid_int = int(winid_string, 0)
+        return self.display.create_resource_object('window', winid_int)
+
+    def winid_str(self, window_handle):
+        return hex(window_handle.id)
+
+    def make_window_urgent(self, window):
+        """make window urgent"""
+        window.set_wm_hints(flags=Xutil.UrgencyHint)
+        self.display.sync()
+
+    def is_window_urgent(self, window):
+        """check urgency of a given window handle"""
+        hints = window.get_wm_hints()
+        if hints is None:
+            return False
+        return bool(hints.flags & Xutil.UrgencyHint)
+
+    def set_property_textlist(self, property_name, value, utf8=True, window=None):
+        """set a ascii textlist property by its string name on the root window, or any other window"""
+        if window is None:
+            window = self.root
+        prop = self.display.intern_atom(property_name)
+        bvalue = bytearray()
+        isfirst = True
+        for entry in value:
+            if isfirst:
+                isfirst = False
+            else:
+                bvalue.append(0)
+            bvalue += entry.encode()
+        proptype = Xatom.STRING
+        if utf8:
+            proptype = self.display.get_atom('UTF8_STRING')
+        window.change_property(prop, proptype, 8, bytes(bvalue))
+
+    def set_property_cardinal(self, property_name, value, window=None):
+        if window is None:
+            window = self.root
+        prop = self.display.intern_atom(property_name)
+        window.change_property(prop, Xatom.CARDINAL, 32, value)
+
+    def get_property(self, property_name, window=None):
+        """get a property by its string name from the root window, or any other window"""
+        if window is None:
+            window = self.root
+        prop = self.display.intern_atom(property_name)
+        resp = window.get_full_property(prop, X.AnyPropertyType)
+        return resp.value if resp is not None else None
+
+    def create_client(self, urgent=False, pid=None,
+                      geometry=(50, 50, 300, 200),  # x, y, width, height
+                      force_unmanage=False,
+                      sync_hlwm=True,
+                      wm_class=None,
+                      window_type=None,
+                      transient_for=None,
+                      pre_map=lambda wh: None,  # called before the window is mapped
+                      ):
+        w = self.root.create_window(
+            geometry[0],
+            geometry[1],
+            geometry[2],
+            geometry[3],
+            2,
+            self.screen.root_depth,
+            X.InputOutput,
+            X.CopyFromParent,
+            background_pixel=self.screen.white_pixel,
+            override_redirect=force_unmanage,
+        )
+        if wm_class is not None:
+            w.set_wm_class(wm_class[0], wm_class[1])
+
+        if transient_for is not None:
+            w.set_wm_transient_for(transient_for)
+
+        # Keep track of window for later removal:
+        self.windows.add(w)
+
+        w.set_wm_name('Some Window')
+        if urgent:
+            w.set_wm_hints(flags=Xutil.UrgencyHint)
+
+        if window_type is not None:
+            w.change_property(self.display.intern_atom('_NET_WM_WINDOW_TYPE'),
+                              Xatom.ATOM,
+                              32,
+                              [self.display.intern_atom(window_type)])
+
+        if pid is not None:
+            w.change_property(self.display.intern_atom('_NET_WM_PID'),
+                              Xatom.CARDINAL,
+                              32,
+                              [pid])
+
+        pre_map(w)
+        w.map()
+        self.display.sync()
+        if sync_hlwm:
+            # wait for hlwm to fully recognize it as a client
+            self.sync_with_hlwm()
+        return w, self.winid_str(w)
+
+    def screenshot(self, win_handle) -> RawImage:
+        """screenshot of a windows content, not including its border"""
+        geom = win_handle.get_geometry()
+        attr = win_handle.get_attributes()
+        # Xlib defines AllPlanes as: ((unsigned long)~0L)
+        all_planes = 0xffffffff
+        # Maybe, the following get_image() works differently
+        # than XGetImage(), because we still need to interpret
+        # the pixel values using the colormap, whereas the man
+        # page for XGetImage() does not mention 'colormap' at all
+        raw = win_handle.get_image(0, 0, geom.width, geom.height,
+                                   X.ZPixmap, all_planes)
+        # raw.data is a array of pixel-values, which need to
+        # be interpreted using the colormap:
+        if raw.depth == 8:
+            colorDict = {}
+            for pixel in raw.data:
+                colorDict[pixel] = None
+            colorPixelList = list(colorDict)
+            colorRGBList = attr.colormap.query_colors(colorPixelList)
+            for pixelval, rgbval in zip(colorPixelList, colorRGBList):
+                # Useful debug output if something blows up again (which is likely)
+                # print(f'{pixelval} -> {rgbval.red}  {rgbval.green} {rgbval.blue}')
+                colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
+            # the image size is enlarged such that the width
+            # is a multiple of 4. Hence we remove these extra
+            # columns in the end when mapping colorDict[] over the data array
+            width_padded = geom.width
+            while width_padded % 4 != 0:
+                width_padded += 1
+            rgbvals = [colorDict[p] for idx, p in enumerate(raw.data) if idx % width_padded < geom.width]
+        else:
+            assert raw.depth in [32, 24]
+            # both for depth 32 and 24, the order is BGRA
+            pixelsize = 4
+            (blue, green, red) = (0, 1, 2)
+            size = geom.width * geom.height
+            assert len(raw.data) == pixelsize * size
+            rgbvals = [(raw.data[pixelsize * (y * geom.width + x) + red],
+                        raw.data[pixelsize * (y * geom.width + x) + green],
+                        raw.data[pixelsize * (y * geom.width + x) + blue])
+                       for y in range(0, geom.height)
+                       for x in range(0, geom.width)]
+        return RawImage(rgbvals, geom.width, geom.height)
+
+    def decoration_screenshot(self, win_handle):
+        decoration = self.get_decoration_window(win_handle)
+        return self.screenshot(decoration)
+
+    def sync_with_hlwm(self):
+        self.display.sync()
+        # wait for hlwm to flush all events:
+        hlwm_bridge = HlwmBridge.INSTANCE
+        assert hlwm_bridge is not None, "hlwm must be running"
+        hlwm_bridge.call('true')
+
+    def get_decoration_window(self, window):
+        tree = window.query_tree()
+        if tree.root == tree.parent:
+            return None
+        else:
+            return tree.parent
+
+    def get_absolute_top_left(self, window):
+        """return the absolute (x,y) coordinate of the given window,
+        i.e. relative to the root window"""
+        x = 0
+        y = 0
+        while True:
+            # the following coordinates are only relative
+            # to the parent of window
+            geom = window.get_geometry()
+            print('Relative geometry of {} is: x={} y={} w={} h={}'.format(
+                  self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
+            x += geom.x
+            y += geom.y
+            # check if the window's parent is already the root window
+            tree = window.query_tree()
+            if tree.root == tree.parent:
+                break
+            # if it's not, continue at its parent
+            window = tree.parent
+        return (x, y)
+
+    def get_absolute_geometry(self, window):
+        """return the geometry of the window, where the top left
+        coordinate comes from get_absolute_top_left()
+        """
+        x, y = self.get_absolute_top_left(window)
+        geom = window.get_geometry()
+        geom.x = x
+        geom.y = y
+        return geom
+
+    def get_hlwm_frames(self):
+        """get list of window handles of herbstluftwm
+        frame decoration windows"""
+        cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
+        frame_wins = subprocess.run(cmd,
+                                    stdout=subprocess.PIPE,
+                                    universal_newlines=True,
+                                    check=True)
+        res = []
+        for winid_decimal_str in frame_wins.stdout.splitlines():
+            res.append(self.window(winid_decimal_str))
+        return res
+
+    def shutdown(self):
+        # Destroy all created windows:
+        for window in self.windows:
+            window.unmap()
+            window.destroy()
+        self.display.sync()
+
+
 @pytest.fixture()
 def x11(x11_connection):
     """ Short-lived fixture for interacting with the X11 display and creating
     clients that are automatically destroyed at the end of each test. """
-    class X11:
-        def __init__(self, x11_connection):
-            self.display = x11_connection
-            self.windows = set()
-            self.screen = self.display.screen()
-            self.root = self.screen.root
-            self.ewmh = ewmh.EWMH(self.display, self.root)
-            self.hlwm = hlwm
-
-        def window(self, winid_string):
-            """return python-xlib window wrapper for a string window id"""
-            winid_int = int(winid_string, 0)
-            return self.display.create_resource_object('window', winid_int)
-
-        def winid_str(self, window_handle):
-            return hex(window_handle.id)
-
-        def make_window_urgent(self, window):
-            """make window urgent"""
-            window.set_wm_hints(flags=Xutil.UrgencyHint)
-            self.display.sync()
-
-        def is_window_urgent(self, window):
-            """check urgency of a given window handle"""
-            hints = window.get_wm_hints()
-            if hints is None:
-                return False
-            return bool(hints.flags & Xutil.UrgencyHint)
-
-        def set_property_textlist(self, property_name, value, utf8=True, window=None):
-            """set a ascii textlist property by its string name on the root window, or any other window"""
-            if window is None:
-                window = self.root
-            prop = self.display.intern_atom(property_name)
-            bvalue = bytearray()
-            isfirst = True
-            for entry in value:
-                if isfirst:
-                    isfirst = False
-                else:
-                    bvalue.append(0)
-                bvalue += entry.encode()
-            proptype = Xatom.STRING
-            if utf8:
-                proptype = self.display.get_atom('UTF8_STRING')
-            window.change_property(prop, proptype, 8, bytes(bvalue))
-
-        def set_property_cardinal(self, property_name, value, window=None):
-            if window is None:
-                window = self.root
-            prop = self.display.intern_atom(property_name)
-            window.change_property(prop, Xatom.CARDINAL, 32, value)
-
-        def get_property(self, property_name, window=None):
-            """get a property by its string name from the root window, or any other window"""
-            if window is None:
-                window = self.root
-            prop = self.display.intern_atom(property_name)
-            resp = window.get_full_property(prop, X.AnyPropertyType)
-            return resp.value if resp is not None else None
-
-        def create_client(self, urgent=False, pid=None,
-                          geometry=(50, 50, 300, 200),  # x, y, width, height
-                          force_unmanage=False,
-                          sync_hlwm=True,
-                          wm_class=None,
-                          window_type=None,
-                          transient_for=None,
-                          pre_map=lambda wh: None,  # called before the window is mapped
-                          ):
-            w = self.root.create_window(
-                geometry[0],
-                geometry[1],
-                geometry[2],
-                geometry[3],
-                2,
-                self.screen.root_depth,
-                X.InputOutput,
-                X.CopyFromParent,
-                background_pixel=self.screen.white_pixel,
-                override_redirect=force_unmanage,
-            )
-            if wm_class is not None:
-                w.set_wm_class(wm_class[0], wm_class[1])
-
-            if transient_for is not None:
-                w.set_wm_transient_for(transient_for)
-
-            # Keep track of window for later removal:
-            self.windows.add(w)
-
-            w.set_wm_name('Some Window')
-            if urgent:
-                w.set_wm_hints(flags=Xutil.UrgencyHint)
-
-            if window_type is not None:
-                w.change_property(self.display.intern_atom('_NET_WM_WINDOW_TYPE'),
-                                  Xatom.ATOM,
-                                  32,
-                                  [self.display.intern_atom(window_type)])
-
-            if pid is not None:
-                w.change_property(self.display.intern_atom('_NET_WM_PID'),
-                                  Xatom.CARDINAL,
-                                  32,
-                                  [pid])
-
-            pre_map(w)
-            w.map()
-            self.display.sync()
-            if sync_hlwm:
-                # wait for hlwm to fully recognize it as a client
-                self.sync_with_hlwm()
-            return w, self.winid_str(w)
-
-        def screenshot(self, win_handle) -> RawImage:
-            """screenshot of a windows content, not including its border"""
-            geom = win_handle.get_geometry()
-            attr = win_handle.get_attributes()
-            # Xlib defines AllPlanes as: ((unsigned long)~0L)
-            all_planes = 0xffffffff
-            # Maybe, the following get_image() works differently
-            # than XGetImage(), because we still need to interpret
-            # the pixel values using the colormap, whereas the man
-            # page for XGetImage() does not mention 'colormap' at all
-            raw = win_handle.get_image(0, 0, geom.width, geom.height,
-                                       X.ZPixmap, all_planes)
-            # raw.data is a array of pixel-values, which need to
-            # be interpreted using the colormap:
-            if raw.depth == 8:
-                colorDict = {}
-                for pixel in raw.data:
-                    colorDict[pixel] = None
-                colorPixelList = list(colorDict)
-                colorRGBList = attr.colormap.query_colors(colorPixelList)
-                for pixelval, rgbval in zip(colorPixelList, colorRGBList):
-                    # Useful debug output if something blows up again (which is likely)
-                    # print(f'{pixelval} -> {rgbval.red}  {rgbval.green} {rgbval.blue}')
-                    colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
-                # the image size is enlarged such that the width
-                # is a multiple of 4. Hence we remove these extra
-                # columns in the end when mapping colorDict[] over the data array
-                width_padded = geom.width
-                while width_padded % 4 != 0:
-                    width_padded += 1
-                rgbvals = [colorDict[p] for idx, p in enumerate(raw.data) if idx % width_padded < geom.width]
-            else:
-                assert raw.depth in [32, 24]
-                # both for depth 32 and 24, the order is BGRA
-                pixelsize = 4
-                (blue, green, red) = (0, 1, 2)
-                size = geom.width * geom.height
-                assert len(raw.data) == pixelsize * size
-                rgbvals = [(raw.data[pixelsize * (y * geom.width + x) + red],
-                            raw.data[pixelsize * (y * geom.width + x) + green],
-                            raw.data[pixelsize * (y * geom.width + x) + blue])
-                           for y in range(0, geom.height)
-                           for x in range(0, geom.width)]
-            return RawImage(rgbvals, geom.width, geom.height)
-
-        def decoration_screenshot(self, win_handle):
-            decoration = self.get_decoration_window(win_handle)
-            return self.screenshot(decoration)
-
-        def sync_with_hlwm(self):
-            self.display.sync()
-            # wait for hlwm to flush all events:
-            hlwm_bridge = HlwmBridge.INSTANCE
-            assert hlwm_bridge is not None, "hlwm must be running"
-            hlwm_bridge.call('true')
-
-        def get_decoration_window(self, window):
-            tree = window.query_tree()
-            if tree.root == tree.parent:
-                return None
-            else:
-                return tree.parent
-
-        def get_absolute_top_left(self, window):
-            """return the absolute (x,y) coordinate of the given window,
-            i.e. relative to the root window"""
-            x = 0
-            y = 0
-            while True:
-                # the following coordinates are only relative
-                # to the parent of window
-                geom = window.get_geometry()
-                print('Relative geometry of {} is: x={} y={} w={} h={}'.format(
-                      self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
-                x += geom.x
-                y += geom.y
-                # check if the window's parent is already the root window
-                tree = window.query_tree()
-                if tree.root == tree.parent:
-                    break
-                # if it's not, continue at its parent
-                window = tree.parent
-            return (x, y)
-
-        def get_absolute_geometry(self, window):
-            """return the geometry of the window, where the top left
-            coordinate comes from get_absolute_top_left()
-            """
-            x, y = self.get_absolute_top_left(window)
-            geom = window.get_geometry()
-            geom.x = x
-            geom.y = y
-            return geom
-
-        def get_hlwm_frames(self):
-            """get list of window handles of herbstluftwm
-            frame decoration windows"""
-            cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
-            frame_wins = subprocess.run(cmd,
-                                        stdout=subprocess.PIPE,
-                                        universal_newlines=True,
-                                        check=True)
-            res = []
-            for winid_decimal_str in frame_wins.stdout.splitlines():
-                res.append(self.window(winid_decimal_str))
-            return res
-
-        def shutdown(self):
-            # Destroy all created windows:
-            for window in self.windows:
-                window.unmap()
-                window.destroy()
-            self.display.sync()
 
     x11_ = X11(x11_connection)
     yield x11_
