@@ -659,8 +659,8 @@ void MonitorManager::focusCommand(CallOrComplete invoc)
 
 void MonitorManager::cycleCommand(CallOrComplete invoc)
 {
-    int delta = 0;
-    ArgParse().mandatory(delta, {"-1", "+1"})
+    int delta = 1;
+    ArgParse().optional(delta, {"-1", "+1"})
               .command(invoc, [&](Output)
     {
         int new_selection = cur_monitor + delta; // signed for delta calculations
