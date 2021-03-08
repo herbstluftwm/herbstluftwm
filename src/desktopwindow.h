@@ -17,7 +17,6 @@ public:
     bool below() const;
     Window window() const;
     static void registerDesktop(Window win);
-    static void lowerDesktopWindows();
     static void unregisterDesktop(Window win);
     static void foreachDesktopWindow(std::function<void(DesktopWindow&)> loopbody);
 private:

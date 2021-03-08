@@ -217,8 +217,6 @@ def test_stack_tree_desktop_windows(hlwm, x11):
       - {winid} TestDesktop TestDeskClass
 '''
     stack = hlwm.call('stack')
-    print("expected:")
-    print(expected_stack)
     assert stack.stdout == expected_stack
 
 
