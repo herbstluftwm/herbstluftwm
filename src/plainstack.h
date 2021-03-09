@@ -25,6 +25,14 @@ public:
         // that it becomes the new first element
         std::rotate(data_.begin(), it, it + 1);
     }
+    void lower(const T& element) {
+        auto it = std::find(data_.begin(), data_.end(), element);
+        assert(it != data_.end());
+        // rotate the range (it, end] in such a way
+        // that it+1 becomes the first element. Hence,
+        // it must have become the last element.
+        std::rotate(it, it + 1, data_.end());
+    }
     typename std::vector<T>::const_iterator begin() const {
         return data_.cbegin();
     }

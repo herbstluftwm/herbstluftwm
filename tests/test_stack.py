@@ -60,8 +60,8 @@ def test_raise_client_already_on_top(hlwm, floatingmode):
 
 def test_focused_tiling_client_stays_on_top_in_max_layout(hlwm):
     # in tiling mode, the focused window is always the top window within the
-    # tiling layer. Hence, trying to raise any other window must be undone
-    # immediately.
+    # tiling layer. Hence, trying to lower the focused window or to raise any
+    # other window must be undone immediately.
     #
     # the same holds for the 'selected' window within a max layout
     # hlwm.attr.settings.hide_covered_windows = 'off'
@@ -86,9 +86,10 @@ def test_focused_tiling_client_stays_on_top_in_max_layout(hlwm):
         assert stack.index(win[3]) < stack.index(win[4])
         assert stack.index(win[5]) < stack.index(win[6])
 
-    for winid in win:
-        hlwm.call(['raise', winid])
-        verify_stack()
+    for command in ['raise', 'lower']:
+        for winid in win:
+            hlwm.call([command, winid])
+            verify_stack()
 
 
 def test_raise_bottom_client(hlwm):
@@ -100,7 +101,21 @@ def test_raise_bottom_client(hlwm):
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == [c1, c2]
 
 
-def test_raise_unmanaged_window(hlwm, x11):
+def test_lower_topmost_client(hlwm):
+    hlwm.call('floating on')
+    hlwm.call('rule floating=on')
+    # new clients are placed on top, so put clients
+    # into stacking order by reversing the list:
+    clients = list(reversed(hlwm.create_clients(4)))
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == clients
+
+    hlwm.call(['lower', clients[0]])
+
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == clients[1:] + [clients[0]]
+
+
+@pytest.mark.parametrize('command', ['lower', 'raise'])
+def test_raise_lower_unmanaged_window(hlwm, x11, command):
     hlwm.call('rule once manage=off')
     _, winid = x11.create_client()
 
@@ -109,21 +124,22 @@ def test_raise_unmanaged_window(hlwm, x11):
 
     # we cannot test much, but at least it does not crash
     # or throw any error:
-    hlwm.call(['raise', winid])
+    hlwm.call([command, winid])
 
     assert len(hlwm.list_children('clients')) == 0, \
         "there must not be any managed client"
 
 
-def test_raise_invalid_arg(hlwm):
-    # both the error messages for WindowID and client should be shown:
-    hlwm.call_xfail('raise foobar') \
-        .expect_stderr('Window id is not numeric') \
-        .expect_stderr('; or:') \
-        .expect_stderr("expecting 0xWINID or 'urgent'")
+def test_raise_lower_invalid_arg(hlwm):
+    for command in ['raise', 'lower']:
+        # both the error messages for WindowID and client should be shown:
+        hlwm.call_xfail([command, 'foobar']) \
+            .expect_stderr('Window id is not numeric') \
+            .expect_stderr('; or:') \
+            .expect_stderr("expecting 0xWINID or 'urgent'")
 
-    hlwm.call_xfail('raise 01two') \
-        .expect_stderr('invalid characters at position 2')
+        hlwm.call_xfail([command, '01two']) \
+            .expect_stderr('invalid characters at position 2')
 
 
 def test_raise_completion(hlwm):

@@ -107,13 +107,31 @@ void GlobalCommands::raiseCommand(CallOrComplete invoc)
 {
     Either<Client*,WindowID> clientOrWin = {nullptr};
     ArgParse().mandatory(clientOrWin).command(invoc,
-                                              [&] (Output output) {
+                                              [&] (Output) {
         auto forClients = [] (Client* client) {
             client->raise();
             client->needsRelayout.emit(client->tag());
         };
         auto forWindowIDs = [&] (WindowID window) {
             XRaiseWindow(root_.X.display(), window);
+        };
+        clientOrWin.cases(forClients, forWindowIDs);
+        return 0;
+    });
+}
+
+
+void GlobalCommands::lowerCommand(CallOrComplete invoc)
+{
+    Either<Client*,WindowID> clientOrWin = {nullptr};
+    ArgParse().mandatory(clientOrWin).command(invoc,
+                                              [&] (Output) {
+        auto forClients = [] (Client* client) {
+            client->lower();
+            client->needsRelayout.emit(client->tag());
+        };
+        auto forWindowIDs = [&] (WindowID window) {
+            XLowerWindow(root_.X.display(), window);
         };
         clientOrWin.cases(forClients, forWindowIDs);
         return 0;

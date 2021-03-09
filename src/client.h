@@ -111,6 +111,7 @@ public:
     void update_wm_hints();
     void update_title();
     void raise();
+    void lower();
 
     void send_configure();
     bool applysizehints(int *w, int *h);

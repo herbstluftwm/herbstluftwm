@@ -167,6 +167,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"monitor_rect",   { monitors, &MonitorManager::rectCommand }},
         {"pad",            { monitors, &MonitorManager::padCommand }},
         {"raise",          { global_cmds, &GlobalCommands::raiseCommand }},
+        {"lower",          { global_cmds, &GlobalCommands::lowerCommand }},
         {"rule",           {rules, &RuleManager::addRuleCommand,
                                    &RuleManager::addRuleCompletion}},
         {"unrule",         {rules, &RuleManager::unruleCommand,

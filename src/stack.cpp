@@ -142,6 +142,14 @@ void Stack::raiseSlice(Slice* slice) {
     dirty = true;
 }
 
+void Stack::lowerSlice(Slice* slice) {
+    for (auto layer : slice->layers) {
+        layers_[layer].lower(slice);
+    }
+    dirty = true;
+}
+
+
 //! insert the slice to the given layer. if 'insertOnTop' is set, insert at the top
 //! otherwise insert at the bottom of the layer
 void Stack::sliceAddLayer(Slice* slice, HSLayer layer, bool insertOnTop) {
