@@ -15,6 +15,7 @@ enum class Type {
     NAMES, // a enum type containing names
     FONT,
     RECTANGLE,
+    WINDOW,
 };
 
 static const std::map<Type, std::pair<std::string, char>> type_strings = {
@@ -28,6 +29,7 @@ static const std::map<Type, std::pair<std::string, char>> type_strings = {
     {Type::NAMES,   {"Names",        'n'}},
     {Type::FONT,    {"Font",         'f'}},
     {Type::RECTANGLE, {"Rectangle",  'R'}},
+    {Type::WINDOW,  {"WindowID",     'w'}},
 };
 
 bool operator<(Type t1, Type t2);

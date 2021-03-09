@@ -385,6 +385,9 @@ class ObjectInformation:
         def set_default_value(self, cpp_token):
             if TokenGroup.IsTokenGroup(cpp_token):
                 # drop surrounding '{' ... '}' if its an initializer list
+                if len(cpp_token.enclosed_tokens) == 0:
+                    cpp_token = None
+                    return
                 cpp_token = cpp_token.enclosed_tokens[0]
             if cpp_token[0:1] == ['-']:
                 # this is most probably a signed number
@@ -407,6 +410,7 @@ class ObjectInformation:
         def __init__(self, cpp_name):
             self.cpp_name = cpp_name
             self.user_name = None  # what the user sees
+            self.user_name_pattern = None  # if no concrete user_name can be given
             self.child_class = None  # whether this is a Link_ or a Child_
             self.type = None  # the template argument to Link_ or Child_
             self.constructor_args = None
@@ -455,6 +459,10 @@ class ObjectInformation:
         for (clsname, attrs), attr in self.member2info.items():
             if clsname == 'Settings':
                 attr.writable = True
+
+        child_info = self.child_info('PanelManager', '0xWindowID')
+        child_info.user_name_pattern = '0xWindowID'
+        child_info.type = ClassName('Panel')
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
@@ -583,6 +591,8 @@ class ObjectInformation:
                             'type': member.type.to_user_type_name(),
                             'class': member.child_class,
                         }
+                        if member.user_name_pattern is not None:
+                            obj['name_pattern'] = member.user_name_pattern
                         if member.doc is not None:
                             obj['doc'] = member.doc
                         children[member.user_name] = obj

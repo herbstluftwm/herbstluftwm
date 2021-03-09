@@ -181,7 +181,10 @@ class ObjectDocPrinter:
             if depth > 0:
                 # add multiple format indicators, as for the
                 # attribute name above
-                itemname = f"*+[entryname]#{child['name']}#+*"
+                if child['name'] is not None:
+                    itemname = f"*+[entryname]#{child['name']}#+*"
+                else:
+                    itemname = f"'[entryname]#{child['name_pattern']}#'"
                 bullet = '*'
             else:
                 itemname = f"{child['name']}"

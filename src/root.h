@@ -55,6 +55,7 @@ public:
     Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
     Child_<MouseManager> mouse;
+    Child_<PanelManager> panels;
     Child_<RuleManager> rules;
     Child_<Settings> settings;
     Child_<TagManager> tags;
@@ -69,7 +70,6 @@ public:
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information
     // automatically from the signals emitted by ClientManager, etc
-    std::unique_ptr<PanelManager> panels; // Using "pimpl" to avoid include
     Ewmh& ewmh_;
 
     // global actions
