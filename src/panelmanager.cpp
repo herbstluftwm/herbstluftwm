@@ -28,7 +28,7 @@ public:
                "the edge of the monitor it is on. The space depends on "
                "the _NET_WM_STRUT defined by the panel. If it is however "
                "not defined explicitly, then the amount of reserved space "
-               "is infered from the window geometry.");
+               "is inferred from the window geometry.");
     }
     Attribute_<WindowID> winid_;
     Attribute_<string> windowInstance_;

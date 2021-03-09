@@ -44,7 +44,7 @@ def create_panel(hlwm):
     let us not introduce it as a dependency for the all
     test cases but instead connect to the X display manually.
 
-    Unfortunately, we never have the chance to proplerly close
+    Unfortunately, we never have the chance to properly close
     the display, but I hope it's OK for this single test.
     """
     display = conftest.xlib_connect_to_display(hlwm.env['DISPLAY'])
