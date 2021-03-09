@@ -17,6 +17,7 @@ class Ewmh;
 class HSTag;
 class Settings;
 class Theme;
+class XConnection;
 
 template<>
 RunTimeConverter<Client*>* Converter<Client*>::converter;
@@ -76,6 +77,7 @@ protected:
     Theme* theme;
     Settings* settings;
     Ewmh* ewmh;
+    XConnection* X_;
     std::unordered_map<Window, Client*> clients_;
     friend class Client;
 };

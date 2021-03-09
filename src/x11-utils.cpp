@@ -5,17 +5,18 @@
 #include <X11/extensions/shapeconst.h>
 
 #include "globals.h"
+#include "xconnection.h"
 
 using std::vector;
 
 /**
  * \brief cut the given rectangles out of the window using XShape
  */
-void window_cut_rect_holes(Window win, int width, int height,
+void window_cut_rect_holes(XConnection& X, Window win, int width, int height,
                            const vector<Rectangle>& holes) {
     // inspired by the xhole.c example
     // http://www.answers.com/topic/xhole-c
-    Display* d = g_display;
+    Display* d = X.display();
     GC gp;
     int bw = 100; // add a large border, just to be sure the border is visible
     width += 2*bw;
@@ -24,9 +25,9 @@ void window_cut_rect_holes(Window win, int width, int height,
     /* create the pixmap that specifies the shape */
     Pixmap p = XCreatePixmap(d, win, width, height, 1);
     gp = XCreateGC(d, p, 0, nullptr);
-    XSetForeground(d, gp, WhitePixel(d, g_screen));
+    XSetForeground(d, gp, WhitePixel(d, X.screen()));
     XFillRectangle(d, p, gp, 0, 0, width, height);
-    XSetForeground(d, gp, BlackPixel(d, g_screen));
+    XSetForeground(d, gp, BlackPixel(d, X.screen()));
     //int radius = 50;
     //XFillArc(d, p, gp,
     //         width/2 - radius, height/2 - radius, radius, radius,
@@ -44,10 +45,10 @@ void window_cut_rect_holes(Window win, int width, int height,
     XFreePixmap(d, p);
 }
 
-void window_make_intransparent(Window win, int width, int height) {
+void window_make_intransparent(XConnection& X, Window win, int width, int height) {
     // inspired by the xhole.c example
     // http://www.answers.com/topic/xhole-c
-    Display* d = g_display;
+    Display* d = X.display();
     GC gp;
     int bw = 100; // add a large border, just to be sure the border is visible
     width += 2*bw;
@@ -56,7 +57,7 @@ void window_make_intransparent(Window win, int width, int height) {
     /* create the pixmap that specifies the shape */
     Pixmap p = XCreatePixmap(d, win, width, height, 1);
     gp = XCreateGC(d, p, 0, nullptr);
-    XSetForeground(d, gp, WhitePixel(d, g_screen));
+    XSetForeground(d, gp, WhitePixel(d, X.screen()));
     XFillRectangle(d, p, gp, 0, 0, width, height);
     /* set the pixmap as the new window mask;
     the pixmap is slightly larger than the window to allow for the window

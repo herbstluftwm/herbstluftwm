@@ -23,6 +23,7 @@ class HSTag;
 class Monitor;
 class Settings;
 class ClientManager;
+class XConnection;
 
 class Client : public Object {
 public:
@@ -136,6 +137,7 @@ private:
     Theme& theme;
     Settings& settings;
     Ewmh& ewmh;
+    XConnection& X_;
     std::string tagName();
     const DecTriple& getDecTriple();
     Theme::Type mostRecentThemeType;
