@@ -6,14 +6,17 @@
 #include "either.h"
 #include "frametree.h"
 #include "layout.h"
+#include "metacommands.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "root.h"
+#include "settings.h"
 #include "tag.h"
 #include "tagmanager.h"
 #include "xconnection.h"
 
 using std::string;
+using std::endl;
 
 GlobalCommands::GlobalCommands(Root& root)
     : root_(root)
@@ -60,6 +63,46 @@ void GlobalCommands::tagStatus(Monitor* monitor, Output output)
         output << c;
         output << *tag->name;
         output << '\t';
+    }
+}
+
+int GlobalCommands::cycleValueCommand(Input input, Output output)
+{
+    string attr_path = {};
+    ArgParse ap = ArgParse().mandatory(attr_path);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
+    }
+    Attribute* attr = root_.deepAttribute(attr_path);
+    if (!attr) {
+        // fall back to settings
+        attr = root_.settings->deepAttribute(attr_path);
+    }
+    if (!attr) {
+        output << "No such attribute: " << attr_path << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    auto msg = attr->cycleValue(input.begin(), input.end());
+    if (!msg.empty()) {
+        output << input.command()
+               << ": Invalid value for \""
+               << attr_path << "\": "
+               << msg << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
+
+void GlobalCommands::cycleValueCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        // only list writable attributes
+        MetaCommands::completeObjectPath(complete, &root_, true, &Attribute::writable);
+    } else {
+        Attribute* attr = root_.deepAttribute(complete[0]);
+        if (attr) {
+            attr->complete(complete);
+        }
     }
 }
 

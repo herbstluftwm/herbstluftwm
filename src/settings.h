@@ -25,8 +25,6 @@ public:
     void get_complete(Completion& complete);
     int toggle_cmd(Input argv, Output output);
     void toggle_complete(Completion& complete);
-    int cycle_value_cmd(Input argv, Output output);
-    void cycle_value_complete(Completion& complete);
 
     // all the settings:
     Attribute_<bool>          verbose = {"verbose", false};
