@@ -43,7 +43,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Add GCC- *and* C++-specific flags
     set(CXX_FLAGS ${CXX_FLAGS}
         # Additional warnings that don't come with Wall/Wextra:
-        -Wuseless-cast
         )
 endif()
 
