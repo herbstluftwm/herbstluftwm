@@ -11,7 +11,6 @@
 #include "completion.h"
 #include "decoration.h"
 #include "ewmh.h"
-#include "globals.h"
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
@@ -38,6 +37,7 @@ ClientManager::ClientManager()
     , theme(nullptr)
     , settings(nullptr)
     , ewmh(nullptr)
+    , X_(nullptr)
 {
     setDoc("The managed windows. For every (managed) window id there "
            "is an entry here.");
@@ -53,10 +53,10 @@ ClientManager::~ClientManager()
     for (auto c : clients_) {
         auto r = c.second->float_size_;
         auto window = c.second->x11Window();
-        XMoveResizeWindow(g_display, window, r.x, r.y, r.width, r.height);
-        XReparentWindow(g_display, window, g_root, r.x, r.y);
+        XMoveResizeWindow(X_->display(), window, r.x, r.y, r.width, r.height);
+        XReparentWindow(X_->display(), window, X_->root(), r.x, r.y);
         ewmh->updateFrameExtents(window, 0,0,0,0);
-        XMapWindow(g_display, window);
+        XMapWindow(X_->display(), window);
         delete c.second;
     }
 }
@@ -65,6 +65,7 @@ void ClientManager::injectDependencies(Settings* s, Theme* t, Ewmh* e) {
     settings = s;
     theme = t;
     ewmh = e;
+    X_ = &e->X();
 }
 
 string ClientManager::str(Client* client)
@@ -171,7 +172,7 @@ void ClientManager::remove(Window window)
 
 Client* ClientManager::manage_client(Window win, bool visible_already, bool force_unmanage,
                                      function<void(ClientChanges&)> additionalRules) {
-    if (is_herbstluft_window(g_display, win)) {
+    if (is_herbstluft_window(X_->display(), win)) {
         // ignore our own window
         return nullptr;
     }
@@ -193,7 +194,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     changes = Root::get()->rules()->evaluateRules(client, std::cerr, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
-        XMapWindow(g_display, win);
+        XMapWindow(X_->display(), win);
         delete client;
         return {};
     }
@@ -311,7 +312,7 @@ ClientChanges ClientManager::applyDefaultRules(Window win)
     {
         changes.floating = True;
     }
-    if (ewmh->X().getTransientForHint(win).has_value()) {
+    if (X_->getTransientForHint(win).has_value()) {
         changes.floating = true;
     }
     return changes;
@@ -519,11 +520,11 @@ void ClientManager::force_unmanage(Client* client) {
     // remove from tag
     client->tag()->removeClient(client);
     // ignore events from it
-    XSelectInput(g_display, client->window_, 0);
-    //XUngrabButton(g_display, AnyButton, AnyModifier, win);
+    XSelectInput(X_->display(), client->window_, 0);
+    //XUngrabButton(X_->display(), AnyButton, AnyModifier, win);
     // permanently remove it
-    XUnmapWindow(g_display, client->decorationWindow());
-    XReparentWindow(g_display, client->window_, g_root, 0, 0);
+    XUnmapWindow(X_->display(), client->decorationWindow());
+    XReparentWindow(X_->display(), client->window_, X_->root(), 0, 0);
     client->clear_properties();
     HSTag* tag = client->tag();
 
