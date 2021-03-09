@@ -60,6 +60,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
+    , X_(*cm.X_)
     , mostRecentThemeType(Theme::Type::Tiling)
 {
     stringstream tmp;
@@ -153,11 +154,11 @@ void Client::init_from_X() {
 
 void Client::make_full_client() {
     // setup decoration
-    XSetWindowBorderWidth(g_display, window_, 0);
+    XSetWindowBorderWidth(X_.display(), window_, 0);
     // specify that the client window survives if hlwm dies, i.e. it will be
     // reparented back to root
-    XChangeSaveSet(g_display, window_, SetModeInsert);
-    XReparentWindow(g_display, window_, dec->decorationWindow(), 40, 40);
+    XChangeSaveSet(X_.display(), window_, SetModeInsert);
+    XReparentWindow(X_.display(), window_, dec->decorationWindow(), 40, 40);
     // if this client is visible, then reparenting will make it invisible
     // and will create a unmap notify event
     if (visible_()) {
@@ -165,11 +166,11 @@ void Client::make_full_client() {
         visible_ = false;
     }
     // get events from window
-    XSelectInput(g_display, dec->decorationWindow(), (EnterWindowMask | LeaveWindowMask |
+    XSelectInput(X_.display(), dec->decorationWindow(), (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
-    XSelectInput(g_display, window_,
+    XSelectInput(X_.display(), window_,
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
     // redraw decoration on title change
@@ -177,7 +178,7 @@ void Client::make_full_client() {
 }
 
 void Client::listen_for_events() {
-    XSelectInput(g_display, window_, PropertyChangeMask);
+    XSelectInput(X_.display(), window_, PropertyChangeMask);
 }
 
 void Client::setTag(HSTag *tag) {
@@ -236,7 +237,7 @@ void Client::window_unfocus_last() {
 void Client::window_focus() {
     // set keyboard focus
     if (!this->neverfocus_) {
-        XSetInputFocus(g_display, this->window_, RevertToPointerRoot, CurrentTime);
+        XSetInputFocus(X_.display(), this->window_, RevertToPointerRoot, CurrentTime);
     } else {
         ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
     }
@@ -376,7 +377,7 @@ void Client::updatesizehints() {
     long msize;
     XSizeHints size;
 
-    if (!XGetWMNormalHints(g_display, this->window_, &size, &msize)) {
+    if (!XGetWMNormalHints(X_.display(), this->window_, &size, &msize)) {
         /* size is uninitialized, ensure that size.flags aren't used */
         size.flags = PSize;
     }
@@ -429,7 +430,7 @@ void Client::send_configure() {
     auto last_inner_rect = dec->last_inner();
     XConfigureEvent ce;
     ce.type = ConfigureNotify;
-    ce.display = g_display;
+    ce.display = X_.display();
     ce.event = this->window_;
     ce.window = this->window_;
     ce.x = last_inner_rect.x;
@@ -439,7 +440,7 @@ void Client::send_configure() {
     ce.border_width = 0;
     ce.above = None;
     ce.override_redirect = False;
-    XSendEvent(g_display, this->window_, False, StructureNotifyMask, (XEvent *)&ce);
+    XSendEvent(X_.display(), this->window_, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
 void Client::resize_floating(Monitor* m, bool isFocused) {
@@ -505,16 +506,16 @@ void Client::set_visible(bool visible) {
         /* Grab the server to make sure that the frame window is mapped before
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
-        XGrabServer(g_display);
+        XGrabServer(X_.display());
         ewmh.windowUpdateWmState(this->window_, WmState::WSNormalState);
-        XMapWindow(g_display, this->window_);
-        XMapWindow(g_display, this->dec->decorationWindow());
-        XUngrabServer(g_display);
+        XMapWindow(X_.display(), this->window_);
+        XMapWindow(X_.display(), this->dec->decorationWindow());
+        XUngrabServer(X_.display());
     } else {
         /* we unmap the client itself so that we can get MapRequest
            events, and because the ICCCM tells us to! */
-        XUnmapWindow(g_display, this->dec->decorationWindow());
-        XUnmapWindow(g_display, this->window_);
+        XUnmapWindow(X_.display(), this->dec->decorationWindow());
+        XUnmapWindow(X_.display(), this->window_);
         ewmh.windowUpdateWmState(this->window_, WmState::WSIconicState);
         this->ignore_unmaps_++;
     }
@@ -543,7 +544,7 @@ void Client::set_urgent_force(bool state) {
     setup_border(this == manager.focus());
 
     XWMHints* wmh;
-    if (!(wmh = XGetWMHints(g_display, this->window_))) {
+    if (!(wmh = XGetWMHints(X_.display(), this->window_))) {
         // just allocate new wm hints for the case the window
         // did not have wm hints set before.
         // here, we ignore what happens on insufficient memory
@@ -555,7 +556,7 @@ void Client::set_urgent_force(bool state) {
         wmh->flags &= ~XUrgencyHint;
     }
 
-    XSetWMHints(g_display, this->window_, wmh);
+    XSetWMHints(X_.display(), this->window_, wmh);
     XFree(wmh);
     ewmh.updateWindowState(this);
     // report changes to tags
@@ -564,7 +565,7 @@ void Client::set_urgent_force(bool state) {
 
 // heavily inspired by dwm.c
 void Client::update_wm_hints() {
-    XWMHints* wmh = XGetWMHints(g_display, this->window_);
+    XWMHints* wmh = XGetWMHints(X_.display(), this->window_);
     if (!wmh) {
         return;
     }
@@ -574,7 +575,7 @@ void Client::update_wm_hints() {
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
         wmh->flags &= ~XUrgencyHint;
-        XSetWMHints(g_display, this->window_, wmh);
+        XSetWMHints(X_.display(), this->window_, wmh);
     } else {
         bool newval = (wmh->flags & XUrgencyHint) ? true : false;
         if (newval != this->urgent_()) {

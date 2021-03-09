@@ -270,45 +270,6 @@ void Settings::toggle_complete(Completion& complete) {
     }
 }
 
-int Settings::cycle_value_cmd(Input argv, Output output) {
-    if (argv.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto set_name = argv.front();
-    argv.shift();
-    if (argv.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto attr = attribute(set_name);
-    if (!attr) {
-        output << argv.command() <<
-            ": Setting \"" << set_name << "\" not found\n";
-        return HERBST_SETTING_NOT_FOUND;
-    }
-    auto msg = attr->cycleValue(argv.begin(), argv.end());
-    if (!msg.empty()) {
-        output << argv.command()
-               << ": Invalid value for setting \""
-               << set_name << "\": "
-               << msg << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return 0;
-}
-
-void Settings::cycle_value_complete(Completion& complete) {
-    if (complete == 0) {
-        for (auto a : attributes()) {
-            complete.full(a.first);
-        }
-    } else {
-        Attribute* a = attribute(complete[0]);
-        if (a) {
-            a->complete(complete);
-        }
-    }
-}
-
 int Settings::get_cmd(Input argv, Output output) {
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;

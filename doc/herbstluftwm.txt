@@ -550,14 +550,17 @@ get 'NAME'::
 toggle 'NAME'::
     Toggles the setting 'NAME' if it's a boolean setting.
 
-cycle_value 'NAME' 'VALUES' ...::
-    Cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
+cycle_value 'PATH' 'VALUES' ...::
+    Cycles value of the attribute 'PATH' through 'VALUES': I.e. it searches the
     first occurrence of the current value in 'VALUES' and changes the value to
     the next in the list or to the first one if the end is reached or current
-    value wasn't found. Example:
+    value wasn't found. For compatibility reasons, 'PATH' can also be the name of
+    a setting. Examples:
 
-        * cycle_value frame_gap 0 5 10 15
-        * cycle_value frame_bg_normal_color red green blue
+        * cycle_value settings.frame_gap 0 5 10 15
+        * cycle_value theme.active.inner_color red green blue
+        * the command 'cycle_layout +1' is equivalent to
+          'cycle_value tags.focus.tiling.focused_frame.algorithm'
 
 cycle_monitor ['DELTA']::
     Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.

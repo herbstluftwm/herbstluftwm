@@ -334,7 +334,7 @@ void XMainLoop::clientmessage(XClientMessageEvent* event) {
 }
 
 void XMainLoop::configurenotify(XConfigureEvent* event) {
-    if (event->window == g_root) {
+    if (event->window == X_.root()) {
         root_->panels->rootWindowChanged(event->width, event->height);
         if (root_->settings->auto_detect_monitors()) {
             Input input = Input("detect_monitors");

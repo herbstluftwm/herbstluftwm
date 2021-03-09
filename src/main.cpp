@@ -49,7 +49,6 @@ using std::unique_ptr;
 // globals:
 int g_verbose = 0;
 Display*    g_display;
-int         g_screen;
 Window      g_root;
 
 // module internals:
@@ -136,8 +135,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                        &Settings::get_complete }},
         {"toggle",         { settings, &Settings::toggle_cmd,
                                        &Settings::toggle_complete}},
-        {"cycle_value",    { settings, &Settings::cycle_value_cmd,
-                                       &Settings::cycle_value_complete}},
+        {"cycle_value",    { global_cmds, &GlobalCommands::cycleValueCommand,
+                                          &GlobalCommands::cycleValueCompletion}},
         {"cycle_monitor",  { monitors, &MonitorManager::cycleCommand }},
         {"focus_monitor",  { monitors, &MonitorManager::focusCommand }},
         {"add",            BIND_OBJECT(tags, tag_add_command) },
@@ -479,7 +478,6 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
-    g_screen = X->screen();
     g_root = X->root();
     XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ewmh->installWmWindow();
