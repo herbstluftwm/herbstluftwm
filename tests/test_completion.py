@@ -155,6 +155,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         'false': {1},
         'close': {3},
         'raise': {3},
+        'lower': {3},
         'jumpto': {3},
         'remove_monitor': {6},
         'use_index': {3},
