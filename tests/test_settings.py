@@ -47,29 +47,6 @@ def test_toggle_completion(hlwm):
         assert n not in res
 
 
-def test_cycle_value_color(hlwm):
-    values = ['#ff0000', '#00ff00', '#0000ff']
-    # this setting is a color, and even a DynAttribute
-    name = 'window_border_active_color'
-    hlwm.call(f'set {name} orange')
-
-    for i in range(0, 5):
-        hlwm.call(['cycle_value', name] + values)
-        assert hlwm.get_attr('settings.' + name) == values[i % len(values)]
-
-
-def test_cycle_value_loop(hlwm):
-    values = ['0', '1', '2', '2', '3', '4']
-    name = 'frame_gap'
-    hlwm.call(f'set {name} 3')
-    # if we now run cycle_value multiple times, it should reach the 4
-    # and in the next loop should hang at the 2
-    expected_values = ['4', '0', '1', '2', '2', '2', '2', '2']
-    for expected in expected_values:
-        hlwm.call(['cycle_value', name] + values)
-        assert hlwm.get_attr('settings.' + name) == expected
-
-
 def test_default_frame_layout_value_too_high(hlwm):
     hlwm.call_xfail('set default_frame_layout 99') \
         .expect_stderr('set: Invalid value "99" for setting "default_frame_layout": .*out of range')
@@ -143,11 +120,6 @@ def test_get_invalid_setting(hlwm):
 
 def test_toggle_invalid_setting(hlwm):
     hlwm.call_xfail('toggle foobar') \
-        .expect_stderr('Setting "foobar" not found\n')
-
-
-def test_cycle_value_invalid_setting(hlwm):
-    hlwm.call_xfail('cycle_value foobar baz') \
         .expect_stderr('Setting "foobar" not found\n')
 
 

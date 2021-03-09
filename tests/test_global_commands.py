@@ -80,3 +80,57 @@ def test_jumpto_bring_completion(hlwm):
 
         hlwm.command_has_all_args([cmd, 'urgent'])
         hlwm.command_has_all_args([cmd, ''])
+
+
+def test_cycle_value_color(hlwm):
+    values = ['#ff0000', '#00ff00', '#0000ff']
+    # try the color test both via settings and via attributes
+    for prefix in ['', 'settings.']:
+        # this setting is a color, and even a DynAttribute
+        name = 'window_border_active_color'
+        hlwm.call(f'set {name} orange')
+
+        for i in range(0, 5):
+            hlwm.call(['cycle_value', prefix + name] + values)
+            assert hlwm.get_attr('settings.' + name) == values[i % len(values)]
+
+
+def test_cycle_value_loop(hlwm):
+    values = ['0', '1', '2', '2', '3', '4']
+    name = 'frame_gap'
+    hlwm.call(f'set {name} 3')
+    # if we now run cycle_value multiple times, it should reach the 4
+    # and in the next loop should hang at the 2
+    expected_values = ['4', '0', '1', '2', '2', '2', '2', '2']
+    for expected in expected_values:
+        hlwm.call(['cycle_value', name] + values)
+        assert hlwm.get_attr('settings.' + name) == expected
+
+
+def test_cycle_value_completion(hlwm):
+    assert 'tags.0.name ' in hlwm.complete(['cycle_value', 'tags.0.'], partial=True, position=1)
+
+    assert 'monitors.focus.' in hlwm.complete(['cycle_value', 'monitors.'], partial=True, position=1)
+    # 'monitors.count' is however not completed because it is read only:
+    assert [] == hlwm.complete(['cycle_value', 'monitors.cou'], partial=True, position=1)
+
+    # the completion depends on the attribute type:
+    assert 'true' in hlwm.complete(['cycle_value', 'settings.always_show_frame'])
+    assert 'vertical' in hlwm.complete(['cycle_value', 'settings.default_frame_layout'])
+    assert 'vertical' in hlwm.complete(['cycle_value', 'tags.focus.tiling.focused_frame.algorithm'])
+
+
+def test_cycle_value_invalid_arg(hlwm):
+    hlwm.call_xfail('cycle_value foobar baz') \
+        .expect_stderr('No such attribute: foobar\n')
+
+    hlwm.call('new_attr int clients.my_foo 1')
+    command = 'cycle_value clients.my_foo 1 2 bar'
+
+    # calling it a first time works
+    hlwm.call(command)
+    assert hlwm.attr.clients.my_foo() == '2'
+
+    # calling it a second time fails
+    hlwm.call_xfail(command) \
+        .expect_stderr('Invalid value for "clients.my_foo": ')
