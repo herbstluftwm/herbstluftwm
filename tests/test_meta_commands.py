@@ -556,7 +556,10 @@ def test_raise_lower_winid_missing(hlwm):
         .expect_stderr('lower: not enough arguments\n')
 
 
-def test_raise_invalid_winid(hlwm):
+def test_raise_lower_invalid_winid(hlwm):
+    hlwm.call_xfail('raise foobar') \
+        .expect_stderr('Invalid format, expecting')
+
     hlwm.call_xfail('lower foobar') \
         .expect_stderr('Invalid format, expecting')
 
