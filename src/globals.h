@@ -18,7 +18,6 @@
 
 // connection to x-server
 extern Display*    g_display;
-extern int         g_screen;
 extern Window      g_root;
 extern int  g_verbose;
 

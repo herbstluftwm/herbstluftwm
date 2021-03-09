@@ -49,7 +49,6 @@ using std::unique_ptr;
 // globals:
 int g_verbose = 0;
 Display*    g_display;
-int         g_screen;
 Window      g_root;
 
 // module internals:
@@ -478,7 +477,6 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
-    g_screen = X->screen();
     g_root = X->root();
     XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ewmh->installWmWindow();
