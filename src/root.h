@@ -24,6 +24,7 @@ class Settings; // IWYU pragma: keep
 class TagManager; // IWYU pragma: keep
 class Theme; // IWYU pragma: keep
 class Tmp; // IWYU pragma: keep
+class TypesDoc; // IWYU pragma: keep
 class Watchers;
 class XConnection;
 
@@ -61,6 +62,7 @@ public:
     Child_<TagManager> tags;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
+    Child_<TypesDoc> types;
     Child_<Watchers> watchers;
 
     Globals globals;

@@ -69,3 +69,9 @@ def test_int_uint_unparsable_suffix(hlwm):
 
         hlwm.call_xfail(['set_attr', attr, '+3x']) \
             .expect_stderr('unparsable suffix')
+
+
+def test_type_children_names(hlwm):
+    types = hlwm.list_children('types')
+    for t in types:
+        assert hlwm.attr.types[t].fullname() == t
