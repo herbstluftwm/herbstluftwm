@@ -192,7 +192,11 @@ false::
     Ignores all arguments and always returns failure, i.e. 1.
 
 help ['OBJECT'|'ATTRIBUTE']::
-    Print help on a given object or attribute.
+    Print help on a given object or attribute. For example:
+
+    * help clients.focus
+    * help monitors
+    * help types.color
 
 list_commands::
     Lists all available commands.

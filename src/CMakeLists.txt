@@ -68,6 +68,7 @@ target_sources(herbstluftwm PRIVATE
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
     converter.cpp converter.h
+    typesdoc.cpp typesdoc.h
     utils.cpp utils.h
     watchers.h watchers.cpp
     x11-types.cpp x11-types.h
