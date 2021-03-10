@@ -474,13 +474,17 @@ focus_edge ['-i'|'-e'] 'DIRECTION'::
 +
 
 raise 'WINID'::
-    Raises the specified window. See the <<WINDOW_IDS, section on WINDOW IDS>>
-    on how to reference a certain window. Its result is only visible in floating
-    mode.
+    Raises the specified managed or unmanaged window. Managed windows are only
+    moved within the tag's stack (as reported by the 'stack' command), and unmanaged
+    windows are raised globally, i.e. are raised above all managed windows.
+    See the <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain
+    window. Its result is only visible for floating windows and unmanaged windows.
 
-TIP: The 'WINID' also can specify an unmanaged window, although the completion
-for the raise command does not list the IDs of unmanaged windows.
-
+lower 'WINID'::
+    Lowers the specified managed or unmanaged window, analogously to the 'raise'
+    command: managed windows are lowered within the stack of floating windows
+    (with no effect for tiled windows) and unmanaged windows are moved below all
+    managed windows (for example, it can be used to lower desktop windows).
 
 jumpto 'WINID'::
     Puts the focus to the specified window. See the <<WINDOW_IDS, section on

@@ -286,6 +286,11 @@ void Client::raise() {
     this->tag()->stack->raiseSlice(this->slice);
 }
 
+void Client::lower()
+{
+    this->tag()->stack->lowerSlice(this->slice);
+}
+
 /**
  * @brief Client::resize_tiling
  * @param the outer geometry of the client
