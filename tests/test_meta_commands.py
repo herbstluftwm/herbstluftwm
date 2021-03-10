@@ -548,13 +548,19 @@ def test_integer_out_of_range(hlwm):
                 .expect_stderr('out of range')
 
 
-def test_raise_winid_missing(hlwm):
+def test_raise_lower_winid_missing(hlwm):
     hlwm.call_xfail('raise') \
         .expect_stderr('raise: not enough arguments\n')
 
+    hlwm.call_xfail('lower') \
+        .expect_stderr('lower: not enough arguments\n')
 
-def test_raise_invalid_winid(hlwm):
+
+def test_raise_lower_invalid_winid(hlwm):
     hlwm.call_xfail('raise foobar') \
+        .expect_stderr('Invalid format, expecting')
+
+    hlwm.call_xfail('lower foobar') \
         .expect_stderr('Invalid format, expecting')
 
 

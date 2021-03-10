@@ -30,6 +30,7 @@ public:
     void bring(Client* client);
 
     void raiseCommand(CallOrComplete invoc);
+    void lowerCommand(CallOrComplete invoc);
 private:
     Root& root_;
 };
