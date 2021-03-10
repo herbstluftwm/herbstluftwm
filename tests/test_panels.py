@@ -41,6 +41,20 @@ def test_auto_detect_panels(hlwm, x11, value):
         hlwm.attr.settings.auto_detect_panels = 'toggle'
 
 
+def test_panel_object(hlwm, x11):
+    assert int(hlwm.attr.panels.count()) == 0
+
+    _, winid = x11.create_client(geometry=(1, 0, 800, 30),
+                                 wm_class=('panelinst', 'panelclass'),
+                                 window_type='_NET_WM_WINDOW_TYPE_DOCK')
+
+    assert int(hlwm.attr.panels.count()) == 1
+    assert hlwm.attr.panels[winid].instance() == 'panelinst'
+    assert hlwm.attr.panels[winid]['class']() == 'panelclass'
+    assert hlwm.attr.panels[winid].geometry() == '800x30+1+0'
+    assert hlwm.attr.panels[winid].winid() == winid
+
+
 @pytest.mark.parametrize("which_pad, pad_size, geometry", [
     ("pad_left", 10, (-1, 0, 11, 400)),
     ("pad_right", 20, (800 - 20, 23, 20, 400)),
