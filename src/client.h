@@ -5,9 +5,9 @@
 #include <X11/Xlib.h>
 
 #include "attribute_.h"
-#include "converter.h"
 #include "child.h"
 #include "commandio.h"
+#include "converter.h"
 #include "object.h"
 #include "rectangle.h"
 #include "regexstr.h"
