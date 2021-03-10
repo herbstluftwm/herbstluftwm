@@ -84,7 +84,7 @@ function(gen_manpage sourcefile man_nr)
                     -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
                     --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
                     ${src}
-            DEPENDS ${ARGN}
+            DEPENDS ${src} ${ARGN}
             )
     endif()
     install(FILES ${dst} DESTINATION "${MANDIR}/man${man_nr}")
