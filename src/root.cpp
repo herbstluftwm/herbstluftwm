@@ -19,6 +19,7 @@
 #include "tagmanager.h"
 #include "theme.h"
 #include "tmp.h"
+#include "typesdoc.h"
 #include "utils.h"
 #include "watchers.h"
 
@@ -37,6 +38,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     , tags(*this, "tags")
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
+    , types(*this, "types")
     , watchers(*this, "watchers")
     , globals(g)
     , meta_commands(make_unique<MetaCommands>(*this))
@@ -56,6 +58,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     tags.init();
     theme.init();
     tmp.init();
+    types.init();
     watchers.init();
 
     // inject dependencies where needed

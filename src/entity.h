@@ -19,17 +19,17 @@ enum class Type {
 };
 
 static const std::map<Type, std::pair<std::string, char>> type_strings = {
-    {Type::INT,     {"Integer",      'i'}},
-    {Type::ULONG,   {"Unsigned",     'u'}},
-    {Type::BOOL,    {"Boolean",      'b'}},
-    {Type::DECIMAL, {"Decimal",      'd'}},
-    {Type::COLOR,   {"Color",        'c'}},
-    {Type::STRING,  {"String",       's'}},
-    {Type::REGEX,   {"Regex",        'r'}},
-    {Type::NAMES,   {"Names",        'n'}},
-    {Type::FONT,    {"Font",         'f'}},
-    {Type::RECTANGLE, {"Rectangle",  'R'}},
-    {Type::WINDOW,  {"WindowID",     'w'}},
+    {Type::BOOL,    {"bool",         'b'}},
+    {Type::COLOR,   {"color",        'c'}},
+    {Type::DECIMAL, {"decimal",      'd'}},
+    {Type::FONT,    {"font",         'f'}},
+    {Type::INT,     {"int",          'i'}},
+    {Type::NAMES,   {"names",        'n'}},
+    {Type::RECTANGLE, {"rectangle",  'R'}},
+    {Type::REGEX,   {"regex",        'r'}},
+    {Type::STRING,  {"string",       's'}},
+    {Type::ULONG,   {"uint",         'u'}},
+    {Type::WINDOW,  {"windowid",     'w'}},
 };
 
 bool operator<(Type t1, Type t2);
