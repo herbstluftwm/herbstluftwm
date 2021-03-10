@@ -9,8 +9,8 @@
 
 #include "arglist.h"
 #include "commandio.h"
+#include "converter.h"
 #include "entity.h"
-#include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"

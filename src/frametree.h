@@ -6,11 +6,11 @@
 #include <string>
 
 #include "child.h"
+#include "converter.h"
 #include "finite.h"
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
-#include "types.h"
 
 class Client;
 class Completion;

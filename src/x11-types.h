@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "types.h"
+#include "converter.h"
 
 class XConnection;
 

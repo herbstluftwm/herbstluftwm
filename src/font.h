@@ -5,8 +5,8 @@
 #include <string>
 
 #include "attribute_.h"
+#include "converter.h"
 #include "entity.h"
-#include "types.h"
 
 class FontData;
 class XConnection;

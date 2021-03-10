@@ -7,7 +7,7 @@
 
 #include "attribute.h"
 #include "commandio.h"
-#include "types.h"
+#include "converter.h"
 
 class Object;
 class Completion;

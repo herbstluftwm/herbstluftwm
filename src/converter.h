@@ -1,9 +1,4 @@
-#ifndef HERBSTLUFT_TYPES_H
-#define HERBSTLUFT_TYPES_H
-
-/** Definition of core types
- *
- */
+#pragma once
 
 #include <map>
 #include <set>
@@ -14,6 +9,12 @@ class Completion;
 
 // only a trick such that we don't need to include completion.h here
 void completeFull(Completion& complete, std::string string);
+
+/**
+ * The Converter<T> class provides static functions for all the I/O-operations
+ * of the type T, used in parsing and printing of attributes and in the
+ * parsing and completion of command line arguments.
+ */
 
 /* Primitive types that can be converted from/to user input/output */
 template<typename T, typename = void>
@@ -123,5 +124,3 @@ inline Direction Converter<Direction>::parse(const std::string &payload) {
 template<> void Converter<Direction>::complete(Completion& complete, Direction const* relativeTo);
 
 // Note: include x11-types.h for colors
-
-#endif

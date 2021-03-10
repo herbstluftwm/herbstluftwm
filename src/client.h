@@ -7,11 +7,11 @@
 #include "attribute_.h"
 #include "child.h"
 #include "commandio.h"
+#include "converter.h"
 #include "object.h"
 #include "rectangle.h"
 #include "regexstr.h"
 #include "theme.h"
-#include "types.h"
 #include "x11-types.h"
 
 class Decoration;

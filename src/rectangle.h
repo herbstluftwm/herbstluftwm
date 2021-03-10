@@ -4,7 +4,7 @@
 #include <string>
 
 #include "commandio.h"
-#include "types.h"
+#include "converter.h"
 #include "x11-types.h"
 
 struct Rectangle {

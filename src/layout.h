@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "attribute_.h"
+#include "converter.h"
 #include "framedata.h"
 #include "link.h"
 #include "object.h"
 #include "tilingresult.h"
-#include "types.h"
 #include "x11-types.h"
 
 // execute an action on an client
