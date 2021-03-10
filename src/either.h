@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 
-#include "types.h"
+#include "converter.h"
 
 /**
  * The Either<A,B> class holds either something of type

@@ -67,7 +67,7 @@ target_sources(herbstluftwm PRIVATE
     theme.cpp theme.h
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
-    types.cpp types.h
+    converter.cpp converter.h
     utils.cpp utils.h
     watchers.h watchers.cpp
     x11-types.cpp x11-types.h

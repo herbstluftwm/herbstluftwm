@@ -2,7 +2,7 @@
 #define FIXPRECDEC_H
 
 #include "attribute_.h"
-#include "types.h"
+#include "converter.h"
 
 /**
  * @brief A class for fixed precision decimals encoded in the type int.

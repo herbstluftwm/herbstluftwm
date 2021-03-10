@@ -10,7 +10,7 @@
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
-#include "types.h"
+#include "converter.h"
 
 class Client;
 class Completion;

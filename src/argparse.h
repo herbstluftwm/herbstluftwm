@@ -7,7 +7,7 @@
 
 #include "commandio.h"
 #include "ipc-protocol.h"
-#include "types.h"
+#include "converter.h"
 
 /**
  * @brief The InputConvert class is a convenience wrapper around Input::operator>> and

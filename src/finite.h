@@ -3,7 +3,7 @@
 #include <type_traits>
 
 #include "completion.h"
-#include "types.h"
+#include "converter.h"
 
 /** The Finite<T> class defines the Converter methods
  * for enum class types, that is, for types with only finitely many values.

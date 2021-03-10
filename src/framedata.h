@@ -19,7 +19,7 @@
 #include "attribute_.h"
 #include "finite.h"
 #include "fixprecdec.h"
-#include "types.h"
+#include "converter.h"
 
 class Client;
 

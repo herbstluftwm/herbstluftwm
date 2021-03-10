@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "types.h"
+#include "converter.h"
 
 /*!
  * Represents the press of a combination of modifiers keys.

@@ -11,7 +11,7 @@
 #include "rectangle.h"
 #include "regexstr.h"
 #include "theme.h"
-#include "types.h"
+#include "converter.h"
 #include "x11-types.h"
 
 class Decoration;

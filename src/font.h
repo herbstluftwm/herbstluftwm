@@ -6,7 +6,7 @@
 
 #include "attribute_.h"
 #include "entity.h"
-#include "types.h"
+#include "converter.h"
 
 class FontData;
 class XConnection;
