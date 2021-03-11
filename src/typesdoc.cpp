@@ -31,7 +31,7 @@ TypesDoc::TypesDoc()
     : bool_(*this, "bool")
     , color_(*this, "color")
     , decimal_(*this, "decimal")
-    // , font_(*this, "font") // TODO
+    , font_(*this, "font")
     , int_(*this, "int")
     // , names_(*this, "names") // TODO
     // , rectangle_(*this, "rectangle") // TODO
@@ -63,6 +63,22 @@ TypesDoc::TypesDoc()
 
     decimal_.init(Type::DECIMAL);
     decimal_.setDoc("Fixed precision decimal numbers, e.g. 0.34");
+
+    font_.init(Type::FONT);
+    font_.setDoc(
+         "A font specification (font family with modifiers regarding size, "
+         "weight, etc.) in one of the following formats:\n"
+         "\n"
+         "- Fontconfig description. This supports antialiased fonts,\n"
+         "  for example:\n"
+         "  * 'Dejavu Sans:pixelsize=12'\n"
+         "  * 'Bitstream Vera Sans:size=12:bold'\n"
+         "\n"
+         "- X logical font description (XLFD), as provided by the\n"
+         "  xfontsel tool. No antialiasing is supported, here but this\n"
+         "  is usually superior for bitmap fonts. For example:\n"
+         "  * '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'\n"
+    );
 
     int_.init(Type::INT);
     int_.setDoc("Type representing signed integers");
