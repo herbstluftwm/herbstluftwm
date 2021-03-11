@@ -72,6 +72,7 @@ classname2examplepath = [
     ('Settings', lambda _: 'settings'),
     ('TagManager', lambda _: 'tags'),
     ('Theme', lambda _: 'theme'),
+    ('TypesDoc', lambda _: 'types'),
 ]
 
 
@@ -202,3 +203,8 @@ def test_help_on_children_vs_json(hlwm, clsname, object_path, json_doc):
         if 'doc' in child:
             assert f"Entry '{name}'" in help_txt
             assert child['doc'] in help_txt
+        else:
+            # if there is no child doc in the json
+            # then there should be one in the cpp source
+            # and thus also not in the help output:
+            assert f"Entry '{name}'" not in help_txt
