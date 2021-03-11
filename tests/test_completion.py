@@ -234,13 +234,19 @@ def test_metacommand(hlwm, command_prefix):
         == sorted(['ARG'] + cmdlist)
 
 
-def test_posix_escape(hlwm):
-    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)']
+def test_posix_escape_via_use(hlwm):
+    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)', 'foo~bar', '~foo']
     for t in tags:
         hlwm.call(['add', t])
-    results = hlwm.complete(['use'], evaluate_escapes=True)
-    print(results)
-    assert sorted(['default'] + tags) == sorted(results)
+    for command in ['move', 'use']:
+        results = hlwm.complete(['use'], evaluate_escapes=True)
+        assert sorted(['default'] + tags) == sorted(results)
+
+
+def test_posix_escape_via_pad(hlwm):
+    res = hlwm.complete(['pad', '0'])
+    assert '\'\'' in res
+    assert '0' in res
 
 
 @pytest.mark.exclude_from_coverage(
