@@ -21,6 +21,9 @@ public:
     void tagStatusCommand(CallOrComplete invoc);
     void tagStatus(Monitor* monitor, Output output);
 
+    void useTagCommand(CallOrComplete invoc);
+    void useTagByIndexCommand(CallOrComplete invoc);
+
     int cycleValueCommand(Input input, Output output);
     void cycleValueCompletion(Completion& complete);
 

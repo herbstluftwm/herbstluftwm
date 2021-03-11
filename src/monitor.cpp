@@ -454,51 +454,6 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     return 0;
 }
 
-int monitor_set_tag_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    Monitor* monitor = get_current_monitor();
-    HSTag*  tag = find_tag(argv[1]);
-    if (monitor && tag) {
-        int ret = monitor_set_tag(monitor, tag);
-        if (ret != 0) {
-            output << argv[0] << ": Could not change tag";
-            if (monitor->lock_tag) {
-                output << " (monitor " << monitor->index() << " is locked)";
-            }
-            output << "\n";
-        }
-        return ret;
-    } else {
-        output << argv[0] <<
-            ": Invalid tag \"" << argv[1] << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-}
-
-int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    bool skip_visible = false;
-    if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
-        skip_visible = true;
-    }
-    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
-    if (!tag) {
-        output << argv[0] <<
-            ": Invalid index \"" << argv[1] << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    int ret = monitor_set_tag(get_current_monitor(), &* tag);
-    if (ret != 0) {
-        output << argv[0] <<
-            ": Could not change tag (maybe monitor is locked?)\n";
-    }
-    return ret;
-}
-
 int monitor_set_previous_tag_command(Output output) {
     Monitor* monitor = get_current_monitor();
     HSTag*  tag = monitor->tag_previous;
