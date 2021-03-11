@@ -23,6 +23,10 @@ class TokenRe:
 
 
 def extract_file_tokens(filepath):
+    """
+    Tokenize a C++ file and 'yield' its tokens. For correct
+    line number computation, this also includes comments.
+    """
     # in the following, it's important to use
     # non-capturing groups (?: .... )
     token_types = [
@@ -49,6 +53,14 @@ def extract_file_tokens(filepath):
         for t in entire_regex.split(fh.read().replace('\r', '') + '\n'):
             if t is not None and t.strip(' \t') != '':
                 yield t
+
+
+def strip_comment_tokens(tokens):
+    for t in tokens:
+        if t.startswith('//') or t.startswith('/*'):
+            continue
+        else:
+            yield t
 
 
 def pretty_print_token_list(tokens, indent='  '):
@@ -827,7 +839,7 @@ def main():
         objInfo = ObjectInformation()
         for f in files():
             # print("parsing file {}".format(f), file=sys.stderr)
-            toks = [t for t in extract_file_tokens(f) if t.strip() != '']
+            toks = [t for t in strip_comment_tokens(extract_file_tokens(f)) if t.strip() != '']
             toktree = list(build_token_tree_list(TokenStream(toks)))
             extractor = TokTreeInfoExtrator(objInfo)
             extractor.main(list(toktree))
