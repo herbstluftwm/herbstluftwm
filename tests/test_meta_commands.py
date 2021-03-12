@@ -604,7 +604,7 @@ def test_foreach_tag_merge(hlwm):
     # the second loop iteration for 'othertag'
     expected = [
         'tags.by-name.default',
-        'merge_tag: Tag "othertag" not found',
+        'merge_tag: Cannot parse argument "othertag": no such tag: othertag',
         'tags.by-name.othertag'
     ]
     proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
