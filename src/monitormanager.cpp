@@ -814,7 +814,7 @@ string Converter<EmptyOrInt>::str(EmptyOrInt payload) {
 template<>
 void Converter<EmptyOrInt>::complete(Completion& complete, EmptyOrInt const* relTo) {
     complete.full("");
-    Converter<int>::complete(complete, relTo ? &relTo->value_ : nullptr);
+    Converter<int>::complete(complete, (relTo && relTo->defined_) ? &relTo->value_ : nullptr);
 }
 
 void MonitorManager::padCommand(CallOrComplete invoc)
