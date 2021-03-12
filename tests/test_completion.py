@@ -268,3 +268,16 @@ def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
             full_cmd.append(completions[0])
         full_cmd.append(junk_arg)
         hlwm.unchecked_call(full_cmd)
+
+
+def test_optional_args_in_argparse_dont_pile_up(hlwm):
+    hlwm.call(['move_monitor', '0', '400x300+0+0', '1', '1', '1', '1'])
+    commands = [
+        ['move_monitor', '0', '400x300+0+0'],
+        ['move_monitor', '0', '400x300+0+0', '0'],
+        ['move_monitor', '0', '400x300+0+0', '0', '0'],
+        ['move_monitor', '0', '400x300+0+0', '0', '0', '0'],
+    ]
+    for cmd in commands:
+        res = hlwm.complete(cmd, evaluate_escapes=True)
+        assert len([v for v in res if v == '0']) == 1
