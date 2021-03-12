@@ -135,7 +135,7 @@ int TagManager::removeTag(Input input, Output output) {
     }
 
     // Prevent dangling tag_previous pointers
-    all_monitors_replace_previous_tag(tagToRemove, targetTag);
+    monitors_->replacePreviousTag(tagToRemove, targetTag);
 
     // Collect all clients in tag
     vector<Client*> clients;
