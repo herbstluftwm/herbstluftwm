@@ -151,7 +151,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"pseudotile",     {clients, &ClientManager::pseudotile_cmd,
                                      &ClientManager::pseudotile_complete}},
         {"tag_status",     {global_cmds, &GlobalCommands::tagStatusCommand}},
-        {"merge_tag",      { tags, &TagManager::removeTagCommand }},
+        {"merge_tag",      { tags, &TagManager::mergeTagCommand }},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},

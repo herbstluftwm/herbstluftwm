@@ -128,14 +128,14 @@ int TagManager::tag_add_command(Input input, Output output) {
     return 0;
 }
 
-void TagManager::removeTagCommand(CallOrComplete invoc) {
+void TagManager::mergeTagCommand(CallOrComplete invoc) {
     HSTag* tagToRemove = nullptr;
     HSTag* targetTag = monitors_->focus()->tag;
     ArgParse().mandatory(tagToRemove)
             .optional(targetTag)
             .command(invoc,
                      [&] (Output output) {
-        if (!removeTag(tagToRemove, targetTag)) {
+        if (!mergeTag(tagToRemove, targetTag)) {
             output << invoc.command() << ": Cannot merge the currently viewed tag\n";
             return HERBST_TAG_IN_USE;
         }
@@ -143,7 +143,7 @@ void TagManager::removeTagCommand(CallOrComplete invoc) {
     });
 }
 
-bool TagManager::removeTag(HSTag* tagToRemove, HSTag* targetTag)
+bool TagManager::mergeTag(HSTag* tagToRemove, HSTag* targetTag)
 {
     if (monitors_->byTag(tagToRemove)) {
         return false;
