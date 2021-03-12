@@ -303,6 +303,43 @@ def test_use_previous_on_stolen_monitor(hlwm):
     assert hlwm.get_attr('tags.focus.name') == 'tag3'
 
 
+def test_use_previous_on_removed_tag(hlwm):
+    hlwm.call('add rmtag')
+    hlwm.call('add targettag')
+    hlwm.call('use rmtag')
+    hlwm.call('use_index 0')
+
+    # 'targettag' should inherit everything from 'rmtag'
+    hlwm.call('merge_tag rmtag targettag')
+    hlwm.call('use_previous')
+
+    assert hlwm.attr.tags.focus.name() == 'targettag'
+
+
+def test_use_previous_nothing_viewed_before(hlwm):
+    hlwm.call('add other_tag_that_may_not_be_used')
+
+    # is a no-op:
+    hlwm.call('use_previous')
+
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+
+def test_use_previous_on_locked_monitor(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('use othertag')
+    hlwm.call('use_index 0')
+
+    hlwm.attr.monitors.focus.lock_tag = 'on'
+
+    hlwm.call_xfail('use_previous') \
+        .expect_stderr('Could not change tag.*monitor is locked')
+
+
+def test_use_previous_no_completion(hlwm):
+    hlwm.command_has_all_args(['use_previous'])
+
+
 @pytest.mark.parametrize("two_monitors", [True, False])
 def test_initial_client_position(hlwm, x11, two_monitors):
     # create two monitors side by side (with a little y-offset)
