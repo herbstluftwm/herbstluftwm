@@ -19,6 +19,9 @@ using std::vector;
 
 TagManager* global_tags;
 
+template<>
+RunTimeConverter<HSTag*>* Converter<HSTag*>::converter = nullptr;
+
 TagManager::TagManager()
     : IndexingObject()
     , by_name_(*this)
@@ -46,6 +49,21 @@ void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
     settings_ = s;
 }
 
+HSTag* TagManager::parse(const string& str)
+{
+    HSTag* t = find(str);
+    if (t) {
+        return t;
+    } else {
+        throw std::invalid_argument("no such tag: " + str);
+    }
+}
+
+string TagManager::str(HSTag* tag)
+{
+    return tag->name();
+}
+
 HSTag* TagManager::find(const string& name) {
     for (auto t : *this) {
         if (t->name == name) {
@@ -55,7 +73,7 @@ HSTag* TagManager::find(const string& name) {
     return {};
 }
 
-void TagManager::completeTag(Completion& complete) {
+void TagManager::completeEntries(Completion& complete) {
     for (auto t : *this) {
         complete.full(t->name);
     }
@@ -204,7 +222,12 @@ HSTag* TagManager::ensure_tags_are_available() {
 HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     int index;
     try {
-        index = stoi(index_str);
+        size_t pos = 0;
+        index = stoi(index_str, &pos);
+        if (pos != index_str.size()) {
+            // index_str has a non-numeric suffix
+            return nullptr;
+        }
     } catch (...) {
         return nullptr;
     }
@@ -384,7 +407,7 @@ int TagManager::floatingCmd(Input input, Output output) {
 void TagManager::floatingComplete(Completion &complete)
 {
    if (complete == 0) {
-       completeTag(complete);
+       completeEntries(complete);
    }
    if (complete == 0 || complete == 1) {
        if (complete == 1 && !find(complete[0])) {
