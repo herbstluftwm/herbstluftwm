@@ -110,7 +110,7 @@ def generate_commands(hlwm, length, steps_per_argument=4, prefix=[]):
             # TODO: where does the empty string come from?
             continue
         if arg.endswith(' '):
-            arg = arg[0:-1]  # strip trailing ' '
+            arg = shlex.split(arg)[0]  # strip trailing ' ' and evaluate escapes
             if arg in prefix:
                 # ignore commands where the same flag is passed twice
                 continue
@@ -234,13 +234,19 @@ def test_metacommand(hlwm, command_prefix):
         == sorted(['ARG'] + cmdlist)
 
 
-def test_posix_escape(hlwm):
-    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)']
+def test_posix_escape_via_use(hlwm):
+    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)', 'foo~bar', '~foo']
     for t in tags:
         hlwm.call(['add', t])
-    results = hlwm.complete(['use'], evaluate_escapes=True)
-    print(results)
-    assert sorted(['default'] + tags) == sorted(results)
+    for command in ['move', 'use']:
+        results = hlwm.complete(['use'], evaluate_escapes=True)
+        assert sorted(['default'] + tags) == sorted(results)
+
+
+def test_posix_escape_via_pad(hlwm):
+    res = hlwm.complete(['pad', '0'])
+    assert '\'\'' in res
+    assert '0' in res
 
 
 @pytest.mark.exclude_from_coverage(
@@ -262,3 +268,16 @@ def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
             full_cmd.append(completions[0])
         full_cmd.append(junk_arg)
         hlwm.unchecked_call(full_cmd)
+
+
+def test_optional_args_in_argparse_dont_pile_up(hlwm):
+    hlwm.call(['move_monitor', '0', '400x300+0+0', '1', '1', '1', '1'])
+    commands = [
+        ['move_monitor', '0', '400x300+0+0'],
+        ['move_monitor', '0', '400x300+0+0', '0'],
+        ['move_monitor', '0', '400x300+0+0', '0', '0'],
+        ['move_monitor', '0', '400x300+0+0', '0', '0', '0'],
+    ]
+    for cmd in commands:
+        res = hlwm.complete(cmd, evaluate_escapes=True)
+        assert len([v for v in res if v == '0']) == 1
