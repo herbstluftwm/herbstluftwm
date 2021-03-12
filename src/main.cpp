@@ -142,7 +142,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"add",            BIND_OBJECT(tags, tag_add_command) },
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
-        {"use_previous",   { monitor_set_previous_tag_command }},
+        {"use_previous",   {global_cmds, &GlobalCommands::usePreviousCommand }},
         {"jumpto",         {global_cmds, &GlobalCommands::jumptoCommand }},
         {"floating",       { tags, &TagManager::floatingCmd,
                                    &TagManager::floatingComplete }},

@@ -26,7 +26,7 @@ private:
     // Child_<TypeDesc> font_; // TODO
     Child_<TypeDesc> int_;
     Child_<TypeDesc> names_;
-    // Child_<TypeDesc> rectangle_; // TODO
+    Child_<TypeDesc> rectangle_;
     // Child_<TypeDesc> regex_; // TODO
     Child_<TypeDesc> string_;
     Child_<TypeDesc> uint_;
