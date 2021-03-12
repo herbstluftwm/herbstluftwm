@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_tag_status_invalid_monitor(hlwm):
     hlwm.call_xfail('tag_status foobar') \
         .expect_stderr('No such monitor: foobar')
@@ -134,3 +137,84 @@ def test_cycle_value_invalid_arg(hlwm):
     # calling it a second time fails
     hlwm.call_xfail(command) \
         .expect_stderr('Invalid value for "clients.my_foo": ')
+
+
+def test_use_tag(hlwm):
+    hlwm.call('add foo')
+    assert hlwm.get_attr('tags.focus.index') == '0'
+
+    hlwm.call('use foo')
+
+    assert hlwm.get_attr('tags.focus.index') == '1'
+    assert hlwm.get_attr('tags.focus.name') == 'foo'
+
+
+def test_use_tag_completion(hlwm):
+    hlwm.call('add foo')
+
+    assert 'foo' in hlwm.complete(['use'])
+
+    hlwm.call('add bar')
+    res = hlwm.complete(['use'])
+    assert 'foo' in res
+    assert 'bar' in res
+
+    hlwm.command_has_all_args(['use', 'foo'])
+
+
+def test_use_index_completion(hlwm):
+    assert hlwm.complete(['use_index']) == sorted(['+1', '-1', '--skip-visible'])
+    assert hlwm.complete(['use_index', '+1']) == sorted(['--skip-visible'])
+    assert hlwm.complete(['use_index', '--skip-visible']) == sorted(['+1', '-1'])
+    hlwm.command_has_all_args(['use_index', '--skip-visible', '0'])
+
+
+def test_use_tag_invalid_arg(hlwm):
+    hlwm.call_xfail('use foobar') \
+        .expect_stderr('no such tag: foobar')
+
+
+def test_use_tag_use_index_monitor_locked(hlwm):
+    hlwm.call('add foo')
+    hlwm.attr.monitors.focus.lock_tag = 'on'
+
+    for cmd in ['use foo', 'use_index +1', 'use_index 1']:
+        hlwm.call_xfail(cmd) \
+            .expect_stderr('Could not change.*is locked')
+
+
+def test_use_index_invalid_arg(hlwm):
+    for arg in ['+f', '34', '--', '+', '-', '+3f', '-x', 'foo']:
+        hlwm.call_xfail(['use_index', arg]) \
+            .expect_stderr(f'Invalid index "{arg}"', regex=False)
+
+
+@pytest.mark.parametrize("delta", ['+1', '-1'])
+@pytest.mark.parametrize("skip_visible", [True, False])
+def test_use_index_skip_visible(hlwm, delta, skip_visible):
+    # create the tags in a order such that (0 + delta) (modulo tag
+    # count) is the used tag:
+    if delta == '+1':
+        hlwm.call('chain , add used , add free , add dummy')
+    else:
+        hlwm.call('chain , add dummy , add free , add used')
+
+    hlwm.call('add_monitor 800x600+800+0 used')
+    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.tags.focus.index() == '0'
+
+    cmd = ['use_index', delta]
+
+    if skip_visible:
+        cmd += ['--skip-visible']
+        # --skip-visible will skip the 'used' tag and
+        # go to the next free tag
+        expected_name = 'free'
+    else:
+        # without, it will steal the 'used' tag
+        expected_name = 'used'
+
+    hlwm.call(cmd)
+
+    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.tags.focus.name() == expected_name
