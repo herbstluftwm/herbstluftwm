@@ -183,7 +183,7 @@ def test_rename_tag_existing_tag(hlwm, rename_command):
 
 def test_rename_non_existing_tag(hlwm):
     hlwm.call_xfail(['rename', 'foobar', 'baz']) \
-        .expect_stderr('"foobar" not found')
+        .expect_stderr('no such tag: foobar')
 
 
 def test_floating_invalid_parameter(hlwm):
