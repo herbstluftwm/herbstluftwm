@@ -75,7 +75,7 @@ TypesDoc::TypesDoc()
          "  * 'Bitstream Vera Sans:size=12:bold'\n"
          "\n"
          "- X logical font description (XLFD), as provided by the\n"
-         "  xfontsel tool. No antialiasing is supported, here but this\n"
+         "  xfontsel tool. No antialiasing is supported here, but this\n"
          "  is usually superior for bitmap fonts. For example:\n"
          "  * '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'\n"
     );
