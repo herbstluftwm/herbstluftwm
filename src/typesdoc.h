@@ -23,7 +23,7 @@ private:
     Child_<TypeDesc> bool_;
     Child_<TypeDesc> color_;
     Child_<TypeDesc> decimal_;
-    // Child_<TypeDesc> font_; // TODO
+    Child_<TypeDesc> font_;
     Child_<TypeDesc> int_;
     Child_<TypeDesc> names_;
     Child_<TypeDesc> rectangle_;
