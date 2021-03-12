@@ -33,7 +33,7 @@ TypesDoc::TypesDoc()
     , decimal_(*this, "decimal")
     // , font_(*this, "font") // TODO
     , int_(*this, "int")
-    // , names_(*this, "names") // TODO
+    , names_(*this, "names")
     , rectangle_(*this, "rectangle")
     // , regex_(*this, "regex") // TODO
     , string_(*this, "string")
@@ -66,6 +66,14 @@ TypesDoc::TypesDoc()
 
     int_.init(Type::INT);
     int_.setDoc("Type representing signed integers");
+
+    names_.init(Type::NAMES);
+    names_.setDoc(
+        "A fixed set of names, depending on the context, "
+        "e.g. names of layout algorithms or the split type "
+        "of a non-leaf frame (which is only 'horizontal' or "
+        "'vertical')"
+    );
 
     rectangle_.init(Type::RECTANGLE);
     rectangle_.setDoc(
