@@ -110,7 +110,7 @@ def generate_commands(hlwm, length, steps_per_argument=4, prefix=[]):
             # TODO: where does the empty string come from?
             continue
         if arg.endswith(' '):
-            arg = arg[0:-1]  # strip trailing ' '
+            arg = shlex.split(arg)[0] # strip trailing ' ' and evaluate escapes
             if arg in prefix:
                 # ignore commands where the same flag is passed twice
                 continue
