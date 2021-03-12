@@ -31,9 +31,9 @@ TypesDoc::TypesDoc()
     : bool_(*this, "bool")
     , color_(*this, "color")
     , decimal_(*this, "decimal")
-    // , font_(*this, "font") // TODO
+    , font_(*this, "font")
     , int_(*this, "int")
-    // , names_(*this, "names") // TODO
+    , names_(*this, "names")
     , rectangle_(*this, "rectangle")
     // , regex_(*this, "regex") // TODO
     , string_(*this, "string")
@@ -64,8 +64,32 @@ TypesDoc::TypesDoc()
     decimal_.init(Type::DECIMAL);
     decimal_.setDoc("Fixed precision decimal numbers, e.g. 0.34");
 
+    font_.init(Type::FONT);
+    font_.setDoc(
+         "A font specification (font family with modifiers regarding size, "
+         "weight, etc.) in one of the following formats:\n"
+         "\n"
+         "- Fontconfig description. This supports antialiased fonts,\n"
+         "  for example:\n"
+         "  * 'Dejavu Sans:pixelsize=12'\n"
+         "  * 'Bitstream Vera Sans:size=12:bold'\n"
+         "\n"
+         "- X logical font description (XLFD), as provided by the\n"
+         "  xfontsel tool. No antialiasing is supported here, but this\n"
+         "  is usually superior for bitmap fonts. For example:\n"
+         "  * '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'\n"
+    );
+
     int_.init(Type::INT);
     int_.setDoc("Type representing signed integers");
+
+    names_.init(Type::NAMES);
+    names_.setDoc(
+        "A fixed set of names, depending on the context, "
+        "e.g. names of layout algorithms or the split type "
+        "of a non-leaf frame (which is only 'horizontal' or "
+        "'vertical')"
+    );
 
     rectangle_.init(Type::RECTANGLE);
     rectangle_.setDoc(

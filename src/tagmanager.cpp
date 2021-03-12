@@ -183,22 +183,20 @@ bool TagManager::mergeTag(HSTag* tagToRemove, HSTag* targetTag)
     return true;
 }
 
-int TagManager::tag_rename_command(Input input, Output output) {
-    string old_name, new_name;
-    if (!(input >> old_name >> new_name)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    HSTag* tag = find(old_name);
-    if (!tag) {
-        output << input.command() << ": Tag \"" << old_name << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    auto error = tag->name.change(new_name);
-    if (!error.empty()) {
-        output << input.command() << ": " << error << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return 0;
+void TagManager::tag_rename_command(CallOrComplete invoc) {
+    HSTag* tag = nullptr;
+    string new_name;
+    ArgParse().mandatory(tag)
+            .mandatory(new_name)
+            .command(invoc,
+                     [&] (Output output) {
+        auto error = tag->name.change(new_name);
+        if (!error.empty()) {
+            output << invoc.command() << ": " << error << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
 void TagManager::onTagRename(HSTag* tag) {
@@ -300,34 +298,30 @@ void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bo
     tag_set_flags_dirty();
 }
 
-int TagManager::tag_move_window_command(Input argv, Output output) {
-    if (argv.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    HSTag* target = find(argv.front());
-    if (!target) {
-        output << argv.command() << ": Tag \"" << argv.front() << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    moveFocusedClient(target);
-    return 0;
+void TagManager::tag_move_window_command(CallOrComplete invoc) {
+    HSTag* target = nullptr;
+    ArgParse().mandatory(target)
+            .command(invoc,
+                     [&] (Output) {
+        moveFocusedClient(target);
+        return 0;
+    });
 }
 
-int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
-    if (argv.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto tagIndex = argv.front();
-    argv.shift();
-    bool skip_visible = (!argv.empty() && argv.front() == "--skip-visible");
-
-    HSTag* tag = byIndexStr(tagIndex, skip_visible);
-    if (!tag) {
-        output << argv.command() << ": Invalid index \"" << tagIndex << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    moveFocusedClient(tag);
-    return 0;
+void TagManager::tag_move_window_by_index_command(CallOrComplete invoc) {
+    string tagIndex;
+    bool skip_visible = false;
+    ArgParse().mandatory(tagIndex)
+            .command(invoc,
+                     [&] (Output output) {
+        HSTag* tag = byIndexStr(tagIndex, skip_visible);
+        if (!tag) {
+            output << invoc.command() << ": Invalid index \"" << tagIndex << "\"\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        moveFocusedClient(tag);
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
 function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
