@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "argparse.h"
 #include "client.h"
 #include "command.h"
 #include "completion.h"
@@ -127,36 +128,26 @@ int TagManager::tag_add_command(Input input, Output output) {
     return 0;
 }
 
-int TagManager::removeTag(Input input, Output output) {
-    string tagNameToRemove;
-    if (!(input >> tagNameToRemove)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto targetTagName = input.empty() ? get_current_monitor()->tag->name : input.front();
-
-    auto targetTag = find(targetTagName);
-    auto tagToRemove = find(tagNameToRemove);
-
-    if (!tagToRemove) {
-        output << input.command() << ": Tag \"" << tagNameToRemove << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    if (!targetTag) {
-        output << input.command() << ": Tag \"" << targetTagName << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    if (find_monitor_with_tag(tagToRemove)) {
-        output << input.command() << ": Cannot merge the currently viewed tag\n";
-        return HERBST_TAG_IN_USE;
-    }
-    removeTag(tagToRemove, targetTag);
-    return HERBST_EXIT_SUCCESS;
+void TagManager::removeTagCommand(CallOrComplete invoc) {
+    HSTag* tagToRemove = nullptr;
+    HSTag* targetTag = monitors_->focus()->tag;
+    ArgParse().mandatory(tagToRemove)
+            .optional(targetTag)
+            .command(invoc,
+                     [&] (Output output) {
+        if (!removeTag(tagToRemove, targetTag)) {
+            output << invoc.command() << ": Cannot merge the currently viewed tag\n";
+            return HERBST_TAG_IN_USE;
+        }
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
-void TagManager::removeTag(HSTag* tagToRemove, HSTag* targetTag)
+bool TagManager::removeTag(HSTag* tagToRemove, HSTag* targetTag)
 {
+    if (monitors_->byTag(tagToRemove)) {
+        return false;
+    }
     // Prevent dangling tag_previous pointers
     monitors_->replacePreviousTag(tagToRemove, targetTag);
 
@@ -189,6 +180,7 @@ void TagManager::removeTag(HSTag* tagToRemove, HSTag* targetTag)
     Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
     hook_emit({"tag_removed", removedName, targetTag->name()});
+    return true;
 }
 
 int TagManager::tag_rename_command(Input input, Output output) {

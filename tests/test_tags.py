@@ -124,6 +124,21 @@ def test_merge_tag_into_another_tag(hlwm):
     assert hlwm.get_attr('tags.0.name') == 'foobar'
 
 
+def test_merge_tag_invalid_arg(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add anothertag')
+    hlwm.call('add_monitor 800x600+600+0 othertag')
+
+    hlwm.call_xfail('merge_tag othertag anothertag') \
+        .expect_stderr('Cannot.*currently viewed')
+
+    hlwm.call_xfail('merge_tag othertag nonexisting') \
+        .expect_stderr('no such tag: nonexisting')
+
+    hlwm.call_xfail('merge_tag nonexisting othertag') \
+        .expect_stderr('no such tag: nonexisting')
+
+
 @pytest.mark.parametrize("tag_count, old_idx, new_idx", [
     (count, old, new)
     for count in range(0, 6)

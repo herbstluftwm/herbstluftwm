@@ -32,8 +32,8 @@ public:
     virtual std::string str(HSTag* tag) override;
     virtual void completeEntries(Completion& completion) override;
 
-    int removeTag(Input input, Output output);
-    void removeTag(HSTag* tagToRemove, HSTag* targetTag);
+    void removeTagCommand(CallOrComplete invoc);
+    bool removeTag(HSTag* tagToRemove, HSTag* targetTag);
     int tag_add_command(Input input, Output output);
     int tag_rename_command(Input input, Output output);
     int tag_move_window_command(Input argv, Output output);
