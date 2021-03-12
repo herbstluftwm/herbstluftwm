@@ -66,6 +66,55 @@ void GlobalCommands::tagStatus(Monitor* monitor, Output output)
     }
 }
 
+void GlobalCommands::useTagCommand(CallOrComplete invoc)
+{
+    HSTag* tag = nullptr;
+    ArgParse()
+            .mandatory(tag)
+            .command(invoc,
+                     [&](Output output) {
+        Monitor* monitor = root_.monitors->focus();
+        int ret = monitor_set_tag(monitor, tag);
+        if (ret != 0) {
+            output << invoc.command() << ": Could not change tag";
+            if (monitor->lock_tag) {
+                output << " (monitor " << monitor->index() << " is locked)";
+            }
+            output << "\n";
+        }
+        return ret;
+    });
+
+}
+
+void GlobalCommands::useTagByIndexCommand(CallOrComplete invoc)
+{
+    string indexStr = "";
+    bool skipVisible = false;
+    ArgParse().mandatory(indexStr, {"-1", "+1"})
+            .flags({{"--skip-visible", &skipVisible}})
+            .command(invoc,
+                     [&] (Output output) -> int {
+        HSTag* tag = root_.tags->byIndexStr(indexStr, skipVisible);
+        if (!tag) {
+            output << invoc.command() <<
+                ": Invalid index \"" << indexStr << "\"\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        Monitor* monitor = root_.monitors->focus();
+        int ret = monitor_set_tag(monitor, tag);
+        if (ret != 0) {
+            output << invoc.command() << ": Could not change tag";
+            if (monitor->lock_tag) {
+                output << " (monitor " << monitor->index() << " is locked)";
+            }
+            output << "\n";
+        }
+        return ret;
+    });
+
+}
+
 int GlobalCommands::cycleValueCommand(Input input, Output output)
 {
     string attr_path = {};

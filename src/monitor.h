@@ -72,8 +72,6 @@ Monitor* find_monitor_by_name(const char* name);
 Monitor* string_to_monitor(const char* string);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);
-int monitor_set_tag_command(int argc, char** argv, Output output);
-int monitor_set_tag_by_index_command(int argc, char** argv, Output output);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 

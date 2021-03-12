@@ -1043,7 +1043,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
 
 void FrameTree::dumpLayoutCompletion(Completion& complete) {
     if (complete == 0) {
-        global_tags->completeTag(complete);
+        global_tags->completeEntries(complete);
     } else if (complete == 1) {
         // no completion for frame index
     } else {

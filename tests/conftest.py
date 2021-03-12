@@ -96,8 +96,11 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         assert proc.stdout == ""
         assert proc.stderr != ""
 
-        def f(self2, reg):
-            assert re.search(reg, self2.stderr)
+        def f(self2, needle, regex=True):
+            if regex:
+                assert re.search(needle, self2.stderr)
+            else:
+                assert self2.stderr.find(needle)
             # allow to list multiple 'expect_stderr()' statements:
             return self2
 

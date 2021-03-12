@@ -27,16 +27,6 @@ def test_add_tag_empty(hlwm):
         .expect_stderr('An empty tag name is not permitted')
 
 
-def test_use_tag(hlwm):
-    assert hlwm.get_attr('tags.focus.index') == '0'
-    hlwm.call('add foobar')
-
-    hlwm.call('use foobar')
-
-    assert hlwm.get_attr('tags.focus.index') == '1'
-    assert hlwm.get_attr('tags.focus.name') == 'foobar'
-
-
 def test_use_previous(hlwm):
     hlwm.call('add foobar')
     hlwm.call('use foobar')
@@ -193,7 +183,7 @@ def test_rename_tag_existing_tag(hlwm, rename_command):
 
 def test_rename_non_existing_tag(hlwm):
     hlwm.call_xfail(['rename', 'foobar', 'baz']) \
-        .expect_stderr('"foobar" not found')
+        .expect_stderr('no such tag: foobar')
 
 
 def test_floating_invalid_parameter(hlwm):

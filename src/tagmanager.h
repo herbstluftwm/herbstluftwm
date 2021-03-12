@@ -5,6 +5,7 @@
 #include "commandio.h"
 #include "indexingobject.h"
 #include "link.h"
+#include "runtimeconverter.h"
 #include "signal.h"
 #include "tag.h"
 
@@ -17,21 +18,29 @@ class Settings;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 typedef void (FrameTree::*FrameCompleter)(Completion&);
-class TagManager : public IndexingObject<HSTag> {
+
+template<>
+RunTimeConverter<HSTag*>* Converter<HSTag*>::converter;
+
+class TagManager : public IndexingObject<HSTag>, public Manager<HSTag> {
 public:
     TagManager();
     void injectDependencies(MonitorManager* m, Settings *s);
 
+    // RunTimeConverter<HSTag*>:
+    virtual HSTag* parse(const std::string& str) override;
+    virtual std::string str(HSTag* tag) override;
+    virtual void completeEntries(Completion& completion) override;
+
     int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
-    int tag_rename_command(Input input, Output output);
-    int tag_move_window_command(Input argv, Output output);
-    int tag_move_window_by_index_command(Input argv, Output output);
+    void tag_rename_command(CallOrComplete invoc);
+    void tag_move_window_command(CallOrComplete invoc);
+    void tag_move_window_by_index_command(CallOrComplete invoc);
     int floatingCmd(Input input, Output output);
     void floatingComplete(Completion& complete);
     HSTag* add_tag(const std::string& name);
     HSTag* find(const std::string& name);
-    void completeTag(Completion& complete);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
     HSTag* unusedTag();
