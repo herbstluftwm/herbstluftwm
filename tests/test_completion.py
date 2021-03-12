@@ -110,7 +110,7 @@ def generate_commands(hlwm, length, steps_per_argument=4, prefix=[]):
             # TODO: where does the empty string come from?
             continue
         if arg.endswith(' '):
-            arg = arg[0:-1]  # strip trailing ' '
+            arg = shlex.split(arg)[0]  # strip trailing ' ' and evaluate escapes
             if arg in prefix:
                 # ignore commands where the same flag is passed twice
                 continue
@@ -234,13 +234,19 @@ def test_metacommand(hlwm, command_prefix):
         == sorted(['ARG'] + cmdlist)
 
 
-def test_posix_escape(hlwm):
-    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)']
+def test_posix_escape_via_use(hlwm):
+    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)', 'foo~bar', '~foo']
     for t in tags:
         hlwm.call(['add', t])
-    results = hlwm.complete(['use'], evaluate_escapes=True)
-    print(results)
-    assert sorted(['default'] + tags) == sorted(results)
+    for command in ['move', 'use']:
+        results = hlwm.complete(['use'], evaluate_escapes=True)
+        assert sorted(['default'] + tags) == sorted(results)
+
+
+def test_posix_escape_via_pad(hlwm):
+    res = hlwm.complete(['pad', '0'])
+    assert '\'\'' in res
+    assert '0' in res
 
 
 @pytest.mark.exclude_from_coverage(

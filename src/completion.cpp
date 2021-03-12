@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "utils.h"
+
 using std::string;
 
 /** Construct a completion context
@@ -55,7 +57,7 @@ void Completion::none() {
 
 //! Return the given string posix sh escaped if in shell output mode
 string Completion::escape(const string& str) {
-    return str;
+    return shellOutput_ ? posix_sh_escape(str) : str;
 }
 
 //! the requested position is beyond the number of expected parameters
