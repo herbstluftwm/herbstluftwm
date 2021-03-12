@@ -271,7 +271,7 @@ def test_raise_monitor_completion(hlwm):
     expected = ['']
     expected += '-1 +0 +1 0 1 monitor2'.split(' ')
     expected.sort()
-    assert hlwm.complete('raise_monitor') == expected
+    assert hlwm.complete('raise_monitor', evaluate_escapes=True) == expected
 
 
 def test_use_previous_on_tag_stealing_monitor(hlwm):
@@ -301,6 +301,43 @@ def test_use_previous_on_stolen_monitor(hlwm):
     hlwm.call('use_previous')
 
     assert hlwm.get_attr('tags.focus.name') == 'tag3'
+
+
+def test_use_previous_on_removed_tag(hlwm):
+    hlwm.call('add rmtag')
+    hlwm.call('add targettag')
+    hlwm.call('use rmtag')
+    hlwm.call('use_index 0')
+
+    # 'targettag' should inherit everything from 'rmtag'
+    hlwm.call('merge_tag rmtag targettag')
+    hlwm.call('use_previous')
+
+    assert hlwm.attr.tags.focus.name() == 'targettag'
+
+
+def test_use_previous_nothing_viewed_before(hlwm):
+    hlwm.call('add other_tag_that_may_not_be_used')
+
+    # is a no-op:
+    hlwm.call('use_previous')
+
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+
+def test_use_previous_on_locked_monitor(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('use othertag')
+    hlwm.call('use_index 0')
+
+    hlwm.attr.monitors.focus.lock_tag = 'on'
+
+    hlwm.call_xfail('use_previous') \
+        .expect_stderr('Could not change tag.*monitor is locked')
+
+
+def test_use_previous_no_completion(hlwm):
+    hlwm.command_has_all_args(['use_previous'])
 
 
 @pytest.mark.parametrize("two_monitors", [True, False])
@@ -663,7 +700,7 @@ def test_pad_invalid_arg(hlwm):
 def test_pad_completion(hlwm):
     assert '0' in hlwm.complete('pad')
     for cmd in ['pad 0', 'pad 0 12', 'pad 0 12 12', 'pad 0 12 12 12']:
-        res = hlwm.complete(cmd)
+        res = hlwm.complete(cmd, evaluate_escapes=True)
         assert '' in res
         assert '0' in res
     hlwm.command_has_all_args('pad 0 10 20 30 40'.split(' '))

@@ -499,21 +499,6 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     return ret;
 }
 
-int monitor_set_previous_tag_command(Output output) {
-    Monitor* monitor = get_current_monitor();
-    HSTag*  tag = monitor->tag_previous;
-    if (monitor && tag) {
-        int ret = monitor_set_tag(monitor, tag);
-        if (ret != 0) {
-            output << "use_previous: Could not change tag (maybe monitor is locked?)\n";
-        }
-        return ret;
-    } else {
-        output << "use_previous: Invalid monitor or tag\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-}
-
 void monitor_focus_by_index(unsigned new_selection) {
     // clamp to last
     new_selection = std::min(g_monitors->size() - 1, (size_t)new_selection);
@@ -611,14 +596,6 @@ void Monitor::restack() {
     };
     tag->stack->extractWindows(false, addToVector);
     XRestackWindows(g_display, buf.data(), buf.size());
-}
-
-void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
-    for (auto m : *g_monitors) {
-        if (m->tag_previous == old) {
-            m->tag_previous = newmon;
-        }
-    }
 }
 
 Rectangle Monitor::getFloatingArea() const {
