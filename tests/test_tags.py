@@ -27,16 +27,6 @@ def test_add_tag_empty(hlwm):
         .expect_stderr('An empty tag name is not permitted')
 
 
-def test_use_tag(hlwm):
-    assert hlwm.get_attr('tags.focus.index') == '0'
-    hlwm.call('add foobar')
-
-    hlwm.call('use foobar')
-
-    assert hlwm.get_attr('tags.focus.index') == '1'
-    assert hlwm.get_attr('tags.focus.name') == 'foobar'
-
-
 def test_use_previous(hlwm):
     hlwm.call('add foobar')
     hlwm.call('use foobar')

@@ -141,11 +141,12 @@ def test_cycle_value_invalid_arg(hlwm):
 
 def test_use_tag(hlwm):
     hlwm.call('add foo')
-    assert hlwm.attr.tags.focus.name() == 'default'
+    assert hlwm.get_attr('tags.focus.index') == '0'
 
     hlwm.call('use foo')
 
-    assert hlwm.attr.tags.focus.name() == 'foo'
+    assert hlwm.get_attr('tags.focus.index') == '1'
+    assert hlwm.get_attr('tags.focus.name') == 'foobar'
 
 
 def test_use_tag_completion(hlwm):
