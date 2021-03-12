@@ -277,7 +277,7 @@ def test_keymask_complete(hlwm):
     cmd = ['set_attr', 'clients.focus.keymask']
     reg = 'Foo(a [th]*)*'
     hlwm.call(cmd + [reg])
-    assert hlwm.complete(cmd) == [reg]
+    assert hlwm.complete(cmd, evaluate_escapes=True) == [reg]
 
 
 def test_keys_inactive_not_if_no_focus(hlwm, keyboard):

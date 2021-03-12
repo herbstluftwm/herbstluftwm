@@ -271,7 +271,7 @@ def test_raise_monitor_completion(hlwm):
     expected = ['']
     expected += '-1 +0 +1 0 1 monitor2'.split(' ')
     expected.sort()
-    assert hlwm.complete('raise_monitor') == expected
+    assert hlwm.complete('raise_monitor', evaluate_escapes=True) == expected
 
 
 def test_use_previous_on_tag_stealing_monitor(hlwm):
@@ -700,7 +700,7 @@ def test_pad_invalid_arg(hlwm):
 def test_pad_completion(hlwm):
     assert '0' in hlwm.complete('pad')
     for cmd in ['pad 0', 'pad 0 12', 'pad 0 12 12', 'pad 0 12 12 12']:
-        res = hlwm.complete(cmd)
+        res = hlwm.complete(cmd, evaluate_escapes=True)
         assert '' in res
         assert '0' in res
     hlwm.command_has_all_args('pad 0 10 20 30 40'.split(' '))
