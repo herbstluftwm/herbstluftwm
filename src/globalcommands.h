@@ -24,6 +24,8 @@ public:
     int cycleValueCommand(Input input, Output output);
     void cycleValueCompletion(Completion& complete);
 
+    void usePreviousCommand(CallOrComplete invoc);
+
     void jumptoCommand(CallOrComplete invoc);
 
     void bringCommand(CallOrComplete invoc);

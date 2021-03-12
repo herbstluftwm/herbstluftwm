@@ -34,7 +34,7 @@ TypesDoc::TypesDoc()
     , font_(*this, "font")
     , int_(*this, "int")
     // , names_(*this, "names") // TODO
-    // , rectangle_(*this, "rectangle") // TODO
+    , rectangle_(*this, "rectangle")
     // , regex_(*this, "regex") // TODO
     , string_(*this, "string")
     , uint_(*this, "uint")
@@ -82,6 +82,19 @@ TypesDoc::TypesDoc()
 
     int_.init(Type::INT);
     int_.setDoc("Type representing signed integers");
+
+    rectangle_.init(Type::RECTANGLE);
+    rectangle_.setDoc(
+        "A rectangle on the screen consisting of "
+        "a size and the position on the screen. "
+        "The format is WxH+X+Y where W is the width, "
+        "H is the height, and X and Y are the coordinates "
+        "of the top left corner of the rectangle: X is the "
+        "number of pixels to the left screen edge and Y is the "
+        "number of pixels to the top screen edge. (if X or Y is "
+        "negative, then the + turns into -). For example: "
+        "800x600+800+0 or 400x200-10+30"
+    );
 
     string_.init(Type::STRING);
     string_.setDoc("Type representing normal text.");
