@@ -146,7 +146,7 @@ def test_use_tag(hlwm):
     hlwm.call('use foo')
 
     assert hlwm.get_attr('tags.focus.index') == '1'
-    assert hlwm.get_attr('tags.focus.name') == 'foobar'
+    assert hlwm.get_attr('tags.focus.name') == 'foo'
 
 
 def test_use_tag_completion(hlwm):
