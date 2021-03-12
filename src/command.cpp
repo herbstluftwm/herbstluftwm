@@ -298,19 +298,18 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
         }
     }
     if (matches) {
-        char* escaped = nullptr;
-        if (g_shell_quoting) {
-            escaped = posix_sh_escape(to_check);
-        }
-        char* prefix_escaped = nullptr;
         if (prefix) {
             if (g_shell_quoting) {
-                prefix_escaped = posix_sh_escape(prefix);
+                output << posix_sh_escape(prefix);
+            } else {
+                output << prefix;
             }
-            output << (prefix_escaped ? prefix_escaped : prefix);
         }
-        output << (escaped ? escaped : to_check);
-        free(escaped);
+        if (g_shell_quoting) {
+            output << posix_sh_escape(to_check);
+        } else {
+            output << to_check;
+        }
         output << suffix;
     }
 }

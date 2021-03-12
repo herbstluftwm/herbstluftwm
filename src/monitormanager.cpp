@@ -876,6 +876,15 @@ Rectangle MonitorManager::interpretGlobalGeometry(Rectangle globalGeometry)
     return globalGeometry;
 }
 
+void MonitorManager::replacePreviousTag(HSTag* tagToRemove, HSTag* targetTag)
+{
+    for (Monitor* m : *this) {
+        if (m->tag_previous == tagToRemove) {
+            m->tag_previous = targetTag;
+        }
+    }
+}
+
 int MonitorManager::raiseMonitorCommand(Input input, Output output) {
     string monitorName = "";
     input >> monitorName;

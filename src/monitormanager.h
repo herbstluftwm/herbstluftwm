@@ -100,6 +100,8 @@ public:
 
     Rectangle interpretGlobalGeometry(Rectangle globalGeometry);
 
+    void replacePreviousTag(HSTag* tagToRemove, HSTag* targetTag);
+
     int cur_monitor;
 
     /**

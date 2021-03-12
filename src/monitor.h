@@ -20,8 +20,8 @@ public:
     int relativeX(int x_root);
     int relativeY(int y_root);
 
-    HSTag*      tag;    // currently viewed tag
-    HSTag*      tag_previous;    // previously viewed tag
+    HSTag*      tag;    // currently viewed tag, this is always non-null
+    HSTag*      tag_previous;    // previously viewed tag, this is always non-null
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
@@ -72,10 +72,8 @@ Monitor* find_monitor_by_name(const char* name);
 Monitor* string_to_monitor(const char* string);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);
-int monitor_set_previous_tag_command(Output output);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
-void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void monitor_update_focus_objects();
 

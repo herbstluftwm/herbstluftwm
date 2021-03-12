@@ -155,6 +155,25 @@ void GlobalCommands::cycleValueCompletion(Completion& complete)
     }
 }
 
+void GlobalCommands::usePreviousCommand(CallOrComplete invoc)
+{
+    ArgParse().command(invoc,
+                       [&] (Output output) {
+        Monitor* monitor = root_.monitors->focus();
+        HSTag* tag = monitor->tag_previous;
+        HSAssert(tag);
+        int ret = monitor_set_tag(monitor, tag);
+        if (ret != 0) {
+            output << "use_previous: Could not change tag";
+            if (monitor->lock_tag()) {
+                output << " (monitor is locked)";
+            }
+            output << "\n";
+        }
+        return ret;
+    });
+}
+
 void GlobalCommands::jumptoCommand(CallOrComplete invoc)
 {
     Client* client = nullptr;
