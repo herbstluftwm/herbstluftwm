@@ -34,9 +34,9 @@ public:
 
     int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
-    int tag_rename_command(Input input, Output output);
-    int tag_move_window_command(Input argv, Output output);
-    int tag_move_window_by_index_command(Input argv, Output output);
+    void tag_rename_command(CallOrComplete invoc);
+    void tag_move_window_command(CallOrComplete invoc);
+    void tag_move_window_by_index_command(CallOrComplete invoc);
     int floatingCmd(Input input, Output output);
     void floatingComplete(Completion& complete);
     HSTag* add_tag(const std::string& name);
