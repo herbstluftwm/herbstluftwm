@@ -127,6 +127,17 @@ def test_move_monitor(hlwm):
     assert hlwm.call('monitor_rect \"\"').stdout == ' '.join(map(str, r))
 
 
+def test_move_monitor_completion(hlwm):
+    assert hlwm.attr.monitors.focus.geometry() in hlwm.complete('move_monitor 0')
+    # pads:
+    assert '0' in hlwm.complete('move_monitor 0 800x600+0+0')
+    assert '0' in hlwm.complete('move_monitor 0 800x600+0+0 0')
+    assert '0' in hlwm.complete('move_monitor 0 800x600+0+0 0 0')
+    assert '0' in hlwm.complete('move_monitor 0 800x600+0+0 0 0 0')
+
+    hlwm.command_has_all_args(['move_monitor', '0', '800x600+0+0', '0', '0', '0', '0'])
+
+
 def test_focus_monitor(hlwm):
     hlwm.call('add tag2')
     hlwm.call('add_monitor 800x600+40+40')
@@ -206,6 +217,18 @@ def test_rename_monitor_no_name(hlwm):
 
     assert hlwm.get_attr('monitors.focus.name') == ''
     assert hlwm.list_children('monitors.by-name') == []
+
+
+def test_rename_monitor_invalid_arg(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add_monitor 800x600+800+0 othertag othermon')
+    hlwm.call_xfail('rename_monitor 0 othermon') \
+        .expect_stderr('the name "othermon" already exists')
+
+
+def test_rename_monitor_completion(hlwm):
+    assert '0' in hlwm.complete('rename_monitor')
+    hlwm.command_has_all_args(['rename_monitor', '0', 'foo'])
 
 
 @pytest.mark.parametrize("tag_count", [1, 2, 3, 4])
@@ -644,3 +667,37 @@ def test_pad_completion(hlwm):
         assert '' in res
         assert '0' in res
     hlwm.command_has_all_args('pad 0 10 20 30 40'.split(' '))
+
+
+def test_hide_covered_windows(hlwm, x11):
+    hlwm.call('set_layout max')
+    c1, winid1 = x11.create_client()
+    c2, _ = x11.create_client()
+    hlwm.call(['jumpto', winid1])
+
+    all_values = [(v1, v2) for v1 in [False, True] for v2 in [False, True]]
+    # try to catch all possible state changes
+    for hide_covered, c1_pseudotiled in all_values + list(reversed(all_values)):
+        hlwm.attr.settings.hide_covered_windows = hlwm.bool(hide_covered)
+        hlwm.attr.clients[winid1].pseudotile = hlwm.bool(c1_pseudotiled)
+
+        x11.sync_with_hlwm()
+        geom1 = x11.get_absolute_geometry(c1)
+        geom2 = x11.get_absolute_geometry(c2)
+
+        # the size must always match
+        if not c1_pseudotiled:
+            assert geom1.width == geom2.width
+            assert geom1.height == geom2.height
+        # c1 must always be visible:
+        assert geom1.x > 0
+        assert geom1.y > 0
+
+        if c1_pseudotiled or not hide_covered:
+            # c2 visible:
+            assert geom2.x > 0
+            assert geom2.y > 0
+        else:
+            # c2 is not on the screen:
+            assert geom2.x + geom2.width <= 0
+            assert geom2.y + geom2.height <= 0
