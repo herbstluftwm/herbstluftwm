@@ -225,6 +225,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         // right when the window size changed.
         outline = scheme.inner_rect_to_outline(inner);
     }
+    bool windowGeometryChanged = inner != last_inner_rect;
     last_inner_rect = inner;
     inner.x -= outline.x;
     inner.y -= outline.y;
@@ -279,7 +280,12 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
                       outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
-        client_->send_configure();
+        if (windowGeometryChanged) {
+            // only send the configure notify if the window geometry really changed.
+            // otherwise, sending this might trigger an endless loop between clients
+            // and hlwm.
+            client_->send_configure();
+        }
     }
     XSync(xcon.display(), False);
 }
