@@ -128,31 +128,26 @@ int TagManager::tag_add_command(Input input, Output output) {
     return 0;
 }
 
-int TagManager::removeTag(Input input, Output output) {
-    string tagNameToRemove;
-    if (!(input >> tagNameToRemove)) {
-        return HERBST_NEED_MORE_ARGS;
+void TagManager::mergeTagCommand(CallOrComplete invoc) {
+    HSTag* tagToRemove = nullptr;
+    HSTag* targetTag = monitors_->focus()->tag;
+    ArgParse().mandatory(tagToRemove)
+            .optional(targetTag)
+            .command(invoc,
+                     [&] (Output output) {
+        if (!mergeTag(tagToRemove, targetTag)) {
+            output << invoc.command() << ": Cannot merge the currently viewed tag\n";
+            return HERBST_TAG_IN_USE;
+        }
+        return HERBST_EXIT_SUCCESS;
+    });
+}
+
+bool TagManager::mergeTag(HSTag* tagToRemove, HSTag* targetTag)
+{
+    if (monitors_->byTag(tagToRemove)) {
+        return false;
     }
-    auto targetTagName = input.empty() ? get_current_monitor()->tag->name : input.front();
-
-    auto targetTag = find(targetTagName);
-    auto tagToRemove = find(tagNameToRemove);
-
-    if (!tagToRemove) {
-        output << input.command() << ": Tag \"" << tagNameToRemove << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    if (!targetTag) {
-        output << input.command() << ": Tag \"" << targetTagName << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    if (find_monitor_with_tag(tagToRemove)) {
-        output << input.command() << ": Cannot merge the currently viewed tag\n";
-        return HERBST_TAG_IN_USE;
-    }
-
     // Prevent dangling tag_previous pointers
     monitors_->replacePreviousTag(tagToRemove, targetTag);
 
@@ -185,8 +180,7 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
     hook_emit({"tag_removed", removedName, targetTag->name()});
-
-    return HERBST_EXIT_SUCCESS;
+    return true;
 }
 
 void TagManager::tag_rename_command(CallOrComplete invoc) {
