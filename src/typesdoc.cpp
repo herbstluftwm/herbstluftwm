@@ -44,8 +44,8 @@ TypesDoc::TypesDoc()
         "This lists the types that are used for attributes and command arguments.");
     bool_.init(Type::BOOL);
     bool_.setDoc(
-        "Type representing boolean values, i.e. an 'on' or 'off' state,"
-        "with aliases 'true' and 'false'. When writing to a boolean value,"
+        "Type representing boolean values, i.e. an 'on' or 'off' state, "
+        "with aliases 'true' and 'false'. When writing to a boolean value, "
         "one can also specify 'toggle' in order to alter its value."
     );
 
