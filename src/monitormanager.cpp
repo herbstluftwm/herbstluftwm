@@ -50,9 +50,9 @@ MonitorManager::MonitorManager()
 {
     cur_monitor = 0;
     setDoc("Every monitor is a rectangular part of the screen "
-           "on which a tag is shown. These monitors may or may"
+           "on which a tag is shown. These monitors may or may "
            "not match the actual outputs.\n"
-           "This has an entry \'INDEX\' for each monitor with"
+           "This has an entry \'INDEX\' for each monitor with "
            "index \'INDEX\'.");
     focus.setDoc("the focused monitor.");
     // TODO: add this as soon as by_name_ is of type Child_<ByName>
