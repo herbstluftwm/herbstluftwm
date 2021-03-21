@@ -12,6 +12,22 @@ def count_whitespace_prefix(string):
     return len(string)
 
 
+def cpp_source_doc_to_asciidoc(src):
+    """the doc in the cpp source sometimes can not be fully
+    asciidoc compatible because it is also used for plain-text
+    documentation in the 'help' command.
+
+    Thus, this function adds some more escape sequences to avoid
+    unintended asciidoc markup
+    """
+    # prevent any formatting within a single-quoted string.
+    src = re.sub(r"'([^']*[^\\])'", r"'+++\1+++'", src)
+
+    # indent any nested bullet items correctly
+    src = re.sub('\n  \*', '\n  **', src)
+    return src
+
+
 def multiline_for_bulletitem(src):
     """requote a multiline asciidoc doc such
     that it can be put in the item of a bullet list"""
@@ -148,10 +164,11 @@ class ObjectDocPrinter:
         objdoc = self.jsondoc['objects'][clsname]
         print(f'[[{identifier}]]', end='' if depth > 1 else '\n')
         if 'doc' in objdoc:
+            doc_txt = cpp_source_doc_to_asciidoc(objdoc['doc'])
             if depth > 1:
-                print(multiline_for_bulletitem(objdoc['doc']))
+                print(multiline_for_bulletitem(doc_txt))
             else:
-                print(objdoc['doc'])
+                print(doc_txt)
         print('')
         if path == []:
             bulletprefix = ''
@@ -165,14 +182,15 @@ class ObjectDocPrinter:
             else:
                 default_val = ''
             if attr.get('doc', None) is not None:
-                docstr = ': ' + attr.get('doc', None)
+                docstr = ': ' + cpp_source_doc_to_asciidoc(attr['doc'])
             else:
                 docstr = ''
             # add multiple formats to the entry name such that the colors work
             # both in html and in the man page output
             print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
-            docstr = child['doc'].strip() if 'doc' in child else ''
+            docstr = cpp_source_doc_to_asciidoc(child['doc'].strip()) \
+                     if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
             if len(docstr) > 0:
                 if not docstr.endswith('.'):
