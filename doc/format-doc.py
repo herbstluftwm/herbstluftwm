@@ -24,7 +24,7 @@ def cpp_source_doc_to_asciidoc(src):
     src = re.sub(r"'([^']*[^\\])'", r"'+++\1+++'", src)
 
     # indent any nested bullet items correctly
-    src = re.sub('\n  \*', '\n  **', src)
+    src = re.sub('\n  \\*', '\n  **', src)
     return src
 
 
@@ -190,7 +190,7 @@ class ObjectDocPrinter:
             print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
             docstr = cpp_source_doc_to_asciidoc(child['doc'].strip()) \
-                     if 'doc' in child else ''
+                if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
             if len(docstr) > 0:
                 if not docstr.endswith('.'):
