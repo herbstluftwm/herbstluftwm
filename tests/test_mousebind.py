@@ -1,6 +1,7 @@
 import pytest
 import re
 import math
+from herbstluftwm.types import Rectangle
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
 # in Xvfb when running tests in the CI. Therefore, we maintain two lists of
@@ -119,6 +120,25 @@ def test_drag_move(hlwm, x11, mouse, repeat):
     assert x11.get_absolute_top_left(client) == (x + 12, y + 15)
 
 
+@pytest.mark.parametrize('update_dragged', [True, False])
+def test_drag_move_sends_configure(hlwm, x11, mouse, update_dragged):
+    hlwm.attr.tags.focus.floating = 'on'
+    hlwm.attr.settings.update_dragged_clients = hlwm.bool(update_dragged)
+    client, winid = x11.create_client()
+    x, y = x11.get_absolute_top_left(client)
+    before = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    assert (x, y) == (before.x, before.y)
+    mouse.move_into(winid, wait=True)
+
+    hlwm.call(['drag', winid, 'move'])
+    mouse.move_relative(12, 15)
+    mouse.click('1')  # stop dragging
+    hlwm.call('true')  # sync
+
+    after = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    assert before.adjusted(dx=12, dy=15) == after
+
+
 def test_drag_no_frame_splits(hlwm):
     winid, _ = hlwm.create_client()
 
@@ -183,12 +203,12 @@ def test_drag_resize_tiled_client(hlwm, mouse):
 
 @pytest.mark.parametrize('live_update', [True, False])
 def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
-    hlwm.call(['set', 'update_dragged_clients', hlwm.bool(live_update)])
+    hlwm.attr.settings.update_dragged_clients = hlwm.bool(live_update)
 
     client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
-    geom_before = client.get_geometry()
-    x_before, y_before = x11.get_absolute_top_left(client)
+    geom_before = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    assert geom_before == x11.get_absolute_geometry(client)  # duck-typing
     assert (geom_before.width, geom_before.height) == (300, 200)
     # move cursor to the top left corner, so we change the
     # window position and the size (and the bottom right corner is fixed)
@@ -204,7 +224,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     x11.display.sync()
     geom_after = client.get_geometry()
     x_after, y_after = x11.get_absolute_top_left(client)
-    assert (x_after, y_after) == (x_before + 100, y_before + 120)
+    assert (x_after, y_after) == (geom_before.x + 100, geom_before.y + 120)
     expected_size = (geom_before.width, geom_before.height)
     if live_update:
         expected_size = final_size
@@ -214,6 +234,8 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     mouse.click('1', wait=True)
     geom_after = client.get_geometry()
     assert (geom_after.width, geom_after.height) == final_size
+    assert Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported()) \
+        == geom_before.adjusted(dx=100, dy=120, dw=-100, dh=-120)
 
 
 def test_drag_zoom_floating_client(hlwm, x11, mouse):
