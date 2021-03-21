@@ -77,7 +77,7 @@ TypesDoc::TypesDoc()
          "- X logical font description (XLFD), as provided by the\n"
          "  xfontsel tool. No antialiasing is supported here, but this\n"
          "  is usually superior for bitmap fonts. For example:\n"
-         "  * '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*' for a standard "
+         "  * '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*' for a standard \n"
          "    bitmap font available on most systems\n"
     );
 
