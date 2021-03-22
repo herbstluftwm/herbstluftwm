@@ -5,6 +5,7 @@
 
 #include "x11-types.h"
 
+class Client;
 class Root;
 class XConnection;
 
@@ -45,4 +46,8 @@ private:
     void unmapnotify(XUnmapEvent* event);
 
     bool duringEnterNotify_ = false; //! whether we are in enternotify()
+
+
+    // handlers of events from hlwm
+    void draggedClientChanges(Client* draggedClient);
 };
