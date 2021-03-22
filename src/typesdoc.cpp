@@ -126,7 +126,7 @@ TypesDoc::TypesDoc()
         "(i.e. client) or an unmanaged window (e.g. a panel, a menu, "
         "or a desktop window).\n"
         "The default format is 0xHEX where HEX is a hexadecimal number "
-        "(digits 0-9 and a-z) but it can also be specified in the decimal "
+        "(digits 0-9 and a-f) but it can also be specified in the decimal "
         "system (base 10), or as an octal number (with prefix 0 and base 8).\n"
         "When a window id is printed, it is always printed in the 0xHEX format "
         "and without any leading zeroes."
