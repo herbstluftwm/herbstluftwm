@@ -115,7 +115,7 @@ public:
     void raise();
     void lower();
 
-    void send_configure();
+    void send_configure(bool force);
     bool applysizehints(int *w, int *h);
     void updatesizehints();
 
