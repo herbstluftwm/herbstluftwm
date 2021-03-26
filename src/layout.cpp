@@ -846,3 +846,14 @@ int frame_move_window_edge(Input input, Output output) {
     return 0;
 }
 
+int frame_list_clients(Output output) {
+    Monitor* current_monitor = get_current_monitor();
+    HSTag* current_tag = current_monitor->tag;
+    auto focusedFrame = current_tag->frame->focusedFrame();
+    focusedFrame->foreachClient([&output](Client* client) {
+        output << WindowID(client->x11Window()).str();
+        output << "\n";
+    });
+    return 0;
+}
+

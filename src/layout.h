@@ -79,12 +79,12 @@ public:
     friend class HSTag; // for HSTag::foreachClient()
     DynAttribute_<std::string> frameIndexAttr_;
     std::string frameIndex() const;
+    void foreachClient(ClientAction action);
 public: // soon will be protected:
     virtual std::shared_ptr<FrameSplit> isSplit() { return std::shared_ptr<FrameSplit>(); };
     virtual std::shared_ptr<FrameLeaf> isLeaf() { return std::shared_ptr<FrameLeaf>(); };
 protected:
     void relayout();
-    void foreachClient(ClientAction action);
     HSTag* tag_;
     Settings* settings_;
     std::weak_ptr<FrameSplit> parent_;
@@ -200,6 +200,8 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool rai
 
 int frame_focus_edge(Input input, Output output);
 int frame_move_window_edge(Input input, Output output);
+
+int frame_list_clients(Output output);
 
 #endif
 

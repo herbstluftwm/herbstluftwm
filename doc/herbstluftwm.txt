@@ -215,6 +215,13 @@ list_keybinds::
 
 WARNING: Tabs within command parameters are not escaped!
 
+list_frame::
+    Lists all X11 window ids (as 'HEXID''s) of windows bound to currently
+    focused frame. This is convenience command most useful with max layout,
+    but it works with other layouts as well. Use this if you want to implement
+    custom focused frame (only) window picker using external tools like *rofi*
+    (or *dmenu*).
+
 lock::
     Increases the 'monitors_locked' setting. Use this if you want to do multiple
     window actions at once (i.e. without repainting between the single steps).

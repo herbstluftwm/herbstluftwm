@@ -112,6 +112,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"wmexec",         wmexec},
         {"emit_hook",      { custom_hook_emit }},
         {"bring",          {global_cmds, &GlobalCommands::bringCommand }},
+        {"list_frame",     { frame_list_clients }},
         {"focus_nth",      { tags->frameCommand(&FrameTree::focusNthCommand) }},
         {"cycle",          { tags->frameCommand(&FrameTree::cycleSelectionCommand) }},
         {"cycle_all",      monitors->tagCommand(&HSTag::cycleAllCommand)},
