@@ -279,7 +279,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
                       outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
-        client_->send_configure();
+        client_->send_configure(false);
     }
     XSync(xcon.display(), False);
 }

@@ -432,9 +432,11 @@ void Client::updatesizehints() {
 
 
 
-void Client::send_configure() {
+void Client::send_configure(bool force) {
     auto last_inner_rect = dec->last_inner();
-    if (geometry_reported_ == last_inner_rect) {
+    // force is just a quick fix: sometimes it is mandatory
+    // to send a configure request even if the geometry didn't change.
+    if (geometry_reported_ == last_inner_rect && !force) {
         // only send the configure notify if the window geometry really changed.
         // otherwise, sending this might trigger an endless loop between clients
         // and hlwm.
