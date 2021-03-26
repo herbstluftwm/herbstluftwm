@@ -272,7 +272,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
             ewmh->windowUpdateWmState(client->window_, WmState::WSIconicState);
         }
     }
-    client->send_configure();
+    client->send_configure(true);
 
     // TODO: make this better
     Root::get()->mouse->grab_client_buttons(client, false);
