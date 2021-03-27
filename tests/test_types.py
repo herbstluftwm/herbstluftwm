@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_color_rgb(hlwm):
     hlwm.attr.theme.color = '#9fbc00'
     assert hlwm.attr.theme.color() == '#9fbc00'
@@ -75,3 +78,42 @@ def test_type_children_names(hlwm):
     types = hlwm.list_children('types')
     for t in types:
         assert hlwm.attr.types[t].fullname() == t
+
+
+@pytest.mark.parametrize("int_or_uint", ['int', 'uint'])
+def test_int_uint_relative_but_nonnegative(hlwm, int_or_uint):
+    hlwm.call(['new_attr', int_or_uint, 'my_val'])
+
+    hlwm.attr.my_val = '5'
+    hlwm.attr.my_val = '+=3'
+    assert hlwm.attr.my_val() == '8'
+
+    hlwm.attr.my_val = '-=4'
+    assert hlwm.attr.my_val() == '4'
+
+    hlwm.attr.my_val = '-=-2'
+    assert hlwm.attr.my_val() == '6'
+
+    hlwm.attr.my_val = '+=-5'
+    assert hlwm.attr.my_val() == '1'
+
+    hlwm.attr.my_val = '-=+1'
+    assert hlwm.attr.my_val() == '0'
+
+
+def test_int_negative(hlwm):
+    hlwm.call(['new_attr', 'int', 'my_val', '6'])
+    hlwm.attr.my_val = '+=-20'
+    assert hlwm.attr.my_val() == '-14'
+
+    hlwm.attr.my_val = '-=-10'
+    assert hlwm.attr.my_val() == '-4'
+
+
+def test_uint_negative(hlwm):
+    hlwm.call(['new_attr', 'int', 'my_val', '19'])
+    hlwm.attr.my_val = '+=-20'
+    assert hlwm.attr.my_val() == '0'
+
+    hlwm.attr.my_val = '-=-10'
+    assert hlwm.attr.my_val() == '10'

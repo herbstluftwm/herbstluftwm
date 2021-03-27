@@ -65,7 +65,45 @@ inline int Converter<int>::parse(const std::string &payload) {
     return val;
 }
 template<>
+inline int Converter<int>::parse(const std::string &payload, const int& previous) {
+    // rfind() returns the right-most occurrence of "+=",
+    // but we start with (the leftmost) index 0, so checking
+    // the return value rfind for 0 is equivalent to "startswith"
+    if (payload.rfind("+=", 0) == 0) {
+        return previous + parse(payload.substr(2));
+    } else if (payload.rfind("-=", 0) == 0) {
+        return previous - parse(payload.substr(2));
+    } else {
+        return parse(payload);
+    }
+}
+
+template<>
 unsigned long Converter<unsigned long>::parse(const std::string &source);
+
+template<>
+inline unsigned long Converter<unsigned long>::parse(const std::string &payload, const unsigned long& previous) {
+    if (payload.rfind("+=", 0) == 0 || payload.rfind("-=", 0) == 0) {
+        int delta = Converter<int>::parse(payload.substr(2));
+        if (payload[0] == '-') {
+            delta *= -1;
+        }
+        if (delta >= 0) {
+            return previous + static_cast<unsigned long>(delta);
+        } else {
+            // negative delta:
+            unsigned long toSubtract = static_cast<unsigned long>(-delta);
+            if (toSubtract >= previous) {
+                return 0;
+            } else {
+                return previous - toSubtract;
+            }
+        }
+    } else {
+        return parse(payload);
+    }
+}
+
 
 // Booleans
 template<>

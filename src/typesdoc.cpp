@@ -82,7 +82,13 @@ TypesDoc::TypesDoc()
     );
 
     int_.init(Type::INT);
-    int_.setDoc("Type representing signed integers");
+    int_.setDoc(
+        "Type representing signed integers.\n"
+        "When overwriting an integer, you can increase or decrease its "
+        "value relatively by writing \'+=N\' or \'-=N\' where N is an integer. "
+        "So for example, writing \'+=3\' to an attribute increases its "
+        "value by 3."
+    );
 
     names_.init(Type::NAMES);
     names_.setDoc(
@@ -119,7 +125,11 @@ TypesDoc::TypesDoc()
     string_.setDoc("Type representing normal text.");
 
     uint_.init(Type::ULONG);
-    uint_.setDoc("Type representing unsigned (i.e. non-negative) integers");
+    uint_.setDoc(
+        "Type representing unsigned (i.e. non-negative) integers.\n"
+        "When overwriting an integer, you can increase or decrease its "
+        "value relatively by writing \'+=N\' or \'-=N\' where N is an integer."
+    );
 
     windowid_.init(Type::WINDOW);
     windowid_.setDoc(
