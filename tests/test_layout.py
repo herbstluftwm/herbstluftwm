@@ -335,24 +335,6 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
         assert winids[new_windex] == hlwm.get_attr('clients.focus.winid')
 
 
-@pytest.mark.parametrize("running_clients_num", [0, 1, 5])
-@pytest.mark.parametrize("index", [0, 1, 3, 5])
-def test_focus_nth(hlwm, running_clients, running_clients_num, index):
-    # bring the clients in the right order
-    layout = '(clients vertical:0 '
-    layout += ' '.join(running_clients)
-    layout += ')'
-    hlwm.call(['load', layout])
-
-    # focus the n_th
-    hlwm.call('focus_nth {}'.format(index))
-
-    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
-    assert windex == max(0, min(index, running_clients_num - 1))
-    if running_clients_num > 0:
-        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
-
-
 @pytest.mark.parametrize("running_clients_num", [5])
 def test_rotate(hlwm, running_clients, running_clients_num):
     # generate some layout with clients in it

@@ -317,7 +317,7 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             }
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
-            client->send_configure();
+            client->send_configure(true);
         }
     } else {
         // if client not known.. then allow configure.
