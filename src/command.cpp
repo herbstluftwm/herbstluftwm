@@ -35,7 +35,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
