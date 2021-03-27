@@ -156,17 +156,6 @@ int FrameTree::cycleSelectionCommand(Input input, Output output) {
     return 0;
 }
 
-//! focus the nth window within the focused frame
-int FrameTree::focusNthCommand(Input input, Output output) {
-    string index;
-    if (!(input >> index)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    focusedFrame()->setSelection(atoi(index.c_str()));
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 //! command that removes the focused frame
 int FrameTree::removeFrameCommand() {
     auto frame = focusedFrame();

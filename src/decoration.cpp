@@ -160,8 +160,11 @@ void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
     if (!last_scheme) {
-        // if the decoration was never drawn, we can't do anything reasonable
-        return rect;
+        // if the decoration was never drawn, just take a guess.
+        // Since the 'inner' rect is usually a floating geometry,
+        // take a scheme from there.
+        const DecorationScheme& fallback =  client_->theme.floating.normal;
+        return fallback.inner_rect_to_outline(rect);
     }
     return last_scheme->inner_rect_to_outline(rect);
 }

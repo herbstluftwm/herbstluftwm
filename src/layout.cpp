@@ -817,32 +817,3 @@ vector<Client*> FrameLeaf::removeAllClients() {
     selection = 0;
     return result;
 }
-
-int frame_focus_edge(Input input, Output output) {
-    // Puts the focus to the edge in the specified direction
-    g_monitors->lock();
-    int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = false;
-    Input inp = {"focus", input.toVector()};
-    while (0 == Commands::call(inp, output)) {
-        ;
-    }
-    g_settings->focus_crosses_monitor_boundaries = oldval;
-    g_monitors->unlock();
-    return 0;
-}
-
-int frame_move_window_edge(Input input, Output output) {
-    // Moves a window to the edge in the specified direction
-    g_monitors->lock();
-    int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = false;
-    Input inp = {"shift", input.toVector()};
-    while (0 == Commands::call(inp, output)) {
-        ;
-    }
-    g_settings->focus_crosses_monitor_boundaries = oldval;
-    g_monitors->unlock();
-    return 0;
-}
-

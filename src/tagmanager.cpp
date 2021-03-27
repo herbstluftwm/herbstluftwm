@@ -25,9 +25,9 @@ RunTimeConverter<HSTag*>* Converter<HSTag*>::converter = nullptr;
 
 TagManager::TagManager()
     : IndexingObject()
+    , focus_(*this, "focus")
     , by_name_(*this)
     , settings_(nullptr)
-    , focus_(*this, "focus")
 {
     indicesChanged.connect([](){
         Ewmh::get().updateDesktopNames();
