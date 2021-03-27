@@ -59,7 +59,6 @@ public:
 
     // Commands
     int cycleSelectionCommand(Input input, Output output);
-    int focusNthCommand(Input input, Output output);
     int removeFrameCommand();
     int rotateCommand();
     enum class MirrorDirection {

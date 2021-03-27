@@ -249,3 +249,20 @@ void GlobalCommands::lowerCommand(CallOrComplete invoc)
     });
 }
 
+void GlobalCommands::focusNthCommand(CallOrComplete invoc)
+{
+    // essentially an alias to:
+    // set_attr tags.focus.tiling.focused_frame.selection
+    // with the additional feature that setSelection() allows
+    // to directly focus the last window in a frame.
+    int index = 0;
+    ArgParse().mandatory(index, {"0", "-1"})
+            .command(invoc, [&](Output) {
+        HSTag* tag = root_.tags->focus_();
+        auto frame = tag->frame->focusedFrame();
+        frame->setSelection(index);
+        tag->needsRelayout_.emit();
+        return 0;
+    });
+}
+
