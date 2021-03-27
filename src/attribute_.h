@@ -130,7 +130,7 @@ public:
     operator const T() const { return payload_; }
     // operator= is only used by the owner and us
     void operator=(const T &payload) {
-        // decide whether the signals should be emited based on
+        // decide whether the signals should be emitted based on
         // T's specific comparison operator.
         bool properChange = payload_ != payload;
         // The actual values are copied in any case:
