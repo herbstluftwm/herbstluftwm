@@ -27,7 +27,6 @@ static void try_complete(const char* needle, const char* to_check, Output output
 
 static void complete_against_tags(int argc, char** argv, int pos, Output output);
 static void complete_against_monitors(int argc, char** argv, int pos, Output output);
-static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 
@@ -57,7 +56,6 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
     { "cycle_monitor",  2,  no_completion },
@@ -98,7 +96,6 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
-    { "close",          EQ, 1,  complete_against_winids, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
@@ -352,20 +349,6 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
         if (m->name != "") {
             try_complete(needle, m->name->c_str(), output);
         }
-    }
-}
-
-void complete_against_winids(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    for (auto c : Root::common().clients()) {
-        char buf[100];
-        snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
-        try_complete(needle, buf, output);
     }
 }
 

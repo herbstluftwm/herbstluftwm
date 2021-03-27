@@ -49,9 +49,48 @@ def test_close_without_clients(hlwm):
 
 
 @pytest.mark.parametrize("running_clients_num", [1, 2, 3, 4])
-def test_close(hlwm, running_clients_num):
+def test_close_for_multiple_clients(hlwm, running_clients_num):
     hlwm.create_clients(running_clients_num)
     hlwm.call('close')
+
+
+def test_close_focused_client(hlwm):
+    winid, proc = hlwm.create_client()
+
+    hlwm.call('close')
+
+    proc.wait(10)  # wait for the client to shut down
+
+
+def test_close_unfocused_client(hlwm):
+    focused, _ = hlwm.create_client()
+    unfocused, proc = hlwm.create_client()
+    hlwm.call(['jumpto', focused])
+    assert hlwm.attr.clients.focus.winid() == focused
+
+    hlwm.call(['close', unfocused])
+
+    proc.wait(10)  # wait
+    # the other client is still running:
+    assert hlwm.attr.clients.focus.winid() == focused
+
+
+def test_close_unmanaged_client(hlwm):
+    # even though the client is not managed,
+    # the synchronization works because the hooks are
+    # still fired.
+    hlwm.call('rule once manage=off')
+    winid, proc = hlwm.create_client()
+
+    hlwm.call(['close', winid])
+
+    proc.wait(10)  # wait for the client to shut down
+
+
+def test_close_completion(hlwm):
+    winid, _ = hlwm.create_client()
+    assert winid in hlwm.complete(['close'])
+    hlwm.command_has_all_args(['close', winid])
 
 
 @pytest.mark.filterwarnings("ignore:tostring")
