@@ -210,3 +210,12 @@ def test_load_minimized_client(hlwm, othertag, minimized, floating):
     assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
     assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
     assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+
+def test_load_completion(hlwm):
+    tagname = 'newtag'
+    hlwm.call(f'add {tagname}')
+
+    assert tagname in hlwm.complete(['load'])
+    assert tagname not in hlwm.complete(['load', 'foo'])
+    hlwm.command_has_all_args(['load', 'foo', 'bar'])

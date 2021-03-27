@@ -670,6 +670,16 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     return 0;
 }
 
+void FrameTree::loadCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<HSTag*>::complete(complete);
+    } else if (complete >= 2) {
+        // there can be up to two arguments
+        complete.none();
+    }
+}
+
 int FrameTree::loadCommand(Input input, Output output) {
     // usage: load TAG LAYOUT
     HSTag* tag = nullptr;
