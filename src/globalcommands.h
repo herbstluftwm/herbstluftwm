@@ -36,6 +36,8 @@ public:
 
     void raiseCommand(CallOrComplete invoc);
     void lowerCommand(CallOrComplete invoc);
+
+    void focusNthCommand(CallOrComplete invoc);
 private:
     Root& root_;
 };

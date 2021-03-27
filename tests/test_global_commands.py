@@ -218,3 +218,38 @@ def test_use_index_skip_visible(hlwm, delta, skip_visible):
 
     assert hlwm.attr.monitors.focus.index() == '0'
     assert hlwm.attr.tags.focus.name() == expected_name
+
+
+@pytest.mark.parametrize("running_clients_num", [0, 1, 5])
+@pytest.mark.parametrize("index", [0, 1, 3, 5])
+def test_focus_nth(hlwm, running_clients, running_clients_num, index):
+    # bring the clients in the right order
+    layout = '(clients vertical:0 '
+    layout += ' '.join(running_clients)
+    layout += ')'
+    hlwm.call(['load', layout])
+
+    # focus the n_th
+    hlwm.call('focus_nth {}'.format(index))
+
+    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    assert windex == max(0, min(index, running_clients_num - 1))
+    if running_clients_num > 0:
+        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
+
+
+def test_focus_nth_last_window(hlwm):
+    hlwm.create_clients(4)
+    for last_idx in ['-1', '4', '2342', '-123']:
+        hlwm.call(['focus_nth', '0'])  # reset
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+
+        hlwm.call(['focus_nth', last_idx])
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '3'
+
+
+def test_focus_nth_completion(hlwm):
+    assert '0' in hlwm.complete(['focus_nth'])
+    assert '-1' in hlwm.complete(['focus_nth'])
+
+    hlwm.command_has_all_args(['focus_nth', '0'])
