@@ -217,5 +217,6 @@ def test_load_completion(hlwm):
     hlwm.call(f'add {tagname}')
 
     assert tagname in hlwm.complete(['load'])
-    assert tagname not in hlwm.complete(['load', 'foo'])
-    hlwm.command_has_all_args(['load', 'foo', 'bar'])
+    assert tagname not in hlwm.complete(['load', tagname])
+    hlwm.command_has_all_args(['load', '(clients ...)'])
+    hlwm.command_has_all_args(['load', tagname, 'bar'])

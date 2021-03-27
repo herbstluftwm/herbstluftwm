@@ -674,7 +674,17 @@ void FrameTree::loadCompletion(Completion& complete)
 {
     if (complete == 0) {
         Converter<HSTag*>::complete(complete);
-    } else if (complete >= 2) {
+    } else if (complete == 1) {
+        try {
+            // check if the first parameter parses as a tag
+            // name.
+            Converter<HSTag*>::parse(complete[0]);
+        }  catch (...) {
+            // if not, then complete[0] was already the
+            // layout string, so there is no second argument
+            complete.none();
+        }
+    } else {
         // there can be up to two arguments
         complete.none();
     }

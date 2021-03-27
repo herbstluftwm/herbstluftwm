@@ -46,8 +46,6 @@ static bool no_completion(int, char**, int) {
     return false;
 }
 
-static bool first_parameter_is_tag(int argc, char** argv, int pos);
-
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
  *
@@ -493,13 +491,4 @@ int complete_against_commands(int argc, char** argv, int position,
         }
     }
     return 0;
-}
-
-static bool first_parameter_is_tag(int argc, char** argv, int pos) {
-    // only complete if first parameter is a valid tag
-    if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
-        return true;
-    } else {
-        return false;
-    }
 }
