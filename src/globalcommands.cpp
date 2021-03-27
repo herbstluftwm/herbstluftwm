@@ -3,6 +3,7 @@
 #include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
+#include "command.h"
 #include "either.h"
 #include "frametree.h"
 #include "layout.h"
@@ -64,6 +65,46 @@ void GlobalCommands::tagStatus(Monitor* monitor, Output output)
         output << *tag->name;
         output << '\t';
     }
+}
+
+int GlobalCommands::focusEdgeCommand(Input input, Output output)
+{
+    // Puts the focus to the edge in the specified direction
+    root_.monitors->lock();
+    int oldval = root_.settings->focus_crosses_monitor_boundaries();
+    root_.settings->focus_crosses_monitor_boundaries = false;
+    Input inp = {"focus", input.toVector()};
+    while (0 == Commands::call(inp, output)) {
+    }
+    root_.settings->focus_crosses_monitor_boundaries = oldval;
+    root_.monitors->unlock();
+    return 0;
+}
+
+int GlobalCommands::shiftEdgeCommand(Input input, Output output)
+{
+    // Moves a window to the edge in the specified direction
+    root_.monitors->lock();
+    int oldval = root_.settings->focus_crosses_monitor_boundaries();
+    root_.settings->focus_crosses_monitor_boundaries = false;
+    Input inp = {"shift", input.toVector()};
+    while (0 == Commands::call(inp, output)) {
+    }
+    root_.settings->focus_crosses_monitor_boundaries = oldval;
+    root_.monitors->unlock();
+    return 0;
+}
+
+void GlobalCommands::focusEdgeCompletion(Completion& complete)
+{
+    root_.monitors->focus()->tag->focusInDirCommand(
+                CallOrComplete::complete(complete));
+}
+
+void GlobalCommands::shiftEdgeCompletion(Completion& complete)
+{
+    root_.monitors->focus()->tag->shiftInDirCommand(
+                CallOrComplete::complete(complete));
 }
 
 void GlobalCommands::useTagCommand(CallOrComplete invoc)
