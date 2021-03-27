@@ -111,7 +111,7 @@ def test_int_negative(hlwm):
 
 
 def test_uint_negative(hlwm):
-    hlwm.call(['new_attr', 'int', 'my_val', '19'])
+    hlwm.call(['new_attr', 'uint', 'my_val', '19'])
     hlwm.attr.my_val = '+=-20'
     assert hlwm.attr.my_val() == '0'
 
