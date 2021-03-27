@@ -70,6 +70,11 @@ class CallOrComplete {
 public:
     //! the name of the command that is called.
     std::string command() { return command_; };
+    static CallOrComplete complete(Completion& complete) {
+        CallOrComplete invoc;
+        invoc.complete_ = &complete;
+        return invoc;
+    }
 private:
     friend class CommandBinding;
     friend class ArgParse;

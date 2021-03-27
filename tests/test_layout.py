@@ -1497,7 +1497,7 @@ def test_shift_no_monitor_in_direction(hlwm):
 
 
 def test_focus_shift_completion(hlwm):
-    for cmd in ['shift', 'focus']:
+    for cmd in ['shift', 'focus', 'shift_edge', 'focus_edge']:
         directions = ['down', 'up', 'left', 'right']
         flags = ['-i', '-e']
         assert sorted(directions + flags) == hlwm.complete([cmd])
