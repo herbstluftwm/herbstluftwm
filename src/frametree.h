@@ -72,6 +72,7 @@ public:
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
+    void loadCompletion(Completion& complete);
     int dumpLayoutCommand(Input input, Output output);
     void dumpLayoutCompletion(Completion& complete);
     int cycleLayoutCommand(Input input, Output output);

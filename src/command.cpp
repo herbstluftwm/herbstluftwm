@@ -46,8 +46,6 @@ static bool no_completion(int, char**, int) {
     return false;
 }
 
-static bool first_parameter_is_tag(int argc, char** argv, int pos);
-
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
  *
@@ -77,8 +75,6 @@ struct {
     { "monitor_rect",   3,  no_completion },
     { "layout",         3,  no_completion },
     { "dump",           3,  no_completion },
-    { "load",           3,  no_completion },
-    { "load",           2,  first_parameter_is_tag },
     { "object_tree",    2,  no_completion },
 };
 
@@ -110,7 +106,6 @@ struct {
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
-    { "load",           EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
     { "move",           EQ, 1,  complete_against_tags, 0 },
@@ -495,13 +490,4 @@ int complete_against_commands(int argc, char** argv, int position,
         }
     }
     return 0;
-}
-
-static bool first_parameter_is_tag(int argc, char** argv, int pos) {
-    // only complete if first parameter is a valid tag
-    if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
-        return true;
-    } else {
-        return false;
-    }
 }

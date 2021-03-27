@@ -179,7 +179,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"layout",         tags->frameCommand(&FrameTree::dumpLayoutCommand, &FrameTree::dumpLayoutCompletion)},
         {"stack",          { monitors, &MonitorManager::stackCommand }},
         {"dump",           tags->frameCommand(&FrameTree::dumpLayoutCommand, &FrameTree::dumpLayoutCompletion)},
-        {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
+        {"load",           { tags->frameCommand(&FrameTree::loadCommand, &FrameTree::loadCompletion ) }},
         {"complete",       complete_command},
         {"complete_shell", complete_command},
         {"lock",           { [monitors] { monitors->lock(); return 0; } }},
