@@ -35,7 +35,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
@@ -45,8 +44,6 @@ static const char* completion_split_ratios[]= {
 static bool no_completion(int, char**, int) {
     return false;
 }
-
-static bool first_parameter_is_tag(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -60,12 +57,9 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
-    { "focus_edge",     2,  no_completion },
-    { "shift_edge",     2,  no_completion },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
     { "shift_to_monitor",2,  no_completion },
@@ -78,8 +72,6 @@ struct {
     { "monitor_rect",   3,  no_completion },
     { "layout",         3,  no_completion },
     { "dump",           3,  no_completion },
-    { "load",           3,  no_completion },
-    { "load",           2,  first_parameter_is_tag },
     { "object_tree",    2,  no_completion },
 };
 
@@ -111,13 +103,11 @@ struct {
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
-    { "load",           EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
     { "move",           EQ, 1,  complete_against_tags, 0 },
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
-    { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
     { "focus_monitor",  EQ, 1,  complete_against_monitors, 0 },
@@ -496,13 +486,4 @@ int complete_against_commands(int argc, char** argv, int position,
         }
     }
     return 0;
-}
-
-static bool first_parameter_is_tag(int argc, char** argv, int pos) {
-    // only complete if first parameter is a valid tag
-    if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
-        return true;
-    } else {
-        return false;
-    }
 }

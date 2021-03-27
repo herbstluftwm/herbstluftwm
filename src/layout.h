@@ -198,8 +198,5 @@ private:
 
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool raise);
 
-int frame_focus_edge(Input input, Output output);
-int frame_move_window_edge(Input input, Output output);
-
 #endif
 

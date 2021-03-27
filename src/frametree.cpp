@@ -156,17 +156,6 @@ int FrameTree::cycleSelectionCommand(Input input, Output output) {
     return 0;
 }
 
-//! focus the nth window within the focused frame
-int FrameTree::focusNthCommand(Input input, Output output) {
-    string index;
-    if (!(input >> index)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    focusedFrame()->setSelection(atoi(index.c_str()));
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 //! command that removes the focused frame
 int FrameTree::removeFrameCommand() {
     auto frame = focusedFrame();
@@ -668,6 +657,26 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     cycle_frame(delta);
     get_current_monitor()->applyLayout();
     return 0;
+}
+
+void FrameTree::loadCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<HSTag*>::complete(complete);
+    } else if (complete == 1) {
+        try {
+            // check if the first parameter parses as a tag
+            // name.
+            Converter<HSTag*>::parse(complete[0]);
+        }  catch (...) {
+            // if not, then complete[0] was already the
+            // layout string, so there is no second argument
+            complete.none();
+        }
+    } else {
+        // there can be up to two arguments
+        complete.none();
+    }
 }
 
 int FrameTree::loadCommand(Input input, Output output) {

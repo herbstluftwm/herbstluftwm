@@ -21,6 +21,11 @@ public:
     void tagStatusCommand(CallOrComplete invoc);
     void tagStatus(Monitor* monitor, Output output);
 
+    int focusEdgeCommand(Input input, Output output);
+    void focusEdgeCompletion(Completion& complete);
+    int shiftEdgeCommand(Input input, Output output);
+    void shiftEdgeCompletion(Completion& complete);
+
     void useTagCommand(CallOrComplete invoc);
     void useTagByIndexCommand(CallOrComplete invoc);
 
@@ -36,6 +41,8 @@ public:
 
     void raiseCommand(CallOrComplete invoc);
     void lowerCommand(CallOrComplete invoc);
+
+    void focusNthCommand(CallOrComplete invoc);
 private:
     Root& root_;
 };

@@ -53,13 +53,13 @@ public:
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
     Signal_<HSTag*> needsRelayout_;
+    Link_<HSTag> focus_;
 private:
     std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
-    Link_<HSTag> focus_;
 };
 
 extern TagManager* global_tags; // temporary, set in Root constr.
