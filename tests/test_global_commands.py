@@ -162,11 +162,12 @@ def test_use_tag_completion(hlwm):
     hlwm.command_has_all_args(['use', 'foo'])
 
 
-def test_use_index_completion(hlwm):
-    assert hlwm.complete(['use_index']) == sorted(['+1', '-1', '--skip-visible'])
-    assert hlwm.complete(['use_index', '+1']) == sorted(['--skip-visible'])
-    assert hlwm.complete(['use_index', '--skip-visible']) == sorted(['+1', '-1'])
-    hlwm.command_has_all_args(['use_index', '--skip-visible', '0'])
+def test_use_index_move_index_completion(hlwm):
+    for cmd in ['use_index', 'move_index']:
+        assert hlwm.complete([cmd]) == sorted(['+1', '-1', '--skip-visible'])
+        assert hlwm.complete([cmd, '+1']) == sorted(['--skip-visible'])
+        assert hlwm.complete([cmd, '--skip-visible']) == sorted(['+1', '-1'])
+        hlwm.command_has_all_args([cmd, '--skip-visible', '0'])
 
 
 def test_use_tag_invalid_arg(hlwm):
@@ -189,9 +190,10 @@ def test_use_index_invalid_arg(hlwm):
             .expect_stderr(f'Invalid index "{arg}"', regex=False)
 
 
+@pytest.mark.parametrize("use_or_move_index", ['use_index', 'move_index'])
 @pytest.mark.parametrize("delta", ['+1', '-1'])
 @pytest.mark.parametrize("skip_visible", [True, False])
-def test_use_index_skip_visible(hlwm, delta, skip_visible):
+def test_use_index_move_index_skip_visible(hlwm, use_or_move_index, delta, skip_visible):
     # create the tags in a order such that (0 + delta) (modulo tag
     # count) is the used tag:
     if delta == '+1':
@@ -203,7 +205,10 @@ def test_use_index_skip_visible(hlwm, delta, skip_visible):
     assert hlwm.attr.monitors.focus.index() == '0'
     assert hlwm.attr.tags.focus.index() == '0'
 
-    cmd = ['use_index', delta]
+    if use_or_move_index == 'move_index':
+        winid, _ = hlwm.create_client()
+
+    cmd = [use_or_move_index, delta]
 
     if skip_visible:
         cmd += ['--skip-visible']
@@ -216,8 +221,14 @@ def test_use_index_skip_visible(hlwm, delta, skip_visible):
 
     hlwm.call(cmd)
 
-    assert hlwm.attr.monitors.focus.index() == '0'
-    assert hlwm.attr.tags.focus.name() == expected_name
+    if use_or_move_index == 'use_index':
+        assert hlwm.attr.monitors.focus.index() == '0'
+        assert hlwm.attr.tags.focus.name() == expected_name
+    else:
+        assert hlwm.attr.clients[winid].tag() == expected_name
+        # however, we stay on the original tag:
+        assert hlwm.attr.monitors.focus.index() == '0'
+        assert hlwm.attr.tags.focus.index() == '0'
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])
