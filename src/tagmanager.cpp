@@ -311,7 +311,8 @@ void TagManager::tag_move_window_command(CallOrComplete invoc) {
 void TagManager::tag_move_window_by_index_command(CallOrComplete invoc) {
     string tagIndex;
     bool skip_visible = false;
-    ArgParse().mandatory(tagIndex)
+    ArgParse().mandatory(tagIndex, {"-1", "+1"})
+            .flags({{"--skip-visible", &skip_visible}})
             .command(invoc,
                      [&] (Output output) {
         HSTag* tag = byIndexStr(tagIndex, skip_visible);
