@@ -55,7 +55,7 @@ public:
     int string_to_monitor_index(std::string string);
     void completeMonitorName(Completion& complete);
     Monitor* addMonitor(Rectangle rect, HSTag* tag);
-    int addMonitor(Input input, Output output);
+    void addMonitorCommand(CallOrComplete invoc);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion moncomplete);

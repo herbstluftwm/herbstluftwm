@@ -66,7 +66,6 @@ struct {
     { "rename",         3,  no_completion },
     { "move",           2,  no_completion },
     { "move_index",     3,  no_completion },
-    { "add_monitor",    7,  no_completion },
     { "monitor_rect",   3,  no_completion },
     { "layout",         3,  no_completion },
     { "dump",           3,  no_completion },
@@ -95,7 +94,6 @@ struct {
     const char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
-    { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },

@@ -370,59 +370,52 @@ void MonitorManager::removeMonitor(Monitor* monitor)
     monitor_update_focus_objects();
 }
 
-int MonitorManager::addMonitor(Input input, Output output)
+void MonitorManager::addMonitorCommand(CallOrComplete invoc)
 {
-    // usage: add_monitor RECTANGLE [TAG [NAME]]
-    string rectString, tagName, monitorName;
-    input >> rectString;
-    if (!input) {
-        return HERBST_NEED_MORE_ARGS;
-    }
+    Rectangle geo;
     HSTag* tag = nullptr;
-    if (input >> tagName) {
-        tag = find_tag(tagName.c_str());
+    bool nameSupplied = false;
+    string monitorName;
+    ArgParse().mandatory(geo)
+            .optional(tag)
+            .optional(monitorName, &nameSupplied)
+            .command(invoc, [&] (Output output)
+    {
         if (!tag) {
-            output << input.command() << ": Tag \"" << tagName << "\" does not exist\n";
-            return HERBST_INVALID_ARGUMENT;
+            tag = tags_->unusedTag();
+        }
+        if (!tag) {
+            output << invoc.command() << ": There are not enough free tags\n";
+            return HERBST_TAG_IN_USE;
         }
         if (find_monitor_with_tag(tag)) {
-            output << input.command() <<
-                ": Tag \"" << tagName << "\" is already being viewed on a monitor\n";
+            output << invoc.command() <<
+                ": Tag \"" << tag->name() << "\" is already being viewed on a monitor\n";
             return HERBST_TAG_IN_USE;
         }
-    } else { // if no tag is supplied
-        tag = tags_->unusedTag();
-        if (!tag) {
-            output << input.command() << ": There are not enough free tags\n";
-            return HERBST_TAG_IN_USE;
-        }
-    }
-    // TODO: error message on invalid rectString
-    auto rect = Rectangle::fromStr(rectString);
-    if (input >> monitorName) {
-        string error;
-        if (monitorName.empty()) {
-            error = "An empty monitor name is not permitted";
-        } else {
-            error = isValidMonitorName(monitorName);
+        string error = Monitor::atLeastMinWindowSize(geo);
+        if (error.empty() && nameSupplied) {
+            if (monitorName.empty()) {
+                error = "An empty monitor name is not permitted";
+            } else {
+                error = isValidMonitorName(monitorName);
+            }
         }
         if (!error.empty()) {
-            output << input.command() << ": " << error << "\n";
+            output << invoc.command() << ": " << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
-    }
-    auto monitor = addMonitor(rect, tag);
-    if (!monitorName.empty()) {
-        monitor->name = monitorName;
-    }
-
-    autoUpdatePads();
-    monitor->applyLayout();
-    tag->setVisible(true);
-    emit_tag_changed(tag, g_monitors->size() - 1);
-    dropEnterNotifyEvents.emit();
-
-    return HERBST_EXIT_SUCCESS;
+        auto monitor = addMonitor(geo, tag);
+        if (!monitorName.empty()) {
+            monitor->name = monitorName;
+        }
+        autoUpdatePads();
+        monitor->applyLayout();
+        tag->setVisible(true);
+        emit_tag_changed(tag, static_cast<int>(monitor->index()));
+        dropEnterNotifyEvents.emit();
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
 string MonitorManager::isValidMonitorName(string name) {

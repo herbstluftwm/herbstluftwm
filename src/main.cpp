@@ -159,7 +159,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
         {"mirror",         { tags->frameCommand(&FrameTree::mirrorCommand, &FrameTree::mirrorCompletion) }},
         {"move_index",     { tags, &TagManager::tag_move_window_by_index_command }},
-        {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
+        {"add_monitor",    { monitors, &MonitorManager::addMonitorCommand }},
         {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,
                                        &MonitorManager::raiseMonitorCompletion }},
         {"remove_monitor", { monitors, &MonitorManager::removeMonitorCommand }},
