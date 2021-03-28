@@ -19,7 +19,24 @@ class FrameLeaf;
 class HSTag;
 class RawFrameNode;
 class Settings;
+class SplitMode;
 class TreeInterface;
+
+enum class SplitModeName {
+    Top,
+    Bottom,
+    Vertical,
+    Right,
+    Horizontal,
+    Left,
+    Explode,
+    Auto,
+};
+
+template<>
+Finite<SplitModeName>::ValueList Finite<SplitModeName>::values;
+template <> struct is_finite<SplitModeName> : std::true_type {};
+
 
 /*! A class representing an entire tree of frames that provides
  * the tiling commands and other common actions on the frame tree
@@ -77,7 +94,8 @@ public:
     void dumpLayoutCompletion(Completion& complete);
     int cycleLayoutCommand(Input input, Output output);
     void cycleLayoutCompletion(Completion& complete);
-    int splitCommand(Input input, Output output);
+    void splitCommand(CallOrComplete invoc);
+    void splitFrame(std::string frameIndex, SplitModeName mode, FixPrecDec fraction, bool userDefinedFraction);
     int setLayoutCommand(Input input, Output output);
     void setLayoutCompletion(Completion& complete);
 public: // soon to be come private:

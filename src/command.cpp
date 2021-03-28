@@ -37,9 +37,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
-static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
-static const char* completion_split_ratios[]= {
-    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
 
 static bool no_completion(int, char**, int) {
     return false;
@@ -59,7 +56,6 @@ struct {
 } g_parameter_expected[] = {
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
-    { "split",          4,  no_completion },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
     { "shift_to_monitor",2,  no_completion },
@@ -106,8 +102,6 @@ struct {
     { "move",           EQ, 1,  complete_against_tags, 0 },
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
-    { "split",          EQ, 1,  nullptr, completion_split_modes },
-    { "split",          EQ, 2,  nullptr, completion_split_ratios },
     { "focus_monitor",  EQ, 1,  complete_against_monitors, 0 },
     { "shift_to_monitor",EQ, 1,  complete_against_monitors, 0 },
     { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },

@@ -5,6 +5,22 @@
 #include "completion.h"
 #include "converter.h"
 
+enum class FiniteNameFlags {
+    /**
+     * @brief Specifies whether the parsing accepts integer
+     * indices in the value list. Usually, this should only be
+     * activated (return true) for the sake of compatibility.
+     * Thus, there is no completion for indices.
+     */
+    AllowIndicesAsNames,
+    /**
+     * @brief Specifies that instead of full names, also a
+     * prefix of the name can be given in the string representation.
+     * Then the first name with this prefix is used.
+     */
+    AllowPrefixesAsNames,
+};
+
 /** The Finite<T> class defines the Converter methods
  * for enum class types, that is, for types with only finitely many values.
  *
@@ -24,18 +40,21 @@ public:
             : ValueListPlain(plainValueList)
         {}
 
-        ValueList(bool allowIndicesAsNames, ValueListPlain plainValueList)
+        ValueList(std::vector<FiniteNameFlags> nameCompatibilityFlags, ValueListPlain plainValueList)
             : ValueListPlain(plainValueList)
-            , allowIndicesAsNames_(allowIndicesAsNames)
-        {}
+        {
+            for (auto flag : nameCompatibilityFlags) {
+                if (flag == FiniteNameFlags::AllowIndicesAsNames) {
+                    allowIndicesAsNames_ = true;
+                }
+                if (flag == FiniteNameFlags::AllowPrefixesAsNames) {
+                    allowPrefixesAsNames_ = true;
+                }
+            }
+        }
 
-        /**
-         * @brief Specifies whether the parsing accepts integer
-         * indices in the value list. Usually, this should only be
-         * activated (return true) for the sake of compatibility.
-         * Thus, there is no completion for indices.
-         */
         bool allowIndicesAsNames_ = false;
+        bool allowPrefixesAsNames_ = false;
     };
     static ValueList values;
     static std::string str(T cp) {
@@ -65,6 +84,9 @@ public:
         }
         for (const auto& p : values) {
             if (payload == p.second) {
+                return p.first;
+            }
+            if (values.allowPrefixesAsNames_ && p.second.rfind(payload, 0) == 0) {
                 return p.first;
             }
         }
@@ -103,7 +125,7 @@ struct is_finite : std::false_type {};
  *
  *   1. define the static variable:
  *
- *      Finite<XX>::values;
+ *     template<> Finite<XXX>::ValueList Finite<XX>::values;
  *
  *   2. make the type fulfill the is_finite predicate:
  *
