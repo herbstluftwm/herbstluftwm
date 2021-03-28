@@ -58,7 +58,6 @@ struct {
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
     { "close",          2,  no_completion },
-    { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
@@ -97,7 +96,6 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "close",          EQ, 1,  complete_against_winids, 0 },
-    { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
     { "layout",         EQ, 1,  complete_against_tags, 0 },

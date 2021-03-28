@@ -113,7 +113,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"emit_hook",      { custom_hook_emit }},
         {"bring",          {global_cmds, &GlobalCommands::bringCommand }},
         {"focus_nth",      {global_cmds, &GlobalCommands::focusNthCommand }},
-        {"cycle",          { tags->frameCommand(&FrameTree::cycleSelectionCommand) }},
+        {"cycle",          { monitors->tagCommand(&HSTag::cycleCommand) }},
         {"cycle_all",      monitors->tagCommand(&HSTag::cycleAllCommand)},
         {"cycle_layout",   tags->frameCommand(&FrameTree::cycleLayoutCommand, &FrameTree::cycleLayoutCompletion) },
         {"cycle_frame",    { tags->frameCommand(&FrameTree::cycleFrameCommand) }},
