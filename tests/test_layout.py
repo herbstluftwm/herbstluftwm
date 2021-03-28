@@ -641,7 +641,7 @@ def test_split_completion(hlwm):
     assert 'auto' in modes
     assert 'bottom' in modes
     assert 'top' in modes
-    assert hlwm.complete(['split', 'auto']) == [f'0.{i}' for i in range(1,10)]
+    assert hlwm.complete(['split', 'auto']) == [f'0.{i}' for i in range(1, 10)]
 
 
 def test_split_invalid_arg(hlwm):
