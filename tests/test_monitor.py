@@ -22,6 +22,35 @@ def test_add_monitor(hlwm):
 
     assert hlwm.get_attr('monitors.count') == '2'
     assert hlwm.get_attr('monitors.1.name') == 'monitor2'
+    assert hlwm.attr.monitors[1].geometry() == '800x600+40+40'
+
+
+def test_add_monitor_invalid_geometry(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call_xfail('add_monitor 800x10+800+800 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 8x300+800+800 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    # TODO: make 'rectangle' produce meaningful error messages
+    hlwm.call_xfail('add_monitor not_a_rect_at_all tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 1234 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 1234x tag2') \
+        .expect_stderr("Rectangle too small")
+
+
+def test_add_monitor_completion(hlwm):
+    hlwm.call('add tagname')
+
+    assert 'tagname' in hlwm.complete(['add_monitor', '800x600'])
+
+    hlwm.command_has_all_args(['add_monitor', '800x600', 'tagname', 'monname'])
 
 
 def test_add_monitor_with_no_name(hlwm):
@@ -40,8 +69,8 @@ def test_cannot_add_monitor_without_free_tag(hlwm):
 
 
 def test_cannot_add_monitor_with_nonexistent_tag(hlwm):
-    call = hlwm.call_xfail('add_monitor 800x600+40+40 derp')
-    assert call.stderr == 'add_monitor: Tag "derp" does not exist\n'
+    hlwm.call_xfail('add_monitor 800x600+40+40 derp') \
+        .expect_stderr('no such tag: derp')
     assert hlwm.get_attr('monitors.count') == '1'
 
 
