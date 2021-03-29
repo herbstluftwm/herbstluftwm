@@ -24,7 +24,6 @@ using std::vector;
 
 static void try_complete(const char* needle, const char* to_check, Output output);
 
-static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 
 // if the current completion needs shell quoting and other shell specific
@@ -52,7 +51,6 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "close",          2,  no_completion },
     { "split",          4,  no_completion },
     { "add",            2,  no_completion },
 };
@@ -79,7 +77,6 @@ struct {
     const char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
-    { "close",          EQ, 1,  complete_against_winids, 0 },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
 };
@@ -282,20 +279,6 @@ static void complete_against_list(const char* needle, const char** list, Output 
         const char* name = *list;
         try_complete(needle, name, output);
         list++;
-    }
-}
-
-void complete_against_winids(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    for (auto c : Root::common().clients()) {
-        char buf[100];
-        snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
-        try_complete(needle, buf, output);
     }
 }
 

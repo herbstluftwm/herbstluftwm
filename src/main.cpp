@@ -117,7 +117,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"cycle_all",      monitors->tagCommand(&HSTag::cycleAllCommand)},
         {"cycle_layout",   tags->frameCommand(&FrameTree::cycleLayoutCommand, &FrameTree::cycleLayoutCompletion) },
         {"cycle_frame",    { tags->frameCommand(&FrameTree::cycleFrameCommand) }},
-        {"close",          { close_command }},
+        {"close",          { global_cmds, &GlobalCommands::closeCommand }},
         {"close_or_remove",{ monitors->tagCommand(&HSTag::closeOrRemoveCommand) }},
         {"close_and_remove",{ monitors->tagCommand(&HSTag::closeAndRemoveCommand) }},
         {"split",          { tags->frameCommand(&FrameTree::splitCommand) }},
