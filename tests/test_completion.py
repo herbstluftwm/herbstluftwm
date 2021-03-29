@@ -159,6 +159,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         'jumpto': {3},
         'remove_monitor': {6},
         'use_index': {3},
+        'move_index': {3},
         'bring': {3},
         '!': {1},
         'shift': {6},

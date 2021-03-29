@@ -26,6 +26,7 @@ Current git version
   * The 'cycle_value' command now expects an attribute (and only works for
     settings for compatibility).
   * New object 'types' containing documentation on (attribute-) types.
+  * Relative values for integer attributes ('+=N' and '-=N')
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
   * New dependency: xrender
