@@ -976,7 +976,7 @@ void FrameTree::splitFrame(string frameIndex, SplitModeName mode, FixPrecDec fra
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
     auto allSplitModes = SplitMode::modes(align_auto);
     auto it = allSplitModes.find(mode);
-    // we now that 'mode' must be in the map allSplitModes, but let us stay safe
+    // we know that 'mode' must be in the map allSplitModes, but let us stay safe
     // and fall back to the first if it is not the case:
     SplitMode m = ((it != allSplitModes.end()) ? it : allSplitModes.begin())->second;
     auto layout = frame->switchcase<LayoutAlgorithm>(&FrameLeaf::getLayout,
