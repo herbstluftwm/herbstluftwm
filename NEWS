@@ -27,6 +27,7 @@ Current git version
     settings for compatibility).
   * New object 'types' containing documentation on (attribute-) types.
   * Relative values for integer attributes ('+=N' and '-=N')
+  * The 'cycle' command now also cycles through floating windows.
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
   * New dependency: xrender

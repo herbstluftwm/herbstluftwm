@@ -341,9 +341,10 @@ focus_nth 'INDEX'::
     window is focused.
 
 cycle ['DELTA']::
-    Cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
-    omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
-    means: cycle in the opposite direction by 1.
+    Cycles the selection within the current frame by 'DELTA' or cycles through
+    the clients in the floating layer if that is focused. If 'DELTA' is omitted,
+    'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1 means: cycle
+    in the opposite direction by 1.
 
 cycle_all [*--skip-invisible*] ['DIRECTION']::
     Cycles through all non-minimized windows and frames on the current tag.
