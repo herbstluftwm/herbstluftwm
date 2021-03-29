@@ -30,7 +30,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
@@ -51,7 +50,6 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
     { "add",            2,  no_completion },
 };
@@ -78,7 +76,6 @@ struct {
     const char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
-    { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
 };

@@ -18,6 +18,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tagmanager.h"
+#include "utils.h"
 
 using std::endl;
 using std::function;
@@ -448,6 +449,33 @@ void HSTag::cycleAll(bool forward, bool skip_invisible)
     }
     // finally, redraw the layout
     needsRelayout_.emit();
+}
+
+void HSTag::cycleCommand(CallOrComplete invoc)
+{
+    int delta = 1;
+    ArgParse().optional(delta, {"+1", "-1"})
+              .command(invoc, [&] (Output) {
+        if (floating_focused()) {
+            if (floating_clients_.empty()) {
+                return 0;
+            }
+            int idx = static_cast<int>(floating_clients_focus_);
+            int count = static_cast<int>(floating_clients_.size());
+            idx = MOD(idx + delta, count);
+            floating_clients_focus_ = static_cast<size_t>(idx);
+            needsRelayout_.emit();
+        } else {
+            auto curFrame = frame->focusedFrame();
+            int idx = curFrame->getSelection();
+            auto count = static_cast<int>(curFrame->clientCount());
+            if (count != 0) {
+                curFrame->setSelection(MOD(idx + delta, count));
+            }
+            needsRelayout_.emit();
+        }
+        return 0;
+    });
 }
 
 int HSTag::resizeCommand(Input input, Output output)
