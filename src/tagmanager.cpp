@@ -115,17 +115,20 @@ HSTag* TagManager::add_tag(const string& name) {
     return tag;
 }
 
-int TagManager::tag_add_command(Input input, Output output) {
-    if (input.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (input.front().empty()) {
-        output << input.command() << ": An empty tag name is not permitted\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = add_tag(input.front());
-    hook_emit({"tag_added", tag->name});
-    return 0;
+void TagManager::addCommand(CallOrComplete invoc)
+{
+    string tagName;
+    ArgParse().mandatory(tagName)
+            .command(invoc, [&](Output output) {
+        if (tagName.empty()) {
+            string error = "An empty tag name is not permitted";
+            output << invoc.command() << ": " << error << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        HSTag* tag = add_tag(tagName);
+        hook_emit({"tag_added", tag->name});
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
 void TagManager::mergeTagCommand(CallOrComplete invoc) {
