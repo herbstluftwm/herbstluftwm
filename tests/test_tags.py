@@ -27,6 +27,20 @@ def test_add_tag_empty(hlwm):
         .expect_stderr('An empty tag name is not permitted')
 
 
+def test_add_tag_completion(hlwm):
+    hlwm.command_has_all_args(['add', 'foo'])
+
+
+def test_add_tag_duplicate(hlwm):
+    assert hlwm.attr.tags.count() == '1'
+    hlwm.call('add foo')
+    assert hlwm.attr.tags.count() == '2'
+    hlwm.call('add bar')
+    assert hlwm.attr.tags.count() == '3'
+    hlwm.call('add foo')
+    assert hlwm.attr.tags.count() == '3'
+
+
 def test_use_previous(hlwm):
     hlwm.call('add foobar')
     hlwm.call('use foobar')

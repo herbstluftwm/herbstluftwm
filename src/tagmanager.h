@@ -34,7 +34,7 @@ public:
 
     void mergeTagCommand(CallOrComplete invoc);
     bool mergeTag(HSTag* tagToRemove, HSTag* targetTag);
-    int tag_add_command(Input input, Output output);
+    void addCommand(CallOrComplete invoc);
     void tag_rename_command(CallOrComplete invoc);
     void tag_move_window_command(CallOrComplete invoc);
     void tag_move_window_by_index_command(CallOrComplete invoc);

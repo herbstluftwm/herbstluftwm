@@ -141,7 +141,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                           &GlobalCommands::cycleValueCompletion}},
         {"cycle_monitor",  { monitors, &MonitorManager::cycleCommand }},
         {"focus_monitor",  { monitors, &MonitorManager::focusCommand }},
-        {"add",            BIND_OBJECT(tags, tag_add_command) },
+        {"add",            { tags, &TagManager::addCommand }},
         {"use",            { global_cmds, &GlobalCommands::useTagCommand }},
         {"use_index",      { global_cmds, &GlobalCommands::useTagByIndexCommand }},
         {"use_previous",   { global_cmds, &GlobalCommands::usePreviousCommand }},
