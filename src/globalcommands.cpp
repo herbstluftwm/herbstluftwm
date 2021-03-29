@@ -5,6 +5,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "either.h"
+#include "ewmh.h"
 #include "frametree.h"
 #include "layout.h"
 #include "metacommands.h"
@@ -253,6 +254,31 @@ void GlobalCommands::bring(Client* client)
         tag->frame->focusedFrame()->insertClient(client, true);
     }
     focus_client(client, false, false, true);
+}
+
+void GlobalCommands::closeCommand(CallOrComplete invoc)
+{
+    Either<Client*,WindowID> clientOrWin = { nullptr };
+    ArgParse()
+            .optional(clientOrWin)
+            .command(invoc, [&] (Output) {
+        return clientOrWin.cases<int>([&] (Client* c) {
+            if (!c) {
+                c = root_.clients->focus();
+            }
+            if (!c) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+            c->requestClose();
+            return HERBST_EXIT_SUCCESS;
+        },
+        [&] (WindowID win) {
+            // if the window ID of an unmanaged
+            // client was given
+            root_.ewmh_.windowClose(win);
+            return HERBST_EXIT_SUCCESS;
+        });
+    });
 }
 
 void GlobalCommands::raiseCommand(CallOrComplete invoc)

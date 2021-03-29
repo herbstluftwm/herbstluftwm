@@ -39,6 +39,8 @@ public:
     void bringCommand(CallOrComplete invoc);
     void bring(Client* client);
 
+    void closeCommand(CallOrComplete invoc);
+
     void raiseCommand(CallOrComplete invoc);
     void lowerCommand(CallOrComplete invoc);
 

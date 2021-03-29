@@ -485,18 +485,6 @@ Rectangle Client::outer_floating_rect() {
     return dec->inner_to_outer(float_size_);
 }
 
-int close_command(Input input, Output) {
-    string winid = "";
-    input >> winid; // try to read, use "" otherwise
-    auto window = get_window(winid);
-    if (window != 0) {
-        Ewmh::get().windowClose(window);
-    } else {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return 0;
-}
-
 bool Client::is_client_floated() {
     if (floating_()) {
         return true;

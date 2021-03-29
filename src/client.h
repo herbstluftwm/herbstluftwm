@@ -154,8 +154,6 @@ Client* get_current_client();
 Client* get_client(const char* str);
 Window get_window(const std::string& str);
 
-int close_command(Input input, Output output);
-
 // sets a client property, depending on argv[0]
 int client_set_property_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
