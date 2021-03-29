@@ -319,7 +319,7 @@ def test_dump_layout_other_tag(hlwm, command):
 @pytest.mark.parametrize("running_clients_num", [0, 5])
 @pytest.mark.parametrize("num_splits", [0, 2])
 @pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])
-def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
+def test_cycle_tiling(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
     for i in range(0, num_splits):
         hlwm.call('split explode')
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
@@ -333,6 +333,64 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
     winids = re.findall('0x[a-fA-f0-9]*', layout)
     if len(winids) > 0:
         assert winids[new_windex] == hlwm.get_attr('clients.focus.winid')
+
+
+def test_cycle_floating_layer(hlwm):
+    hlwm.call('rule floating=off')
+    clients = hlwm.create_clients(8)
+
+    # move some clients to floating layer
+    # but do it manually to get the order right
+    count = 5
+    floating = []
+    for w in clients[0:count]:
+        hlwm.attr.clients[w].floating = 'on'
+        floating.append(w)
+
+    for idx in [0, 1, 4]:
+        for delta in [-2, -1, 0, 1, 2, 8]:
+            hlwm.call(['jumpto', floating[idx]])
+            hlwm.call(['cycle', delta])
+            # adding 'count' 3 times will make the value in
+            # the parentheses positive:
+            expected = (idx + delta + 3 * count) % count
+            assert hlwm.attr.clients.focus.winid() == floating[expected]
+
+
+def test_cycle_stays_in_floating_layer(hlwm):
+    # some tiling clients
+    hlwm.create_clients(2)
+
+    # some floating clients
+    hlwm.call('rule floating=on')
+    floating = hlwm.create_clients(3)
+    hlwm.call(['jumpto', floating[0]])
+
+    for winid in floating:
+        assert hlwm.attr.clients.focus.winid() == winid
+        # the floating layer always stays focused
+        assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+        hlwm.call(['cycle', '+1'])
+
+    # we're back a the first floating client:
+    assert hlwm.attr.clients.focus.winid() == floating[0]
+    assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+
+
+def test_cycle_empty_scope(hlwm):
+    for floating in ['on', 'off']:
+        hlwm.attr.tags.focus.floating = floating
+
+        hlwm.call('cycle -1')
+        hlwm.call('cycle +1')
+        hlwm.call('cycle 0')
+
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+
+
+def test_cycle_completion(hlwm):
+    assert '-1' in hlwm.complete(['cycle'])
+    hlwm.command_has_all_args(['cycle', '+1'])
 
 
 @pytest.mark.parametrize("running_clients_num", [5])

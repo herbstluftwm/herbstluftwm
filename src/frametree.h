@@ -75,7 +75,6 @@ public:
     bool resizeFrame(FixPrecDec delta, Direction dir);
 
     // Commands
-    int cycleSelectionCommand(Input input, Output output);
     int removeFrameCommand();
     int rotateCommand();
     enum class MirrorDirection {

@@ -141,22 +141,6 @@ shared_ptr<FrameLeaf> FrameTree::focusedFrame(shared_ptr<Frame> node) {
 }
 
 
-int FrameTree::cycleSelectionCommand(Input input, Output output) {
-    int delta = 1;
-    string deltaStr;
-    if (input >> deltaStr) {
-        delta = atoi(deltaStr.c_str());
-    }
-    // find current selection
-    auto frame = focusedFrame();
-    auto count = frame->clientCount();
-    if (count != 0) {
-        frame->setSelection(MOD(frame->getSelection() + delta, count));
-    }
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 //! command that removes the focused frame
 int FrameTree::removeFrameCommand() {
     auto frame = focusedFrame();
