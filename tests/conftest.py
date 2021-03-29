@@ -28,6 +28,7 @@ COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
 # time in seconds to wait for a process to shut down
 PROCESS_SHUTDOWN_TIME = 5
 
+
 def extend_env_with_whitelist(environment):
     """Copy some whitelisted environment variables (if set) into an existing environment"""
     environment.update({e: os.environ[e] for e in os.environ if e in COPY_ENV_WHITELIST})
