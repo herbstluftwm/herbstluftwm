@@ -120,7 +120,6 @@ void TagManager::addCommand(CallOrComplete invoc)
     string tagName;
     ArgParse().mandatory(tagName)
             .command(invoc, [&](Output output) {
-        string error;
         if (tagName.empty()) {
             string error = "An empty tag name is not permitted";
             output << invoc.command() << ": " << error << "\n";
