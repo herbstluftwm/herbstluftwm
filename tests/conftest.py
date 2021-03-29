@@ -254,12 +254,16 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         return line[-1]
 
     def shutdown(self):
+        # first send SIGTERM to all processes, so they
+        # can shut down in parallel
         for client_proc in self.client_procs:
             client_proc.terminate()
-            client_proc.wait(2)
-
         self.hc_idle.terminate()
-        self.hc_idle.wait(2)
+
+        # and then wait for each of them to finish:
+        for client_proc in self.client_procs:
+            client_proc.wait(5)
+        self.hc_idle.wait(5)
 
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
@@ -440,10 +444,10 @@ class HlwmProcess:
             # only wait the process if it hasn't been cleaned up
             # this also avoids the second exception if hlwm crashed
             try:
-                assert self.proc.wait(2) == 0
+                assert self.proc.wait(5) == 0
             except subprocess.TimeoutExpired:
                 self.proc.kill()
-                self.proc.wait(2)
+                self.proc.wait(5)
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
 
@@ -486,10 +490,10 @@ class HcIdle:
     def shutdown(self):
         self.proc.terminate()
         try:
-            self.proc.wait(2)
+            self.proc.wait(5)
         except subprocess.TimeoutExpired:
             self.proc.kill()
-            self.proc.wait(2)
+            self.proc.wait(5)
 
 
 @pytest.fixture()
