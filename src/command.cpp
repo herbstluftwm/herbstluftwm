@@ -22,20 +22,15 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-static void try_complete(const char* needle, string to_check, Output output);
 static void try_complete(const char* needle, const char* to_check, Output output);
 
-static void complete_against_tags(int argc, char** argv, int pos, Output output);
-static void complete_against_monitors(int argc, char** argv, int pos, Output output);
 static void complete_against_winids(int argc, char** argv, int pos, Output output);
-static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 
 // if the current completion needs shell quoting and other shell specific
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
@@ -59,18 +54,7 @@ struct {
 } g_parameter_expected[] = {
     { "close",          2,  no_completion },
     { "split",          4,  no_completion },
-    { "cycle_monitor",  2,  no_completion },
-    { "focus_monitor",  2,  no_completion },
-    { "shift_to_monitor",2,  no_completion },
     { "add",            2,  no_completion },
-    { "merge_tag",      3,  no_completion },
-    { "rename",         3,  no_completion },
-    { "move",           2,  no_completion },
-    { "move_index",     3,  no_completion },
-    { "monitor_rect",   3,  no_completion },
-    { "layout",         3,  no_completion },
-    { "dump",           3,  no_completion },
-    { "object_tree",    2,  no_completion },
 };
 
 enum IndexCompare {
@@ -96,20 +80,8 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "close",          EQ, 1,  complete_against_winids, 0 },
-    { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
-    { "dump",           EQ, 1,  complete_against_tags, 0 },
-    { "layout",         EQ, 1,  complete_against_tags, 0 },
-    { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
-    { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
-    { "move",           EQ, 1,  complete_against_tags, 0 },
-    { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
-    { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
-    { "focus_monitor",  EQ, 1,  complete_against_monitors, 0 },
-    { "shift_to_monitor",EQ, 1,  complete_against_monitors, 0 },
-    { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },
-    { "monitor_rect",   EQ, 1,  complete_against_monitors, 0 },
 };
 
 // Implementation of CommandBinding
@@ -300,10 +272,6 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
     }
 }
 
-void try_complete(const char* needle, string to_check, Output output) {
-    try_complete(needle, to_check.c_str(), output);
-}
-
 void try_complete(const char* needle, const char* to_check, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, nullptr, output);
@@ -314,40 +282,6 @@ static void complete_against_list(const char* needle, const char** list, Output 
         const char* name = *list;
         try_complete(needle, name, output);
         list++;
-    }
-}
-
-void complete_against_tags(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    for (int i = 0; i < tag_get_count(); i++) {
-        const char* name = get_tag_by_index(i)->name->c_str();
-        try_complete(needle, name, output);
-    }
-}
-
-void complete_against_monitors(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    // complete against relative indices
-    try_complete(needle, "-1", output);
-    try_complete(needle, "+1", output);
-    try_complete(needle, "+0", output);
-    for (auto m : *g_monitors) {
-        // complete against the absolute index
-        try_complete(needle, to_string(m->index()), output);
-        // complete against the name
-        if (m->name != "") {
-            try_complete(needle, m->name->c_str(), output);
-        }
     }
 }
 
@@ -362,24 +296,6 @@ void complete_against_winids(int argc, char** argv, int pos, Output output) {
         char buf[100];
         snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
         try_complete(needle, buf, output);
-    }
-}
-
-void complete_merge_tag(int argc, char** argv, int pos, Output output) {
-    const char* first = (argc > 1) ? argv[1] : "";
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    for (int i = 0; i < tag_get_count(); i++) {
-        const char* name = get_tag_by_index(i)->name->c_str();
-        if (!strcmp(name, first)) {
-            // merge target must not be equal to tag to remove
-            continue;
-        }
-        try_complete(needle, name, output);
     }
 }
 
