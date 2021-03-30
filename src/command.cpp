@@ -360,7 +360,7 @@ int complete_against_commands(int argc, char** argv, int position,
             }
             if (!matches
                 || !g_completions[i].command
-                || strcmp(cmd_str, g_completions[i].command) != 0) {
+                || strcmp(cmd_str, g_completions[i].command)) {
                 continue;
             }
             const char* needle = (position < argc) ? argv[position] : "";
