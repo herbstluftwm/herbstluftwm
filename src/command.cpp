@@ -30,6 +30,9 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 // behaviour
 static bool g_shell_quoting = false;
 
+static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
+static const char* completion_split_ratios[]= {
+    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
 static bool no_completion(int, char**, int) {
     return false;
 }
@@ -71,6 +74,8 @@ struct {
     const char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
+    { "split",          EQ, 1,  nullptr, completion_split_modes },
+    { "split",          EQ, 2,  nullptr, completion_split_ratios },
 };
 
 // Implementation of CommandBinding
