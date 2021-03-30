@@ -338,6 +338,14 @@ CommandBinding TagManager::frameCommand(FrameCommand cmd, FrameCompleter complet
 {
     return { frameCommand(cmd), frameCompletion(completer) };
 }
+
+CommandBinding TagManager::frameCommand(FrameCallOrComplete cmd)
+{
+    return CommandBinding([this,cmd](CallOrComplete invoc) {
+        ((this->focus_()->frame()) ->* cmd) (invoc);
+    });
+}
+
 function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     return [cmd,this]() -> int {
         return cmd(*(this->focus_()->frame()));

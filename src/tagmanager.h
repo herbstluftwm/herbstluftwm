@@ -18,6 +18,7 @@ class Settings;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 typedef void (FrameTree::*FrameCompleter)(Completion&);
+typedef void (FrameTree::*FrameCallOrComplete)(CallOrComplete);
 
 template<>
 RunTimeConverter<HSTag*>* Converter<HSTag*>::converter;
@@ -49,6 +50,7 @@ public:
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
     CommandBinding frameCommand(FrameCommand cmd, FrameCompleter completer);
+    CommandBinding frameCommand(FrameCallOrComplete cmd);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);

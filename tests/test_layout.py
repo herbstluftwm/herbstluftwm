@@ -691,7 +691,70 @@ def test_split_simple(hlwm, running_clients, align, fraction):
 
 def test_split_invalid_alignment(hlwm):
     hlwm.call_xfail('split foo') \
-        .expect_stderr('split: Invalid alignment "foo"')
+        .expect_stderr('Cannot parse argument "foo": Expecting.*top')
+
+
+def test_split_completion(hlwm):
+    modes = hlwm.complete(['split'])
+    assert 'auto' in modes
+    assert 'bottom' in modes
+    assert 'top' in modes
+    assert hlwm.complete(['split', 'auto']) == [f'0.{i}' for i in range(1, 10)]
+
+
+def test_split_invalid_arg(hlwm):
+    hlwm.call_xfail(['split', 'uto']) \
+        .expect_stderr('.*"uto": Expecting.*top')
+
+
+def test_split_incomple_mode_name(hlwm):
+    assert hlwm.attr.tags.focus.frame_count() == '1'
+    hlwm.call(['split', 'e'])  # the same as 'explode'
+    assert hlwm.attr.tags.focus.frame_count() == '2'
+
+
+def test_split_equivalent_modes(hlwm):
+    # all names in the same group should behave identical
+    mode_groups = [
+        ['t', 'to', 'top'],
+        ['b', 'bot', 'bottom', 'vertical'],
+        ['a', 'auto'],
+        ['l', 'left'],
+        ['r', 'right', 'horizontal', 'h'],
+        ['e', 'explode'],
+    ]
+    for g in mode_groups:
+        hlwm.call(['load', '(clients vertical:0)'])  # reset
+        hlwm.call(['split', g[0]])
+        expected_layout = hlwm.call('dump').stdout
+
+        for mode in g:
+            hlwm.call(['load', '(clients vertical:0)'])  # reset
+            hlwm.call(['split', mode])
+            assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_split_modes_have_different_result(hlwm):
+    hlwm.create_clients(2)
+    layouts_so_far = set()
+    for mode in ['top', 'bottom', 'left', 'right', 'explode']:
+        hlwm.call(['load', '(clients grid:0)'])  # reset
+
+        hlwm.call(['split', mode])
+
+        layout = hlwm.call(['dump']).stdout
+        assert layout not in layouts_so_far
+
+        layouts_so_far.add(layout)
+
+
+def test_split_fraction(hlwm):
+    for mode in ['expl', 'auto', 'h', 'v']:
+        hlwm.call(['load', '(clients grid:0)'])  # reset
+
+        hlwm.call(['split', mode, '0.3'])
+
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.3'
 
 
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])

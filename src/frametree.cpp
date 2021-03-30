@@ -8,6 +8,7 @@
 #include "argparse.h"
 #include "client.h"
 #include "completion.h"
+#include "finite.h"
 #include "fixprecdec.h"
 #include "framedata.h"
 #include "frameparser.h"
@@ -874,17 +875,18 @@ void FrameTree::setLayoutCompletion(Completion& complete) {
     }
 }
 
+
+
 //! modes for the 'split' command
 class SplitMode {
 public:
-    SplitMode(string name_, SplitAlign align_, bool frameToFirst_, int selection_)
-        : name(name_)
-          , align(align_)
+
+    SplitMode(SplitAlign align_, bool frameToFirst_, int selection_)
+          : align(align_)
           , frameToFirst(frameToFirst_)
           , selection(selection_)
     {}
 
-    string name;
     SplitAlign align;
 
     //! If former frame moves to first child
@@ -893,51 +895,74 @@ public:
     //! Which child to select after the split
     int selection;
 
-    static vector<SplitMode> modes(SplitAlign align_explode = SplitAlign::horizontal, SplitAlign align_auto = SplitAlign::horizontal);
+    static std::map<SplitModeName,SplitMode> modes(SplitAlign align_auto);
 };
 
-vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_auto)
+template<>
+Finite<SplitModeName>::ValueList Finite<SplitModeName>::values = {
+    { FiniteNameFlags::AllowPrefixesAsNames },
+    {
+        { SplitModeName::Top,        "top" },
+        { SplitModeName::Bottom,     "bottom" },
+        { SplitModeName::Vertical,   "vertical" },
+        { SplitModeName::Right,      "right" },
+        { SplitModeName::Horizontal, "horizontal" },
+        { SplitModeName::Left,       "left" },
+        { SplitModeName::Explode,    "explode" },
+        { SplitModeName::Auto,       "auto" },
+}};
+
+std::map<SplitModeName, SplitMode> SplitMode::modes(SplitAlign align_auto)
 {
     return {
-        { "top",        SplitAlign::vertical,     false,  1   },
-        { "bottom",     SplitAlign::vertical,     true,   0   },
-        { "vertical",   SplitAlign::vertical,     true,   0   },
-        { "right",      SplitAlign::horizontal,   true,   0   },
-        { "horizontal", SplitAlign::horizontal,   true,   0   },
-        { "left",       SplitAlign::horizontal,   false,  1   },
-        { "explode",    align_explode,            true,   -1  },
-        { "auto",       align_auto,               true,   0   },
+        { SplitModeName::Top,        { SplitAlign::vertical,     false,  1   }},
+        { SplitModeName::Bottom,     { SplitAlign::vertical,     true,   0   }},
+        { SplitModeName::Vertical,   { SplitAlign::vertical,     true,   0   }},
+        { SplitModeName::Right,      { SplitAlign::horizontal,   true,   0   }},
+        { SplitModeName::Horizontal, { SplitAlign::horizontal,   true,   0   }},
+        { SplitModeName::Left,       { SplitAlign::horizontal,   false,  1   }},
+        { SplitModeName::Explode,    { SplitAlign::vertical,     true,   -1  }},
+        { SplitModeName::Auto,       { align_auto,               true,   0   }},
     };
 }
 
-int FrameTree::splitCommand(Input input, Output output)
+void FrameTree::splitCommand(CallOrComplete invoc)
 {
-    // usage: split t|b|l|r|h|v FRACTION [Frameindex]
-    string splitType;
+    // usage: split t|b|l|r|h|v [FRACTION] [Frameindex]
+    vector<string> fractionSuggestions = {
+        "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"
+    };
+    SplitModeName splitType;
     bool userDefinedFraction = false;
     FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
     string frameIndex = "@"; // split the focused frame per default
     ArgParse ap;
-    ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
+    ap.mandatory(splitType).optional(fraction, fractionSuggestions, &userDefinedFraction);
     ap.optional(frameIndex);
-    if (ap.parsingFails(input, output)) {
-        return ap.exitCode();
-    }
+    ap.command(invoc, [&](Output) {
+        splitFrame(frameIndex, splitType, fraction, userDefinedFraction);
+        return 0;
+    });
+}
+
+/**
+ * @brief FrameTree::splitFrame
+ * @param The frame to split
+ * @param how to split it
+ * @param an optional split ratio
+ * @param Wether the split ratio is explicitly wanted or can be ignored in mode 'explode'
+ */
+void FrameTree::splitFrame(string frameIndex, SplitModeName mode, FixPrecDec fraction, bool userDefinedFraction) {
     fraction = FrameSplit::clampFraction(fraction);
     shared_ptr<Frame> frame = lookup(frameIndex);
     int lh = frame->lastRect().height;
     int lw = frame->lastRect().width;
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
-    SplitAlign align_explode = SplitAlign::vertical;
-    auto availableModes = SplitMode::modes(align_explode, align_auto);
-    auto mode = std::find_if(
-            availableModes.begin(), availableModes.end(),
-            [=](const SplitMode &x){ return x.name[0] == splitType[0]; });
-    if (mode == availableModes.end()) {
-        output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    SplitMode m = *mode;
+    auto allSplitModes = SplitMode::modes(align_auto);
+    auto it = allSplitModes.find(mode);
+    // we know that 'mode' must be in the map allSplitModes, but let us stay safe
+    // and fall back to the first if it is not the case:
+    SplitMode m = ((it != allSplitModes.end()) ? it : allSplitModes.begin())->second;
     auto layout = frame->switchcase<LayoutAlgorithm>(&FrameLeaf::getLayout,
         [] (shared_ptr<FrameSplit> f) {
             return splitAlignToLayoutAlgorithm(f->getAlign());
@@ -947,7 +972,7 @@ int FrameTree::splitCommand(Input input, Output output)
     // that stay in the 'old frame'.
     auto windowcount = frame->switchcase<size_t>(&FrameLeaf::clientCount,
         [](shared_ptr<FrameSplit>) { return 0; });
-    bool exploding = m.name == "explode";
+    bool exploding = mode == SplitModeName::Explode;
     if (exploding) {
         if (windowcount <= 1) {
             m.align = align_auto;
@@ -978,13 +1003,13 @@ int FrameTree::splitCommand(Input input, Output output)
     shared_ptr<FrameSplit> frameParent = {}; // the new parent
     if (frameIsLeaf) {
         if (!frameIsLeaf->split(m.align, fraction, childrenLeaving)) {
-            return 0;
+            return;
         }
         frameParent = frameIsLeaf->getParent();
     }
     if (frameIsSplit) {
         if (!frameIsSplit->split(m.align, fraction)) {
-            return 0;
+            return;
         }
         frameParent = frameIsSplit->getParent();
     }
@@ -997,8 +1022,8 @@ int FrameTree::splitCommand(Input input, Output output)
     }
 
     // redraw monitor
-    get_current_monitor()->applyLayout();
-    return 0;
+    tag_->needsRelayout_.emit();
+    return;
 }
 
 
