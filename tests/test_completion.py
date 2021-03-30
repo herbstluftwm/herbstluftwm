@@ -206,6 +206,14 @@ def test_inputless_commands(hlwm, name):
         .returncode == 7
 
 
+def test_completionless_commands(hlwm):
+    # commands that accept arguments but don't have completion.
+    # Their completion must return '0' (instead of NO_PARAMETER_EXPECTED)
+    for cmd in ['spawn', 'wmexec']:
+        for idx in ['1', '2', '3']:
+            assert hlwm.call(['complete', idx, cmd])
+
+
 def test_remove_attr(hlwm):
     attr_path = "monitors.my_test"
     # assume you have a user-defined attribute

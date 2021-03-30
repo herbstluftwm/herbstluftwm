@@ -30,54 +30,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
-static const char* completion_split_ratios[]= {
-    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
-static bool no_completion(int, char**, int) {
-    return false;
-}
-
-/* find out, if a command still expects a parameter at a certain index.
- * only if this returns true, than a completion will be searched.
- *
- * if no match is found, then it defaults to "command still expects a
- * parameter".
- */
-struct {
-    const char*   command; /* the first argument */
-    int     min_index;  /* rule will only be considered */
-                        /* if current pos >= min_index */
-    bool    (*function)(int argc, char** argv, int pos);
-} g_parameter_expected[] = {
-    { "add",            2,  no_completion },
-};
-
-enum IndexCompare {
-    LE, /* lower equal */
-    EQ, /* equal to */
-    GE, /* greater equal */
-};
-
-/* list of completions, if a line matches, then it will be used, the order
- * does not matter */
-struct {
-    const char*   command;
-    IndexCompare  relation; /* defines how the index matches */
-    int     index;      /* which parameter to complete */
-                        /* command name is index = 0 */
-                        /* GE 0 matches any position */
-                        /* LE 3 matches position from 0 to 3 */
-    /* === various methods, how to complete === */
-    /* completion by function */
-    void (*function)(int argc, char** argv, int pos, Output output);
-    /* completion by a list of strings */
-    const char** list;
-} g_completions[] = {
-    /* name , relation, index,  completion method                   */
-    { "split",          EQ, 1,  nullptr, completion_split_modes },
-    { "split",          EQ, 2,  nullptr, completion_split_ratios },
-};
-
 // Implementation of CommandBinding
 
 CommandBinding::CommandBinding(function<int(Output)> cmd)
@@ -117,24 +69,11 @@ function <int(Input,Output)> CommandBinding::commandFromCFunc(
     };
 }
 
-CommandBinding::CommandBinding(int func(int argc, const char** argv, Output output))
-    : command(commandFromCFunc([func](int argc, char** argv, Output out) {
-                return func(argc, const_cast<const char**>(argv), out);
-            }))
-{}
-
 CommandBinding::CommandBinding(int func(int argc, char** argv))
     : command(commandFromCFunc([func](int argc, char **argv, Output) {
                 return func(argc, argv);
             }))
 {}
-
-CommandBinding::CommandBinding(int func(int argc, const char** argv))
-    : command(commandFromCFunc([func](int argc, char** argv, Output) {
-                return func(argc, const_cast<const char**>(argv));
-            }))
-{}
-
 
 /** Complete the given list of arguments
  */
@@ -218,7 +157,7 @@ void Commands::complete(Completion& completion) {
 
 int list_commands(Output output)
 {
-    for (auto cmd : *Commands::get()) {
+    for (const auto& cmd : *Commands::get()) {
         output << cmd.first << endl;
     }
     return 0;
@@ -271,31 +210,6 @@ void try_complete(const char* needle, const char* to_check, Output output) {
     try_complete_suffix(needle, to_check, suffix, nullptr, output);
 }
 
-static void complete_against_list(const char* needle, const char** list, Output output) {
-    while (*list) {
-        const char* name = *list;
-        try_complete(needle, name, output);
-        list++;
-    }
-}
-
-static bool parameter_expected(int argc, char** argv, int pos) {
-    if (pos <= 0 || argc < 1) {
-        /* no parameter if there is no command */
-        return false;
-    }
-    for (size_t i = 0; i < LENGTH(g_parameter_expected)
-                    && g_parameter_expected[i].command; i++) {
-        if (pos < g_parameter_expected[i].min_index) {
-            continue;
-        }
-        if (!strcmp(g_parameter_expected[i].command, argv[0])) {
-            return g_parameter_expected[i].function(argc, argv, pos);
-        }
-    }
-    return true;
-}
-
 int complete_command(int argc, char** argv, Output output) {
     // usage: complete POSITION command to complete ...
     if (argc < 2) {
@@ -320,7 +234,7 @@ int complete_against_commands(int argc, char** argv, int position,
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : nullptr;
-        for (auto cmd : *Commands::get()) {
+        for (const auto& cmd : *Commands::get()) {
             // only check the first len bytes
             try_complete(str, cmd.first.c_str(), output);
         }
@@ -344,38 +258,6 @@ int complete_against_commands(int argc, char** argv, int position,
         return completion.noParameterExpected() ?
             HERBST_NO_PARAMETER_EXPECTED
             : 0;
-    }
-    if (!parameter_expected(argc, argv, position)) {
-        return HERBST_NO_PARAMETER_EXPECTED;
-    }
-    if (argc >= 1) {
-        const char* cmd_str = (argc >= 1) ? argv[0] : "";
-        // complete parameters for commands
-        for (size_t i = 0; i < LENGTH(g_completions); i++) {
-            bool matches = false;
-            switch (g_completions[i].relation) {
-                case LE: matches = position <= g_completions[i].index; break;
-                case EQ: matches = position == g_completions[i].index; break;
-                case GE: matches = position >= g_completions[i].index; break;
-            }
-            if (!matches
-                || !g_completions[i].command
-                || strcmp(cmd_str, g_completions[i].command) != 0) {
-                continue;
-            }
-            const char* needle = (position < argc) ? argv[position] : "";
-            if (!needle) {
-                needle = "";
-            }
-            // try to complete
-            if (g_completions[i].function) {
-                g_completions[i].function(argc, argv, position, output);
-            }
-            if (g_completions[i].list) {
-                complete_against_list(needle, g_completions[i].list,
-                                      output);
-            }
-        }
     }
     return 0;
 }
