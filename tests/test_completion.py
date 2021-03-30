@@ -208,7 +208,7 @@ def test_inputless_commands(hlwm, name):
 
 def test_completionless_commands(hlwm):
     # commands that accept arguments but don't have compltion.
-    # Their completion must return '0' (ineast of NO_PARAMETER_EXPECTED)
+    # Their completion must return '0' (instead of NO_PARAMETER_EXPECTED)
     for cmd in ['spawn', 'wmexec']:
         for idx in ['1', '2', '3']:
             assert hlwm.call(['complete', idx, cmd])
