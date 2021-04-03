@@ -126,7 +126,7 @@ def test_drag_move_sends_configure(hlwm, x11, mouse, update_dragged):
     hlwm.attr.settings.update_dragged_clients = hlwm.bool(update_dragged)
     client, winid = x11.create_client()
     x, y = x11.get_absolute_top_left(client)
-    before = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    before = Rectangle.from_user_str(hlwm.attr.clients[winid].content_geometry())
     assert (x, y) == (before.x, before.y)
     mouse.move_into(winid, wait=True)
 
@@ -135,7 +135,7 @@ def test_drag_move_sends_configure(hlwm, x11, mouse, update_dragged):
     mouse.click('1')  # stop dragging
     hlwm.call('true')  # sync
 
-    after = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    after = Rectangle.from_user_str(hlwm.attr.clients[winid].content_geometry())
     assert before.adjusted(dx=12, dy=15) == after
 
 
@@ -207,7 +207,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
 
     client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
-    geom_before = Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported())
+    geom_before = Rectangle.from_user_str(hlwm.attr.clients[winid].content_geometry())
     assert geom_before == x11.get_absolute_geometry(client)  # duck-typing
     assert (geom_before.width, geom_before.height) == (300, 200)
     # move cursor to the top left corner, so we change the
@@ -234,7 +234,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     mouse.click('1', wait=True)
     geom_after = client.get_geometry()
     assert (geom_after.width, geom_after.height) == final_size
-    assert Rectangle.from_user_str(hlwm.attr.clients[winid].geometry_reported()) \
+    assert Rectangle.from_user_str(hlwm.attr.clients[winid].content_geometry()) \
         == geom_before.adjusted(dx=100, dy=120, dw=-100, dh=-120)
 
 

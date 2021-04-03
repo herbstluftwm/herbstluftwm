@@ -968,7 +968,7 @@ def test_smart_placement_within_monitor(hlwm):
     winid, _ = hlwm.create_client()
 
     inner_geometry = Rectangle.from_user_str(
-        hlwm.attr.clients[winid].geometry_reported())
+        hlwm.attr.clients[winid].content_geometry())
 
     # assert that the top left corner of the decoration
     # is still within the monitor

@@ -11,6 +11,10 @@ The command 'cycle_value' now expects an attribute path instead of a settings
 name. For compatibility reasons, passing settings name directly (without the
 prefix +settings.+) is still supported.
 
+Only for people using the git-version: During the development of 0.9.3, the
+'content_geometry' attribute of clients initially had the name
+'geometry_reported'.
+
 0.8.3 to 0.9.0
 --------------
 

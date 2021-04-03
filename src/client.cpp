@@ -56,7 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , sizehints_tiling_(this, "sizehints_tiling", false)
     , window_class_(this, "class", &Client::getWindowClass)
     , window_instance_(this, "instance", &Client::getWindowInstance)
-    , geometry_reported_(this, "geometry_reported", {})
+    , content_geometry_(this, "content_geometry", {})
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -136,9 +136,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                              "should be respected in tiling mode");
     sizehints_floating_.setDoc("if sizehints for this client should "
                                "be respected in floating mode");
-    geometry_reported_.setDoc(
-                "the geometry the client thinks it has. "
-                "This is the last window geometry that "
+    content_geometry_.setDoc(
+                "the geometry of the application content, that is, not taking "
+                "the decoration into account. "
+                "Also, this is the last window geometry that "
                 "was reported to the client application."
      );
 }
@@ -436,13 +437,13 @@ void Client::send_configure(bool force) {
     auto last_inner_rect = dec->last_inner();
     // force is just a quick fix: sometimes it is mandatory
     // to send a configure request even if the geometry didn't change.
-    if (geometry_reported_ == last_inner_rect && !force) {
+    if (content_geometry_ == last_inner_rect && !force) {
         // only send the configure notify if the window geometry really changed.
         // otherwise, sending this might trigger an endless loop between clients
         // and hlwm.
         return;
     }
-    geometry_reported_ = last_inner_rect;
+    content_geometry_ = last_inner_rect;
     XConfigureEvent ce;
     ce.type = ConfigureNotify;
     ce.display = X_.display();
