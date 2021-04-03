@@ -143,7 +143,7 @@ if args.run_tests:
 
     # First, run only the tests that are NOT marked to be excluded from code
     # coverage collection.
-    tox('-e py38 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
+    tox('-- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
 
     # Create the code coverage report:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
@@ -152,4 +152,4 @@ if args.run_tests:
     (build_dir / 'coverage.info').rename(repo / 'coverage.info')
 
     # Run the tests that have been skipped before (without clearing the pytest cache this time):
-    tox('-e py38 -- -n auto -v -x -m exclude_from_coverage', build_dir)
+    tox('-- -n auto -v -x -m exclude_from_coverage', build_dir)
