@@ -20,6 +20,8 @@ Current git version
     'class', 'geometry', 'winid')
   * The setting 'monitors_locked' is now explicitly an unsigned integer.
   * The setting 'default_frame_layout' now holds an algorithm name.
+  * New client attribute 'content_geometry' holding the geometry of the
+    application's content.
   * The 'shift' command now moves the window to a neighboured monitor if
     the window cannot be moved within a tag in the desired direction.
   * New command 'lower' to lower a window in the stack.

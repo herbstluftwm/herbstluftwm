@@ -78,7 +78,7 @@ public:
     Attribute_<bool> sizehints_tiling_;  // respect size hints regarding this client in tiling mode
     DynAttribute_<std::string> window_class_;
     DynAttribute_<std::string> window_instance_;
-    Attribute_<Rectangle> geometry_reported_;
+    Attribute_<Rectangle> content_geometry_;
 
 public:
     void init_from_X();
