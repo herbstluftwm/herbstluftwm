@@ -355,6 +355,26 @@ def test_floating_focused_vacouus(hlwm):
         .expect_stderr(r'There are no \(non-minimized\) floating windows')
 
 
+@pytest.mark.parametrize("tag", [True, False])
+@pytest.mark.parametrize("single", [True, False])
+def test_floating_correct_position(hlwm, single, tag):
+    if single:
+        hlwm.call('rule floating=on')
+    if tag:
+        hlwm.attr.tags.focus.floating = 'on'
+
+    winid, _ = hlwm.create_client()
+    hlwm.call('move_monitor "" 800x600+0+0')
+    hlwm.call('pad "" 0 0 0 0')
+
+    clientobj = hlwm.attr.clients[winid]
+
+    # the floating geometry is used iff tag or client is set to floating:
+    floating_geom_applied = single or tag
+    assert (clientobj.float_geometry() == clientobj.content_geometry()) \
+        == floating_geom_applied
+
+
 def test_urgent_count(hlwm, x11):
     # create 5 urgent clients
     for i in range(0, 5):

@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 
 
 def test_default_monitor(hlwm):
@@ -701,6 +702,25 @@ def test_pad_command(hlwm):
         args_passed_so_far.add(args)
 
     assert len(args_passed_so_far) == 2**0 + 2**1 + 2**2 + 2**3 + 2**4
+
+
+def test_pad_applied_to_floating_pos(hlwm):
+    winid, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[winid]
+    clientobj.floating = 'on'
+    for monitor_rect in [Rectangle(width=300, height=400),
+                         Rectangle(x=2, y=30, width=800, height=600)]:
+        hlwm.attr.monitors.focus.geometry = monitor_rect.to_user_str()
+        for left, up in [(10, 20), (5, 30)]:
+            hlwm.attr.monitors.focus.pad_left = left
+            hlwm.attr.monitors.focus.pad_up = up
+            content_geom = Rectangle.from_user_str(clientobj.content_geometry())
+            float_geom = Rectangle.from_user_str(clientobj.float_geometry())
+
+            assert content_geom.width == float_geom.width
+            assert content_geom.height == float_geom.height
+            assert content_geom.x == float_geom.x + left + monitor_rect.x
+            assert content_geom.y == float_geom.y + up + monitor_rect.y
 
 
 def test_pad_invalid_arg(hlwm):
