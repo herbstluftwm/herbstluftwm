@@ -586,7 +586,7 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
                     - client->float_size_->dimensions() / 2;
                 client->float_size_ = Rectangle(new_tl.x, new_tl.y,
                                                 client->float_size_->width,
-                                                client->float_size_->width);
+                                                client->float_size_->height);
             }
             break;
 
@@ -597,7 +597,7 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
                                              area, settings->snap_gap);
                 client->float_size_ = Rectangle(new_tl.x, new_tl.y,
                                                 client->float_size_->width,
-                                                client->float_size_->width);
+                                                client->float_size_->height);
             }
             break;
 
