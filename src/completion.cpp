@@ -134,7 +134,7 @@ void Completion::mergeResultsFrom(Completion& source)
     }
 }
 
-void Completion::withPrefix(const std::string& prependPrefix, std::function<void (Completion&)> callback)
+void Completion::withPrefix(const string& prependPrefix, function<void (Completion&)> callback)
 {
     Completion withPrefix(
         args_,

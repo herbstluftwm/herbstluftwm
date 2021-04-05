@@ -17,6 +17,8 @@
 #include "tagmanager.h"
 #include "xconnection.h"
 
+using std::shared_ptr;
+using std::function;
 using std::string;
 using std::endl;
 
@@ -358,7 +360,7 @@ void GlobalCommands::listClientsCommand(CallOrComplete invoc)
             onTag = onMonitor->tag;
         }
         // now, onTag is set in any case.
-        std::function<void(Client*)> printClient = [&](Client* c) {
+        function<void(Client*)> printClient = [&](Client* c) {
             if (floating && !c->is_client_floated()) {
                 return;
             }
@@ -380,7 +382,7 @@ void GlobalCommands::listClientsCommand(CallOrComplete invoc)
         if (inFrame == noFrameDefined) {
             onTag->foreachClient(printClient);
         } else {
-            std::shared_ptr<Frame> frame = onTag->frame->lookup(inFrame);
+            shared_ptr<Frame> frame = onTag->frame->lookup(inFrame);
             frame->foreachClient(printClient);
         }
         return 0;

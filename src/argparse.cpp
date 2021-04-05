@@ -259,7 +259,7 @@ bool ArgParse::tryParseFlag(const string& inputToken)
  * @param the token
  * @return A flag or a nullptr
  */
-ArgParse::Flag* ArgParse::findFlag(const std::string& inputToken)
+ArgParse::Flag* ArgParse::findFlag(const string& inputToken)
 {
     string needle = inputToken;
     size_t separatorPos = inputToken.find("=");
