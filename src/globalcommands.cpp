@@ -333,3 +333,57 @@ void GlobalCommands::focusNthCommand(CallOrComplete invoc)
     });
 }
 
+void GlobalCommands::listClientsCommand(CallOrComplete invoc)
+{
+    Monitor* onMonitor = nullptr;
+    HSTag* onTag = nullptr;
+    bool showTitle = false;
+    bool floating = false;
+    bool tiling = false;
+    string noFrameDefined = "#NoFrameDefined";
+    string inFrame = noFrameDefined;
+    ArgParse().flags({ {"--on-tag=", onTag}
+                     , {"--on-monitor=", onMonitor}
+                     , {"--title", &showTitle}
+                     , {"--floating", &floating}
+                     , {"--tiling", &tiling}
+                     , {"--in-frame=", inFrame}
+                     })
+            .command(invoc, [&](Output output) {
+        if (!onTag) {
+            if (!onMonitor) {
+                onMonitor = root_.monitors->focus();
+            }
+            // now, onMonitor is set in any case.
+            onTag = onMonitor->tag;
+        }
+        // now, onTag is set in any case.
+        std::function<void(Client*)> printClient = [&](Client* c) {
+            if (floating && !c->is_client_floated()) {
+                return;
+            }
+            if (tiling && c->is_client_floated()) {
+                return;
+            }
+            output << c->window_id_str();
+            if (showTitle) {
+                output << " ";
+                for (char ch : c->title_()) {
+                    if (ch == '\n') {
+                        ch = ' ';
+                    }
+                    output << ch;
+                }
+            }
+            output << endl;
+        };
+        if (inFrame == noFrameDefined) {
+            onTag->foreachClient(printClient);
+        } else {
+            std::shared_ptr<Frame> frame = onTag->frame->lookup(inFrame);
+            frame->foreachClient(printClient);
+        }
+        return 0;
+    });
+}
+

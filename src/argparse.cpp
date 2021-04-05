@@ -54,7 +54,21 @@ bool ArgParse::parsingFails(Input& input, Output& output)
         string valueString;
         input >> valueString;
         // try to parse this token as a flag
-        while (optionalArgumentsRemaining && tryParseFlag(valueString)) {
+        while (optionalArgumentsRemaining) {
+            try {
+                if (!tryParseFlag(valueString)) {
+                    // if it is not a flag, then break, i.e
+                    // continue with positional args
+                    break;
+                }
+            }  catch (std::exception& e) {
+                // if there is a parse error however, then
+                // stop entire parsing process
+                output << input.command() << ": Cannot parse flag \""
+                       << valueString << "\": " << e.what() << "\n";
+                errorCode_ = HERBST_INVALID_ARGUMENT;
+                return true;
+            }
             optionalArgumentsRemaining--;
             // if this token was the last optional argument
             if (optionalArgumentsRemaining == 0 && arg.optional_) {
@@ -85,10 +99,17 @@ bool ArgParse::parsingFails(Input& input, Output& output)
     // try to parse more flags after the positional arguments
     while (!input.empty()) {
         // only consume tokens if they are recognized flags
-        if (tryParseFlag(input.front())) {
-            input.shift();
-        } else {
-            break;
+        try {
+            if (tryParseFlag(input.front())) {
+                input.shift();
+            } else {
+                break;
+            }
+        }  catch (std::exception& e) {
+            output << input.command() << ": Cannot parse flag \""
+                   << input.front() << "\": " << e.what() << "\n";
+            errorCode_ = HERBST_INVALID_ARGUMENT;
+            return true;
         }
     }
 
@@ -163,11 +184,11 @@ void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
 void ArgParse::completion(Completion& complete)
 {
     size_t completionIndex = complete.index();
-    std::set<string> flagsPassedSoFar;
+    std::set<Flag*> flagsPassedSoFar;
     for (size_t i = 0; i < completionIndex; i++) {
-        auto it = flags_.find(complete[i]);
-        if (it != flags_.end()) {
-            flagsPassedSoFar.insert(it->second.name_);
+        Flag* flag = findFlag(complete[i]);
+        if (flag) {
+            flagsPassedSoFar.insert(flag);
         }
     }
     if (completionIndex - flagsPassedSoFar.size() > arguments_.size()) {
@@ -179,9 +200,9 @@ void ArgParse::completion(Completion& complete)
     bool argsStillPossible = false;
     // complete the unused flags:
     for (auto& it : flags_) {
-        if (flagsPassedSoFar.find(it.second.name_) == flagsPassedSoFar.end()) {
+        if (flagsPassedSoFar.find(&(it.second)) == flagsPassedSoFar.end()) {
             // complete names of flags that were not mentioned so far
-            complete.full(it.second.name_);
+            it.second.complete(complete);
             argsStillPossible = true;
         }
     }
@@ -213,17 +234,55 @@ void ArgParse::completion(Completion& complete)
 }
 
 /**
- * @brief try parse a flag
+ * @brief try parse a flag, possibly throwing an exception
+ * on a parse error.
  * @param argument token from a Input object
  * @return whether the token was a flag
  */
-bool ArgParse::tryParseFlag(string inputToken)
+bool ArgParse::tryParseFlag(const string& inputToken)
 {
-    auto flag = flags_.find(inputToken);
-    if (flag == flags_.end()) {
+    Flag* flag = findFlag(inputToken);
+    if (!flag) {
         // stop parsing flags on the first non-flag
         return false;
     }
-    flag->second.callback_();
+    string parameter = "";
+    if (inputToken.size() != flag->name_.size()) {
+        parameter = inputToken.substr(flag->name_.size());
+    }
+    flag->callback_(parameter);
     return true;
+}
+
+/**
+ * @brief Find a flag that is appropriate for a given inputToken
+ * @param the token
+ * @return A flag or a nullptr
+ */
+ArgParse::Flag* ArgParse::findFlag(const std::string& inputToken)
+{
+    string needle = inputToken;
+    size_t separatorPos = inputToken.find("=");
+    if (separatorPos != string::npos) {
+        needle = inputToken.substr(0, separatorPos + 1);
+    }
+    auto flag = flags_.find(needle);
+    if (flag == flags_.end()) {
+        return nullptr;
+    } else {
+        return &(flag->second);
+    }
+}
+
+void ArgParse::Flag::complete(Completion& completion)
+{
+    if (!name_.empty() && *name_.rbegin() == '=') {
+        // complete partially with argument
+        completion.partial(name_);
+        // use completion
+        completion.withPrefix(name_, parameterTypeCompletion_);
+    } else {
+        // ordinary flag that is either present or absent:
+        completion.full(name_);
+    }
 }

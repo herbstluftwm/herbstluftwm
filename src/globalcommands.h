@@ -45,6 +45,8 @@ public:
     void lowerCommand(CallOrComplete invoc);
 
     void focusNthCommand(CallOrComplete invoc);
+
+    void listClientsCommand(CallOrComplete invoc);
 private:
     Root& root_;
 };
