@@ -253,7 +253,7 @@ int complete_against_commands(int argc, char** argv, int position,
             arguments.push_back(argv[i]);
         }
         // the new completion context has the command name removed
-        Completion completion(arguments, position - 1, g_shell_quoting, output);
+        Completion completion(arguments, position - 1, "", g_shell_quoting, output);
         it->second.complete(completion);
         return completion.noParameterExpected() ?
             HERBST_NO_PARAMETER_EXPECTED

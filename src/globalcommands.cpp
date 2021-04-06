@@ -17,6 +17,8 @@
 #include "tagmanager.h"
 #include "xconnection.h"
 
+using std::shared_ptr;
+using std::function;
 using std::string;
 using std::endl;
 
@@ -329,6 +331,60 @@ void GlobalCommands::focusNthCommand(CallOrComplete invoc)
         auto frame = tag->frame->focusedFrame();
         frame->setSelection(index);
         tag->needsRelayout_.emit();
+        return 0;
+    });
+}
+
+void GlobalCommands::listClientsCommand(CallOrComplete invoc)
+{
+    Monitor* onMonitor = nullptr;
+    HSTag* onTag = nullptr;
+    bool showTitle = false;
+    bool floating = false;
+    bool tiling = false;
+    string noFrameDefined = "#NoFrameDefined";
+    string inFrame = noFrameDefined;
+    ArgParse().flags({ {"--tag=", onTag}
+                     , {"--monitor=", onMonitor}
+                     , {"--title", &showTitle}
+                     , {"--floating", &floating}
+                     , {"--tiling", &tiling}
+                     , {"--frame=", inFrame}
+                     })
+            .command(invoc, [&](Output output) {
+        if (!onTag) {
+            if (!onMonitor) {
+                onMonitor = root_.monitors->focus();
+            }
+            // now, onMonitor is set in any case.
+            onTag = onMonitor->tag;
+        }
+        // now, onTag is set in any case.
+        function<void(Client*)> printClient = [&](Client* c) {
+            if (floating && !c->is_client_floated()) {
+                return;
+            }
+            if (tiling && c->is_client_floated()) {
+                return;
+            }
+            output << c->window_id_str();
+            if (showTitle) {
+                output << " ";
+                for (char ch : c->title_()) {
+                    if (ch == '\n') {
+                        ch = ' ';
+                    }
+                    output << ch;
+                }
+            }
+            output << endl;
+        };
+        if (inFrame == noFrameDefined) {
+            onTag->foreachClient(printClient);
+        } else {
+            shared_ptr<Frame> frame = onTag->frame->lookup(inFrame);
+            frame->foreachClient(printClient);
+        }
         return 0;
     });
 }
