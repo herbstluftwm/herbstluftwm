@@ -170,7 +170,7 @@ int completeCommand(Input input, Output output)
     if (input.command() == "complete_shell") {
         shellQuoting = true;
     }
-    Completion completion(ArgList(input.begin(), input.end()), position, shellQuoting, output);
+    Completion completion(ArgList(input.begin(), input.end()), position, "", shellQuoting, output);
     Commands::complete(completion);
     if (completion.ifInvalidArguments()) {
         return HERBST_INVALID_ARGUMENT;
