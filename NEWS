@@ -14,6 +14,7 @@ Current git version
     client decorations, one does not see the frame decoration behind but the
     wallpaper instead)
   * New command line option '--replace' for replacing an existing window manager.
+  * New command 'list_clients'.
   * The frame attributes ('selection', 'algorithm', 'fraction', 'split_type')
     are now writable.
   * New objects for panels (under 'panels', exposing attributes 'instance',

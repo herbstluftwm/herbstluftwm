@@ -47,21 +47,39 @@ public:
     public:
         Flag(std::string name, std::function<void()> callback)
             : name_(name)
-            , callback_(callback)
+            , callback_([callback](const std::string&) { callback(); })
         {}
         //! directly activate a boolean variable
         Flag(std::string name, bool* target)
             : name_(name)
         {
-            callback_ = [target] () {
+            callback_ = [target] (const std::string&) {
                 if (target) {
                     *target = true;
                 }
             };
         }
+        //! a flag with a parameter
+        template<typename X>
+        Flag(const std::string& name, X& target)
+            : name_(name)
+        {
+            callback_ = [&target] (const std::string& source) {
+                target = Converter<X>::parse(source);
+            };
+            parameterTypeCompletion_ = [] (Completion& completion) {
+                Converter<X>::complete(completion, nullptr);
+            };
+        }
 
+        void complete(Completion& completion);
+
+        //! if it is sufficient that name_ is only
+        //! a prefix
         std::string name_;
-        std::function<void()> callback_;
+        //! the callback is invoked with a possible parameter
+        std::function<void(const std::string&)> callback_;
+        std::function<void(Completion&)> parameterTypeCompletion_;
     };
 
     /**
@@ -130,7 +148,8 @@ public:
 private:
     void completion(Completion& complete);
     bool unparsedTokens(Input& input, Output& output);
-    bool tryParseFlag(std::string inputToken);
+    bool tryParseFlag(const std::string& inputToken);
+    Flag* findFlag(const std::string& inputToken);
     std::vector<Argument> arguments_;
     std::map<std::string, Flag> flags_;
     int errorCode_ = 0;
