@@ -325,16 +325,15 @@ bool Floating::shiftDirection(Direction dir) {
     if (delta == Point2D{0, 0}) {
         return false;
     }
-    curfocus->float_size_.x += delta.x;
-    curfocus->float_size_.y += delta.y;
+    curfocus->float_size_ = curfocus->float_size_->shifted(delta);
     get_current_monitor()->applyLayout();
     return true;
 }
 
 
 static bool resize_by_delta(Client* client, Direction dir, int delta) {
-    int new_width = client->float_size_.width;
-    int new_height = client->float_size_.height;
+    int new_width = client->float_size_->width;
+    int new_height = client->float_size_->height;
     if (dir == Direction::Right || dir == Direction::Left) {
         new_width += delta;
     }
@@ -342,21 +341,23 @@ static bool resize_by_delta(Client* client, Direction dir, int delta) {
         new_height += delta;
     }
     client->applysizehints(&new_width, &new_height);
-    if (new_width == client->float_size_.width
-            && new_height == client->float_size_.height)
+    if (new_width == client->float_size_->width
+            && new_height == client->float_size_->height)
     {
         return false;
     }
     // growing to the left or down
+    Rectangle geometry = client->float_size_;
     if (dir == Direction::Right || dir == Direction::Down) {
-        client->float_size_.width = new_width;
-        client->float_size_.height = new_height;
+        geometry.width = new_width;
+        geometry.height = new_height;
     } else if (dir == Direction::Left || dir == Direction::Up) {
-        client->float_size_.x -= new_width - client->float_size_.width;
-        client->float_size_.y -= new_height - client->float_size_.height;
-        client->float_size_.width = new_width;
-        client->float_size_.height = new_height;
+        geometry.x -= new_width - geometry.width;
+        geometry.y -= new_height - geometry.height;
+        geometry.width = new_width;
+        geometry.height = new_height;
     }
+    client->float_size_ = geometry;
     return true;
 }
 
@@ -387,28 +388,28 @@ bool Floating::grow_into_direction(HSTag* tag, Client* client, Direction dir) {
 }
 
 bool Floating::shrink_into_direction(Client* client, Direction dir) {
-    int delta_width = client->float_size_.width / -2;
-    int delta_height = client->float_size_.height / -2;
+    int delta_width = client->float_size_->width / -2;
+    int delta_height = client->float_size_->height / -2;
     switch (dir) {
         case Direction::Right:
             // don't let windows shrink arbitrarily. 100 px is hopefully ok
             // this here is bigger than WINDOW_MIN_WIDTH/_HEIGHT on purpose
-            if (client->float_size_.width < 100) {
+            if (client->float_size_->width < 100) {
                 return false;
             }
             return resize_by_delta(client, Direction::Left, delta_width);
         case Direction::Left:
-            if (client->float_size_.width < 100) {
+            if (client->float_size_->width < 100) {
                 return false;
             }
             return resize_by_delta(client, Direction::Right, delta_width);
         case Direction::Down:
-            if (client->float_size_.height < 100) {
+            if (client->float_size_->height < 100) {
                 return false;
             }
             return resize_by_delta(client, Direction::Up, delta_height);
         case Direction::Up:
-            if (client->float_size_.height < 100) {
+            if (client->float_size_->height < 100) {
                 return false;
             }
             return resize_by_delta(client, Direction::Down, delta_height);
@@ -552,5 +553,5 @@ Point2D Floating::smartPlacement(HSTag* tag, Client* client, Point2D area, int g
     }
     // transform the topleft coordinate of the outer window
     // to the topleft coordinate of the window content
-    return std::get<2>(best) + (client->float_size_.tl() - clientOuter.tl());
+    return std::get<2>(best) + (client->float_size_->tl() - clientOuter.tl());
 }

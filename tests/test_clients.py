@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 
 
 def test_client_lives_longer_than_hlwm(hlwm):
@@ -354,3 +355,27 @@ def test_parent_frame_attribute_tag_floating(hlwm):
 
         assert ('parent_frame' in hlwm.list_children(f'clients.{winid}')) \
             == (value == 'off')
+
+
+@pytest.mark.parametrize("minimized", [True, False])
+@pytest.mark.parametrize("floating", [True, False])
+@pytest.mark.parametrize("othertag", [True, False])
+def test_floating_geometry_change(hlwm, minimized, floating, x11, othertag):
+    if othertag:
+        hlwm.call('add othertag')
+        hlwm.call('rule tag=othertag')
+    handle, winid = x11.create_client()
+    clientobj = hlwm.attr.clients[winid]
+    clientobj.floating = hlwm.bool(floating)
+    clientobj.minimized = hlwm.bool(minimized)
+    hlwm.call('pad "" 0 0 0 0')
+    hlwm.call('move_monitor "" 800x600+0+0')
+
+    for geom in [Rectangle(x=50, y=100, width=100, height=300),
+                 Rectangle(x=-20, y=2, width=430, height=200)]:
+
+        clientobj.floating_geometry = geom.to_user_str()
+
+        if not minimized and not othertag:
+            assert (Rectangle.from_user_str(clientobj.content_geometry()) == geom) == floating
+            assert (x11.get_absolute_top_left(handle) == (geom.x, geom.y)) == floating

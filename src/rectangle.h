@@ -24,6 +24,11 @@ struct Rectangle {
     Point2D tr() const { return {x + width, y}; }
     Point2D dimensions() const { return { width, height}; }
 
+    //! return the rectangle with an adjusted position
+    Rectangle shifted(Point2D delta) const {
+        return Rectangle(x + delta.x, y + delta.y, width, height);
+    }
+
     //! Grow/shrink by dx left and right, by dy top and bottom, respectively
     Rectangle adjusted(int dx, int dy) const;
     //! Grow/shrink in each of the four given directions
