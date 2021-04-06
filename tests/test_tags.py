@@ -371,7 +371,7 @@ def test_floating_correct_position(hlwm, single, tag):
 
     # the floating geometry is used iff tag or client is set to floating:
     floating_geom_applied = single or tag
-    assert (clientobj.float_geometry() == clientobj.content_geometry()) \
+    assert (clientobj.floating_geometry() == clientobj.content_geometry()) \
         == floating_geom_applied
 
 

@@ -36,7 +36,7 @@ static Client* lastfocus = nullptr;
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
-    , float_size_(this, "float_geometry",  {0, 0, 100, 100})
+    , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)

@@ -118,7 +118,7 @@ def test_drag_move(hlwm, x11, mouse, repeat):
     hlwm.call('true')  # sync
 
     assert x11.get_absolute_top_left(client) == (x + 12, y + 15)
-    r = Rectangle.from_user_str(hlwm.attr.clients[winid].float_geometry())
+    r = Rectangle.from_user_str(hlwm.attr.clients[winid].floating_geometry())
     assert (r.x, r.y) == (x + 12, y + 15)
 
 
@@ -238,7 +238,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     assert (geom_after.width, geom_after.height) == final_size
     assert Rectangle.from_user_str(hlwm.attr.clients[winid].content_geometry()) \
         == geom_before.adjusted(dx=100, dy=120, dw=-100, dh=-120)
-    assert Rectangle.from_user_str(hlwm.attr.clients[winid].float_geometry()) \
+    assert Rectangle.from_user_str(hlwm.attr.clients[winid].floating_geometry()) \
         == geom_before.adjusted(dx=100, dy=120, dw=-100, dh=-120)
 
 

@@ -715,7 +715,7 @@ def test_pad_applied_to_floating_pos(hlwm):
             hlwm.attr.monitors.focus.pad_left = left
             hlwm.attr.monitors.focus.pad_up = up
             content_geom = Rectangle.from_user_str(clientobj.content_geometry())
-            float_geom = Rectangle.from_user_str(clientobj.float_geometry())
+            float_geom = Rectangle.from_user_str(clientobj.floating_geometry())
 
             assert content_geom.width == float_geom.width
             assert content_geom.height == float_geom.height

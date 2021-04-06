@@ -360,7 +360,7 @@ def test_parent_frame_attribute_tag_floating(hlwm):
 @pytest.mark.parametrize("minimized", [True, False])
 @pytest.mark.parametrize("floating", [True, False])
 @pytest.mark.parametrize("othertag", [True, False])
-def test_float_geometry_change(hlwm, minimized, floating, x11, othertag):
+def test_floating_geometry_change(hlwm, minimized, floating, x11, othertag):
     if othertag:
         hlwm.call('add othertag')
         hlwm.call('rule tag=othertag')
@@ -374,7 +374,7 @@ def test_float_geometry_change(hlwm, minimized, floating, x11, othertag):
     for geom in [Rectangle(x=50, y=100, width=100, height=300),
                  Rectangle(x=-20, y=2, width=430, height=200)]:
 
-        clientobj.float_geometry = geom.to_user_str()
+        clientobj.floating_geometry = geom.to_user_str()
 
         if not minimized and not othertag:
             assert (Rectangle.from_user_str(clientobj.content_geometry()) == geom) == floating
