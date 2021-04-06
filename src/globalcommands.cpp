@@ -344,12 +344,12 @@ void GlobalCommands::listClientsCommand(CallOrComplete invoc)
     bool tiling = false;
     string noFrameDefined = "#NoFrameDefined";
     string inFrame = noFrameDefined;
-    ArgParse().flags({ {"--on-tag=", onTag}
-                     , {"--on-monitor=", onMonitor}
+    ArgParse().flags({ {"--tag=", onTag}
+                     , {"--monitor=", onMonitor}
                      , {"--title", &showTitle}
                      , {"--floating", &floating}
                      , {"--tiling", &tiling}
-                     , {"--in-frame=", inFrame}
+                     , {"--frame=", inFrame}
                      })
             .command(invoc, [&](Output output) {
         if (!onTag) {

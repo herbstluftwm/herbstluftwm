@@ -215,10 +215,10 @@ list_keybinds::
 
 WARNING: Tabs within command parameters are not escaped!
 
-list_clients [*--on-tag=*'TAG'|*--on-monitor=*'MONITOR'] [*--in-frame=*'FRAME_PATH'|*--floating*|*--tiling*] [*--title*]::
+list_clients [*--tag=*'TAG'|*--monitor=*'MONITOR'] [*--frame=*'FRAME_PATH'|*--floating*|*--tiling*] [*--title*]::
     Lists the window ids of all clients on the given 'TAG' or 'MONITOR' (or the
     current if unspecified). In addition to that, one can restrict to clients in
-    a specific frame (*--in-frame=*) or to tiled or floated clients.
+    a specific frame (*--frame=*) or to tiled or floated clients.
     The output is one line per client; if *--title* is given, then in addition
     to every client's window id, its window title is printed in the same line.
 

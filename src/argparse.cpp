@@ -234,7 +234,7 @@ void ArgParse::completion(Completion& complete)
 }
 
 /**
- * @brief try parse a flag, possibly throwing an exception
+ * @brief try to parse a flag, possibly throwing an exception
  * on a parse error.
  * @param argument token from a Input object
  * @return whether the token was a flag
