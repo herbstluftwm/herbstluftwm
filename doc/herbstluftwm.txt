@@ -851,7 +851,7 @@ set_attr 'ATTRIBUTE' 'NEWVALUE'::
     <<OBJECTS,*OBJECTS section*>>.
 
 type_of_attr 'ATTRIBUTE'::
-    Print (one line containing) the type of the specified 'ATTRIBUTE'.
+    Print the type of the specified 'ATTRIBUTE'.
 
 new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
     Creates a new attribute with the name and in the object specified by 'PATH'.
