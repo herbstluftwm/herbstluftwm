@@ -140,13 +140,7 @@ void Commands::complete(Completion& completion) {
             // get new completion context with command name omitted.
             Completion shifted = completion.shifted(1);
             it->second.complete(shifted);
-            // TODO: call mergeResultsFrom(), once #1274 is merged.
-            if (shifted.ifInvalidArguments()) {
-                completion.invalidArguments();
-            }
-            if (shifted.noParameterExpected()) {
-                completion.none();
-            }
+            completion.mergeResultsFrom(shifted);
         }
     }
 }
