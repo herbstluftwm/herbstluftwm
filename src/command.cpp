@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 
+#include "argparse.h"
 #include "client.h"
 #include "completion.h"
 #include "hlwmcommon.h"
@@ -21,14 +22,6 @@ using std::string;
 using std::to_string;
 using std::unique_ptr;
 using std::vector;
-
-static void try_complete(const char* needle, const char* to_check, Output output);
-
-static int complete_against_commands(int argc, char** argv, int position, Output output);
-
-// if the current completion needs shell quoting and other shell specific
-// behaviour
-static bool g_shell_quoting = false;
 
 // Implementation of CommandBinding
 
@@ -134,24 +127,21 @@ shared_ptr<const CommandTable> Commands::get() {
 }
 
 void Commands::complete(Completion& completion) {
-    // wrap around complete_against_commands
-    // Once we have migrated all completions, we can implement command
-    // completion directly with the minimal interface that Completion provides.
-    // Then we can also unfriend this function from the Completion class.
-    char** argv = new char*[completion.args_.size() + 1];
-    argv[completion.args_.size()] = nullptr;
-    for (size_t i = 0; i < completion.args_.size(); i++) {
-        argv[i] = const_cast<char*>((completion.args_.begin() + i)->c_str());
-    }
-    int res = complete_against_commands(completion.args_.size(),
-                                        argv,
-                                        completion.index_,
-                                        completion.output_);
-    delete[] argv;
-    if (res == HERBST_NO_PARAMETER_EXPECTED) {
-        completion.none();
-    } else if (res != 0) {
-        completion.invalidArguments();
+    auto commandTable = Commands::get();
+    if (completion == 0) {
+        for (const auto& cmd : *commandTable) {
+            completion.full(cmd.first);
+        }
+    } else {
+        auto it = commandTable->find(completion[0]);
+        if (it == commandTable->end()) {
+            completion.invalidArguments();
+        } else if (it->second.hasCompletion()) {
+            // get new completion context with command name omitted.
+            Completion shifted = completion.shifted(1);
+            it->second.complete(shifted);
+            completion.mergeResultsFrom(shifted);
+        }
     }
 }
 
@@ -163,101 +153,24 @@ int list_commands(Output output)
     return 0;
 }
 
-static void try_complete_suffix(const char* needle, const char* to_check, const char* suffix,
-                                const char* prefix, Output output)
+int completeCommand(Input input, Output output)
 {
-    bool matches = !needle;
-    if (!matches) {
-        matches = true; // set it to true if the loop successfully runs
-        // find the first difference between needle and to_check
-        for (int i = 0; true ; i++) {
-            // check if needle is a prefix of to_check
-            if (!needle[i]) {
-                break;
-            }
-            // if the needle is longer than to_check, then needle isn't a
-            // correct prefix of to_check
-            if (!to_check[i]) {
-                matches = false;
-                break;
-            }
-            // only proceed if they are identical
-            if (to_check[i] != needle[i]) {
-                matches = false;
-                break;
-            }
-        }
+    int position = 0;
+    ArgParse ap = ArgParse().mandatory(position);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
-    if (matches) {
-        if (prefix) {
-            if (g_shell_quoting) {
-                output << posix_sh_escape(prefix);
-            } else {
-                output << prefix;
-            }
-        }
-        if (g_shell_quoting) {
-            output << posix_sh_escape(to_check);
-        } else {
-            output << to_check;
-        }
-        output << suffix;
+    bool shellQuoting = false;
+    if (input.command() == "complete_shell") {
+        shellQuoting = true;
     }
-}
-
-void try_complete(const char* needle, const char* to_check, Output output) {
-    const char* suffix = g_shell_quoting ? " \n" : "\n";
-    try_complete_suffix(needle, to_check, suffix, nullptr, output);
-}
-
-int complete_command(int argc, char** argv, Output output) {
-    // usage: complete POSITION command to complete ...
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* cmdname = argv[0];
-    g_shell_quoting = !strcmp(cmdname, "complete_shell");
-    // index must be between first and last arg of "command to complete ..."
-    int position = CLAMP(atoi(argv[1]), 0, argc-2);
-    (void)SHIFT(argc, argv);
-    (void)SHIFT(argc, argv);
-    if (g_shell_quoting) {
-        for (int i = 0; i < argc; i++) {
-            posix_sh_compress_inplace(argv[i]);
-        }
-    }
-    return complete_against_commands(argc, argv, position, output);
-}
-
-int complete_against_commands(int argc, char** argv, int position,
-                              Output output) {
-    // complete command
-    if (position == 0) {
-        char* str = (argc >= 1) ? argv[0] : nullptr;
-        for (const auto& cmd : *Commands::get()) {
-            // only check the first len bytes
-            try_complete(str, cmd.first.c_str(), output);
-        }
-        return 0;
-    }
-    // try to get completion from the command binding
-    string commandName = argv[0];
-    auto commandTable = Commands::get();
-    auto it = commandTable->find(commandName);
-    if (it == commandTable->end()) {
+    Completion completion(ArgList(input.begin(), input.end()), position, "", shellQuoting, output);
+    Commands::complete(completion);
+    if (completion.ifInvalidArguments()) {
         return HERBST_INVALID_ARGUMENT;
     }
-    if (it->second.hasCompletion()) {
-        vector<string> arguments;
-        for (int i = 1; i < argc; i++) {
-            arguments.push_back(argv[i]);
-        }
-        // the new completion context has the command name removed
-        Completion completion(arguments, position - 1, "", g_shell_quoting, output);
-        it->second.complete(completion);
-        return completion.noParameterExpected() ?
-            HERBST_NO_PARAMETER_EXPECTED
-            : 0;
+    if (completion.noParameterExpected()) {
+        return HERBST_NO_PARAMETER_EXPECTED;
     }
     return 0;
 }

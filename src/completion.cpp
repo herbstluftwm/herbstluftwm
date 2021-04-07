@@ -57,6 +57,11 @@ void Completion::none() {
     noParameterExpected_ = true;
 }
 
+void Completion::parametersStillExpected()
+{
+    noParameterExpected_ = false;
+}
+
 //! Return the given string posix sh escaped if in shell output mode
 string Completion::escape(const string& str) {
     return shellOutput_ ? posix_sh_escape(str) : str;
@@ -127,10 +132,10 @@ void Completion::completeCommands(size_t offset) {
 void Completion::mergeResultsFrom(Completion& source)
 {
     if (source.ifInvalidArguments()) {
-        source.invalidArguments();
+        invalidArguments();
     }
     if (source.noParameterExpected()) {
-        source.none();
+        none();
     }
 }
 

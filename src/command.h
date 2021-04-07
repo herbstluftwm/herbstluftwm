@@ -159,7 +159,7 @@ namespace Commands {
 
 // commands
 int list_commands(Output output);
-int complete_command(int argc, char** argv, Output output);
+int completeCommand(Input input, Output output);
 
 #endif
 
