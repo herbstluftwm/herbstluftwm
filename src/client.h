@@ -33,7 +33,7 @@ public:
     Window      window_;
     std::unique_ptr<Decoration> dec; // pimpl
     Rectangle   last_size_;      // last size excluding the window border
-    Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
+    Attribute_<Rectangle> float_size_;     // floating size without the window border
     HSTag*      tag_ = {};
     Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
@@ -129,6 +129,7 @@ public:
 
     void updateEwmhState();
 private:
+    void floatingGeometryChanged();
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();

@@ -583,9 +583,10 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
                     // the center of the monitor
                     getFloatingArea().dimensions() / 2
                     // minus half the dimensions of the client
-                    - client->float_size_.dimensions() / 2;
-                client->float_size_.x = new_tl.x;
-                client->float_size_.y = new_tl.y;
+                    - client->float_size_->dimensions() / 2;
+                client->float_size_ = Rectangle(new_tl.x, new_tl.y,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
             }
             break;
 
@@ -594,8 +595,9 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
                 Point2D area = getFloatingArea().dimensions();
                 Point2D new_tl = Floating::smartPlacement(tag, client,
                                              area, settings->snap_gap);
-                client->float_size_.x = new_tl.x;
-                client->float_size_.y = new_tl.y;
+                client->float_size_ = Rectangle(new_tl.x, new_tl.y,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
             }
             break;
 
