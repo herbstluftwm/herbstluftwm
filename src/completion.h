@@ -38,6 +38,8 @@ public:
 
     //! there is no more parameter expected
     void none();
+    //! reset a previous call to none()
+    void parametersStillExpected();
 
     //! some of the previous arguments are invalid
     void invalidArguments();

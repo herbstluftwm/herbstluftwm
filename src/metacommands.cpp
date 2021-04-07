@@ -967,6 +967,10 @@ void MetaCommands::chainCompletion(Completion& complete)
             complete.full(complete[0]);
         }
         complete.completeCommands(lastsep + 1);
+        // even if the completion of the parameter
+        // claimed that no parameters are expected, there still
+        // could be another separator and another command
+        complete.parametersStillExpected();
     }
 }
 
