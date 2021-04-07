@@ -30,7 +30,7 @@ Current git version
   * The 'cycle_value' command now expects an attribute (and only works for
     settings for compatibility).
   * New object 'types' containing documentation on (attribute-) types.
-  * New command 'type_of_attr' printing the type of a given attribute.
+  * New command 'attr_type' printing the type of a given attribute.
   * Relative values for integer attributes ('+=N' and '-=N')
   * The 'cycle' command now also cycles through floating windows.
   * Bug fixes:

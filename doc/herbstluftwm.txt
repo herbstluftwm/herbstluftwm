@@ -857,7 +857,7 @@ set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
-type_of_attr 'ATTRIBUTE'::
+attr_type 'ATTRIBUTE'::
     Print the type of the specified 'ATTRIBUTE'.
 
 new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
