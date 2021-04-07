@@ -127,10 +127,10 @@ void Completion::completeCommands(size_t offset) {
 void Completion::mergeResultsFrom(Completion& source)
 {
     if (source.ifInvalidArguments()) {
-        source.invalidArguments();
+        invalidArguments();
     }
     if (source.noParameterExpected()) {
-        source.none();
+        none();
     }
 }
 
