@@ -151,7 +151,7 @@ void MetaCommands::print_object_tree_complete(Completion& complete) {
     }
 }
 
-int MetaCommands::typeOfAttrCommand(Input input, Output output)
+int MetaCommands::attrTypeCommand(Input input, Output output)
 {
     string attrName;
     ArgParse ap;
@@ -173,7 +173,7 @@ int MetaCommands::typeOfAttrCommand(Input input, Output output)
     return 0;
 }
 
-void MetaCommands::typeOfAttrCompletion(Completion& complete)
+void MetaCommands::attrTypeCompletion(Completion& complete)
 {
     if (complete == 0) {
         completeAttributePath(complete);

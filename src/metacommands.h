@@ -42,8 +42,8 @@ public:
     void attr_complete(Completion& complete);
     int print_object_tree_command(Input in, Output output);
     void print_object_tree_complete(Completion& complete);
-    int typeOfAttrCommand(Input input, Output output);
-    void typeOfAttrCompletion(Completion& complete);
+    int attrTypeCommand(Input input, Output output);
+    void attrTypeCompletion(Completion& complete);
 
     int substitute_cmd(Input input, Output output);
     void substitute_complete(Completion& complete);
