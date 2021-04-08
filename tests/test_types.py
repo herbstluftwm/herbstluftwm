@@ -117,3 +117,23 @@ def test_uint_negative(hlwm):
 
     hlwm.attr.my_val = '-=-10'
     assert hlwm.attr.my_val() == '10'
+
+
+def test_attr_type_for_many_types(hlwm):
+    types = hlwm.complete(['mktemp'])
+    assert len(types) >= 5
+
+    for t in types:
+        # also test that a newline is printed
+        hlwm.call(['mktemp', t, 'ATTR', 'attr_type', 'ATTR']).stdout == t + '\\n'
+
+
+def test_attr_type_invalid_arg(hlwm):
+    hlwm.call_xfail('attr_type') \
+        .expect_stderr('not enough arg')
+
+    hlwm.call_xfail('attr_type foo bar') \
+        .expect_stderr('Unknown .*bar')
+
+    hlwm.call_xfail('attr_type not.an.attr') \
+        .expect_stderr('No such object')

@@ -151,6 +151,37 @@ void MetaCommands::print_object_tree_complete(Completion& complete) {
     }
 }
 
+int MetaCommands::attrTypeCommand(Input input, Output output)
+{
+    string attrName;
+    ArgParse ap;
+    ap.mandatory(attrName);
+    if (ap.parsingAllFails(input, output)) {
+        return ap.exitCode();
+    }
+
+    Attribute* a = getAttribute(attrName, output);
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    auto it = type_strings.find(a->type());
+    string typeName = "unknown"; // this should not happen anyway
+    if (it != type_strings.end()) {
+        typeName = it->second.first;
+    }
+    output << typeName << endl;
+    return 0;
+}
+
+void MetaCommands::attrTypeCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        completeAttributePath(complete);
+    } else {
+        complete.none();
+    }
+}
+
 
 int MetaCommands::substitute_cmd(Input input, Output output)
 {
