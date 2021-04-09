@@ -369,23 +369,23 @@ def test_cycle_stays_in_floating_layer(hlwm):
     for winid in floating:
         assert hlwm.attr.clients.focus.winid() == winid
         # the floating layer always stays focused
-        assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+        assert hlwm.attr.tags.focus.floating_focused() is True
         hlwm.call(['cycle', '+1'])
 
     # we're back a the first floating client:
     assert hlwm.attr.clients.focus.winid() == floating[0]
-    assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+    assert hlwm.attr.tags.focus.floating_focused() is True
 
 
 def test_cycle_empty_scope(hlwm):
-    for floating in ['on', 'off']:
+    for floating in [True, False]:
         hlwm.attr.tags.focus.floating = floating
 
         hlwm.call('cycle -1')
         hlwm.call('cycle +1')
         hlwm.call('cycle 0')
 
-        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == 0
 
 
 def test_cycle_completion(hlwm):
@@ -708,9 +708,9 @@ def test_split_invalid_arg(hlwm):
 
 
 def test_split_incomple_mode_name(hlwm):
-    assert hlwm.attr.tags.focus.frame_count() == '1'
+    assert hlwm.attr.tags.focus.frame_count() == 1
     hlwm.call(['split', 'e'])  # the same as 'explode'
-    assert hlwm.attr.tags.focus.frame_count() == '2'
+    assert hlwm.attr.tags.focus.frame_count() == 2
 
 
 def test_split_equivalent_modes(hlwm):
@@ -1537,13 +1537,13 @@ def test_shift_to_other_monitor_if_allowed_by_setting(hlwm, cross_monitor_bounds
     hlwm.create_client()
     # but the 'winid' is focused on monitor 0
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
 
     command = ['shift', 'right']
     if cross_monitor_bounds:
         # 'winid' gets moved to the monitor on the right
         hlwm.call(command)
-        assert hlwm.attr.monitors.focus.index() == '1'
+        assert hlwm.attr.monitors.focus.index() == 1
     else:
         # the setting forbids that the window leaves the tag
         hlwm.call_xfail(command) \
@@ -1567,12 +1567,12 @@ def test_shift_to_other_monitor_floating(hlwm, floating):
     else:
         assert floating == 'off'
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
 
     hlwm.call('shift left')
 
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '1'
+    assert hlwm.attr.monitors.focus.index() == 1
 
 
 @pytest.mark.parametrize("floating", [True, False])
@@ -1588,21 +1588,21 @@ def test_shift_stays_on_monitor(hlwm, floating):
 
     winid, _ = hlwm.create_client(position=(0, 0))
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
 
     # the new client is far away from the bottom edge of monitor 0.
     # so shifting it downwards makes it stay on monitor 0
     hlwm.call('shift down')
 
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
 
     # now the client is on the bottom corner of the monitor.
     # so shifting it again will make it enter monitor 1
     hlwm.call('shift down')
 
     assert hlwm.attr.clients.focus.winid() == winid
-    assert hlwm.attr.monitors.focus.index() == '1'
+    assert hlwm.attr.monitors.focus.index() == 1
 
 
 def test_shift_no_monitor_in_direction(hlwm):
@@ -1648,9 +1648,9 @@ def test_frame_leaf_selection_change(hlwm):
 
 
 def test_frame_leaf_selection_if_empty(hlwm):
-    assert hlwm.attr.tags.focus.tiling.root.selection() == '0'
+    assert hlwm.attr.tags.focus.tiling.root.selection() == 0
     hlwm.attr.tags.focus.tiling.root.selection = 0
-    assert hlwm.attr.tags.focus.tiling.root.selection() == '0'
+    assert hlwm.attr.tags.focus.tiling.root.selection() == 0
 
     hlwm.call_xfail('attr tags.focus.tiling.root.selection 1') \
         .expect_stderr('out of range')

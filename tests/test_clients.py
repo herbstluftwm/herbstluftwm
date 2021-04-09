@@ -377,5 +377,5 @@ def test_floating_geometry_change(hlwm, minimized, floating, x11, othertag):
         clientobj.floating_geometry = geom.to_user_str()
 
         if not minimized and not othertag:
-            assert (Rectangle.from_user_str(clientobj.content_geometry()) == geom) == floating
+            assert (clientobj.content_geometry() == geom) == floating
             assert (x11.get_absolute_top_left(handle) == (geom.x, geom.y)) == floating

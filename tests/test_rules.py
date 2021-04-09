@@ -1,6 +1,5 @@
 import pytest
 import re
-from herbstluftwm.types import Rectangle
 
 
 string_props = [
@@ -967,8 +966,7 @@ def test_smart_placement_within_monitor(hlwm):
     hlwm.attr.settings.snap_gap = 5  # something smaller than bw
     winid, _ = hlwm.create_client()
 
-    inner_geometry = Rectangle.from_user_str(
-        hlwm.attr.clients[winid].content_geometry())
+    inner_geometry = hlwm.attr.clients[winid].content_geometry()
 
     # assert that the top left corner of the decoration
     # is still within the monitor

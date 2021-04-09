@@ -48,3 +48,81 @@ class Rectangle:
         are adjusted by the provided deltas.
         """
         return Rectangle(self.x + dx, self.y + dy, self.width + dw, self.height + dh)
+
+
+class HlwmType:
+    """
+    Wrapper functions for converting between python types and types
+    in herbstluftwm.
+    """
+    def __init__(self, name, from_user_str, to_user_str, is_instance):
+        # a hlwm type should define the following
+        self.name = name  # type: str
+        # a callback for parsing
+        self.from_user_str = from_user_str  # of type: str -> T
+        # a callback for printing
+        self.to_user_str = to_user_str  # of type: T -> str
+        # a predicate whether a python variable has this type:
+        self.is_instance = is_instance  # of type: Anything -> bool
+
+    @staticmethod
+    def by_name(type_name):
+        """Given the full name of a hlwm type, return
+        the metadata
+        python type"""
+        for t in hlwm_types():
+            if t.name == type_name:
+                return t
+        return None
+
+    @staticmethod
+    def by_type_of_variable(python_variable):
+        """Given a variable, detect its type
+        """
+        for t in hlwm_types():
+            if t.is_instance(python_variable):
+                return t
+        return None
+
+
+def hlwm_types():
+    """
+    Return a list of HlwmType objects.
+
+    Unfortunately, the order matters for the is_instance() predicate: Here, the
+    first matching type in the list must be used. (This is because
+    `isinstance(True, int)` is true)
+    """
+    types = [
+        HlwmType('bool',
+                 bool_from_user_str,
+                 lambda b: 'true' if b else 'false',
+                 lambda x: isinstance(x, bool)),
+
+        HlwmType('int', int, str, lambda x: isinstance(x, int)),
+
+        # there is no uint in python, so we just convert it to 'int'
+        HlwmType('uint', int, str, lambda x: False),
+
+        HlwmType('rectangle',
+                 Rectangle.from_user_str,
+                 Rectangle.to_user_str,
+                 lambda x: isinstance(x, Rectangle)),
+
+        HlwmType('string',
+                 lambda x: x,
+                 lambda x: x,
+                 lambda x: isinstance(x, str)),
+    ]
+
+    return types
+
+
+def bool_from_user_str(bool_string):
+    """Parse a the string description of a hlwm boolean to
+    a python boolean"""
+    if bool_string.lower() in ['true', 'on']:
+        return True
+    if bool_string.lower() in ['false', 'off']:
+        return False
+    raise Exception(f'"{bool_string}" is not a boolean')

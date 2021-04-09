@@ -324,7 +324,7 @@ def test_focused_on_other_monitor_above_fullscreen(hlwm, focus_other_monitor):
 
     if focus_other_monitor:
         hlwm.call(['jumpto', win_focused])
-        assert hlwm.attr.monitors.focus.index() == '1'
+        assert hlwm.attr.monitors.focus.index() == 1
         assert hlwm.attr.clients.focus.winid() == win_focused
         assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
             == [win_focused, win_fullscreen]

@@ -4,6 +4,7 @@ import subprocess
 import sys
 import os
 import conftest
+from herbstluftwm.types import Rectangle
 
 
 def test_example(hlwm):
@@ -15,7 +16,7 @@ def test_example(hlwm):
 
 
 def test_attr_get(hlwm):
-    assert hlwm.attr.tags.focus.index() == '0'
+    assert hlwm.attr.tags.focus.index() == 0
     assert str(hlwm.attr.tags.focus.index) == '0'
 
 
@@ -39,12 +40,12 @@ def test_attr_custom_attribute(hlwm):
 
 
 def test_attr_get_dict_child(hlwm):
-    assert hlwm.attr.monitors['0'].index() == '0'
-    assert hlwm.attr.monitors[0].index() == '0'
+    assert hlwm.attr.monitors['0'].index() == 0
+    assert hlwm.attr.monitors[0].index() == 0
 
 
 def test_attr_get_dict_attribute(hlwm):
-    assert hlwm.attr.monitors['0']['index']() == '0'
+    assert hlwm.attr.monitors['0']['index']() == 0
 
 
 def test_attr_set_dict_attribute(hlwm):
@@ -86,3 +87,49 @@ def test_chain_commands_if_then_else(hlwm, value):
     output = hlwm.call(cmd).stdout
 
     assert output == expected
+
+
+def test_implicit_type_conversion_bool(hlwm):
+    hlwm.attr.my_bool = True  # implicitly creates an attribute
+    assert hlwm.attr.my_bool() is True
+    hlwm.attr.my_bool = False
+    assert hlwm.attr.my_bool() is False
+    hlwm.attr.my_bool = 'toggle'
+    assert hlwm.attr.my_bool() is True
+
+
+def test_implicit_type_conversion_int(hlwm):
+    hlwm.attr.my_int = 32
+    assert hlwm.attr.my_int() == 32
+
+    hlwm.attr.my_int = '-=40'
+
+    assert hlwm.attr.my_int() == -8
+
+
+def test_implicit_type_conversion_uint(hlwm):
+    hlwm.call('new_attr uint my_uint 32')
+    assert hlwm.attr.my_uint() == 32
+
+    hlwm.attr.my_uint = '-=40'
+
+    assert hlwm.attr.my_uint() == 0
+
+
+def test_implicit_type_conversion_string(hlwm):
+    hlwm.attr.my_str = "test"
+    assert hlwm.attr.my_str() == "test"
+
+    hlwm.attr.my_str = "foo"
+    assert hlwm.attr.my_str() == "foo"
+
+
+def test_implicit_type_conversion_rectangle(hlwm):
+    # TODO: change as soon as custom attributes support Rectangle!
+    geo = Rectangle(10, 20, 400, 500)
+    hlwm.attr.monitors.focus.geometry = geo
+    assert hlwm.attr.monitors.focus.geometry() == geo
+
+    geo = Rectangle(20, 30, 422, 522)
+    hlwm.attr.monitors.focus.geometry = geo
+    assert hlwm.attr.monitors.focus.geometry() == geo

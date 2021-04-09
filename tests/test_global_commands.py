@@ -132,7 +132,7 @@ def test_cycle_value_invalid_arg(hlwm):
 
     # calling it a first time works
     hlwm.call(command)
-    assert hlwm.attr.clients.my_foo() == '2'
+    assert hlwm.attr.clients.my_foo() == 2
 
     # calling it a second time fails
     hlwm.call_xfail(command) \
@@ -202,8 +202,8 @@ def test_use_index_move_index_skip_visible(hlwm, use_or_move_index, delta, skip_
         hlwm.call('chain , add dummy , add free , add used')
 
     hlwm.call('add_monitor 800x600+800+0 used')
-    assert hlwm.attr.monitors.focus.index() == '0'
-    assert hlwm.attr.tags.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
+    assert hlwm.attr.tags.focus.index() == 0
 
     if use_or_move_index == 'move_index':
         winid, _ = hlwm.create_client()
@@ -222,13 +222,13 @@ def test_use_index_move_index_skip_visible(hlwm, use_or_move_index, delta, skip_
     hlwm.call(cmd)
 
     if use_or_move_index == 'use_index':
-        assert hlwm.attr.monitors.focus.index() == '0'
+        assert hlwm.attr.monitors.focus.index() == 0
         assert hlwm.attr.tags.focus.name() == expected_name
     else:
         assert hlwm.attr.clients[winid].tag() == expected_name
         # however, we stay on the original tag:
-        assert hlwm.attr.monitors.focus.index() == '0'
-        assert hlwm.attr.tags.focus.index() == '0'
+        assert hlwm.attr.monitors.focus.index() == 0
+        assert hlwm.attr.tags.focus.index() == 0
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])
@@ -253,10 +253,10 @@ def test_focus_nth_last_window(hlwm):
     hlwm.create_clients(4)
     for last_idx in ['-1', '4', '2342', '-123']:
         hlwm.call(['focus_nth', '0'])  # reset
-        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == 0
 
         hlwm.call(['focus_nth', last_idx])
-        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '3'
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == 3
 
 
 def test_focus_nth_completion(hlwm):
