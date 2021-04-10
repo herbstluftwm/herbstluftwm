@@ -587,7 +587,7 @@ IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
     // the call consists of the command and its arguments
     std::ostringstream output;
     std::ostringstream error;
-    std::string commandName = (call.empty()) ? "" : call[0];
+    string commandName = (call.empty()) ? "" : call[0];
     auto input =
         (call.empty())
         ? Input("", call)
