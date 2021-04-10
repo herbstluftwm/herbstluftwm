@@ -13,7 +13,7 @@ class IpcServer {
 public:
     class CallResult {
     public:
-        int exitCode;
+        int exitCode = 0;
         std::string output;
         std::string error;
     };
