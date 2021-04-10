@@ -94,25 +94,31 @@ def hlwm_types():
     `isinstance(True, int)` is true)
     """
     types = [
-        HlwmType('bool',
-                 bool_from_user_str,
-                 lambda b: 'true' if b else 'false',
-                 lambda x: isinstance(x, bool)),
+        HlwmType(name='bool',
+                 from_user_str=bool_from_user_str,
+                 to_user_str=lambda b: 'true' if b else 'false',
+                 is_instance=lambda x: isinstance(x, bool)),
 
-        HlwmType('int', int, str, lambda x: isinstance(x, int)),
+        HlwmType(name='int',
+                 from_user_str=int,
+                 to_user_str=str,
+                 is_instance=lambda x: isinstance(x, int)),
 
         # there is no uint in python, so we just convert it to 'int'
-        HlwmType('uint', int, str, lambda x: False),
+        HlwmType(name='uint',
+                 from_user_str=int,
+                 to_user_str=str,
+                 is_instance=lambda x: False),
 
-        HlwmType('rectangle',
-                 Rectangle.from_user_str,
-                 Rectangle.to_user_str,
-                 lambda x: isinstance(x, Rectangle)),
+        HlwmType(name='rectangle',
+                 from_user_str=Rectangle.from_user_str,
+                 to_user_str=Rectangle.to_user_str,
+                 is_instance=lambda x: isinstance(x, Rectangle)),
 
-        HlwmType('string',
-                 lambda x: x,
-                 lambda x: x,
-                 lambda x: isinstance(x, str)),
+        HlwmType(name='string',
+                 from_user_str=lambda x: x,
+                 to_user_str=lambda x: x,
+                 is_instance=lambda x: isinstance(x, str)),
     ]
 
     return types
