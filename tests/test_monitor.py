@@ -158,7 +158,7 @@ def test_move_monitor(hlwm):
 
 
 def test_move_monitor_completion(hlwm):
-    assert hlwm.get_attr('monitors.focus.geometry') in hlwm.complete('move_monitor 0')
+    assert str(hlwm.attr.monitors.focus.geometry) in hlwm.complete('move_monitor 0')
     # pads:
     assert '0' in hlwm.complete('move_monitor 0 800x600+0+0')
     assert '0' in hlwm.complete('move_monitor 0 800x600+0+0 0')
