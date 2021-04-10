@@ -89,8 +89,9 @@ int CommandTable::callCommand(Input args, Output out) const {
         out << "error: Command \"" << args.command() << "\" not found" << endl;
         return HERBST_COMMAND_NOT_FOUND;
     }
-
-    return cmd->second(args, out);
+    // new channels object to have the command name updated
+    OutputChannels channels(args.command(), out.output(), out.error());
+    return cmd->second(args, channels);
 }
 
 namespace Commands {

@@ -8,6 +8,7 @@
 
 #include "client.h"
 #include "clientmanager.h"
+#include "command.h"
 #include "decoration.h"
 #include "desktopwindow.h"
 #include "ewmh.h"
@@ -32,6 +33,8 @@
 
 using std::function;
 using std::shared_ptr;
+using std::string;
+using std::vector;
 
 /** A custom event handler casting function.
  *
@@ -246,7 +249,7 @@ void XMainLoop::createnotify(XCreateWindowEvent* event) {
     if (root_->ipcServer_.isConnectable(event->window)) {
         root_->ipcServer_.addConnection(event->window);
         root_->ipcServer_.handleConnection(event->window,
-                                           HlwmCommon::callCommand);
+                                           XMainLoop::callCommand);
     }
 }
 
@@ -344,7 +347,9 @@ void XMainLoop::configurenotify(XConfigureEvent* event) {
         if (root_->settings->auto_detect_monitors()) {
             Input input = Input("detect_monitors");
             std::ostringstream void_output;
-            root_->monitors->detectMonitorsCommand(input, void_output);
+            // discard output, but forward errors to std:cerr
+            OutputChannels channels("", void_output, std::cerr);
+            root_->monitors->detectMonitorsCommand(input, channels);
         }
     } else {
         Rectangle geometry = { event->x, event->y, event->width, event->height };
@@ -521,7 +526,7 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
     if (ev->state == PropertyNewValue) {
         if (root_->ipcServer_.isConnectable(ev->window)) {
             root_->ipcServer_.handleConnection(ev->window,
-                                               HlwmCommon::callCommand);
+                                               XMainLoop::callCommand);
         } else if (client != nullptr) {
             //char* atomname = XGetAtomName(X_.display(), ev->atom);
             //HSDebug("Property notify for client %s: atom %d \"%s\"\n",
@@ -545,7 +550,8 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                 // https://www.x.org/releases/X11R7.6/doc/xorg-docs/specs/ICCCM/icccm.html#wm_class_property
                 // If a client violates this, then the window rules like class=... etc are not applied.
                 // As a workaround, we do it now:
-                root_->clients()->applyRules(client, std::cerr);
+                auto stdio = OutputChannels::stdio();
+                root_->clients()->applyRules(client, stdio);
             }
         } else {
             root_->panels->propertyChanged(ev->window, ev->atom);
@@ -574,6 +580,24 @@ void XMainLoop::unmapnotify(XUnmapEvent* event) {
     while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev)) {
         ;
     }
+}
+
+IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
+{
+    // the call consists of the command and its arguments
+    std::ostringstream output;
+    std::ostringstream error;
+    std::string commandName = (call.empty()) ? "" : call[0];
+    auto input =
+        (call.empty())
+        ? Input("", call)
+        : Input(call[0], vector<string>(call.begin() + 1, call.end()));
+    IpcServer::CallResult result;
+    OutputChannels channels(commandName, output, error);
+    result.exitCode = Commands::call(input, channels);
+    result.output = output.str();
+    result.error = error.str();
+    return result;
 }
 
 void XMainLoop::draggedClientChanges(Client* draggedClient)

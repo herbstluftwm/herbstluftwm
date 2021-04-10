@@ -672,7 +672,7 @@ int FrameTree::loadCommand(Input input, Output output) {
         input >> tagName >> layoutString;
         tag = find_tag(tagName.c_str());
         if (!tag) {
-            output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+            output.perror() << "Tag \"" << tagName << "\" not found\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else if (input.size() == 1) {
@@ -684,7 +684,7 @@ int FrameTree::loadCommand(Input input, Output output) {
     assert(tag != nullptr);
     FrameParser parsingResult(layoutString);
     if (parsingResult.error_) {
-        output << input.command() << ": Syntax error at "
+        output.perror() << "Syntax error at "
                << parsingResult.error_->first.first << ": "
                << parsingResult.error_->second << ":"
                << endl;
@@ -810,7 +810,7 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         try {
             delta = Converter<int>::parse(deltaStr);
         } catch (const std::exception& e) {
-            output << input.command() << ": " << e.what();
+            output.perror() << e.what() << endl;
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -829,7 +829,7 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         try {
             layout_index = (int)Converter<LayoutAlgorithm>::parse(*(input.begin() + idx));
         } catch (const std::exception& e) {
-            output << input.command() << ": " << e.what();
+            output.perror() << e.what() << endl;
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -1039,7 +1039,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
         if (!tagName.empty()) {
             HSTag* tag = find_tag(tagName.c_str());
             if (!tag) {
-                output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+                output.perror() << "Tag \"" << tagName << "\" not found\n";
                 return HERBST_INVALID_ARGUMENT;
             }
             tree = tag->frame();

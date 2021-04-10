@@ -57,7 +57,7 @@ int MetaCommands::set_attr_cmd(Input in, Output output) {
     if (error_message.empty()) {
         return 0;
     } else {
-        output << in.command() << ": \""
+        output.perror() << "\""
             << new_value << "\" is not a valid value for "
             << a->name() << ": "
             << error_message << endl;
@@ -96,7 +96,7 @@ int MetaCommands::attr_cmd(Input in, Output output) {
         if (error_message.empty()) {
             return 0;
         } else {
-            output << in.command() << ": \""
+            output.perror() << "\""
                 << new_value << "\" is not a valid value for "
                 << a->name() << ": "
                 << error_message << endl;
@@ -313,7 +313,7 @@ int MetaCommands::sprintf_cmd(Input input, Output output)
     try {
         format = parseFormatString(formatStringSrc);
     }  catch (const std::invalid_argument& e) {
-        output << input.command() << ": " << e.what() << endl;
+        output.perror() << e.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     // evaluate placeholders in the format string
@@ -427,15 +427,15 @@ int MetaCommands::new_attr_cmd(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     if (attr_name.substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
-        output
-            << input.command() << ": attribute name must start with \""
+        output.perror()
+            << "attribute name must start with \""
             << USER_ATTRIBUTE_PREFIX << "\""
             << " but is actually \"" << attr_name << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     if (obj->attribute(attr_name)) {
-        output
-            << input.command() << ": object \"" << obj_path_and_attr.first.join()
+        output.perror()
+            << "object \"" << obj_path_and_attr.first.join()
             << "\" already has an attribute named \"" << attr_name
             <<  "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -451,7 +451,7 @@ int MetaCommands::new_attr_cmd(Input input, Output output)
     if (initialValueSupplied) {
         string msg = a->change(initialValue);
         if (!msg.empty()) {
-            output << input.command() << ": \""
+            output.perror() << "\""
                    << initialValue << "\" is an invalid "
                    << "value for " << path << ": " << msg << endl;
             return HERBST_INVALID_ARGUMENT;
@@ -491,7 +491,7 @@ int MetaCommands::remove_attr_cmd(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     if (a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
-        output << input.command() << ": Cannot remove built-in attribute \"" << path << "\"" << endl;
+        output.perror() << "Cannot remove built-in attribute \"" << path << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     a->detachFromOwner();
@@ -801,8 +801,12 @@ int MetaCommands::tryCommand(Input input, Output output) {
 
 int MetaCommands::silentCommand(Input input, Output output) {
     stringstream dummyOutput;
+    // discard output and error channel
+    // TODO: pass through the error channel as soon as
+    // the ipc-protocoll supports it.
+    OutputChannels discardOutputChannels(output.command(), dummyOutput, dummyOutput);
     // drop output but pass exit code
-    return Commands::call(input.fromHere(), dummyOutput);
+    return Commands::call(input.fromHere(), discardOutputChannels);
 }
 
 int MetaCommands::negateCommand(Input input, Output output)
@@ -833,8 +837,8 @@ int MetaCommands::setenvCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (setenv(name.c_str(), value.c_str(), 1) != 0) {
-        output << input.command()
-               << ": Could not set environment variable: "
+        output.perror()
+               << "Could not set environment variable: "
                << strerror(errno) << endl;
         return HERBST_UNKNOWN_ERROR;
     }
@@ -905,8 +909,8 @@ int MetaCommands::unsetenvCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (unsetenv(name.c_str()) != 0) {
-        output << input.command()
-               << ": Could not unset environment variable: "
+        output.perror()
+               << "Could not unset environment variable: "
                << strerror(errno) << endl;
         return HERBST_UNKNOWN_ERROR;
     }

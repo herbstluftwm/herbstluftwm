@@ -494,7 +494,7 @@ int HSTag::resizeCommand(Input input, Output output)
         }
     } else {
         if (!frame->resizeFrame(delta, direction)) {
-            output << input.command() << ": No neighbour found\n";
+            output.perror() << "No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
     }

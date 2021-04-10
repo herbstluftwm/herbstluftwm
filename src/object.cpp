@@ -126,7 +126,8 @@ Object* Object::child(const string &name) {
 
 Object* Object::child(Path path) {
     std::ostringstream out;
-    return child(path, out);
+    OutputChannels channels("", out, out);
+    return child(path, channels);
 }
 
 Object* Object::child(Path path, Output output) {
@@ -262,7 +263,8 @@ void Object::printTree(Output output, string rootLabel) {
 
 Attribute* Object::deepAttribute(const string &path) {
     std::ostringstream output;
-    return deepAttribute(path, output);
+    OutputChannels channels("", output, output);
+    return deepAttribute(path, channels);
 }
 
 Attribute* Object::deepAttribute(const string &path, Output output) {

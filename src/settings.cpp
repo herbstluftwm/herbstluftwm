@@ -206,14 +206,13 @@ int Settings::set_cmd(Input input, Output output) {
 
     auto attr = attribute(set_name);
     if (!attr) {
-        output << input.command() <<
-            ": Setting \"" << set_name << "\" not found\n";
+        output.perror() << "Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->change(value);
     if (!msg.empty()) {
-        output << input.command()
-               << ": Invalid value \"" << value
+        output.perror()
+               << "Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
                << msg << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -243,15 +242,14 @@ int Settings::toggle_cmd(Input argv, Output output) {
     auto set_name = argv.front();
     auto attr = attribute(set_name);
     if (!attr) {
-        output << argv.command() <<
-            ": Setting \"" << set_name << "\" not found\n";
+        output.perror() << "Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     if (attr->type() == Type::BOOL) {
         attr->change("toggle");
     } else {
-        output << argv.command()
-            << ": Setting \"" << set_name
+        output.perror()
+            << "Setting \"" << set_name
             << "\" is not of type bool\n";
         return HERBST_INVALID_ARGUMENT;
     }
@@ -276,8 +274,7 @@ int Settings::get_cmd(Input argv, Output output) {
     }
     auto attr = attribute(argv.front());
     if (!attr) {
-        output << argv.command() <<
-            ": Setting \"" << argv.front() << "\" not found\n";
+        output.perror() << "Setting \"" << argv.front() << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     output << attr->str();

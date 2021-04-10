@@ -120,11 +120,11 @@ void GlobalCommands::useTagCommand(CallOrComplete invoc)
         Monitor* monitor = root_.monitors->focus();
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            output << invoc.command() << ": Could not change tag";
+            output.perror() << "Could not change tag";
             if (monitor->lock_tag) {
-                output << " (monitor " << monitor->index() << " is locked)";
+                output.error() << " (monitor " << monitor->index() << " is locked)";
             }
-            output << "\n";
+            output.error() << "\n";
         }
         return ret;
     });
@@ -141,18 +141,18 @@ void GlobalCommands::useTagByIndexCommand(CallOrComplete invoc)
                      [&] (Output output) -> int {
         HSTag* tag = root_.tags->byIndexStr(indexStr, skipVisible);
         if (!tag) {
-            output << invoc.command() <<
-                ": Invalid index \"" << indexStr << "\"\n";
+            output.perror() <<
+                "Invalid index \"" << indexStr << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
         Monitor* monitor = root_.monitors->focus();
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            output << invoc.command() << ": Could not change tag";
+            output.perror() << "Could not change tag";
             if (monitor->lock_tag) {
-                output << " (monitor " << monitor->index() << " is locked)";
+                output.error() << " (monitor " << monitor->index() << " is locked)";
             }
-            output << "\n";
+            output.error() << "\n";
         }
         return ret;
     });
@@ -177,8 +177,8 @@ int GlobalCommands::cycleValueCommand(Input input, Output output)
     }
     auto msg = attr->cycleValue(input.begin(), input.end());
     if (!msg.empty()) {
-        output << input.command()
-               << ": Invalid value for \""
+        output.perror()
+               << "Invalid value for \""
                << attr_path << "\": "
                << msg << endl;
         return HERBST_INVALID_ARGUMENT;

@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "ipc-server.h"
 #include "x11-types.h"
 
 class Client;
@@ -46,6 +47,8 @@ private:
     void unmapnotify(XUnmapEvent* event);
 
     bool duringEnterNotify_ = false; //! whether we are in enternotify()
+
+    static IpcServer::CallResult callCommand(const std::vector<std::string>& call);
 
 
     // handlers of events from hlwm

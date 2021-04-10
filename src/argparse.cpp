@@ -4,6 +4,7 @@
 
 #include "completion.h"
 
+using std::endl;
 using std::function;
 using std::pair;
 using std::string;
@@ -31,17 +32,18 @@ bool ArgParse::parsingFails(Input& input, Output& output)
     }
     optionalArguments += flags_.size();
     if (input.size() < mandatoryArguments) {
-        output << input.command() << ": Expected ";
+        output.error() << output.command() << ": Expected ";
         if (optionalArguments) {
-            output << "between " << mandatoryArguments
+            output.error()
+                   << "between " << mandatoryArguments
                    << " and " << (optionalArguments + mandatoryArguments)
                    << " arguments";
         } else if (mandatoryArguments == 1) {
-            output  << "one argument";
+            output.error() << "one argument";
         } else {
-            output  << mandatoryArguments << " arguments";
+            output.error() << mandatoryArguments << " arguments";
         }
-        output << ", but got only " << input.size() << " arguments.";
+        output.error() << ", but got only " << input.size() << " arguments." << endl;
         errorCode_ = HERBST_NEED_MORE_ARGS;
         return true;
     }
@@ -64,7 +66,7 @@ bool ArgParse::parsingFails(Input& input, Output& output)
             }  catch (std::exception& e) {
                 // if there is a parse error however, then
                 // stop entire parsing process
-                output << input.command() << ": Cannot parse flag \""
+                output.perror() << "Cannot parse flag \""
                        << valueString << "\": " << e.what() << "\n";
                 errorCode_ = HERBST_INVALID_ARGUMENT;
                 return true;
@@ -90,7 +92,7 @@ bool ArgParse::parsingFails(Input& input, Output& output)
         try {
             arg.tryParse_(valueString);
         }  catch (std::exception& e) {
-            output << input.command() << ": Cannot parse argument \""
+            output.perror() << "Cannot parse argument \""
                    << valueString << "\": " << e.what() << "\n";
             errorCode_ = HERBST_INVALID_ARGUMENT;
             return true;
@@ -106,7 +108,7 @@ bool ArgParse::parsingFails(Input& input, Output& output)
                 break;
             }
         }  catch (std::exception& e) {
-            output << input.command() << ": Cannot parse flag \""
+            output.perror() << "Cannot parse flag \""
                    << input.front() << "\": " << e.what() << "\n";
             errorCode_ = HERBST_INVALID_ARGUMENT;
             return true;
@@ -135,8 +137,8 @@ bool ArgParse::unparsedTokens(Input& input, Output& output)
 {
     string extraToken;
     if (input >> extraToken) {
-        output << input.command()
-           << ": Unknown argument or flag \""
+        output.perror()
+           << "Unknown argument or flag \""
            << extraToken << "\" given.\n";
         errorCode_ = HERBST_INVALID_ARGUMENT;
         return true;

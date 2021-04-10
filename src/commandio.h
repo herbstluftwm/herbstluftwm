@@ -12,7 +12,58 @@ class Completion;
 using Path = ArgList;
 
 /* Types for I/O with the user */
-using Output = std::ostream&;
+/**
+ * @brief A bundle of the standard output and the
+ * error output channel. Writing to it (via the << operator) just passes
+ * the data to the output channel.
+ *
+ * It is recommended to pass references to OutputChannels (see the Output type)
+ * around to avoid that the command name is copied over and over again.
+ */
+class OutputChannels {
+public:
+    OutputChannels(const std::string& commandName, std::ostream& output, std::ostream& error)
+        : commandName_(commandName)
+        , output_(output)
+        , error_(error)
+    {}
+    static OutputChannels stdio();
+
+    const std::string& command() {
+        return commandName_;
+    }
+
+    std::ostream& error() {
+        return error_;
+    }
+
+    std::ostream& output() {
+        return output_;
+    }
+
+    //! same as error() but prefix with the command name.
+    std::ostream& perror();
+
+    // writing data to output
+    template<typename T>
+    OutputChannels& operator<<(const T& arg) {
+        output_ << arg;
+        return *this;
+    }
+
+    // passing flags to output, e.g. std::endl
+    OutputChannels& operator<<(std::ostream& (*f)(std::ostream&)) {
+        f(output_);
+        return *this;
+    }
+
+private:
+    std::string commandName_;
+    std::ostream& output_;
+    std::ostream& error_;
+};
+
+using Output = OutputChannels&;
 
 /** The Input for a command consists of a command name
  * (known as argv[0] in a C main()) and of arguments (argv[1] up to
@@ -69,7 +120,6 @@ protected:
 class CallOrComplete {
 public:
     //! the name of the command that is called.
-    std::string command() { return command_; };
     static CallOrComplete complete(Completion& complete) {
         CallOrComplete invoc;
         invoc.complete_ = &complete;
@@ -78,7 +128,6 @@ public:
 private:
     friend class CommandBinding;
     friend class ArgParse;
-    std::string command_;
     Completion* complete_ = nullptr;
     std::pair<Input, Output>* inputOutput_ = nullptr;
     int* exitCode_ = nullptr;
