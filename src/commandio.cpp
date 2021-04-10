@@ -1,9 +1,9 @@
 #include "commandio.h"
 
+#include <iostream>
+
 #include "completion.h"
 #include "globals.h"
-
-#include <iostream>
 
 using std::string;
 using std::endl;
