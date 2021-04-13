@@ -125,7 +125,7 @@ def hlwm_types():
 
 
 def bool_from_user_str(bool_string):
-    """Parse a the string description of a hlwm boolean to
+    """Parse a string description of a hlwm boolean to
     a python boolean"""
     if bool_string.lower() in ['true', 'on']:
         return True
