@@ -532,7 +532,7 @@ def test_negate_complete_cmd(hlwm):
 
 def test_negate_complete_arg(hlwm):
     assert 'left' in hlwm.complete('! focus')
-    assert [] == hlwm.complete('! true')
+    hlwm.command_has_all_args(['!', 'true'])
 
 
 def test_integer_out_of_range(hlwm):

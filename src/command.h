@@ -7,18 +7,6 @@
 
 #include "commandio.h"
 
-// returns a command binding that internalizes object to given a command that
-// calls the member function of the given object
-#define BIND_OBJECT(OBJECT, MEMBER) \
-    (CommandBinding([OBJECT](Input in, Output out) { \
-        return (OBJECT)->MEMBER(in, out); \
-    }))
-
-#define BIND_PARAMETER(PARAM, FUNCTION) \
-    (CommandBinding([PARAM](Input in, Output out) { \
-        return FUNCTION(PARAM, in, out); \
-    }))
-
 class Completion;
 
 /** User facing commands.
@@ -126,9 +114,7 @@ public:
     // C functions to C++
     CommandBinding(int func(int argc, char** argv, Output output))
         : command(commandFromCFunc(func)) {}
-    CommandBinding(int func(int argc, const char** argv, Output output));
     CommandBinding(int func(int argc, char** argv));
-    CommandBinding(int func(int argc, const char** argv));
 
     bool hasCompletion() const { return (bool)completion_; }
     void complete(Completion& completion) const;
@@ -173,7 +159,7 @@ namespace Commands {
 
 // commands
 int list_commands(Output output);
-int complete_command(int argc, char** argv, Output output);
+int completeCommand(Input input, Output output);
 
 #endif
 

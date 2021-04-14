@@ -60,15 +60,13 @@ void MouseDragHandlerFloating::finalize() {
 void MouseDragHandlerFloating::mouse_function_move(Point2D newCursorPos) {
     int x_diff = newCursorPos.x - buttonDragStart_.x;
     int y_diff = newCursorPos.y - buttonDragStart_.y;
-    winDragClient_->float_size_ = winDragStart_;
-    winDragClient_->float_size_.x += x_diff;
-    winDragClient_->float_size_.y += y_diff;
+    // we need to assign it such that the border snapping works
+    winDragClient_->float_size_ = winDragStart_.shifted({x_diff, y_diff});
     // snap it to other windows
     int dx, dy;
     client_snap_vector(winDragClient_, dragMonitor_,
                        SNAP_EDGE_ALL, &dx, &dy);
-    winDragClient_->float_size_.x += dx;
-    winDragClient_->float_size_.y += dy;
+    winDragClient_->float_size_ = winDragClient_->float_size_->shifted({dx, dy});
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
@@ -91,17 +89,19 @@ void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
         x_diff *= -1;
     }
     // avoid an overflow
-    int new_width  = winDragClient_->float_size_.width + x_diff;
-    int new_height = winDragClient_->float_size_.height + y_diff;
+    int new_width  = winDragClient_->float_size_->width + x_diff;
+    int new_height = winDragClient_->float_size_->height + y_diff;
     Client* client = winDragClient_;
+    Rectangle new_geometry = winDragClient_->float_size_;
     if (left) {
-        winDragClient_->float_size_.x -= x_diff;
+        new_geometry.x -= x_diff;
     }
     if (top) {
-        winDragClient_->float_size_.y -= y_diff;
+        new_geometry.y -= y_diff;
     }
-    winDragClient_->float_size_.width  = new_width;
-    winDragClient_->float_size_.height = new_height;
+    new_geometry.width = new_width;
+    new_geometry.height = new_height;
+    winDragClient_->float_size_ = new_geometry;
     // snap it to other windows
     int dx, dy;
     int snap_flags = 0;
@@ -118,27 +118,28 @@ void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
     client_snap_vector(winDragClient_, dragMonitor_,
                        (SnapFlags)snap_flags, &dx, &dy);
     if (left) {
-        winDragClient_->float_size_.x += dx;
+        new_geometry.x += dx;
         dx *= -1;
     }
     if (top) {
-        winDragClient_->float_size_.y += dy;
+        new_geometry.y += dy;
         dy *= -1;
     }
-    winDragClient_->float_size_.width += dx;
-    winDragClient_->float_size_.height += dy;
-    client->applysizehints(&winDragClient_->float_size_.width,
-                           &winDragClient_->float_size_.height);
+    new_geometry.width += dx;
+    new_geometry.height += dy;
+    client->applysizehints(&new_geometry.width,
+                           &new_geometry.height);
     if (left) {
-        client->float_size_.x =
+        new_geometry.x =
             winDragStart_.x + winDragStart_.width
-            - winDragClient_->float_size_.width;
+            - new_geometry.width;
     }
     if (top) {
-        client->float_size_.y =
+        new_geometry.y =
             winDragStart_.y + winDragStart_.height
-            - winDragClient_->float_size_.height;
+            - new_geometry.height;
     }
+    winDragClient_->float_size_ = new_geometry;
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
@@ -164,10 +165,10 @@ void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
     int new_width  = winDragStart_.width  + 2 * x_diff;
     int new_height = winDragStart_.height + 2 * y_diff;
     // apply new rect
-    client->float_size_.x = cent_x - new_width / 2;
-    client->float_size_.y = cent_y - new_height / 2;
-    client->float_size_.width = new_width;
-    client->float_size_.height = new_height;
+    client->float_size_ = Rectangle(cent_x - new_width / 2,
+                                    cent_y - new_height / 2,
+                                    new_width,
+                                    new_height);
     // snap it to other windows
     int right_dx, bottom_dy;
     int left_dx, top_dy;
@@ -188,10 +189,10 @@ void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
     new_height += 2 * bottom_dy;
     client->applysizehints(&new_width, &new_height);
     // center window again
-    client->float_size_.width = new_width;
-    client->float_size_.height = new_height;
-    client->float_size_.x = cent_x - new_width / 2;
-    client->float_size_.y = cent_y - new_height / 2;
+    client->float_size_ = Rectangle(cent_x - new_width / 2,
+                                    cent_y - new_height / 2,
+                                    new_width,
+                                    new_height);
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 

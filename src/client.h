@@ -33,7 +33,7 @@ public:
     Window      window_;
     std::unique_ptr<Decoration> dec; // pimpl
     Rectangle   last_size_;      // last size excluding the window border
-    Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
+    Attribute_<Rectangle> float_size_;     // floating size without the window border
     HSTag*      tag_ = {};
     Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
@@ -78,7 +78,7 @@ public:
     Attribute_<bool> sizehints_tiling_;  // respect size hints regarding this client in tiling mode
     DynAttribute_<std::string> window_class_;
     DynAttribute_<std::string> window_instance_;
-    Attribute_<Rectangle> geometry_reported_;
+    Attribute_<Rectangle> content_geometry_;
 
 public:
     void init_from_X();
@@ -115,7 +115,7 @@ public:
     void raise();
     void lower();
 
-    void send_configure();
+    void send_configure(bool force);
     bool applysizehints(int *w, int *h);
     void updatesizehints();
 
@@ -129,6 +129,7 @@ public:
 
     void updateEwmhState();
 private:
+    void floatingGeometryChanged();
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();
@@ -153,8 +154,6 @@ Client* get_client_from_window(Window window);
 Client* get_current_client();
 Client* get_client(const char* str);
 Window get_window(const std::string& str);
-
-int close_command(Input input, Output output);
 
 // sets a client property, depending on argv[0]
 int client_set_property_command(int argc, char** argv);

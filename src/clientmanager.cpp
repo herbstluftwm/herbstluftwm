@@ -51,7 +51,7 @@ ClientManager::~ClientManager()
 {
     // make all clients visible at their original floating position
     for (auto c : clients_) {
-        auto r = c.second->float_size_;
+        Rectangle r = c.second->float_size_;
         auto window = c.second->x11Window();
         XMoveResizeWindow(X_->display(), window, r.x, r.y, r.width, r.height);
         XReparentWindow(X_->display(), window, X_->root(), r.x, r.y);
@@ -272,7 +272,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
             ewmh->windowUpdateWmState(client->window_, WmState::WSIconicState);
         }
     }
-    client->send_configure();
+    client->send_configure(true);
 
     // TODO: make this better
     Root::get()->mouse->grab_client_buttons(client, false);

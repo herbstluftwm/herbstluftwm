@@ -36,6 +36,7 @@ static Client* lastfocus = nullptr;
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
+    , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
@@ -56,7 +57,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , sizehints_tiling_(this, "sizehints_tiling", false)
     , window_class_(this, "class", &Client::getWindowClass)
     , window_instance_(this, "instance", &Client::getWindowInstance)
-    , geometry_reported_(this, "geometry_reported", {})
+    , content_geometry_(this, "content_geometry", {})
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -95,6 +96,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
     minimized_.changed().connect(this, &Client::updateEwmhState);
+
+    float_size_.setWritable();
+    float_size_.changedByUser().connect(this, &Client::floatingGeometryChanged);
 
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
@@ -136,9 +140,14 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                              "should be respected in tiling mode");
     sizehints_floating_.setDoc("if sizehints for this client should "
                                "be respected in floating mode");
-    geometry_reported_.setDoc(
-                "the geometry the client thinks it has. "
-                "This is the last window geometry that "
+    float_size_.setDoc(
+                "the geometry of the client content if the client is in "
+                "floating mode. The position is relative to the monitor "
+                "and does not take the window decoration into account.");
+    content_geometry_.setDoc(
+                "the geometry of the application content, that is, not taking "
+                "the decoration into account. "
+                "Also, this is the last window geometry that "
                 "was reported to the client application."
      );
 }
@@ -310,7 +319,7 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
     mostRecentThemeType = themetype;
     auto& scheme = theme[themetype](isFocused, urgent_());
     if (this->pseudotile_) {
-        auto inner = this->float_size_;
+        Rectangle inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
         auto outline = scheme.inner_rect_to_outline(inner);
         rect.x += std::max(0, (rect.width - outline.width)/2);
@@ -432,15 +441,17 @@ void Client::updatesizehints() {
 
 
 
-void Client::send_configure() {
+void Client::send_configure(bool force) {
     auto last_inner_rect = dec->last_inner();
-    if (geometry_reported_ == last_inner_rect) {
+    // force is just a quick fix: sometimes it is mandatory
+    // to send a configure request even if the geometry didn't change.
+    if (content_geometry_ == last_inner_rect && !force) {
         // only send the configure notify if the window geometry really changed.
         // otherwise, sending this might trigger an endless loop between clients
         // and hlwm.
         return;
     }
-    geometry_reported_ = last_inner_rect;
+    content_geometry_ = last_inner_rect;
     XConfigureEvent ce;
     ce.type = ConfigureNotify;
     ce.display = X_.display();
@@ -460,7 +471,7 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     if (!m) {
         return;
     }
-    auto rect = this->float_size_;
+    Rectangle rect = this->float_size_;
     rect.x += m->rect->x;
     rect.y += m->rect->y;
     rect.x += m->pad_left();
@@ -481,18 +492,6 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
 
 Rectangle Client::outer_floating_rect() {
     return dec->inner_to_outer(float_size_);
-}
-
-int close_command(Input input, Output) {
-    string winid = "";
-    input >> winid; // try to read, use "" otherwise
-    auto window = get_window(winid);
-    if (window != 0) {
-        Ewmh::get().windowClose(window);
-    } else {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return 0;
 }
 
 bool Client::is_client_floated() {
@@ -626,6 +625,18 @@ void Client::updateEwmhState() {
     ewmh.updateWindowState(this);
 }
 
+void Client::floatingGeometryChanged()
+{
+    Rectangle geom = float_size_();
+    if (sizehints_floating_()) {
+        applysizehints(&geom.width, &geom.height);
+        float_size_ = geom;
+    }
+    if (is_client_floated()) {
+        needsRelayout.emit(tag());
+    }
+}
+
 string Client::getWindowClass()
 {
     return ewmh.X().getClass(window_);
@@ -696,8 +707,8 @@ Window get_window(const string& str) {
 void Client::fuzzy_fix_initial_position() {
     // find out the top-left-most position of the decoration,
     // considering the current settings of possible floating decorations
-    int extreme_x = float_size_.x;
-    int extreme_y = float_size_.y;
+    int extreme_x = float_size_->x;
+    int extreme_y = float_size_->y;
     const auto& t = theme[Theme::Type::Floating];
     mostRecentThemeType = Theme::Type::Floating;
     auto r = t.active.inner_rect_to_outline(float_size_);
@@ -710,8 +721,12 @@ void Client::fuzzy_fix_initial_position() {
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
     // if top left corner might be outside of the monitor, move it accordingly
-    if (extreme_x < 0) { float_size_.x += abs(extreme_x); }
-    if (extreme_y < 0) { float_size_.y += abs(extreme_y); }
+    Point2D delta = {0, 0};
+    if (extreme_x < 0) { delta.x = abs(extreme_x); }
+    if (extreme_y < 0) { delta.y = abs(extreme_y); }
+    if (delta.x || delta.y) {
+        float_size_ = float_size_->shifted(delta);
+    }
 }
 
 void Client::clear_properties() {

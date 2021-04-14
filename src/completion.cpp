@@ -7,6 +7,7 @@
 
 #include "utils.h"
 
+using std::function;
 using std::string;
 
 /** Construct a completion context
@@ -15,9 +16,10 @@ using std::string;
  * index        The index of the argument to complete
  * shellOutput  Wether the output is shell encoded, see class description
  */
-Completion::Completion(ArgList args, size_t index, bool shellOutput, Output output)
+Completion::Completion(ArgList args, size_t index, const string& prepend, bool shellOutput, Output output)
     : args_(args)
     , index_(index)
+    , prepend_(prepend)
     , output_(output)
     , shellOutput_(shellOutput)
 {
@@ -29,7 +31,7 @@ Completion::Completion(ArgList args, size_t index, bool shellOutput, Output outp
 }
 
 Completion::Completion(const Completion& other)
-    : Completion(other.args_, other.index_, other.shellOutput_, other.output_)
+    : Completion(other.args_, other.index_, other.prepend_, other.shellOutput_, other.output_)
 {
 }
 
@@ -37,8 +39,8 @@ void Completion::operator=(const Completion& other) {
 }
 
 void Completion::full(const string& word) {
-    if (prefixOf(needle_, word)) {
-        output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
+    if (prefixOf(needle_, prepend_ + word)) {
+        output_ << escape(prepend_ + word) << (shellOutput_ ? " \n" : "\n");
         // std::cout << "add " << word << endl;
     } else {
         // std::cout << needle_ << " not prefix of " << word << endl;
@@ -53,6 +55,11 @@ void Completion::full(const std::initializer_list<string>& wordList) {
 
 void Completion::none() {
     noParameterExpected_ = true;
+}
+
+void Completion::parametersStillExpected()
+{
+    noParameterExpected_ = false;
 }
 
 //! Return the given string posix sh escaped if in shell output mode
@@ -72,10 +79,10 @@ bool Completion::prefixOf(const string& shorter, const string& longer)
 }
 
 void Completion::partial(const string& word) {
-    if (prefixOf(needle_, word)) {
+    if (prefixOf(needle_, prepend_ + word)) {
         // partial completions never end with a space, regardless of
         // shellOutput mode
-        output_ << escape(word) << "\n";
+        output_ << escape(prepend_ + word) << "\n";
     }
 }
 
@@ -110,6 +117,7 @@ Completion Completion::shifted(size_t offset) const {
     return Completion(
         ArgList(args_.begin() + offset, args_.end()),
         index_ - offset,
+        prepend_,
         shellOutput_,
         output_);
 }
@@ -118,15 +126,30 @@ Completion Completion::shifted(size_t offset) const {
 void Completion::completeCommands(size_t offset) {
     Completion thisShifted = shifted(offset);
     Commands::complete(thisShifted);
+    mergeResultsFrom(thisShifted);
+}
 
-    if (thisShifted.ifInvalidArguments()) {
-        thisShifted.invalidArguments();
+void Completion::mergeResultsFrom(Completion& source)
+{
+    if (source.ifInvalidArguments()) {
+        invalidArguments();
     }
-    if (thisShifted.noParameterExpected()) {
-        thisShifted.none();
+    if (source.noParameterExpected()) {
+        none();
     }
 }
 
+void Completion::withPrefix(const string& prependPrefix, function<void (Completion&)> callback)
+{
+    Completion withPrefix(
+        args_,
+        index_,
+        prepend_ + prependPrefix,
+        shellOutput_,
+        output_);
+    callback(withPrefix);
+    mergeResultsFrom(withPrefix);
+}
 
 void Completion::invalidArguments() {
     invalidArgument_ = true;

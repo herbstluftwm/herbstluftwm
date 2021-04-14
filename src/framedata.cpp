@@ -10,7 +10,7 @@ template<> Finite<SplitAlign>::ValueList Finite<SplitAlign>::values = ValueListP
 };
 
 template<> Finite<LayoutAlgorithm>::ValueList Finite<LayoutAlgorithm>::values = {
-  true, // allow indices as names
+  { FiniteNameFlags::AllowIndicesAsNames },
   {
     { LayoutAlgorithm::vertical, "vertical" },
     { LayoutAlgorithm::horizontal, "horizontal" },

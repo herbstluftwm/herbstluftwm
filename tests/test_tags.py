@@ -27,6 +27,20 @@ def test_add_tag_empty(hlwm):
         .expect_stderr('An empty tag name is not permitted')
 
 
+def test_add_tag_completion(hlwm):
+    hlwm.command_has_all_args(['add', 'foo'])
+
+
+def test_add_tag_duplicate(hlwm):
+    assert hlwm.attr.tags.count() == '1'
+    hlwm.call('add foo')
+    assert hlwm.attr.tags.count() == '2'
+    hlwm.call('add bar')
+    assert hlwm.attr.tags.count() == '3'
+    hlwm.call('add foo')
+    assert hlwm.attr.tags.count() == '3'
+
+
 def test_use_previous(hlwm):
     hlwm.call('add foobar')
     hlwm.call('use foobar')
@@ -339,6 +353,26 @@ def test_floating_focused_vacouus(hlwm):
     # there is no floating window
     hlwm.call_xfail('attr tags.focus.floating_focused on') \
         .expect_stderr(r'There are no \(non-minimized\) floating windows')
+
+
+@pytest.mark.parametrize("tag", [True, False])
+@pytest.mark.parametrize("single", [True, False])
+def test_floating_correct_position(hlwm, single, tag):
+    if single:
+        hlwm.call('rule floating=on')
+    if tag:
+        hlwm.attr.tags.focus.floating = 'on'
+
+    winid, _ = hlwm.create_client()
+    hlwm.call('move_monitor "" 800x600+0+0')
+    hlwm.call('pad "" 0 0 0 0')
+
+    clientobj = hlwm.attr.clients[winid]
+
+    # the floating geometry is used iff tag or client is set to floating:
+    floating_geom_applied = single or tag
+    assert (clientobj.floating_geometry() == clientobj.content_geometry()) \
+        == floating_geom_applied
 
 
 def test_urgent_count(hlwm, x11):

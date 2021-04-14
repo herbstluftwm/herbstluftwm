@@ -1,5 +1,6 @@
 import pytest
 import re
+from herbstluftwm.types import Rectangle
 
 
 string_props = [
@@ -951,3 +952,25 @@ def test_apply_tmp_rule_parse_error(hlwm, hlwm_process):
     # message for 'apply_tmp_rule'!
     hlwm.create_client()
     hlwm.call('apply_tmp_rule --all focus=not-a-bool')
+
+
+def test_smart_placement_within_monitor(hlwm):
+    """
+    In the smart placement, the outer geometry of clients
+    must be used. So test that even with wide decorations,
+    the top left corner of the decoration is not off screen.
+    """
+    hlwm.attr.tags.focus.floating = 'on'
+    hlwm.call('rule floatplacement=smart')
+    bw = 25
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.settings.snap_gap = 5  # something smaller than bw
+    winid, _ = hlwm.create_client()
+
+    inner_geometry = Rectangle.from_user_str(
+        hlwm.attr.clients[winid].content_geometry())
+
+    # assert that the top left corner of the decoration
+    # is still within the monitor
+    assert inner_geometry.x - bw >= 0
+    assert inner_geometry.y - bw >= 0

@@ -74,6 +74,8 @@ public:
     void cycleAllCommand(CallOrComplete invoc);
     void cycleAll(bool forward, bool skip_invisible);
 
+    void cycleCommand(CallOrComplete invoc);
+
     int resizeCommand(Input input, Output output);
     void resizeCompletion(Completion& complete);
 

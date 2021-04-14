@@ -18,6 +18,7 @@ class Settings;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 typedef void (FrameTree::*FrameCompleter)(Completion&);
+typedef void (FrameTree::*FrameCallOrComplete)(CallOrComplete);
 
 template<>
 RunTimeConverter<HSTag*>* Converter<HSTag*>::converter;
@@ -34,7 +35,7 @@ public:
 
     void mergeTagCommand(CallOrComplete invoc);
     bool mergeTag(HSTag* tagToRemove, HSTag* targetTag);
-    int tag_add_command(Input input, Output output);
+    void addCommand(CallOrComplete invoc);
     void tag_rename_command(CallOrComplete invoc);
     void tag_move_window_command(CallOrComplete invoc);
     void tag_move_window_by_index_command(CallOrComplete invoc);
@@ -49,17 +50,18 @@ public:
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
     CommandBinding frameCommand(FrameCommand cmd, FrameCompleter completer);
+    CommandBinding frameCommand(FrameCallOrComplete cmd);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
     Signal_<HSTag*> needsRelayout_;
+    Link_<HSTag> focus_;
 private:
     std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
-    Link_<HSTag> focus_;
 };
 
 extern TagManager* global_tags; // temporary, set in Root constr.

@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 
 
 def test_client_lives_longer_than_hlwm(hlwm):
@@ -48,10 +49,52 @@ def test_close_without_clients(hlwm):
     assert hlwm.unchecked_call('close').returncode == 3
 
 
-@pytest.mark.parametrize("running_clients_num", [1, 2, 3, 4])
-def test_close(hlwm, running_clients_num):
-    hlwm.create_clients(running_clients_num)
+@pytest.mark.parametrize("running_clients_num", [0, 1, 4])  # number of unfocused clients
+def test_close_focused_client(hlwm, running_clients, running_clients_num):
+    hlwm.call('rule focus=on')
+    winid, proc = hlwm.create_client()
+    assert hlwm.attr.clients.focus.winid() == winid
+
     hlwm.call('close')
+
+    proc.wait(20)  # wait for the client to shut down
+    hlwm.call('true')  # sync with hlwm
+    clients = hlwm.list_children('clients')
+    # all other clients still run:
+    assert winid not in clients
+    for other in running_clients:
+        assert other in clients
+
+
+def test_close_unfocused_client(hlwm):
+    focused, _ = hlwm.create_client()
+    unfocused, proc = hlwm.create_client()
+    hlwm.call(['jumpto', focused])
+    assert hlwm.attr.clients.focus.winid() == focused
+
+    hlwm.call(['close', unfocused])
+
+    proc.wait(10)  # wait
+    # the other client is still running:
+    assert hlwm.attr.clients.focus.winid() == focused
+
+
+def test_close_unmanaged_client(hlwm):
+    # even though the client is not managed,
+    # the synchronization works because the hooks are
+    # still fired.
+    hlwm.call('rule once manage=off')
+    winid, proc = hlwm.create_client()
+
+    hlwm.call(['close', winid])
+
+    proc.wait(10)  # wait for the client to shut down
+
+
+def test_close_completion(hlwm):
+    winid, _ = hlwm.create_client()
+    assert winid in hlwm.complete(['close'])
+    hlwm.command_has_all_args(['close', winid])
 
 
 @pytest.mark.filterwarnings("ignore:tostring")
@@ -312,3 +355,27 @@ def test_parent_frame_attribute_tag_floating(hlwm):
 
         assert ('parent_frame' in hlwm.list_children(f'clients.{winid}')) \
             == (value == 'off')
+
+
+@pytest.mark.parametrize("minimized", [True, False])
+@pytest.mark.parametrize("floating", [True, False])
+@pytest.mark.parametrize("othertag", [True, False])
+def test_floating_geometry_change(hlwm, minimized, floating, x11, othertag):
+    if othertag:
+        hlwm.call('add othertag')
+        hlwm.call('rule tag=othertag')
+    handle, winid = x11.create_client()
+    clientobj = hlwm.attr.clients[winid]
+    clientobj.floating = hlwm.bool(floating)
+    clientobj.minimized = hlwm.bool(minimized)
+    hlwm.call('pad "" 0 0 0 0')
+    hlwm.call('move_monitor "" 800x600+0+0')
+
+    for geom in [Rectangle(x=50, y=100, width=100, height=300),
+                 Rectangle(x=-20, y=2, width=430, height=200)]:
+
+        clientobj.floating_geometry = geom.to_user_str()
+
+        if not minimized and not othertag:
+            assert (Rectangle.from_user_str(clientobj.content_geometry()) == geom) == floating
+            assert (x11.get_absolute_top_left(handle) == (geom.x, geom.y)) == floating

@@ -25,6 +25,9 @@ BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 # * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
 COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
 
+# time in seconds to wait for a process to shut down
+PROCESS_SHUTDOWN_TIME = 5
+
 
 def extend_env_with_whitelist(environment):
     """Copy some whitelisted environment variables (if set) into an existing environment"""
@@ -254,12 +257,16 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         return line[-1]
 
     def shutdown(self):
+        # first send SIGTERM to all processes, so they
+        # can shut down in parallel
         for client_proc in self.client_procs:
             client_proc.terminate()
-            client_proc.wait(2)
-
         self.hc_idle.terminate()
-        self.hc_idle.wait(2)
+
+        # and then wait for each of them to finish:
+        for client_proc in self.client_procs:
+            client_proc.wait(PROCESS_SHUTDOWN_TIME)
+        self.hc_idle.wait(PROCESS_SHUTDOWN_TIME)
 
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
@@ -440,10 +447,10 @@ class HlwmProcess:
             # only wait the process if it hasn't been cleaned up
             # this also avoids the second exception if hlwm crashed
             try:
-                assert self.proc.wait(2) == 0
+                assert self.proc.wait(PROCESS_SHUTDOWN_TIME) == 0
             except subprocess.TimeoutExpired:
                 self.proc.kill()
-                self.proc.wait(2)
+                self.proc.wait(PROCESS_SHUTDOWN_TIME)
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
 
@@ -486,10 +493,10 @@ class HcIdle:
     def shutdown(self):
         self.proc.terminate()
         try:
-            self.proc.wait(2)
+            self.proc.wait(PROCESS_SHUTDOWN_TIME)
         except subprocess.TimeoutExpired:
             self.proc.kill()
-            self.proc.wait(2)
+            self.proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 @pytest.fixture()
@@ -952,7 +959,7 @@ class MultiscreenDisplay:
 
     def __exit__(self, type_param, value, traceback):
         self.proc.terminate()
-        self.proc.wait(5)
+        self.proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 @pytest.fixture()

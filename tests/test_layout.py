@@ -319,7 +319,7 @@ def test_dump_layout_other_tag(hlwm, command):
 @pytest.mark.parametrize("running_clients_num", [0, 5])
 @pytest.mark.parametrize("num_splits", [0, 2])
 @pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])
-def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
+def test_cycle_tiling(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
     for i in range(0, num_splits):
         hlwm.call('split explode')
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
@@ -335,22 +335,62 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
         assert winids[new_windex] == hlwm.get_attr('clients.focus.winid')
 
 
-@pytest.mark.parametrize("running_clients_num", [0, 1, 5])
-@pytest.mark.parametrize("index", [0, 1, 3, 5])
-def test_focus_nth(hlwm, running_clients, running_clients_num, index):
-    # bring the clients in the right order
-    layout = '(clients vertical:0 '
-    layout += ' '.join(running_clients)
-    layout += ')'
-    hlwm.call(['load', layout])
+def test_cycle_floating_layer(hlwm):
+    hlwm.call('rule floating=off')
+    clients = hlwm.create_clients(8)
 
-    # focus the n_th
-    hlwm.call('focus_nth {}'.format(index))
+    # move some clients to floating layer
+    # but do it manually to get the order right
+    count = 5
+    floating = []
+    for w in clients[0:count]:
+        hlwm.attr.clients[w].floating = 'on'
+        floating.append(w)
 
-    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
-    assert windex == max(0, min(index, running_clients_num - 1))
-    if running_clients_num > 0:
-        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
+    for idx in [0, 1, 4]:
+        for delta in [-2, -1, 0, 1, 2, 8]:
+            hlwm.call(['jumpto', floating[idx]])
+            hlwm.call(['cycle', delta])
+            # adding 'count' 3 times will make the value in
+            # the parentheses positive:
+            expected = (idx + delta + 3 * count) % count
+            assert hlwm.attr.clients.focus.winid() == floating[expected]
+
+
+def test_cycle_stays_in_floating_layer(hlwm):
+    # some tiling clients
+    hlwm.create_clients(2)
+
+    # some floating clients
+    hlwm.call('rule floating=on')
+    floating = hlwm.create_clients(3)
+    hlwm.call(['jumpto', floating[0]])
+
+    for winid in floating:
+        assert hlwm.attr.clients.focus.winid() == winid
+        # the floating layer always stays focused
+        assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+        hlwm.call(['cycle', '+1'])
+
+    # we're back a the first floating client:
+    assert hlwm.attr.clients.focus.winid() == floating[0]
+    assert hlwm.attr.tags.focus.floating_focused() == hlwm.bool(True)
+
+
+def test_cycle_empty_scope(hlwm):
+    for floating in ['on', 'off']:
+        hlwm.attr.tags.focus.floating = floating
+
+        hlwm.call('cycle -1')
+        hlwm.call('cycle +1')
+        hlwm.call('cycle 0')
+
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+
+
+def test_cycle_completion(hlwm):
+    assert '-1' in hlwm.complete(['cycle'])
+    hlwm.command_has_all_args(['cycle', '+1'])
 
 
 @pytest.mark.parametrize("running_clients_num", [5])
@@ -651,7 +691,70 @@ def test_split_simple(hlwm, running_clients, align, fraction):
 
 def test_split_invalid_alignment(hlwm):
     hlwm.call_xfail('split foo') \
-        .expect_stderr('split: Invalid alignment "foo"')
+        .expect_stderr('Cannot parse argument "foo": Expecting.*top')
+
+
+def test_split_completion(hlwm):
+    modes = hlwm.complete(['split'])
+    assert 'auto' in modes
+    assert 'bottom' in modes
+    assert 'top' in modes
+    assert hlwm.complete(['split', 'auto']) == [f'0.{i}' for i in range(1, 10)]
+
+
+def test_split_invalid_arg(hlwm):
+    hlwm.call_xfail(['split', 'uto']) \
+        .expect_stderr('.*"uto": Expecting.*top')
+
+
+def test_split_incomple_mode_name(hlwm):
+    assert hlwm.attr.tags.focus.frame_count() == '1'
+    hlwm.call(['split', 'e'])  # the same as 'explode'
+    assert hlwm.attr.tags.focus.frame_count() == '2'
+
+
+def test_split_equivalent_modes(hlwm):
+    # all names in the same group should behave identical
+    mode_groups = [
+        ['t', 'to', 'top'],
+        ['b', 'bot', 'bottom', 'vertical'],
+        ['a', 'auto'],
+        ['l', 'left'],
+        ['r', 'right', 'horizontal', 'h'],
+        ['e', 'explode'],
+    ]
+    for g in mode_groups:
+        hlwm.call(['load', '(clients vertical:0)'])  # reset
+        hlwm.call(['split', g[0]])
+        expected_layout = hlwm.call('dump').stdout
+
+        for mode in g:
+            hlwm.call(['load', '(clients vertical:0)'])  # reset
+            hlwm.call(['split', mode])
+            assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_split_modes_have_different_result(hlwm):
+    hlwm.create_clients(2)
+    layouts_so_far = set()
+    for mode in ['top', 'bottom', 'left', 'right', 'explode']:
+        hlwm.call(['load', '(clients grid:0)'])  # reset
+
+        hlwm.call(['split', mode])
+
+        layout = hlwm.call(['dump']).stdout
+        assert layout not in layouts_so_far
+
+        layouts_so_far.add(layout)
+
+
+def test_split_fraction(hlwm):
+    for mode in ['expl', 'auto', 'h', 'v']:
+        hlwm.call(['load', '(clients grid:0)'])  # reset
+
+        hlwm.call(['split', mode, '0.3'])
+
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.3'
 
 
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])
@@ -1515,7 +1618,7 @@ def test_shift_no_monitor_in_direction(hlwm):
 
 
 def test_focus_shift_completion(hlwm):
-    for cmd in ['shift', 'focus']:
+    for cmd in ['shift', 'focus', 'shift_edge', 'focus_edge']:
         directions = ['down', 'up', 'left', 'right']
         flags = ['-i', '-e']
         assert sorted(directions + flags) == hlwm.complete([cmd])

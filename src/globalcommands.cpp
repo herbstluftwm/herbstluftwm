@@ -3,7 +3,9 @@
 #include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
+#include "command.h"
 #include "either.h"
+#include "ewmh.h"
 #include "frametree.h"
 #include "layout.h"
 #include "metacommands.h"
@@ -15,6 +17,8 @@
 #include "tagmanager.h"
 #include "xconnection.h"
 
+using std::shared_ptr;
+using std::function;
 using std::string;
 using std::endl;
 
@@ -64,6 +68,46 @@ void GlobalCommands::tagStatus(Monitor* monitor, Output output)
         output << *tag->name;
         output << '\t';
     }
+}
+
+int GlobalCommands::focusEdgeCommand(Input input, Output output)
+{
+    // Puts the focus to the edge in the specified direction
+    root_.monitors->lock();
+    int oldval = root_.settings->focus_crosses_monitor_boundaries();
+    root_.settings->focus_crosses_monitor_boundaries = false;
+    Input inp = {"focus", input.toVector()};
+    while (0 == Commands::call(inp, output)) {
+    }
+    root_.settings->focus_crosses_monitor_boundaries = oldval;
+    root_.monitors->unlock();
+    return 0;
+}
+
+int GlobalCommands::shiftEdgeCommand(Input input, Output output)
+{
+    // Moves a window to the edge in the specified direction
+    root_.monitors->lock();
+    int oldval = root_.settings->focus_crosses_monitor_boundaries();
+    root_.settings->focus_crosses_monitor_boundaries = false;
+    Input inp = {"shift", input.toVector()};
+    while (0 == Commands::call(inp, output)) {
+    }
+    root_.settings->focus_crosses_monitor_boundaries = oldval;
+    root_.monitors->unlock();
+    return 0;
+}
+
+void GlobalCommands::focusEdgeCompletion(Completion& complete)
+{
+    root_.monitors->focus()->tag->focusInDirCommand(
+                CallOrComplete::complete(complete));
+}
+
+void GlobalCommands::shiftEdgeCompletion(Completion& complete)
+{
+    root_.monitors->focus()->tag->shiftInDirCommand(
+                CallOrComplete::complete(complete));
 }
 
 void GlobalCommands::useTagCommand(CallOrComplete invoc)
@@ -214,6 +258,31 @@ void GlobalCommands::bring(Client* client)
     focus_client(client, false, false, true);
 }
 
+void GlobalCommands::closeCommand(CallOrComplete invoc)
+{
+    Either<Client*,WindowID> clientOrWin = { nullptr };
+    ArgParse()
+            .optional(clientOrWin)
+            .command(invoc, [&] (Output) {
+        return clientOrWin.cases<int>([&] (Client* c) {
+            if (!c) {
+                c = root_.clients->focus();
+            }
+            if (!c) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+            c->requestClose();
+            return HERBST_EXIT_SUCCESS;
+        },
+        [&] (WindowID win) {
+            // if the window ID of an unmanaged
+            // client was given
+            root_.ewmh_.windowClose(win);
+            return HERBST_EXIT_SUCCESS;
+        });
+    });
+}
+
 void GlobalCommands::raiseCommand(CallOrComplete invoc)
 {
     Either<Client*,WindowID> clientOrWin = {nullptr};
@@ -245,6 +314,77 @@ void GlobalCommands::lowerCommand(CallOrComplete invoc)
             XLowerWindow(root_.X.display(), window);
         };
         clientOrWin.cases(forClients, forWindowIDs);
+        return 0;
+    });
+}
+
+void GlobalCommands::focusNthCommand(CallOrComplete invoc)
+{
+    // essentially an alias to:
+    // set_attr tags.focus.tiling.focused_frame.selection
+    // with the additional feature that setSelection() allows
+    // to directly focus the last window in a frame.
+    int index = 0;
+    ArgParse().mandatory(index, {"0", "-1"})
+            .command(invoc, [&](Output) {
+        HSTag* tag = root_.tags->focus_();
+        auto frame = tag->frame->focusedFrame();
+        frame->setSelection(index);
+        tag->needsRelayout_.emit();
+        return 0;
+    });
+}
+
+void GlobalCommands::listClientsCommand(CallOrComplete invoc)
+{
+    Monitor* onMonitor = nullptr;
+    HSTag* onTag = nullptr;
+    bool showTitle = false;
+    bool floating = false;
+    bool tiling = false;
+    string noFrameDefined = "#NoFrameDefined";
+    string inFrame = noFrameDefined;
+    ArgParse().flags({ {"--tag=", onTag}
+                     , {"--monitor=", onMonitor}
+                     , {"--title", &showTitle}
+                     , {"--floating", &floating}
+                     , {"--tiling", &tiling}
+                     , {"--frame=", inFrame}
+                     })
+            .command(invoc, [&](Output output) {
+        if (!onTag) {
+            if (!onMonitor) {
+                onMonitor = root_.monitors->focus();
+            }
+            // now, onMonitor is set in any case.
+            onTag = onMonitor->tag;
+        }
+        // now, onTag is set in any case.
+        function<void(Client*)> printClient = [&](Client* c) {
+            if (floating && !c->is_client_floated()) {
+                return;
+            }
+            if (tiling && c->is_client_floated()) {
+                return;
+            }
+            output << c->window_id_str();
+            if (showTitle) {
+                output << " ";
+                for (char ch : c->title_()) {
+                    if (ch == '\n') {
+                        ch = ' ';
+                    }
+                    output << ch;
+                }
+            }
+            output << endl;
+        };
+        if (inFrame == noFrameDefined) {
+            onTag->foreachClient(printClient);
+        } else {
+            shared_ptr<Frame> frame = onTag->frame->lookup(inFrame);
+            frame->foreachClient(printClient);
+        }
         return 0;
     });
 }

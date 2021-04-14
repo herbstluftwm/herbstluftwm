@@ -215,6 +215,13 @@ list_keybinds::
 
 WARNING: Tabs within command parameters are not escaped!
 
+list_clients [*--tag=*'TAG'|*--monitor=*'MONITOR'] [*--frame=*'FRAME_PATH'|*--floating*|*--tiling*] [*--title*]::
+    Lists the window ids of all clients on the given 'TAG' or 'MONITOR' (or the
+    current if unspecified). In addition to that, one can restrict to clients in
+    a specific frame (*--frame=*) or to tiled or floated clients.
+    The output is one line per client; if *--title* is given, then in addition
+    to every client's window id, its window title is printed in the same line.
+
 lock::
     Increases the 'monitors_locked' setting. Use this if you want to do multiple
     window actions at once (i.e. without repainting between the single steps).
@@ -341,9 +348,10 @@ focus_nth 'INDEX'::
     window is focused.
 
 cycle ['DELTA']::
-    Cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
-    omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
-    means: cycle in the opposite direction by 1.
+    Cycles the selection within the current frame by 'DELTA' or cycles through
+    the clients in the floating layer if that is focused. If 'DELTA' is omitted,
+    'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1 means: cycle
+    in the opposite direction by 1.
 
 cycle_all [*--skip-invisible*] ['DIRECTION']::
     Cycles through all non-minimized windows and frames on the current tag.
@@ -848,6 +856,9 @@ get_attr 'ATTRIBUTE'::
 set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
+
+attr_type 'ATTRIBUTE'::
+    Print the type of the specified 'ATTRIBUTE'.
 
 new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
     Creates a new attribute with the name and in the object specified by 'PATH'.

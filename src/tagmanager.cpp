@@ -25,9 +25,9 @@ RunTimeConverter<HSTag*>* Converter<HSTag*>::converter = nullptr;
 
 TagManager::TagManager()
     : IndexingObject()
+    , focus_(*this, "focus")
     , by_name_(*this)
     , settings_(nullptr)
-    , focus_(*this, "focus")
 {
     indicesChanged.connect([](){
         Ewmh::get().updateDesktopNames();
@@ -115,17 +115,20 @@ HSTag* TagManager::add_tag(const string& name) {
     return tag;
 }
 
-int TagManager::tag_add_command(Input input, Output output) {
-    if (input.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (input.front().empty()) {
-        output << input.command() << ": An empty tag name is not permitted\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = add_tag(input.front());
-    hook_emit({"tag_added", tag->name});
-    return 0;
+void TagManager::addCommand(CallOrComplete invoc)
+{
+    string tagName;
+    ArgParse().mandatory(tagName)
+            .command(invoc, [&](Output output) {
+        if (tagName.empty()) {
+            string error = "An empty tag name is not permitted";
+            output << invoc.command() << ": " << error << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        HSTag* tag = add_tag(tagName);
+        hook_emit({"tag_added", tag->name});
+        return HERBST_EXIT_SUCCESS;
+    });
 }
 
 void TagManager::mergeTagCommand(CallOrComplete invoc) {
@@ -311,7 +314,8 @@ void TagManager::tag_move_window_command(CallOrComplete invoc) {
 void TagManager::tag_move_window_by_index_command(CallOrComplete invoc) {
     string tagIndex;
     bool skip_visible = false;
-    ArgParse().mandatory(tagIndex)
+    ArgParse().mandatory(tagIndex, {"-1", "+1"})
+            .flags({{"--skip-visible", &skip_visible}})
             .command(invoc,
                      [&] (Output output) {
         HSTag* tag = byIndexStr(tagIndex, skip_visible);
@@ -334,6 +338,14 @@ CommandBinding TagManager::frameCommand(FrameCommand cmd, FrameCompleter complet
 {
     return { frameCommand(cmd), frameCompletion(completer) };
 }
+
+CommandBinding TagManager::frameCommand(FrameCallOrComplete cmd)
+{
+    return CommandBinding([this,cmd](CallOrComplete invoc) {
+        ((this->focus_()->frame()) ->* cmd) (invoc);
+    });
+}
+
 function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     return [cmd,this]() -> int {
         return cmd(*(this->focus_()->frame()));

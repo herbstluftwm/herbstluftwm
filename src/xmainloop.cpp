@@ -255,7 +255,7 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
     Client* client = root_->clients->client(cre->window);
     if (client) {
         bool changes = false;
-        auto newRect = client->float_size_;
+        Rectangle newRect = client->float_size_;
         if (client->sizehints_floating_ &&
             (client->is_client_floated() || client->pseudotile_))
         {
@@ -317,7 +317,7 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             }
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
-            client->send_configure();
+            client->send_configure(true);
         }
     } else {
         // if client not known.. then allow configure.

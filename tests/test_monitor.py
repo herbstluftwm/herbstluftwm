@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 
 
 def test_default_monitor(hlwm):
@@ -22,6 +23,35 @@ def test_add_monitor(hlwm):
 
     assert hlwm.get_attr('monitors.count') == '2'
     assert hlwm.get_attr('monitors.1.name') == 'monitor2'
+    assert hlwm.attr.monitors[1].geometry() == '800x600+40+40'
+
+
+def test_add_monitor_invalid_geometry(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call_xfail('add_monitor 800x10+800+800 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 8x300+800+800 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    # TODO: make 'rectangle' produce meaningful error messages
+    hlwm.call_xfail('add_monitor not_a_rect_at_all tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 1234 tag2') \
+        .expect_stderr("Rectangle too small")
+
+    hlwm.call_xfail('add_monitor 1234x tag2') \
+        .expect_stderr("Rectangle too small")
+
+
+def test_add_monitor_completion(hlwm):
+    hlwm.call('add tagname')
+
+    assert 'tagname' in hlwm.complete(['add_monitor', '800x600'])
+
+    hlwm.command_has_all_args(['add_monitor', '800x600', 'tagname', 'monname'])
 
 
 def test_add_monitor_with_no_name(hlwm):
@@ -40,8 +70,8 @@ def test_cannot_add_monitor_without_free_tag(hlwm):
 
 
 def test_cannot_add_monitor_with_nonexistent_tag(hlwm):
-    call = hlwm.call_xfail('add_monitor 800x600+40+40 derp')
-    assert call.stderr == 'add_monitor: Tag "derp" does not exist\n'
+    hlwm.call_xfail('add_monitor 800x600+40+40 derp') \
+        .expect_stderr('no such tag: derp')
     assert hlwm.get_attr('monitors.count') == '1'
 
 
@@ -672,6 +702,25 @@ def test_pad_command(hlwm):
         args_passed_so_far.add(args)
 
     assert len(args_passed_so_far) == 2**0 + 2**1 + 2**2 + 2**3 + 2**4
+
+
+def test_pad_applied_to_floating_pos(hlwm):
+    winid, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[winid]
+    clientobj.floating = 'on'
+    for monitor_rect in [Rectangle(width=300, height=400),
+                         Rectangle(x=2, y=30, width=800, height=600)]:
+        hlwm.attr.monitors.focus.geometry = monitor_rect.to_user_str()
+        for left, up in [(10, 20), (5, 30)]:
+            hlwm.attr.monitors.focus.pad_left = left
+            hlwm.attr.monitors.focus.pad_up = up
+            content_geom = Rectangle.from_user_str(clientobj.content_geometry())
+            float_geom = Rectangle.from_user_str(clientobj.floating_geometry())
+
+            assert content_geom.width == float_geom.width
+            assert content_geom.height == float_geom.height
+            assert content_geom.x == float_geom.x + left + monitor_rect.x
+            assert content_geom.y == float_geom.y + up + monitor_rect.y
 
 
 def test_pad_invalid_arg(hlwm):

@@ -1,6 +1,8 @@
 #ifndef HLWM_COMPLETION
 #define HLWM_COMPLETION
 
+#include <functional>
+
 #include "arglist.h"
 #include "commandio.h"
 
@@ -25,7 +27,7 @@ void complete(Completion& completion);
  */
 class Completion {
 public:
-    Completion(ArgList args, size_t index, bool shellOutput, Output output);
+    Completion(ArgList args, size_t index, const std::string& prepend, bool shellOutput, Output output);
 
     //! the given word is a possible argument, e.g. full("status")
     void full(const std::string& word);
@@ -36,6 +38,8 @@ public:
 
     //! there is no more parameter expected
     void none();
+    //! reset a previous call to none()
+    void parametersStillExpected();
 
     //! some of the previous arguments are invalid
     void invalidArguments();
@@ -70,6 +74,7 @@ public:
     friend void Commands::complete(Completion& completion);
 
     void completeCommands(size_t offset);
+    void withPrefix(const std::string& prependPrefix, std::function<void(Completion&)> callback);
 private:
     /** The intended use is to pass the completion state as the reference and
      * to return possible completions via this Completion object. This is why
@@ -78,6 +83,7 @@ private:
      */
     void operator=(const Completion& other);
     Completion(const Completion& other);
+    void mergeResultsFrom(Completion& source);
 
     Completion shifted(size_t offset) const;
     std::string escape(const std::string& str);
@@ -85,6 +91,7 @@ private:
     ArgList args_;
     size_t index_;
     std::string needle_;
+    std::string prepend_; //! a string that is prepended to all completion results
     Output output_;
     bool   shellOutput_;
     bool   noParameterExpected_ = false;

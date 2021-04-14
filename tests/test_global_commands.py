@@ -162,11 +162,12 @@ def test_use_tag_completion(hlwm):
     hlwm.command_has_all_args(['use', 'foo'])
 
 
-def test_use_index_completion(hlwm):
-    assert hlwm.complete(['use_index']) == sorted(['+1', '-1', '--skip-visible'])
-    assert hlwm.complete(['use_index', '+1']) == sorted(['--skip-visible'])
-    assert hlwm.complete(['use_index', '--skip-visible']) == sorted(['+1', '-1'])
-    hlwm.command_has_all_args(['use_index', '--skip-visible', '0'])
+def test_use_index_move_index_completion(hlwm):
+    for cmd in ['use_index', 'move_index']:
+        assert hlwm.complete([cmd]) == sorted(['+1', '-1', '--skip-visible'])
+        assert hlwm.complete([cmd, '+1']) == sorted(['--skip-visible'])
+        assert hlwm.complete([cmd, '--skip-visible']) == sorted(['+1', '-1'])
+        hlwm.command_has_all_args([cmd, '--skip-visible', '0'])
 
 
 def test_use_tag_invalid_arg(hlwm):
@@ -189,9 +190,10 @@ def test_use_index_invalid_arg(hlwm):
             .expect_stderr(f'Invalid index "{arg}"', regex=False)
 
 
+@pytest.mark.parametrize("use_or_move_index", ['use_index', 'move_index'])
 @pytest.mark.parametrize("delta", ['+1', '-1'])
 @pytest.mark.parametrize("skip_visible", [True, False])
-def test_use_index_skip_visible(hlwm, delta, skip_visible):
+def test_use_index_move_index_skip_visible(hlwm, use_or_move_index, delta, skip_visible):
     # create the tags in a order such that (0 + delta) (modulo tag
     # count) is the used tag:
     if delta == '+1':
@@ -203,7 +205,10 @@ def test_use_index_skip_visible(hlwm, delta, skip_visible):
     assert hlwm.attr.monitors.focus.index() == '0'
     assert hlwm.attr.tags.focus.index() == '0'
 
-    cmd = ['use_index', delta]
+    if use_or_move_index == 'move_index':
+        winid, _ = hlwm.create_client()
+
+    cmd = [use_or_move_index, delta]
 
     if skip_visible:
         cmd += ['--skip-visible']
@@ -216,5 +221,158 @@ def test_use_index_skip_visible(hlwm, delta, skip_visible):
 
     hlwm.call(cmd)
 
-    assert hlwm.attr.monitors.focus.index() == '0'
-    assert hlwm.attr.tags.focus.name() == expected_name
+    if use_or_move_index == 'use_index':
+        assert hlwm.attr.monitors.focus.index() == '0'
+        assert hlwm.attr.tags.focus.name() == expected_name
+    else:
+        assert hlwm.attr.clients[winid].tag() == expected_name
+        # however, we stay on the original tag:
+        assert hlwm.attr.monitors.focus.index() == '0'
+        assert hlwm.attr.tags.focus.index() == '0'
+
+
+@pytest.mark.parametrize("running_clients_num", [0, 1, 5])
+@pytest.mark.parametrize("index", [0, 1, 3, 5])
+def test_focus_nth(hlwm, running_clients, running_clients_num, index):
+    # bring the clients in the right order
+    layout = '(clients vertical:0 '
+    layout += ' '.join(running_clients)
+    layout += ')'
+    hlwm.call(['load', layout])
+
+    # focus the n_th
+    hlwm.call('focus_nth {}'.format(index))
+
+    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    assert windex == max(0, min(index, running_clients_num - 1))
+    if running_clients_num > 0:
+        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
+
+
+def test_focus_nth_last_window(hlwm):
+    hlwm.create_clients(4)
+    for last_idx in ['-1', '4', '2342', '-123']:
+        hlwm.call(['focus_nth', '0'])  # reset
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '0'
+
+        hlwm.call(['focus_nth', last_idx])
+        assert hlwm.attr.tags.focus.tiling.focused_frame.selection() == '3'
+
+
+def test_focus_nth_completion(hlwm):
+    assert '0' in hlwm.complete(['focus_nth'])
+    assert '-1' in hlwm.complete(['focus_nth'])
+
+    hlwm.command_has_all_args(['focus_nth', '0'])
+
+
+def test_list_clients_without_args(hlwm):
+    assert hlwm.call('list_clients').stdout.splitlines() == []
+
+    winid1, _ = hlwm.create_client()
+    assert hlwm.call('list_clients').stdout.splitlines() == [winid1]
+
+    winid2, _ = hlwm.create_client()
+    assert sorted(hlwm.call('list_clients').stdout.splitlines()) == sorted([winid1, winid2])
+
+
+def test_list_clients_with_title(hlwm):
+    winid, _ = hlwm.create_client(title="my\ntitle")
+    for cmd in ['list_clients --title', 'list_clients --monitor=0 --title']:
+        assert hlwm.call(cmd).stdout.splitlines() == [winid + ' my title']
+
+
+@pytest.mark.parametrize("on_monitor", [False, True])
+def test_list_clients_on_tag_or_on_monitor(hlwm, on_monitor):
+    hlwm.create_client()  # a dummy client that should not appear in the output
+
+    hlwm.call('add othertag')
+    flag = '--tag=othertag'
+    if on_monitor:
+        hlwm.call('add_monitor 800x600+800+0 othertag mymonitor')
+        flag = '--monitor=mymonitor'
+    hlwm.call('rule tag=othertag')
+    winid1, _ = hlwm.create_client()
+    winid2, _ = hlwm.create_client()
+
+    assert sorted(hlwm.call(['list_clients', flag]).stdout.splitlines()) \
+        == sorted([winid1, winid2])
+
+
+def test_list_clients_floating_tiling(hlwm):
+    tiling, _ = hlwm.create_client()
+
+    hlwm.call('rule floating=on')
+    floating, _ = hlwm.create_client()
+
+    assert hlwm.call(['list_clients', '--floating']).stdout == floating + '\n'
+    assert hlwm.call(['list_clients', '--tiling']).stdout == tiling + '\n'
+
+
+def test_list_clients_in_frame(hlwm):
+    clients = hlwm.create_clients(4)
+
+    layout = f'''
+        (split vertical:0.5:0
+            (clients max:0 {clients[0]} {clients[1]})
+            (clients max:0 {clients[2]} {clients[3]}))
+    '''.strip()
+    hlwm.call(['load', layout])
+
+    def list_clients(flags):
+        return sorted(hlwm.call(['list_clients'] + flags).stdout.splitlines())
+
+    assert list_clients(['--frame=']) == sorted(clients)
+    assert list_clients(['--frame=@']) == sorted(clients[0:2])
+    assert list_clients(['--frame=0']) == sorted(clients[0:2])
+    assert list_clients(['--frame=1']) == sorted(clients[2:4])
+
+
+def test_list_clients_invalid_arg(hlwm):
+    hlwm.call_xfail('list_clients --foo') \
+        .expect_stderr('Unknown.*--foo')
+
+    hlwm.call_xfail('list_clients --tag') \
+        .expect_stderr('Unknown.*--tag')
+
+    hlwm.call_xfail('list_clients --tag=') \
+        .expect_stderr('no such tag')
+
+    hlwm.call('add sometag')
+    hlwm.call('add_monitor 800x600+800+0 sometag somemonitor')
+
+    hlwm.call_xfail('list_clients --tag=foobar') \
+        .expect_stderr('no such tag.*foobar')
+
+    hlwm.call_xfail('list_clients --tag=somemonitor') \
+        .expect_stderr('no such tag.*somemonitor')
+
+    hlwm.call_xfail('list_clients --monitor=sometag') \
+        .expect_stderr('No such monitor.*sometag')
+
+
+def test_list_clients_completion(hlwm):
+    assert '--title' in hlwm.complete(['list_clients', '--ti'], position=1)
+
+    hlwm.call('add sometag')
+    hlwm.call('add_monitor 800x600+800+0 sometag somemonitor')
+    results = hlwm.complete(['list_clients'], partial=True, evaluate_escapes=True)
+    assert '--tag=sometag' in results
+    assert '--monitor=somemonitor' in results
+    assert '--tiling' in results
+    assert '--floating' in results
+    assert '--frame=' in results
+
+    # it makes sense to pass more than one flag:
+    assert '--title' in hlwm.complete(['list_clients', '--tag=sometag', '--ti'], position=2)
+
+    all_args = [
+        'list_clients',
+        '--tag=sometag',
+        '--monitor=somemonitor',  # redundant anyways
+        '--title',
+        '--floating',
+        '--tiling',
+        '--frame=',
+    ]
+    hlwm.command_has_all_args(all_args)
