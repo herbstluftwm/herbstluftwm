@@ -179,7 +179,8 @@ bool Rule::evaluate(Client* client, ClientChanges& changes, Output output)
             try {
                 Consequence::appliers.at(cons.name)(&cons, client, &changes);
             } catch (std::exception& e) {
-                output << "Invalid argument \"" << cons.value
+                output.error()
+                       << "Invalid argument \"" << cons.value
                        << "\" for rule consequence \"" << cons.name << "\": "
                        << e.what() << "\n";
             }

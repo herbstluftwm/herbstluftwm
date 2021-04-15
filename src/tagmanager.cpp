@@ -122,7 +122,7 @@ void TagManager::addCommand(CallOrComplete invoc)
             .command(invoc, [&](Output output) {
         if (tagName.empty()) {
             string error = "An empty tag name is not permitted";
-            output << invoc.command() << ": " << error << "\n";
+            output.perror() << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
         HSTag* tag = add_tag(tagName);
@@ -139,7 +139,7 @@ void TagManager::mergeTagCommand(CallOrComplete invoc) {
             .command(invoc,
                      [&] (Output output) {
         if (!mergeTag(tagToRemove, targetTag)) {
-            output << invoc.command() << ": Cannot merge the currently viewed tag\n";
+            output.perror() << "Cannot merge the currently viewed tag\n";
             return HERBST_TAG_IN_USE;
         }
         return HERBST_EXIT_SUCCESS;
@@ -195,7 +195,7 @@ void TagManager::tag_rename_command(CallOrComplete invoc) {
                      [&] (Output output) {
         auto error = tag->name.change(new_name);
         if (!error.empty()) {
-            output << invoc.command() << ": " << error << "\n";
+            output.perror() << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
         return HERBST_EXIT_SUCCESS;
@@ -320,7 +320,7 @@ void TagManager::tag_move_window_by_index_command(CallOrComplete invoc) {
                      [&] (Output output) {
         HSTag* tag = byIndexStr(tagIndex, skip_visible);
         if (!tag) {
-            output << invoc.command() << ": Invalid index \"" << tagIndex << "\"\n";
+            output.perror() << "Invalid index \"" << tagIndex << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
         moveFocusedClient(tag);
@@ -389,7 +389,7 @@ int TagManager::floatingCmd(Input input, Output output) {
     if (!tagName.empty()) {
         tag = find(tagName);
         if (!tag) {
-            output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+            output.perror() << "Tag \"" << tagName << "\" not found\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }

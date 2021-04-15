@@ -384,8 +384,11 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 /* ignore recognized long option */
                 break;
             case 'v':
-                version(std::cout);
-                exit(0);
+                {
+                    auto stdio = OutputChannels::stdio();
+                    version(stdio);
+                    exit(0);
+                }
             case 'c':
                 g_autostart_path = optarg;
                 break;

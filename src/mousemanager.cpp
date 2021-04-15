@@ -2,6 +2,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#include <iostream>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -62,7 +63,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
     }
     auto action = string2mousefunction(mouseFunctionName);
     if (!action) {
-        output << input.command() << ": Unknown mouse action \"" << mouseFunctionName << "\"" << endl;
+        output.perror() << "Unknown mouse action \"" << mouseFunctionName << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 
@@ -134,16 +135,16 @@ int MouseManager::dragCommand(Input input, Output output)
     }
     MouseFunction action = string2mousefunction(mouseAction.c_str());
     if (!action) {
-        output << input.command() << ": Unknown mouse action \"" << mouseAction << "\"" << endl;
+        output.perror() << "Unknown mouse action \"" << mouseAction << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     if (monitors_->byTag(client->tag()) == nullptr || client->minimized_()) {
-        output << input.command() << ": cannot drag invisible client \"" << winid << "\"" << endl;
+        output.perror() << "cannot drag invisible client \"" << winid << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     string errorMsg = (this ->* action)(client, input.toVector());
     if (!errorMsg.empty()) {
-        output << input.command() << ": cannot drag: " << errorMsg << "\n";
+        output.perror() << "cannot drag: " << errorMsg << "\n";
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;
@@ -205,7 +206,9 @@ string MouseManager::mouse_call_command(Client* client, const vector<string> &cm
     // Execute the bound command
     std::ostringstream discardedOutput;
     Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
-    Commands::call(input, discardedOutput);
+    // discard output, but forward errors to std::cerr
+    OutputChannels channels(cmd.front(), discardedOutput, std::cerr);
+    Commands::call(input, channels);
 
     clients_->setDragged(nullptr);
     return {};

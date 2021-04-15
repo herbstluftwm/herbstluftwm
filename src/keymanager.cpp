@@ -1,6 +1,7 @@
 #include "keymanager.h"
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -33,7 +34,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     try {
         newBinding->keyCombo = KeyCombo::fromString(input.front());
     } catch (std::exception &error) {
-        output << input.command() << ": " << error.what() << endl;
+        output.perror() << error.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 
@@ -43,7 +44,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
 
     // newBinding->cmd is not empty because the size before the input.shift() was >= 2
     if (!Commands::commandExists(newBinding->cmd[0])) {
-        output << input.command() << ": the command \""
+        output.perror() << "the command \""
                << newBinding->cmd[0] << "\" does not exist."
                << " Did you forget \"spawn\"?\n";
         return HERBST_COMMAND_NOT_FOUND;
@@ -93,7 +94,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         try {
             comboToRemove = KeyCombo::fromString(arg);
         } catch (std::exception &error) {
-            output << input.command() << ": " << arg << ": " << error.what() << "\n";
+            output.perror() << arg << ": " << error.what() << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
 
@@ -101,7 +102,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         if (removeKeyBinding(comboToRemove)) {
             regrabAll();
         } else {
-            output << input.command() << ": Key \"" << arg << "\" is not bound\n";
+            output.perror() << "Key \"" << arg << "\" is not bound\n";
         }
     }
 
@@ -138,7 +139,9 @@ void KeyManager::handleKeyPress(XKeyEvent* ev) const {
         std::ostringstream discardedOutput;
         auto& cmd = (*found)->cmd;
         Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
-        Commands::call(input, discardedOutput);
+        // discard output, but forward errors to std::cerr
+        OutputChannels channels(cmd.front(), discardedOutput, std::cerr);
+        Commands::call(input, channels);
     }
 }
 

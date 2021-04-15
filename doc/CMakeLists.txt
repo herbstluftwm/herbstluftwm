@@ -120,7 +120,7 @@ function(gen_html sourcefile)
             DEPENDS ${src} ${ARGN}
             )
     endif()
-    install(FILES ${dst} DESTINATION ${DOCDIR})
+    install(FILES ${dst} DESTINATION "${DOCDIR}/html")
 endfunction()
 
 

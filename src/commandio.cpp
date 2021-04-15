@@ -1,8 +1,12 @@
 #include "commandio.h"
 
+#include <iostream>
+
 #include "completion.h"
+#include "globals.h"
 
 using std::string;
+using std::endl;
 
 Input &Input::operator>>(string &val)
 {
@@ -31,4 +35,13 @@ void Input::replace(const string &from, const string &to)
             *command_ = to;
         }
     }
+}
+
+OutputChannels OutputChannels::stdio() {
+    return OutputChannels(WINDOW_MANAGER_NAME, std::cout, std::cerr);
+}
+
+std::ostream& OutputChannels::perror()
+{
+    return error_ << commandName_ << ": ";
 }

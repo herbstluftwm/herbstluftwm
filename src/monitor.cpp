@@ -300,7 +300,7 @@ int Monitor::move_cmd(Input input, Output output) {
     }
     auto new_rect = Rectangle::fromStr(input.front());
     if (new_rect.width < WINDOW_MIN_WIDTH || new_rect.height < WINDOW_MIN_HEIGHT) {
-        output << input.command() << ": Rectangle is too small\n";
+        output.perror() << "Rectangle is too small\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
@@ -347,7 +347,7 @@ int Monitor::renameCommand(Input input, Output output) {
     }
     string error = name.change(new_name);
     if (!error.empty()) {
-        output << input.command() << ": " << error << "\n";
+        output.perror() << error << endl;
         return HERBST_INVALID_ARGUMENT;
     } else {
         return 0;
