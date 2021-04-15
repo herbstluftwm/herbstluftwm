@@ -608,7 +608,7 @@ def test_foreach_tag_merge(hlwm):
         'tags.by-name.othertag'
     ]
     proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
-    assert proc.stdout.splitlines() == expected
+    assert sorted(proc.stdout.splitlines()) == sorted(expected)
 
 
 def test_foreach_exit_code_success(hlwm):

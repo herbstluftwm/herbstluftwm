@@ -11,10 +11,16 @@ class XConnection;
 
 class IpcServer {
 public:
+    class CallResult {
+    public:
+        int exitCode = 0;
+        std::string output;
+        std::string error;
+    };
     //! a callback that handles a call, represented by a vector of strings. The
     // callback can produce some output and return a status code.
     // This is the counterpart of hc_send_command() in ipc-client/ipc-client.h
-    using CallHandler = std::function<std::pair<int,std::string>(const std::vector<std::string>&)>;
+    using CallHandler = std::function<CallResult(const std::vector<std::string>&)>;
     IpcServer(XConnection& xconnection);
     ~IpcServer();
 

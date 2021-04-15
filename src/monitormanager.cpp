@@ -221,8 +221,8 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
         } else {
             monitor = byString(monitor_name);
             if (!monitor) {
-                output << input.command() <<
-                    ": Monitor \"" << monitor_name << "\" not found!\n";
+                output.perror() <<
+                    "Monitor \"" << monitor_name << "\" not found!\n";
                 return HERBST_INVALID_ARGUMENT;
             }
         }
@@ -331,7 +331,7 @@ void MonitorManager::removeMonitorCommand(CallOrComplete invoc)
     ArgParse().mandatory(monitor).command(invoc,
         [&] (Output output) {
             if (size() <= 1) {
-                output << invoc.command() << ": Can't remove the last monitor\n";
+                output.perror() << "Can't remove the last monitor\n";
                 return HERBST_FORBIDDEN;
             }
             this->removeMonitor(monitor);
@@ -385,12 +385,12 @@ void MonitorManager::addMonitorCommand(CallOrComplete invoc)
             tag = tags_->unusedTag();
         }
         if (!tag) {
-            output << invoc.command() << ": There are not enough free tags\n";
+            output.perror() << "There are not enough free tags\n";
             return HERBST_TAG_IN_USE;
         }
         if (find_monitor_with_tag(tag)) {
-            output << invoc.command() <<
-                ": Tag \"" << tag->name() << "\" is already being viewed on a monitor\n";
+            output.perror() <<
+                "Tag \"" << tag->name() << "\" is already being viewed on a monitor\n";
             return HERBST_TAG_IN_USE;
         }
         string error = Monitor::atLeastMinWindowSize(geo);
@@ -402,7 +402,7 @@ void MonitorManager::addMonitorCommand(CallOrComplete invoc)
             }
         }
         if (!error.empty()) {
-            output << invoc.command() << ": " << error << "\n";
+            output.perror() << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
         auto monitor = addMonitor(geo, tag);
@@ -622,8 +622,8 @@ int MonitorManager::setMonitorsCommand(Input input, Output output) {
         Rectangle rect = Rectangle::fromStr(rectangleString);
         if (rect.width == 0 || rect.height == 0)
         {
-            output << input.command()
-                   << ": Rectangle invalid or too small: "
+            output.perror()
+                   << "Rectangle invalid or too small: "
                    << rectangleString << endl;
             return HERBST_INVALID_ARGUMENT;
         }
@@ -635,7 +635,7 @@ int MonitorManager::setMonitorsCommand(Input input, Output output) {
     int status = setMonitors(templates);
 
     if (status == HERBST_TAG_IN_USE) {
-        output << input.command() << ": There are not enough free tags\n";
+        output.perror() << "There are not enough free tags\n";
     } else if (status == HERBST_INVALID_ARGUMENT) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -720,7 +720,7 @@ int MonitorManager::detectMonitorsCommand(Input input, Output output)
         } else if (arg == "--no-disjoin") {
             disjoin = false;
         } else {
-            output << input.command() << ": unknown flag \"" << arg << "\"\n";
+            output.perror() << "unknown flag \"" << arg << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -769,7 +769,7 @@ int MonitorManager::detectMonitorsCommand(Input input, Output output)
         // apply it
         int ret = g_monitors->setMonitors(monitor_rects);
         if (ret == HERBST_TAG_IN_USE) {
-            output << input.command() << ": There are not enough free tags\n";
+            output.perror() << "There are not enough free tags" << endl;
         }
         return ret;
     }
@@ -883,7 +883,7 @@ int MonitorManager::raiseMonitorCommand(Input input, Output output) {
     input >> monitorName;
     Monitor* monitor = string_to_monitor(monitorName.c_str());
     if (!monitor) {
-        output << input.command() << ": Monitor \"" << monitorName << "\" not found!\n";
+        output.perror() << "Monitor \"" << monitorName << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     monitorStack_.raise(monitor);

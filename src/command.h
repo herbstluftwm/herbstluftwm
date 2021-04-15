@@ -88,7 +88,6 @@ public:
             std::pair<Input, Output> io = {input, output};
             int exitCode = 0;
             CallOrComplete invoc;
-            invoc.command_ = input.command();
             invoc.inputOutput_ = &io;
             invoc.exitCode_ = &exitCode;
             callOrCompl(invoc);

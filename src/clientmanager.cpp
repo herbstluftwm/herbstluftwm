@@ -191,7 +191,8 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     if (additionalRules) {
         additionalRules(changes);
     }
-    changes = Root::get()->rules()->evaluateRules(client, std::cerr, changes);
+    auto stdio = OutputChannels::stdio();
+    changes = Root::get()->rules()->evaluateRules(client, stdio, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
         XMapWindow(X_->display(), win);
@@ -557,7 +558,7 @@ int ClientManager::clientSetAttribute(string attribute,
         }
         string error_message = a->change(value);
         if (!error_message.empty()) {
-            output << input.command() << ": illegal argument \""
+            output.perror() << "illegal argument \""
                    << value << "\": "
                    << error_message << endl;
             return HERBST_INVALID_ARGUMENT;

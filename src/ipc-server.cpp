@@ -63,8 +63,17 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     }
     auto result = callback(arguments);
     // send output back
-    int status = result.first;
-    const string& output = result.second;
+    int status = result.exitCode;
+    string output;
+    // concatenate 'normal' and error output
+    if (!result.error.empty()) {
+        output = result.error;
+        // ensure that the error output ends with a newline
+        if (*result.error.rbegin() != '\n') {
+            output += "\n";
+        }
+    }
+    output += result.output;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
     X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output);
