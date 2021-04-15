@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 from Xlib import Xatom
 
 
@@ -51,7 +52,7 @@ def test_panel_object(hlwm, x11):
     assert int(hlwm.attr.panels.count()) == 1
     assert hlwm.attr.panels[winid].instance() == 'panelinst'
     assert hlwm.attr.panels[winid]['class']() == 'panelclass'
-    assert hlwm.attr.panels[winid].geometry() == '800x30+1+0'
+    assert hlwm.attr.panels[winid].geometry() == Rectangle(1, 0, 800, 30)
     assert hlwm.attr.panels[winid].winid() == winid
 
 
@@ -73,11 +74,11 @@ def test_panel_based_on_intersection(hlwm, x11, which_pad, pad_size, geometry):
 
     assert int(hlwm.attr.monitors[0][which_pad]()) == pad_size
     for p in ["pad_left", "pad_right", "pad_up", "pad_down"]:
-        assert hlwm.attr.monitors[1][p]() == '0', \
+        assert hlwm.attr.monitors[1][p]() == 0, \
             "monitor 1 must never be affected"
         if p == which_pad:
             continue
-        assert hlwm.attr.monitors[0][p]() == '0'
+        assert hlwm.attr.monitors[0][p]() == 0
 
 
 @pytest.mark.parametrize("which_pad, pad_size, geometry, wm_strut", [
@@ -111,11 +112,11 @@ def test_panel_based_on_wmstrut(hlwm, x11, which_pad, pad_size, geometry, wm_str
 
     assert int(hlwm.attr.monitors[0][which_pad]()) == pad_size
     for p in ["pad_left", "pad_right", "pad_up", "pad_down"]:
-        assert hlwm.attr.monitors[1][p]() == '0', \
+        assert hlwm.attr.monitors[1][p]() == 0, \
             "monitor 1 must never be affected"
         if p == which_pad:
             continue
-        assert hlwm.attr.monitors[0][p]() == '0'
+        assert hlwm.attr.monitors[0][p]() == 0
 
 
 def test_panel_wm_strut_partial_on_big_screen(hlwm, x11):

@@ -32,13 +32,13 @@ def test_add_tag_completion(hlwm):
 
 
 def test_add_tag_duplicate(hlwm):
-    assert hlwm.attr.tags.count() == '1'
+    assert hlwm.attr.tags.count() == 1
     hlwm.call('add foo')
-    assert hlwm.attr.tags.count() == '2'
+    assert hlwm.attr.tags.count() == 2
     hlwm.call('add bar')
-    assert hlwm.attr.tags.count() == '3'
+    assert hlwm.attr.tags.count() == 3
     hlwm.call('add foo')
-    assert hlwm.attr.tags.count() == '3'
+    assert hlwm.attr.tags.count() == 3
 
 
 def test_use_previous(hlwm):
@@ -496,8 +496,8 @@ def test_merge_tag_minimized_into_visible_tag(hlwm):
     hlwm.attr.clients[winid].minimized = hlwm.bool(True)
     hlwm.call('use target')
 
-    assert hlwm.attr.tags['by-name'].target.visible() == hlwm.bool(True)
+    assert hlwm.attr.tags['by-name'].target.visible() is True
     hlwm.call('merge_tag source')
 
-    assert hlwm.attr.clients[winid].visible() == hlwm.bool(False)
+    assert hlwm.attr.clients[winid].visible() is False
     assert winid not in hlwm.call('dump').stdout

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import shlex
 import subprocess
+from herbstluftwm.types import HlwmType
 from typing import List
 """
 Python bindings for herbstluftwm. The central entity for communication
@@ -98,17 +99,36 @@ class AttributeProxy:
         return '.'.join(map(str, path))
 
     def _get_value_from_hlwm(self):
-        command = [
-            'get_attr',
-            AttributeProxy._compose_path(self._path)
-        ]
-        return self._herbstluftwm.call(command).stdout
+        attr_path = AttributeProxy._compose_path(self._path)
+        command = chain('and', [
+            ['attr_type', attr_path],
+            ['get_attr', attr_path]
+        ])
+        lines = self._herbstluftwm.call(command).stdout.split('\n', maxsplit=1)
+        if len(lines) == 2:
+            type_name, value = lines
+        elif len(lines) == 1:
+            type_name = lines[0]
+            value = ''
+        else:
+            type_name = ''
+            value = ''
+        hlwm_type = HlwmType.by_name(type_name)
+        if hlwm_type is None:
+            # just return the string
+            return value
+        else:
+            return hlwm_type.from_user_str(value)
 
     def __call__(self) -> str:
         return self._get_value_from_hlwm()
 
     def __str__(self) -> str:
-        return self._get_value_from_hlwm()
+        """
+        get plain string representation of the attribute value
+        """
+        command = ['get_attr', AttributeProxy._compose_path(self._path)]
+        return self._herbstluftwm.call(command).stdout
 
     def __getattr__(self, name) -> 'AttributeProxy':
         if str(name).startswith('_'):
@@ -127,12 +147,21 @@ class AttributeProxy:
             super(AttributeProxy, self).__setattr__(name, value)
         else:
             attr_path = AttributeProxy._compose_path(self._path + [name])
-            command = ['set_attr', attr_path, value]
+            hlwm_type = HlwmType.by_type_of_variable(value)
+            command = [
+                'set_attr',
+                attr_path,
+                hlwm_type.to_user_str(value) if hlwm_type is not None else str(value),
+            ]
             if str(name).startswith('my_'):
                 # for custom attributes, silently ensure that the attribute
                 # exists.
+                if hlwm_type is None:
+                    type_name = 'string'
+                else:
+                    type_name = hlwm_type.name
                 command = chain('chain', [
-                    ['try', 'silent', 'new_attr', 'string', attr_path],
+                    ['try', 'silent', 'new_attr', type_name, attr_path],
                     command
                 ])
             self._herbstluftwm.call(command)

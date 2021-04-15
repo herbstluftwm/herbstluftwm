@@ -33,6 +33,7 @@ Current git version
   * New command 'attr_type' printing the type of a given attribute.
   * Relative values for integer attributes ('+=N' and '-=N')
   * The 'cycle' command now also cycles through floating windows.
+  * The python bindings automatically convert from and to python's types
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
   * New dependency: xrender

@@ -19,11 +19,11 @@ def test_add_monitor_requires_unfocused_tag(hlwm):
 def test_add_monitor(hlwm):
     hlwm.call('add tag2')
 
-    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+    hlwm.call('add_monitor 800x600+40+41 tag2 monitor2')
 
     assert hlwm.get_attr('monitors.count') == '2'
     assert hlwm.get_attr('monitors.1.name') == 'monitor2'
-    assert hlwm.attr.monitors[1].geometry() == '800x600+40+40'
+    assert hlwm.attr.monitors[1].geometry() == Rectangle(40, 41, 800, 600)
 
 
 def test_add_monitor_invalid_geometry(hlwm):
@@ -158,7 +158,7 @@ def test_move_monitor(hlwm):
 
 
 def test_move_monitor_completion(hlwm):
-    assert hlwm.attr.monitors.focus.geometry() in hlwm.complete('move_monitor 0')
+    assert str(hlwm.attr.monitors.focus.geometry) in hlwm.complete('move_monitor 0')
     # pads:
     assert '0' in hlwm.complete('move_monitor 0 800x600+0+0')
     assert '0' in hlwm.complete('move_monitor 0 800x600+0+0 0')
@@ -352,7 +352,7 @@ def test_use_previous_nothing_viewed_before(hlwm):
     # is a no-op:
     hlwm.call('use_previous')
 
-    assert hlwm.attr.monitors.focus.index() == '0'
+    assert hlwm.attr.monitors.focus.index() == 0
 
 
 def test_use_previous_on_locked_monitor(hlwm):
@@ -512,7 +512,7 @@ def test_lock_tag_switch_away(hlwm, lock_tag_cmd):
     hlwm.call('add tag2')
     hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
     hlwm.call(lock_tag_cmd(0))
-    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(True)
+    assert hlwm.attr.monitors[0].lock_tag() is True
 
     hlwm.call('focus_monitor 0')
 
@@ -538,11 +538,11 @@ def test_lock_tag_switch_to_locked(hlwm, locked):
     if locked:
         # if the monitor was locked, then the tag stays
         # on monitor 0
-        expected_monitor_index = '0'
+        expected_monitor_index = 0
     else:
         # otherwise, the tag is moved to monitor 1 because
         # of swap_monitors_to_get_tag
-        expected_monitor_index = '1'
+        expected_monitor_index = 1
     assert hlwm.attr.tags.focus.name() == tag_on_locked_monitor
     assert hlwm.attr.monitors.focus.index() == expected_monitor_index
 
@@ -554,14 +554,14 @@ def test_lock_tag_command_vs_attribute(hlwm):
 
     # no argument modifies the attribute of the focused monitor
     hlwm.call('lock_tag')
-    assert hlwm.attr.monitors[1].lock_tag() == hlwm.bool(True)
+    assert hlwm.attr.monitors[1].lock_tag() is True
     hlwm.call('unlock_tag')
-    assert hlwm.attr.monitors[1].lock_tag() == hlwm.bool(False)
+    assert hlwm.attr.monitors[1].lock_tag() is False
 
     hlwm.call('lock_tag 0')
-    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(True)
+    assert hlwm.attr.monitors[0].lock_tag() is True
     hlwm.call('unlock_tag 0')
-    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(False)
+    assert hlwm.attr.monitors[0].lock_tag() is False
 
 
 def test_monitor_rect_too_small(hlwm):
@@ -574,7 +574,7 @@ def test_monitor_rect_too_small(hlwm):
 def test_monitor_rect_is_updated(hlwm):
     for rect in ['500x300+30+40', '500x300-30+40', '500x300+30-40', '500x300-30-40']:
         hlwm.call(['move_monitor', 0, rect])
-        assert hlwm.attr.monitors[0].geometry() == rect
+        assert hlwm.attr.monitors[0].geometry().to_user_str() == rect
 
 
 def test_monitor_rect_parser(hlwm):
@@ -714,8 +714,8 @@ def test_pad_applied_to_floating_pos(hlwm):
         for left, up in [(10, 20), (5, 30)]:
             hlwm.attr.monitors.focus.pad_left = left
             hlwm.attr.monitors.focus.pad_up = up
-            content_geom = Rectangle.from_user_str(clientobj.content_geometry())
-            float_geom = Rectangle.from_user_str(clientobj.floating_geometry())
+            content_geom = clientobj.content_geometry()
+            float_geom = clientobj.floating_geometry()
 
             assert content_geom.width == float_geom.width
             assert content_geom.height == float_geom.height

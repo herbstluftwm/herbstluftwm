@@ -1,11 +1,11 @@
 
 
 def test_watchers_count(hlwm):
-    assert hlwm.attr.watchers.count() == '0'
+    assert hlwm.attr.watchers.count() == 0
     hlwm.call('watch clients.focus.title')
-    assert hlwm.attr.watchers.count() == '1'
+    assert hlwm.attr.watchers.count() == 1
     hlwm.call('watch clients.focus.title')
-    assert hlwm.attr.watchers.count() == '1'
+    assert hlwm.attr.watchers.count() == 1
 
 
 def test_watchers_basic_change1(hlwm, hc_idle):

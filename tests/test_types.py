@@ -84,39 +84,39 @@ def test_type_children_names(hlwm):
 def test_int_uint_relative_but_nonnegative(hlwm, int_or_uint):
     hlwm.call(['new_attr', int_or_uint, 'my_val'])
 
-    hlwm.attr.my_val = '5'
+    hlwm.attr.my_val = 5
     hlwm.attr.my_val = '+=3'
-    assert hlwm.attr.my_val() == '8'
+    assert hlwm.attr.my_val() == 8
 
     hlwm.attr.my_val = '-=4'
-    assert hlwm.attr.my_val() == '4'
+    assert hlwm.attr.my_val() == 4
 
     hlwm.attr.my_val = '-=-2'
-    assert hlwm.attr.my_val() == '6'
+    assert hlwm.attr.my_val() == 6
 
     hlwm.attr.my_val = '+=-5'
-    assert hlwm.attr.my_val() == '1'
+    assert hlwm.attr.my_val() == 1
 
     hlwm.attr.my_val = '-=+1'
-    assert hlwm.attr.my_val() == '0'
+    assert hlwm.attr.my_val() == 0
 
 
 def test_int_negative(hlwm):
     hlwm.call(['new_attr', 'int', 'my_val', '6'])
     hlwm.attr.my_val = '+=-20'
-    assert hlwm.attr.my_val() == '-14'
+    assert hlwm.attr.my_val() == -14
 
     hlwm.attr.my_val = '-=-10'
-    assert hlwm.attr.my_val() == '-4'
+    assert hlwm.attr.my_val() == -4
 
 
 def test_uint_negative(hlwm):
     hlwm.call(['new_attr', 'uint', 'my_val', '19'])
     hlwm.attr.my_val = '+=-20'
-    assert hlwm.attr.my_val() == '0'
+    assert hlwm.attr.my_val() == 0
 
     hlwm.attr.my_val = '-=-10'
-    assert hlwm.attr.my_val() == '10'
+    assert hlwm.attr.my_val() == 10
 
 
 def test_attr_type_for_many_types(hlwm):
