@@ -119,7 +119,6 @@ protected:
  */
 class CallOrComplete {
 public:
-    //! the name of the command that is called.
     static CallOrComplete complete(Completion& complete) {
         CallOrComplete invoc;
         invoc.complete_ = &complete;

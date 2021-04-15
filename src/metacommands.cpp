@@ -803,7 +803,7 @@ int MetaCommands::silentCommand(Input input, Output output) {
     stringstream dummyOutput;
     // discard output and error channel
     // TODO: pass through the error channel as soon as
-    // the ipc-protocoll supports it.
+    // the ipc-protocol supports it.
     OutputChannels discardOutputChannels(output.command(), dummyOutput, dummyOutput);
     // drop output but pass exit code
     return Commands::call(input.fromHere(), discardOutputChannels);
