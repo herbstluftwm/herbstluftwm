@@ -46,7 +46,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
         if (arg == "not" || arg == "!") {
             // Make sure there is another argument coming:
             if (argIter + 1 == input.end()) {
-                output << "Expected another argument after \""<< arg << "\" flag\n";
+                output.perror() << "Expected another argument after \""<< arg << "\" flag\n";
                 return HERBST_INVALID_ARGUMENT;
             }
 
@@ -152,7 +152,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
         // Remove rule specified by argument
         auto removedCount = removeRules(arg);
         if (removedCount == 0) {
-            output << "Couldn't find any rules with label \"" << arg << "\"";
+            output.perror() << "Couldn't find any rules with label \"" << arg << "\"";
             return HERBST_INVALID_ARGUMENT;
         }
     }

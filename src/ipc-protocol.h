@@ -5,8 +5,16 @@
 //#define HERBST_IPC_READY "HERBST_IPC_READY"
 //#define HERBST_IPC_ATOM  "_HERBST_IPC"
 #define HERBST_IPC_ARGS_ATOM "_HERBST_IPC_ARGS"
+//! the (utf8 text) atom containing the output channel
 #define HERBST_IPC_OUTPUT_ATOM "_HERBST_IPC_OUTPUT"
+//! the (utf8 text) atom containing the error channel
+#define HERBST_IPC_ERROR_ATOM "_HERBST_IPC_ERROR"
 #define HERBST_IPC_STATUS_ATOM "_HERBST_IPC_EXIT_STATUS"
+
+/** if this (integer) atom present and non-empty on the hook window,
+ *  then the ipc reply has an error channel.
+ */
+#define HERBST_IPC_HAS_ERROR "_HERBST_IPC_HAS_ERROR"
 
 #define HERBST_HOOK_CLASS "HERBST_HOOK_CLASS"
 #define HERBST_HOOK_WIN_ID_ATOM "__HERBST_HOOK_WIN_ID"

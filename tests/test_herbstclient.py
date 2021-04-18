@@ -2,6 +2,9 @@ import subprocess
 import os
 import re
 import pytest
+import time
+import contextlib
+from Xlib import X, Xatom
 
 HC_PATH = os.path.join(os.path.abspath(os.environ['PWD']), 'herbstclient')
 
@@ -220,3 +223,110 @@ def test_ensure_newline(hlwm):
                            universal_newlines=True)
     assert proc1.stdout == "test\n"
     assert proc2.stdout == "test\n"
+
+
+class IpcServer:
+    """A simply re-implementation of the ipc server
+    for testing error-branches in herbstclient
+    """
+    def __init__(self, x11, create_hook_window=True, has_error_channel=True):
+        self.x11 = x11
+        self.display = x11.display
+        self.screen = self.display.screen()
+        if create_hook_window:
+            self.window = self.screen.root.create_window(
+                50, 50, 300, 200, 2,
+                self.screen.root_depth,
+                X.InputOutput,
+                X.CopyFromParent)
+            hook_win_id = [self.window.id]
+            if has_error_channel:
+                self.window.change_property(
+                    x11.display.intern_atom('_HERBST_IPC_HAS_ERROR'),
+                    Xatom.CARDINAL, 32, [1])
+        else:
+            hook_win_id = []
+        self.screen.root.change_property(x11.display.intern_atom('__HERBST_HOOK_WIN_ID'),
+                                         Xatom.ATOM, 32, hook_win_id)
+
+        self.hc_requests = []  # list of running 'hc' callers
+
+    def wait_for_hc(self, timeout = 5):
+        """wait for some herbstclient to connect"""
+        while timeout >= 0:
+            self.display.sync()
+            windows = self.screen.root.query_tree().children
+            self.hc_requests = []
+            for w in windows:
+                if w.get_wm_class() == ('HERBST_IPC_CLASS', 'HERBST_IPC_CLASS'):
+                    self.hc_requests.append(w)
+            if len(self.hc_requests) > 0:
+                return
+
+            timeout -= 1
+            time.sleep(1)
+
+        raise Exception("No herbstclient instances showed up")
+
+    def set_text_prop(self, text, utf8, prop_name):
+        """write the given text property to all present hc clients"""
+        atom = self.display.intern_atom(prop_name)
+        prop_type = Xatom.STRING
+        if utf8:
+            prop_type = self.display.intern_atom('UTF8_STRING')
+        for w in self.hc_requests:
+            w.change_property(atom, prop_type, 8, bytes(text, encoding='utf8'))
+        self.display.sync()
+
+    def reply_output(self, text, utf8=True):
+        """write the given text to the error channel
+        of all present hc clients"""
+        self.set_text_prop(text, utf8, '_HERBST_IPC_OUTPUT')
+
+    def reply_error(self, text, utf8=True):
+        """write the given text to the error channel
+        of all present hc clients"""
+        self.set_text_prop(text, utf8, '_HERBST_IPC_ERROR')
+
+    def reply_status(self, status):
+        """write the given exit status to all present hc clients"""
+        atom = self.display.intern_atom('_HERBST_IPC_EXIT_STATUS')
+        for w in self.hc_requests:
+            w.change_property(atom, Xatom.ATOM, 32, [status])
+        self.display.sync()
+
+
+@contextlib.contextmanager
+def hc_context(args=['echo', 'ping']):
+    proc = subprocess.Popen([HC_PATH] + args,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          universal_newlines=True)
+    yield proc
+    proc.wait(3)
+
+
+@pytest.mark.parametrize('utf8', [True, False])
+def test_basic_ipc_reply(x11, utf8):
+    server = IpcServer(x11)
+    with hc_context() as hc:
+        server.wait_for_hc()
+        server.reply_status(23)
+        server.reply_error('err', utf8=utf8)
+        server.reply_output('out', utf8=utf8)
+
+    assert hc.stdout.read() == 'out\n'
+    assert hc.stderr.read() == 'err\n'
+    assert hc.returncode == 23
+
+
+def test_basic_ipc_reply_without_error_channel(x11):
+    server = IpcServer(x11, has_error_channel=False)
+    with hc_context() as hc:
+        server.wait_for_hc()
+        server.reply_status(23)
+        server.reply_output('out')
+
+    assert hc.stdout.read() == 'out\n'
+    assert hc.stderr.read() == ''
+    assert hc.returncode == 23

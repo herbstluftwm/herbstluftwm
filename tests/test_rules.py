@@ -97,14 +97,16 @@ def test_add_rule_with_misformatted_argument(hlwm, command):
 def test_cannot_add_rule_with_empty_label(hlwm, command):
     call = hlwm.call_xfail(f'{command} label= class=Foo tag=bar')
 
-    assert call.stderr == 'rule: Rule label cannot be empty\n'
+    commandname = command.split(' ')[0]
+    assert call.stderr == f'{commandname}: Rule label cannot be empty\n'
 
 
 @pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
 def test_cannot_use_tilde_operator_for_rule_label(hlwm, command):
     call = hlwm.call_xfail(f'{command} label~bla class=Foo tag=bar')
 
-    assert call.stderr == 'rule: Unknown rule label operation "~"\n'
+    commandname = command.split(' ')[0]
+    assert call.stderr == f'{commandname}: Unknown rule label operation "~"\n'
 
 
 @pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
@@ -140,10 +142,11 @@ def test_rule_parse_error_printed_at_client(hlwm, command, rulearg, errormsg):
     else:
         full_cmd += [rulearg]
 
-    proc = hlwm.call(full_cmd)
-    # since the command does not fail, the error
+    proc = hlwm.unchecked_call(full_cmd)
+
+    # the command does not fail, but the error
     # message appears on stdout
-    assert re.search(errormsg, proc.stdout)
+    assert re.search(errormsg, proc.stderr)
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
@@ -176,9 +179,8 @@ def test_remove_labeled_rule(hlwm):
 
 
 def test_remove_nonexistent_rule(hlwm):
-    call = hlwm.call_xfail('unrule nope')
-
-    assert call.stderr == 'Couldn\'t find any rules with label "nope"'
+    call = hlwm.call_xfail('unrule nope') \
+        .expect_stderr('Couldn\'t find any rules with label "nope"')
 
 
 def test_singleuse_rule_disappears_after_matching(hlwm):
@@ -276,7 +278,7 @@ def test_not_flag(hlwm):
 def test_condition_must_come_after_negation(hlwm, negation):
     call = hlwm.call_xfail(['rule', negation])
 
-    assert call.stderr == f'Expected another argument after "{negation}" flag\n'
+    assert call.stderr == f'rule: Expected another argument after "{negation}" flag\n'
 
 
 def test_condition_string_match(hlwm):
