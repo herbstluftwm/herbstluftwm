@@ -251,7 +251,7 @@ class IpcServer:
 
         self.hc_requests = []  # list of running 'hc' callers
 
-    def wait_for_hc(self, timeout = 5):
+    def wait_for_hc(self, timeout=5):
         """wait for some herbstclient to connect"""
         while timeout >= 0:
             self.display.sync()
@@ -299,9 +299,9 @@ class IpcServer:
 @contextlib.contextmanager
 def hc_context(args=['echo', 'ping']):
     proc = subprocess.Popen([HC_PATH] + args,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          universal_newlines=True)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines=True)
     yield proc
     proc.wait(3)
 

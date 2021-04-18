@@ -179,7 +179,7 @@ def test_remove_labeled_rule(hlwm):
 
 
 def test_remove_nonexistent_rule(hlwm):
-    call = hlwm.call_xfail('unrule nope') \
+    hlwm.call_xfail('unrule nope') \
         .expect_stderr('Couldn\'t find any rules with label "nope"')
 
 
@@ -952,7 +952,9 @@ def test_apply_tmp_rule_parse_error(hlwm, hlwm_process):
     # unparseable argument.. In the future, this should be a proper error
     # message for 'apply_tmp_rule'!
     hlwm.create_client()
-    hlwm.call('apply_tmp_rule --all focus=not-a-bool')
+    proc = hlwm.unchecked_call('apply_tmp_rule --all focus=not-a-bool')
+    assert re.search('Invalid argument "not-a-bool" for rule consequence "focus"', proc.stderr)
+    assert proc.stdout == ''
 
 
 def test_smart_placement_within_monitor(hlwm):

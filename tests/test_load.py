@@ -1,4 +1,5 @@
 import pytest
+import re
 from test_layout import verify_frame_objects_via_dump
 
 
@@ -96,9 +97,10 @@ def test_full_layouts(hlwm, layout):
     "(clients vertical:0 1713)",
 ])
 def test_load_invalid_winids(hlwm, layout):
-    p = hlwm.call(['load', layout])
+    message = 'load: Warning: Unknown window IDs'
+    p = hlwm.call(['load', layout], allowed_stderr=re.compile(message)) \
 
-    assert p.stdout.startswith("Warning: Unknown window IDs")
+    assert p.stderr.startswith(message)
 
 
 @pytest.mark.parametrize(
