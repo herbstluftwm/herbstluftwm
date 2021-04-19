@@ -184,7 +184,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
                     XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)
                 || format != 32) {
                     // if could not get window property
-                fprintf(stderr, "could not get WindowProperty \"%s\"\n",
+                fprintf(stderr, "could not get window property \"%s\"\n",
                                 HERBST_IPC_STATUS_ATOM);
                 free(output);
                 free(error);

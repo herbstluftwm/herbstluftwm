@@ -1,7 +1,9 @@
+import itertools
 import subprocess
 import os
 import re
 import pytest
+import sys
 import time
 import contextlib
 from Xlib import X, Xatom
@@ -229,6 +231,10 @@ class IpcServer:
     """A simply re-implementation of the ipc server
     for testing error-branches in herbstclient
     """
+    OUTPUT = '_HERBST_IPC_OUTPUT'
+    ERROR = '_HERBST_IPC_ERROR'
+    STATUS = '_HERBST_IPC_EXIT_STATUS'
+
     def __init__(self, x11, create_hook_window=True, has_error_channel=True):
         self.x11 = x11
         self.display = x11.display
@@ -251,13 +257,14 @@ class IpcServer:
 
         self.hc_requests = []  # list of running 'hc' callers
 
-    def wait_for_hc(self, timeout=5):
-        """wait for some herbstclient to connect"""
+    def wait_for_hc(self, timeout=2):
+        """wait for at least one herbstclient to connect"""
         while timeout >= 0:
             self.display.sync()
             windows = self.screen.root.query_tree().children
             self.hc_requests = []
             for w in windows:
+                print("checking window: " + self.x11.winid_str(w))
                 if w.get_wm_class() == ('HERBST_IPC_CLASS', 'HERBST_IPC_CLASS'):
                     self.hc_requests.append(w)
             if len(self.hc_requests) > 0:
@@ -268,32 +275,32 @@ class IpcServer:
 
         raise Exception("No herbstclient instances showed up")
 
-    def set_text_prop(self, text, utf8, prop_name):
-        """write the given text property to all present hc clients"""
+    def reply_prop(self, prop_name, prop_type, format, value):
         atom = self.display.intern_atom(prop_name)
+        for w in self.hc_requests:
+            w.change_property(atom, prop_type, format, value)
+        self.display.sync()
+
+    def reply_text_prop(self, text, utf8, prop_name):
+        """write the given text property to all present hc clients"""
         prop_type = Xatom.STRING
         if utf8:
             prop_type = self.display.intern_atom('UTF8_STRING')
-        for w in self.hc_requests:
-            w.change_property(atom, prop_type, 8, bytes(text, encoding='utf8'))
-        self.display.sync()
+        self.reply_prop(prop_name, prop_type, 8, bytes(text, encoding='utf8'))
 
     def reply_output(self, text, utf8=True):
         """write the given text to the error channel
         of all present hc clients"""
-        self.set_text_prop(text, utf8, '_HERBST_IPC_OUTPUT')
+        self.reply_text_prop(text, utf8, IpcServer.OUTPUT)
 
     def reply_error(self, text, utf8=True):
         """write the given text to the error channel
         of all present hc clients"""
-        self.set_text_prop(text, utf8, '_HERBST_IPC_ERROR')
+        self.reply_text_prop(text, utf8, IpcServer.ERROR)
 
     def reply_status(self, status):
         """write the given exit status to all present hc clients"""
-        atom = self.display.intern_atom('_HERBST_IPC_EXIT_STATUS')
-        for w in self.hc_requests:
-            w.change_property(atom, Xatom.ATOM, 32, [status])
-        self.display.sync()
+        self.reply_prop(IpcServer.STATUS, Xatom.ATOM, 32, [status])
 
 
 @contextlib.contextmanager
@@ -303,11 +310,23 @@ def hc_context(args=['echo', 'ping']):
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
     yield proc
-    proc.wait(3)
+
+    class Reply:
+        pass
+
+    reply = Reply()
+    reply.returncode = proc.wait(3)
+    reply.stdout = proc.stdout.read()
+    reply.stderr = proc.stderr.read()
+    proc.reply = reply
+    # to make a failed ci easier to debug, forward channels:
+    args_str = ' '.join(args)
+    print(f'"hc {args_str}" exited with status {reply.returncode} and output: {reply.stdout}')
+    print(f'"hc {args_str}" has the error output: {reply.stderr}', file=sys.stderr)
 
 
 @pytest.mark.parametrize('utf8', [True, False])
-def test_basic_ipc_reply(x11, utf8):
+def test_ipc_reply_with_error_channel(x11, utf8):
     server = IpcServer(x11)
     with hc_context() as hc:
         server.wait_for_hc()
@@ -315,18 +334,66 @@ def test_basic_ipc_reply(x11, utf8):
         server.reply_error('err', utf8=utf8)
         server.reply_output('out', utf8=utf8)
 
-    assert hc.stdout.read() == 'out\n'
-    assert hc.stderr.read() == 'err\n'
-    assert hc.returncode == 23
+    assert hc.reply.stdout == 'out\n'
+    assert hc.reply.stderr == 'err\n'
+    assert hc.reply.returncode == 23
 
 
-def test_basic_ipc_reply_without_error_channel(x11):
+def test_ipc_reply_without_error_channel(x11):
     server = IpcServer(x11, has_error_channel=False)
     with hc_context() as hc:
         server.wait_for_hc()
-        server.reply_status(23)
+        server.reply_status(12)
         server.reply_output('out')
 
-    assert hc.stdout.read() == 'out\n'
-    assert hc.stderr.read() == ''
-    assert hc.returncode == 23
+    assert hc.reply.stdout == 'out\n'
+    assert hc.reply.stderr == ''
+    assert hc.returncode == 12
+
+
+@pytest.mark.parametrize('order', itertools.permutations([0, 1, 2]))
+@pytest.mark.parametrize('faulty_reply_index', [0, 1, 2])
+def test_ipc_reply_wrong_format(x11, order, faulty_reply_index):
+    """Test that herbstclient handles wrong atom formats correctly.
+    We test each of the components of the reply and each permutation
+    to ensure that a possible partial reply is always freed correctly
+    and never printed.
+    """
+    server = IpcServer(x11)
+
+    def reply_status():
+        server.reply_status(12)
+
+    def reply_error():
+        server.reply_error('EEE')
+
+    def reply_output():
+        server.reply_output('OOO')
+
+    name_and_reply = [
+        # tuples of functions. the first entry is a correct
+        (IpcServer.STATUS, reply_status),
+        (IpcServer.ERROR, reply_error),
+        (IpcServer.OUTPUT, reply_output),
+    ]
+
+    with hc_context() as hc:
+        server.wait_for_hc()
+        for reply_idx in order:
+            name, reply = name_and_reply[reply_idx]
+            if reply_idx == faulty_reply_index:
+                if name == IpcServer.STATUS:
+                    # write a string to the 'status' atom
+                    server.reply_prop(name, Xatom.STRING, 8, bytes('16', encoding='utf8'))
+                else:
+                    # write a cardinal to the error/output channel:
+                    server.reply_prop(name, Xatom.CARDINAL, 32, [18])
+            else:
+                # send correct reply:
+                reply()
+
+    faulty_name, _ = name_and_reply[faulty_reply_index]
+    assert hc.reply.stdout == ''
+    assert re.search(f'could not get window property "{faulty_name}"', hc.reply.stderr)
+    assert not re.search('EEE', hc.reply.stderr)
+    assert hc.reply.returncode == 1
