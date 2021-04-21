@@ -544,7 +544,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
         try {
             vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
-            o << "cannot parse \"" << x << "\" to "
+            o.perror() << "cannot parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
             return (int) HERBST_INVALID_ARGUMENT;
         }
