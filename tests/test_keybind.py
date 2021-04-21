@@ -56,9 +56,8 @@ def test_keyunbind_all(hlwm, method, keyboard):
 
 
 def test_keyunbind_nonexistent_binding(hlwm):
-    unbind = hlwm.call('keyunbind n')
-
-    assert unbind.stdout == 'keyunbind: Key "n" is not bound\n'
+    hlwm.call_xfail('keyunbind n') \
+        .expect_stderr('keyunbind: Key "n" is not bound\n')
 
 
 def test_trigger_single_key_binding(hlwm, keyboard):

@@ -77,7 +77,7 @@ def test_set_attr_can_not_set_writable(hlwm):
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('substitute X echo X')
 
-    assert call.stderr == 'The root object has no attribute "echo"\n'
+    assert call.stderr == 'substitute: The root object has no attribute "echo"\n'
 
 
 def test_substitute_command_missing(hlwm):
@@ -118,7 +118,7 @@ def test_sprintf_nested(hlwm):
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
 
-    assert call.stderr == 'The root object has no attribute "echo"\n'
+    assert call.stderr == 'sprintf: The root object has no attribute "echo"\n'
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
@@ -398,7 +398,8 @@ def test_chain_return_code(hlwm):
 
     assert p1.returncode > 1
     assert p1.returncode == p2.returncode
-    assert p2.stderr[0:5] == 'line\n'
+    assert p2.stdout[0:5] == 'line\n'
+    assert p2.stderr.split(':')[1:] == p1.stderr.split(':')[1:]
 
 
 def test_chain_nested(hlwm):
@@ -412,13 +413,13 @@ def test_chain_nested(hlwm):
 def test_chain_and_1(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , false , echo bar')
     assert proc.returncode == 1
-    assert proc.stderr == 'foo\n'
+    assert proc.stdout == 'foo\n'
 
 
 def test_chain_and_2(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , true , echo bar , false , echo baz')
     assert proc.returncode == 1
-    assert proc.stderr == 'foo\nbar\n'
+    assert proc.stdout == 'foo\nbar\n'
 
 
 def test_chain_or(hlwm):
@@ -534,8 +535,10 @@ def test_mktemp_complete(hlwm):
 def test_negate_command(hlwm):
     assert hlwm.call('! false').stdout == ''
     assert hlwm.call('! ! echo f').stdout == 'f\n'
-    hlwm.call_xfail('! echo test') \
-        .expect_stderr('test')
+    proc = hlwm.unchecked_call('! echo test')
+    assert proc.returncode == 1
+    assert proc.stdout == 'test\n'
+    assert proc.stderr == ''
 
 
 def test_negate_complete_cmd(hlwm):
@@ -617,10 +620,11 @@ def test_foreach_tag_merge(hlwm):
     # the second loop iteration for 'othertag'
     expected = [
         'tags.by-name.default',
-        'merge_tag: Cannot parse argument "othertag": no such tag: othertag',
         'tags.by-name.othertag'
     ]
-    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
+    error = 'merge_tag: Cannot parse argument "othertag": no such tag: othertag'
+    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T',
+                     allowed_stderr=re.compile(error))
     assert sorted(proc.stdout.splitlines()) == sorted(expected)
 
 

@@ -364,7 +364,7 @@ int ClientManager::applyRulesCmd(Input input, Output output) {
     } else {
         Client* client = this->client(winid);
         if (!client) {
-            output << "No such (managed) client: " << winid << "\n";
+            output.perror() << "No such (managed) client: " << winid << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
         return applyRules(client, output);
@@ -389,7 +389,7 @@ int ClientManager::applyChanges(Client* client, ClientChanges changes, Output ou
     if (changes.manage == false) {
         // only make unmanaging clients possible as soon as it is
         // possible to make them managed again
-        output << "Unmanaging clients not yet possible.\n";
+        output.perror() << "Unmanaging clients not yet possible.\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // do the simple attributes first
@@ -463,7 +463,7 @@ int ClientManager::applyTmpRuleCmd(Input input, Output output)
         // to only one client
         Client* client = this->client(clientStr);
         if (!client) {
-            output << "No such (managed) client: " << clientStr << "\n";
+            output.perror() << "No such (managed) client: " << clientStr << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
         (*applyTo)[client->x11Window()] = client;

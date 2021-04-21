@@ -11,6 +11,11 @@ The command 'cycle_value' now expects an attribute path instead of a settings
 name. For compatibility reasons, passing settings name directly (without the
 prefix +settings.+) is still supported.
 
+In ipc commands, herbstclient prints error messages always on stderr and normal
+output always on stdout. Before, both were printed to the same channel,
+either to stdout or stderr depending on the command's exit status. This
+mainly affects combined commands.
+
 Only for people using the git-version: During the development of 0.9.3, the
 'content_geometry' attribute of clients initially had the name
 'geometry_reported'.

@@ -15,6 +15,7 @@
 static void print_help(char* command, FILE* file);
 static void init_hook_regex(int argc, char* argv[]);
 static void destroy_hook_regex();
+static bool trailing_newline_missing(const char* text);
 
 static int g_ensure_newline = 1; // if set, output ends with a newline
 static bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
@@ -173,6 +174,22 @@ int main_hook(int argc, char* argv[]) {
     return exit_code;
 }
 
+/**
+ * @brief checks whether the text ends with a line
+ * that misses a newline character
+ * @param the text
+ * @return whether there are characters in the text
+ * not enclosed by a newline character.
+ */
+static bool trailing_newline_missing(const char* text) {
+    size_t len = strlen(text);
+    if (len == 0) {
+        // no lines, so no open lines
+        return false;
+    }
+    return text[len - 1] != '\n';
+}
+
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
@@ -235,12 +252,13 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     // do communication
-    int command_status;
+    int command_status = EXIT_FAILURE; // just a fallback
     if (g_wait_for_hook == 1) {
         // install signals
         command_status = main_hook(argc-arg_index, argv+arg_index);
     } else {
-        char* output;
+        char* output = NULL;
+        char* error = NULL;
         HCConnection* con = hc_connect();
         if (!con) {
             if (!g_quiet) {
@@ -256,7 +274,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
         bool suc = hc_send_command(con, argc-arg_index, argv+arg_index,
-                                   &output, &command_status);
+                                   &output, &error, &command_status);
         hc_disconnect(con);
         if (!suc) {
             if (!g_quiet) {
@@ -264,21 +282,22 @@ int main(int argc, char* argv[]) {
             }
             return EXIT_FAILURE;
         }
-        FILE* file = stdout; // on success, output to stdout
-        if (command_status != 0) { // any error, output to stderr
-            file = stderr;
+        // usually, it makes more sense to print the error first.
+        fputs(error, stderr);
+        if (trailing_newline_missing(error)) {
+            // always ensure that the error messages
+            // are enclosed with newlines
+            fputs("\n", stderr);
         }
-        fputs(output, file);
-        if (g_ensure_newline) {
-            size_t output_len = strlen(output);
-            if (output_len > 0 && output[output_len - 1] != '\n') {
-                fputs("\n", file);
-            }
+        fputs(output, stdout);
+        if (g_ensure_newline && trailing_newline_missing(output)) {
+            fputs("\n", stdout);
         }
         if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
             fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
         }
         free(output);
+        free(error);
     }
     return command_status;
 }

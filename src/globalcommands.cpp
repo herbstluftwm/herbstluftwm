@@ -172,7 +172,7 @@ int GlobalCommands::cycleValueCommand(Input input, Output output)
         attr = root_.settings->deepAttribute(attr_path);
     }
     if (!attr) {
-        output << "No such attribute: " << attr_path << endl;
+        output.perror() << "No such attribute: " << attr_path << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     auto msg = attr->cycleValue(input.begin(), input.end());
@@ -208,11 +208,11 @@ void GlobalCommands::usePreviousCommand(CallOrComplete invoc)
         HSAssert(tag);
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            output << "use_previous: Could not change tag";
+            output.perror() << "Could not change tag";
             if (monitor->lock_tag()) {
-                output << " (monitor is locked)";
+                output.error() << " (monitor is locked)";
             }
-            output << "\n";
+            output.error() << "\n";
         }
         return ret;
     });
