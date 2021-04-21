@@ -147,3 +147,12 @@ def test_herbstluftwm_version_flags():
         assert proc.stderr == ''
         # look for some flag on stdout:
         assert re.search('herbstluftwm', proc.stdout)
+
+
+def test_command_not_found(hlwm):
+    command = 'nonexistentcommand'
+    message = f'Command "{command}" not found'
+    hlwm.call_xfail(command).expect_stderr(message)
+    hlwm.call_xfail(f'{command} argument').expect_stderr(message)
+    hlwm.call_xfail(f'chain , echo foo , {command} argument , anothercmd') \
+        .expect_stderr(message)
