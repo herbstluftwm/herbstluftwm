@@ -587,7 +587,7 @@ int MetaCommands::compare_cmd(Input input, Output output)
     std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::INT,      { true,  parse_and_compare<int> }, },
-        { Type::ULONG,    { true,  parse_and_compare<int> }, },
+        { Type::ULONG,    { true,  parse_and_compare<unsigned long> }, },
         { Type::BOOL,     { false, parse_and_compare<bool> }, },
         { Type::COLOR,    { false, parse_and_compare<Color> }, },
     };
