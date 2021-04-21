@@ -130,7 +130,14 @@ bool ArgParse::parsingFails(Input& input, Output& output)
  */
 bool ArgParse::parsingAllFails(Input& input, Output& output)
 {
-    return parsingFails(input, output) || unparsedTokens(input, output);
+    if (parsingFails(input, output)) {
+        return true;
+    }
+    if (unparsedTokens(input, output)) {
+        output.perror() << "too many arguments" << endl;
+        return true;
+    }
+    return false;
 }
 
 bool ArgParse::unparsedTokens(Input& input, Output& output)
