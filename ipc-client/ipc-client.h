@@ -32,7 +32,7 @@ bool hc_create_client_window(HCConnection* con);
  * @param the returned error channel (needs to be free'd by the caller on success)
  * @param the returned exit status
  * @return whether the reply was received successfully.
- * if false is returned, then none of the ret_⎄-pointers is set.
+ * if false is returned, then none of the ret_...-pointers is set.
  */
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
                      char** ret_out, char** ret_err, int* ret_status);

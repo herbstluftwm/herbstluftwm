@@ -11,7 +11,7 @@
 #define HERBST_IPC_ERROR_ATOM "_HERBST_IPC_ERROR"
 #define HERBST_IPC_STATUS_ATOM "_HERBST_IPC_EXIT_STATUS"
 
-/** if this (integer) atom present and non-empty on the hook window,
+/** if this (integer) atom is present and non-empty on the hook window,
  *  then the ipc reply has an error channel.
  */
 #define HERBST_IPC_HAS_ERROR "_HERBST_IPC_HAS_ERROR"

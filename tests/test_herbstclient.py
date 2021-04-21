@@ -228,7 +228,7 @@ def test_ensure_newline(hlwm):
 
 
 class IpcServer:
-    """A simply re-implementation of the ipc server
+    """A simple re-implementation of the ipc server
     for testing error-branches in herbstclient
     """
     OUTPUT = '_HERBST_IPC_OUTPUT'

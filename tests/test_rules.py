@@ -145,7 +145,7 @@ def test_rule_parse_error_printed_at_client(hlwm, command, rulearg, errormsg):
     proc = hlwm.unchecked_call(full_cmd)
 
     # the command does not fail, but the error
-    # message appears on stdout
+    # message appears on stderr
     assert re.search(errormsg, proc.stderr)
 
 
