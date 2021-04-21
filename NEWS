@@ -7,6 +7,8 @@ older versions.
 Current git version
 -------------------
 
+  * herbstclient prints error messages always on stderr and normal output
+    always on stdout (before, both were printed to the same channel).
   * True transparency support for frame and client decorations (requires a
     compositor like picom, compton, or xcompmgr)
   * Colors contain alpha-values (format #RRGGBBAA)

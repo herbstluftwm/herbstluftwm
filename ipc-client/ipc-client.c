@@ -20,12 +20,19 @@ struct HCConnection {
     Display*    display;
     bool        own_display; // if we have to close it on disconnect
     Window      hook_window;
+    //! if we already listen for events on the hook window
+    bool        hook_window_listen;
+    //! if the server sets an error channel
+    bool        server_has_error_channel;
     Window      client_window;
     Atom        atom_args;
     Atom        atom_output;
+    Atom        atom_error;
     Atom        atom_status;
     Window      root;
 };
+
+static Window get_hook_window(Display* display);
 
 HCConnection* hc_connect() {
     Display* display = XOpenDisplay(NULL);
@@ -49,7 +56,25 @@ HCConnection* hc_connect_to_display(Display* display) {
     con->root = DefaultRootWindow(con->display);
     con->atom_args = XInternAtom(con->display, HERBST_IPC_ARGS_ATOM, False);
     con->atom_output = XInternAtom(con->display, HERBST_IPC_OUTPUT_ATOM, False);
+    con->atom_error = XInternAtom(con->display, HERBST_IPC_ERROR_ATOM, False);
     con->atom_status = XInternAtom(con->display, HERBST_IPC_STATUS_ATOM, False);
+
+    con->hook_window = get_hook_window(con->display);
+    // check whether the server supports the error channel
+    if (con->hook_window) {
+        long* value;
+        Atom type;
+        int format;
+        unsigned long items, bytes;
+        int status = XGetWindowProperty(con->display, con->hook_window,
+                                        XInternAtom(con->display, HERBST_IPC_HAS_ERROR, False),
+                                        0, 1, False, XA_CARDINAL, &type, &format, &items,
+                                        &bytes, (unsigned char**)&value);
+        con->server_has_error_channel = items > 0;
+        if (status == Success) {
+            XFree(value);
+        }
+    }
     return con;
 }
 
@@ -90,7 +115,7 @@ bool hc_create_client_window(HCConnection* con) {
 }
 
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
-                     char** ret_out, int* ret_status) {
+                     char** ret_out, char** ret_err, int* ret_status) {
     if (!hc_create_client_window(con)) {
         return false;
     }
@@ -104,8 +129,17 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     int command_status = 0;
     XEvent event;
     char* output = NULL;
-    bool output_received = false, status_received = false;
-    while (!output_received || !status_received) {
+    char* error = NULL;
+    bool output_received = false;
+    bool error_received = false;
+    bool status_received = false;
+    if (!con->server_has_error_channel) {
+        // if the server does not support the error channel,
+        // then just simulate an empty error channel
+        error = strdup("");
+        error_received = true;
+    }
+    while (!output_received || !error_received || !status_received) {
         XNextEvent(con->display, &event);
         if (event.type != PropertyNotify) {
             // got an event of wrong type
@@ -121,11 +155,24 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
             output = read_window_property(con->display, con->client_window,
                                           con->atom_output);
             if (!output) {
-                fprintf(stderr, "could not get WindowProperty \"%s\"\n",
+                fprintf(stderr, "could not get window property \"%s\"\n",
                                 HERBST_IPC_OUTPUT_ATOM);
+                // if we have received the error channel earlier:
+                free(error);
                 return false;
             }
             output_received = true;
+        } else if (!error_received && pe->atom == con->atom_error) {
+            error = read_window_property(con->display, con->client_window,
+                                          con->atom_error);
+            if (!error) {
+                fprintf(stderr, "could not get window property \"%s\"\n",
+                                HERBST_IPC_ERROR_ATOM);
+                // if we have received the output channel earlier:
+                free(output);
+                return false;
+            }
+            error_received = true;
         }
         else if (!status_received && pe->atom == con->atom_status) {
             long* value;
@@ -137,8 +184,10 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
                     XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)
                 || format != 32) {
                     // if could not get window property
-                fprintf(stderr, "could not get WindowProperty \"%s\"\n",
+                fprintf(stderr, "could not get window property \"%s\"\n",
                                 HERBST_IPC_STATUS_ATOM);
+                free(output);
+                free(error);
                 return false;
             }
             command_status = *value;
@@ -148,6 +197,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     }
     *ret_status = command_status;
     *ret_out = output;
+    *ret_err = error;
     return true;
 }
 
@@ -192,19 +242,23 @@ static Window get_hook_window(Display* display) {
 }
 
 bool hc_check_running(HCConnection* con) {
-    return get_hook_window(con->display) != 0;
+    return con->hook_window;
 }
 
 bool hc_hook_window_connect(HCConnection* con) {
-    if (con->hook_window) {
+    if (con->hook_window_listen) {
         return true;
     }
-    con->hook_window = get_hook_window(con->display);
     if (!con->hook_window) {
-        return false;
+        con->hook_window = get_hook_window(con->display);
+        if (!con->hook_window) {
+            return false;
+        }
     }
+    // connect to events on the window
     long mask = StructureNotifyMask|PropertyChangeMask;
     XSelectInput(con->display, con->hook_window, mask);
+    con->hook_window_listen = true;
     return true;
 }
 

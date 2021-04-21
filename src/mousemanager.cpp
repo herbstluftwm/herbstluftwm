@@ -130,7 +130,7 @@ int MouseManager::dragCommand(Input input, Output output)
     }
     Client* client = Root::get()->clients->client(winid);
     if (!client) {
-        output << "Could not find client \"" << winid << "\"\n";
+        output.perror() << "Could not find client \"" << winid << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     MouseFunction action = string2mousefunction(mouseAction.c_str());

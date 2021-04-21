@@ -29,6 +29,7 @@ IpcServer::IpcServer(XConnection& xconnection)
     // set its window id in root window
     XChangeProperty(X.display(), X.root(), X.atom(HERBST_HOOK_WIN_ID_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&hookEventWindow_, 1);
+    X.setPropertyCardinal(hookEventWindow_, X.atom(HERBST_IPC_HAS_ERROR), {1});
 }
 
 IpcServer::~IpcServer() {
@@ -64,19 +65,10 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     auto result = callback(arguments);
     // send output back
     int status = result.exitCode;
-    string output;
-    // concatenate 'normal' and error output
-    if (!result.error.empty()) {
-        output = result.error;
-        // ensure that the error output ends with a newline
-        if (*result.error.rbegin() != '\n') {
-            output += "\n";
-        }
-    }
-    output += result.output;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
-    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output);
+    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), result.output);
+    X.setPropertyString(win, X.atom(HERBST_IPC_ERROR_ATOM), result.error);
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
