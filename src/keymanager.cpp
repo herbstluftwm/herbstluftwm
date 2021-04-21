@@ -103,6 +103,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
             regrabAll();
         } else {
             output.perror() << "Key \"" << arg << "\" is not bound\n";
+            return HERBST_INVALID_ARGUMENT;
         }
     }
 

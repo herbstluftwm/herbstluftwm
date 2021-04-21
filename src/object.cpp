@@ -136,7 +136,7 @@ Object* Object::child(Path path, Output output) {
     while (!path.empty()) {
         cur = cur->child(path.front());
         if (!cur) {
-            output << "Object \"" << cur_path << "\""
+            output.perror() << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
                 << "\"" << endl;
             return nullptr;
@@ -275,7 +275,8 @@ Attribute* Object::deepAttribute(const string &path, Output output) {
     }
     Attribute* a = attribute_owner->attribute(attr_path.second);
     if (!a) {
-        output << "Object \"" << attr_path.first.join()
+        output.perror()
+            << "Object \"" << attr_path.first.join()
             << "\" has no attribute \"" << attr_path.second
             << "\"."
             << endl;

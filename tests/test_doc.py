@@ -51,6 +51,9 @@ def create_panel(hlwm):
     x11 = conftest.X11(display)
     _, winid = x11.create_client(geometry=(0, 0, 800, 30),
                                  window_type='_NET_WM_WINDOW_TYPE_DOCK')
+    # write the x11 bridge to a variable with a long life-span to avoid
+    # that the garbage-collection closes it (this would close the panel).
+    create_panel.x11 = x11
     return f'panels.{winid}'
 
 
