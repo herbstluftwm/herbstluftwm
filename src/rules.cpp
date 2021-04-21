@@ -50,7 +50,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
     cond.conditionCreationTime = get_monotonic_timestamp();
 
     if (op != '=' && name == "maxage") {
-        output << "rule: Condition maxage only supports the = operator\n";
+        output.perror() << "Condition maxage only supports the = operator\n";
         return false;
     }
     switch (op) {
@@ -58,7 +58,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             if (name == "maxage") {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value_integer)) {
-                    output << "rule: Cannot parse integer from \"" << value << "\"\n";
+                    output.perror() << "Cannot parse integer from \"" << value << "\"\n";
                     return false;
                 }
             } else {
@@ -73,7 +73,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             try {
                 cond.value_reg_exp = std::regex(value, std::regex::extended);
             } catch(std::regex_error& err) {
-                output << "rule: Cannot parse value \"" << value
+                output.perror() << "Cannot parse value \"" << value
                         << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
                 return false;
@@ -83,7 +83,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
         }
 
         default:
-            output << "rule: Unknown rule condition operation \"" << op << "\"\n";
+            output.perror() << "Unknown rule condition operation \"" << op << "\"\n";
             return false;
             break;
     }
@@ -108,7 +108,7 @@ bool Rule::addConsequence(string name, char op, const char* value, Output output
             break;
 
         default:
-            output << "rule: Unknown rule consequence operation \"" << op << "\"\n";
+            output.perror() << "Unknown rule consequence operation \"" << op << "\"\n";
             return false;
             break;
     }
@@ -121,12 +121,12 @@ bool Rule::addConsequence(string name, char op, const char* value, Output output
 
 bool Rule::setLabel(char op, string value, Output output) {
     if (op != '=') {
-        output << "rule: Unknown rule label operation \"" << op << "\"\n";
+        output.perror() << "Unknown rule label operation \"" << op << "\"\n";
         return false;
     }
 
     if (value.empty()) {
-        output << "rule: Rule label cannot be empty\n";
+        output.perror() << "Rule label cannot be empty\n";
         return false;
     }
 

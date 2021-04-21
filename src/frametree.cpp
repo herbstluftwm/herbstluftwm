@@ -633,10 +633,10 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     try {
         delta = std::stoi(s);
     } catch (std::invalid_argument const& e) {
-        output << "invalid argument: " << e.what() << endl;
+        output.perror() << "invalid argument: " << e.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     } catch (std::out_of_range const& e) {
-        output << "out of range: " << e.what() << endl;
+        output.perror() << "out of range: " << e.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     cycle_frame(delta);
@@ -690,23 +690,23 @@ int FrameTree::loadCommand(Input input, Output output) {
                << endl;
         std::regex whitespace ("[ \n\t]");
         // print the layout again
-        output << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
+        output.error() << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
                << "\"" << endl;
         // and underline the token
         int token_len = std::max((size_t)1, parsingResult.error_->first.second.size());
-        output << " " // for the \" above
+        output.error() << " " // for the \" above
                << string(parsingResult.error_->first.first, ' ')
                << string(token_len, '~')
                << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     if (!parsingResult.unknownWindowIDs_.empty()) {
-        output << "Warning: Unknown window IDs";
+        output.perror() << "Warning: Unknown window IDs";
         for (const auto& e : parsingResult.unknownWindowIDs_) {
-            output << " " << WindowID(e.second).str()
+            output.error() << " " << WindowID(e.second).str()
                    << "(\'" << e.first.second << "\')";
         }
-        output << endl;
+        output.error() << endl;
     }
     // apply the new frame tree
     tag->frame->applyFrameTree(tag->frame->root_, parsingResult.root_);
