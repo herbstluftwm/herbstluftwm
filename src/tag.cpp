@@ -315,7 +315,7 @@ int HSTag::focusInDir(Direction direction, bool external_only, Output output)
         }
     }
     if (!neighbour_found) {
-        output << "focus: No neighbour found\n";
+        output.perror() << "No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
     return 0;
@@ -341,7 +341,7 @@ int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
 {
     Client* currentClient = focusedClient();
     if (!currentClient) {
-        output << "shift: No client focused\n";
+        output.perror() << "No client focused\n";
         return HERBST_FORBIDDEN;
     }
     bool success = true;
@@ -368,7 +368,7 @@ int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
     if (success) {
         return 0;
     } else {
-        output << "shift: No neighbour found\n";
+        output.perror() << "No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
 }
@@ -382,7 +382,7 @@ void HSTag::cycleAllCommand(CallOrComplete invoc)
               .command(invoc,
                        [&] (Output output) {
         if (delta < -1 || delta > 1) {
-            output << "argument out of range." << endl;
+            output.perror() << "argument out of range." << endl;
             return HERBST_INVALID_ARGUMENT;
         }
         if (delta == 0) {

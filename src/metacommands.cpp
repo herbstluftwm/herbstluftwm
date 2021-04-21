@@ -109,7 +109,7 @@ Attribute* MetaCommands::getAttribute(string path, Output output) {
     auto attr_path = Object::splitPath(path);
     auto child = root.child(attr_path.first);
     if (!child) {
-        output << "No such object " << attr_path.first.join('.') << endl;
+        output.perror() << "No such object " << attr_path.first.join('.') << endl;
         return nullptr;
     }
     Attribute* a = child->attribute(attr_path.second);
@@ -121,7 +121,7 @@ Attribute* MetaCommands::getAttribute(string path, Output output) {
             // equip object_path with quotes
             object_path = "Object \"" + object_path + "\"";
         }
-        output << object_path
+        output.perror() << object_path
                << " has no attribute \"" << attr_path.second << "\""
                << endl;
         return nullptr;
@@ -136,7 +136,7 @@ int MetaCommands::print_object_tree_command(Input in, Output output) {
     }
     auto child = root.child(path);
     if (!child) {
-        output << "No such object " << Path(path).join('.') << endl;
+        output.perror() << "No such object " << Path(path).join('.') << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     child->printTree(output, Path(path).join('.'));

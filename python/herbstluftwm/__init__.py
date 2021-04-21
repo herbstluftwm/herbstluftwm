@@ -59,12 +59,20 @@ class Herbstluftwm:
 
         return proc
 
-    def call(self, cmd):
+    def call(self, cmd, allowed_stderr=None):
         """call the command and expect it to have exit code zero
-        and no output on stderr"""
+        and no output on stderr.
+        if allowed_stderr is set, then it should be a regex object
+        (something with .match) that matches every line the command
+        writes to stderr.
+        """
         proc = self.unchecked_call(cmd)
         assert proc.returncode == 0
-        assert not proc.stderr
+        if allowed_stderr is None:
+            assert not proc.stderr
+        else:
+            for line in proc.stderr.splitlines():
+                assert allowed_stderr.match(line)
         return proc
 
     @property

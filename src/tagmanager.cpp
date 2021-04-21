@@ -398,7 +398,7 @@ int TagManager::floatingCmd(Input input, Output output) {
     } else {
         string msg = tag->floating.change(newValue);
         if (!msg.empty()) {
-            output << msg << "\n";
+            output.perror() << msg << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
