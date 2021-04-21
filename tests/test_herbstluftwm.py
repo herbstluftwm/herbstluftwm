@@ -154,5 +154,6 @@ def test_command_not_found(hlwm):
     message = f'Command "{command}" not found'
     hlwm.call_xfail(command).expect_stderr(message)
     hlwm.call_xfail(f'{command} argument').expect_stderr(message)
-    hlwm.call_xfail(f'chain , echo foo , {command} argument , anothercmd') \
-        .expect_stderr(message)
+    call = hlwm.unchecked_call(f'chain , echo foo , {command} argument , anothercmd')
+    assert re.search(message, call.stderr)
+    assert re.search('foo', call.stdout)
