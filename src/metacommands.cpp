@@ -393,7 +393,7 @@ static std::map<string, function<Attribute*(string)>> name2constructor {
 Attribute* MetaCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
-        output << "error: unknown type \"" << typestr << "\"";
+        output.perror() << "unknown type \"" << typestr << "\"";
         return nullptr;
     }
     auto attr = it->second(attr_name);
@@ -599,7 +599,8 @@ int MetaCommands::compare_cmd(Input input, Output output)
         comparator = it->second;
     }
     if (oper.first && !comparator.first) {
-        output << "operator \"" << Converter<CompareOperator>::str(oper) << "\" "
+        output.perror()
+            << "operator \"" << Converter<CompareOperator>::str(oper) << "\" "
             << "only allowed for numeric types, but the attribute "
             << path << " is of non-numeric type "
             << Entity::typestr(a->type()) << endl;
@@ -738,7 +739,7 @@ int MetaCommands::helpCommand(Input input, Output output)
         object->ls(output);
     }
     if (!helpFound) {
-        output << "No help found for \'" << needle << "\'" << endl;
+        output.perror() << "No help found for \'" << needle << "\'" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
