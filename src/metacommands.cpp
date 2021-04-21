@@ -206,9 +206,12 @@ void MetaCommands::substitute_complete(Completion& complete)
     } else if (complete == 1) {
         completeAttributePath(complete);
     } else {
-        // later, complete the identifier
-        complete.full(complete[0]);
         complete.completeCommands(2);
+        if (!complete.noParameterExpected()) {
+            // later, complete the identifier if the nested command
+            // still expects parameters
+            complete.full(complete[0]);
+        }
     }
 }
 
