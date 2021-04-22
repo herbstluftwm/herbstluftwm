@@ -337,6 +337,19 @@ def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('Cannot.* "-=": Expecting one of: =, !=,')
 
+    hlwm.call_xfail('compare tags.focus.name gt 23') \
+        .expect_stderr('operator "gt" only.* numeric types')
+
+
+def test_compare_invalid_argument(hlwm):
+    hlwm.call_xfail('compare monitors.focus.lock_tag = notboolean') \
+        .expect_stderr('cannot parse "notboolean".*only.*are valid booleans')
+
+
+def test_compare_completion(hlwm):
+    assert '!=' in hlwm.complete('compare tags.count')
+    hlwm.command_has_all_args(['compare', 'tags.count', '=', '23'])
+
 
 def test_compare_fallback_string_equal(hlwm):
     hlwm.call('set_layout max')

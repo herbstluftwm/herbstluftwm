@@ -393,7 +393,7 @@ static std::map<string, function<Attribute*(string)>> name2constructor {
 Attribute* MetaCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
-        output << "error: unknown type \"" << typestr << "\"";
+        output.perror() << "unknown type \"" << typestr << "\"";
         return nullptr;
     }
     auto attr = it->second(attr_name);
@@ -544,7 +544,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
         try {
             vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
-            o << "cannot parse \"" << x << "\" to "
+            o.perror() << "cannot parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
             return (int) HERBST_INVALID_ARGUMENT;
         }
@@ -587,7 +587,7 @@ int MetaCommands::compare_cmd(Input input, Output output)
     std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::INT,      { true,  parse_and_compare<int> }, },
-        { Type::ULONG,    { true,  parse_and_compare<int> }, },
+        { Type::ULONG,    { true,  parse_and_compare<unsigned long> }, },
         { Type::BOOL,     { false, parse_and_compare<bool> }, },
         { Type::COLOR,    { false, parse_and_compare<Color> }, },
     };
@@ -599,7 +599,8 @@ int MetaCommands::compare_cmd(Input input, Output output)
         comparator = it->second;
     }
     if (oper.first && !comparator.first) {
-        output << "operator \"" << Converter<CompareOperator>::str(oper) << "\" "
+        output.perror()
+            << "operator \"" << Converter<CompareOperator>::str(oper) << "\" "
             << "only allowed for numeric types, but the attribute "
             << path << " is of non-numeric type "
             << Entity::typestr(a->type()) << endl;
