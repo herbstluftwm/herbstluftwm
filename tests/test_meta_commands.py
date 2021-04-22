@@ -45,6 +45,15 @@ def test_substitute(hlwm):
     assert call.stdout == expected_output
 
 
+def test_substitute_completion(hlwm):
+    assert 'tags.' in hlwm.complete(['substitute', 'X'], partial=True)
+    hlwm.command_has_all_args(['substitute', 'X', 'tags.count', 'true'])
+    assert 'floating' in hlwm.complete(['substitute', 'X', 'tags.count'])
+    assert 'X' in hlwm.complete(['substitute', 'X', 'tags.count', 'floating'])
+    # the nested command has all args already, so don't complete the 'X' here:
+    hlwm.command_has_all_args(['substitute', 'X', 'tags.count', 'floating', 'on'])
+
+
 @pytest.mark.parametrize('prefix', ['set_attr settings.',
                                     'attr settings.',
                                     'cycle_value settings.',
