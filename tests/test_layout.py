@@ -1129,13 +1129,19 @@ def test_focus_edge_shift_edge(hlwm, command):
 
     # we're on the leftmost frame
     layout_before = hlwm.call('dump').stdout
-    hlwm.call([command, 'left'])
+
+    proc = hlwm.unchecked_call([command, 'left'])
+    # we don't check stderr, because currently, the commands
+    # print 'no neighbour found' in any case
+    assert proc.returncode == 0
+
     assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '00'
     assert layout_before == hlwm.call('dump').stdout
     assert hlwm.get_attr('monitors.focus.index') == '0'
 
     # focus_edge/shift_edge goes to the rightmost frame
-    hlwm.call([command, 'right'])
+    proc = hlwm.unchecked_call([command, 'right'])
+    assert proc.returncode == 0
     # we're still on the first monitor
     assert hlwm.get_attr('monitors.focus.index') == '0'
     # but in the right-most frame

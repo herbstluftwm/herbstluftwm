@@ -86,7 +86,7 @@ def test_set_attr_can_not_set_writable(hlwm):
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('substitute X echo X')
 
-    assert call.stderr == 'The root object has no attribute "echo"\n'
+    assert call.stderr == 'substitute: The root object has no attribute "echo"\n'
 
 
 def test_substitute_command_missing(hlwm):
@@ -127,7 +127,7 @@ def test_sprintf_nested(hlwm):
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
 
-    assert call.stderr == 'The root object has no attribute "echo"\n'
+    assert call.stderr == 'sprintf: The root object has no attribute "echo"\n'
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
@@ -346,6 +346,19 @@ def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('Cannot.* "-=": Expecting one of: =, !=,')
 
+    hlwm.call_xfail('compare tags.focus.name gt 23') \
+        .expect_stderr('operator "gt" only.* numeric types')
+
+
+def test_compare_invalid_argument(hlwm):
+    hlwm.call_xfail('compare monitors.focus.lock_tag = notboolean') \
+        .expect_stderr('cannot parse "notboolean".*only.*are valid booleans')
+
+
+def test_compare_completion(hlwm):
+    assert '!=' in hlwm.complete('compare tags.count')
+    hlwm.command_has_all_args(['compare', 'tags.count', '=', '23'])
+
 
 def test_compare_fallback_string_equal(hlwm):
     hlwm.call('set_layout max')
@@ -394,7 +407,8 @@ def test_chain_return_code(hlwm):
 
     assert p1.returncode > 1
     assert p1.returncode == p2.returncode
-    assert p2.stderr[0:5] == 'line\n'
+    assert p2.stdout[0:5] == 'line\n'
+    assert p2.stderr.split(':')[1:] == p1.stderr.split(':')[1:]
 
 
 def test_chain_nested(hlwm):
@@ -408,13 +422,13 @@ def test_chain_nested(hlwm):
 def test_chain_and_1(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , false , echo bar')
     assert proc.returncode == 1
-    assert proc.stderr == 'foo\n'
+    assert proc.stdout == 'foo\n'
 
 
 def test_chain_and_2(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , true , echo bar , false , echo baz')
     assert proc.returncode == 1
-    assert proc.stderr == 'foo\nbar\n'
+    assert proc.stdout == 'foo\nbar\n'
 
 
 def test_chain_or(hlwm):
@@ -530,8 +544,10 @@ def test_mktemp_complete(hlwm):
 def test_negate_command(hlwm):
     assert hlwm.call('! false').stdout == ''
     assert hlwm.call('! ! echo f').stdout == 'f\n'
-    hlwm.call_xfail('! echo test') \
-        .expect_stderr('test')
+    proc = hlwm.unchecked_call('! echo test')
+    assert proc.returncode == 1
+    assert proc.stdout == 'test\n'
+    assert proc.stderr == ''
 
 
 def test_negate_complete_cmd(hlwm):
@@ -613,10 +629,11 @@ def test_foreach_tag_merge(hlwm):
     # the second loop iteration for 'othertag'
     expected = [
         'tags.by-name.default',
-        'merge_tag: Cannot parse argument "othertag": no such tag: othertag',
         'tags.by-name.othertag'
     ]
-    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
+    error = 'merge_tag: Cannot parse argument "othertag": no such tag: othertag'
+    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T',
+                     allowed_stderr=re.compile(error))
     assert sorted(proc.stdout.splitlines()) == sorted(expected)
 
 
@@ -735,6 +752,17 @@ def test_help_on_objects(hlwm, path='', depth=8):
     for child in hlwm.list_children(path):
         newpath = (path + '.' + child).lstrip('.')
         test_help_on_objects(hlwm, path=newpath, depth=depth - 1)
+
+
+def test_help_invalid_arg(hlwm):
+    hlwm.call_xfail('help too many args') \
+        .expect_stderr('too many arguments')
+
+    hlwm.call_xfail('help') \
+        .expect_stderr('not enough arguments')
+
+    hlwm.call_xfail('help certainly_an_invalid_arg') \
+        .expect_stderr("No help found for 'certainly_an_invalid_arg'")
 
 
 def test_watch_no_arguments(hlwm):
