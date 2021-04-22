@@ -745,6 +745,17 @@ def test_help_on_objects(hlwm, path='', depth=8):
         test_help_on_objects(hlwm, path=newpath, depth=depth - 1)
 
 
+def test_help_invalid_arg(hlwm):
+    hlwm.call_xfail('help too many args') \
+        .expect_stderr('too many arguments')
+
+    hlwm.call_xfail('help') \
+        .expect_stderr('not enough arguments')
+
+    hlwm.call_xfail('help certainly_an_invalid_arg') \
+        .expect_stderr("No help found for 'certainly_an_invalid_arg'")
+
+
 def test_watch_no_arguments(hlwm):
     hlwm.call_xfail('watch').expect_stderr(
         'Expected one argument, but got only 0 arguments.'

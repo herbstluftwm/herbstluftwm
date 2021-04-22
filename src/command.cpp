@@ -86,7 +86,7 @@ int CommandTable::callCommand(Input args, Output out) const {
     const auto cmd = map.find(args.command());
 
     if (cmd == map.end()) {
-        out << "error: Command \"" << args.command() << "\" not found" << endl;
+        out.error() << "error: Command \"" << args.command() << "\" not found" << endl;
         return HERBST_COMMAND_NOT_FOUND;
     }
     // new channels object to have the command name updated
