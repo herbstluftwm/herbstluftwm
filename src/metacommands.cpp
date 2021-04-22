@@ -738,7 +738,7 @@ int MetaCommands::helpCommand(Input input, Output output)
         object->ls(output);
     }
     if (!helpFound) {
-        output << "No help found for \'" << needle << "\'" << endl;
+        output.perror() << "No help found for \'" << needle << "\'" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
