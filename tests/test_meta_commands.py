@@ -55,6 +55,15 @@ def test_substitute(hlwm):
     assert call.stdout == expected_output
 
 
+def test_substitute_completion(hlwm):
+    assert 'tags.' in hlwm.complete(['substitute', 'X'], partial=True)
+    hlwm.command_has_all_args(['substitute', 'X', 'tags.count', 'true'])
+    assert 'floating' in hlwm.complete(['substitute', 'X', 'tags.count'])
+    assert 'X' in hlwm.complete(['substitute', 'X', 'tags.count', 'floating'])
+    # the nested command has all args already, so don't complete the 'X' here:
+    hlwm.command_has_all_args(['substitute', 'X', 'tags.count', 'floating', 'on'])
+
+
 @pytest.mark.parametrize('prefix', ['set_attr settings.',
                                     'attr settings.',
                                     'cycle_value settings.',
@@ -373,6 +382,19 @@ def test_compare_example_values(hlwm, attrpath, value, operator, othervalue, is_
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('Cannot.* "-=": Expecting one of: =, !=,')
+
+    hlwm.call_xfail('compare tags.focus.name gt 23') \
+        .expect_stderr('operator "gt" only.* numeric types')
+
+
+def test_compare_invalid_argument(hlwm):
+    hlwm.call_xfail('compare monitors.focus.lock_tag = notboolean') \
+        .expect_stderr('cannot parse "notboolean".*only.*are valid booleans')
+
+
+def test_compare_completion(hlwm):
+    assert '!=' in hlwm.complete('compare tags.count')
+    hlwm.command_has_all_args(['compare', 'tags.count', '=', '23'])
 
 
 def test_compare_fallback_string_equal(hlwm):
@@ -767,6 +789,17 @@ def test_help_on_objects(hlwm, path='', depth=8):
     for child in hlwm.list_children(path):
         newpath = (path + '.' + child).lstrip('.')
         test_help_on_objects(hlwm, path=newpath, depth=depth - 1)
+
+
+def test_help_invalid_arg(hlwm):
+    hlwm.call_xfail('help too many args') \
+        .expect_stderr('too many arguments')
+
+    hlwm.call_xfail('help') \
+        .expect_stderr('not enough arguments')
+
+    hlwm.call_xfail('help certainly_an_invalid_arg') \
+        .expect_stderr("No help found for 'certainly_an_invalid_arg'")
 
 
 def test_watch_no_arguments(hlwm):
