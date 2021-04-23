@@ -37,6 +37,16 @@ def test_object_tree(hlwm):
     assert len(t2) > len(t3)
 
 
+def test_object_tree_invalid_arg(hlwm):
+    hlwm.call_xfail('object_tree nonexistent') \
+        .expect_stderr('No such object nonexistent')
+
+
+def test_object_tree_completion(hlwm):
+    assert 'tags.' in hlwm.complete(['object_tree'], partial=True)
+    hlwm.command_has_all_args(['object_tree', 'tags'])
+
+
 def test_substitute(hlwm):
     expected_output = hlwm.get_attr('tags.count') + '\n'
 
@@ -131,9 +141,11 @@ def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
-    call = hlwm.call_xfail('sprintf X %s/%s tags.count')
+    hlwm.call_xfail('sprintf X %s/%s tags.count') \
+        .expect_stderr('sprintf: not enough arguments\n')
 
-    assert call.stderr == 'sprintf: not enough arguments\n'
+    hlwm.call_xfail('sprintf X %s/%c tags.count') \
+        .expect_stderr('sprintf: not enough arguments\n')
 
 
 def test_sprintf_command_missing(hlwm):
@@ -146,6 +158,18 @@ def test_sprintf_double_percentage_escapes(hlwm):
     call = hlwm.call('sprintf X %% echo X')
 
     assert call.stdout == '%\n'
+
+
+def test_sprintf_invalid_format(hlwm):
+    hlwm.call_xfail('sprintf X %Z echo X') \
+        .expect_stderr('invalid format type %Z at position 1')
+
+    hlwm.call_xfail('sprintf X Z% echo X') \
+        .expect_stderr('dangling % at the end')
+
+    # invalid argument in the completion:
+    call = hlwm.unchecked_call('complete 4 sprintf X dangling%')
+    assert call.returncode != 0
 
 
 def test_sprintf_completion_1_placeholder(hlwm):
@@ -229,6 +253,19 @@ def test_new_attr_existing_user_attribute(hlwm, attrtype):
 def test_new_attr_missing_prefix(hlwm, attrtype, path):
     hlwm.call_xfail(['new_attr', attrtype, path]) \
         .expect_stderr('must start with "my_"')
+
+
+def test_new_attr_invalid_type(hlwm):
+    hlwm.call_xfail(['new_attr', 'nonexistent', 'my_attr']) \
+        .expect_stderr('unknown type "nonexistent"')
+
+
+def test_new_attr_completion(hlwm):
+    assert 'bool' in hlwm.complete('new_attr')
+    assert 'my_' in hlwm.complete('new_attr bool', partial=True)
+    assert 'tags.my_' in hlwm.complete('new_attr bool tags.', position=2, partial=True)
+    # no completion yet for initial values.
+    hlwm.command_has_all_args(['new_attr', 'bool', 'tags.my_attr', 'true'])
 
 
 @pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
