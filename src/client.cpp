@@ -663,47 +663,6 @@ void Client::requestRedraw()
     }
 }
 
-/**
- * \brief   Resolve a window description to a client
- *
- * \param   str     Describes the window: "" means the focused one, "urgent"
- *                  resolves to a arbitrary urgent window, "0x..." just
- *                  resolves to the given window given its hexadecimal window id,
- *                  a decimal number its decimal window id.
- * \return          Pointer to the resolved client, or null, if client not found
- */
-Client* get_client(const char* str) {
-    if (!strcmp(str, "")) {
-        return get_current_client();
-    } else {
-        return Root::get()->clients()->client(str);
-    }
-}
-
-/**
- * \brief   Resolve a window description to a window
- *
- * \param   str     Describes the window: "" means the focused one, "urgent"
- *                  resolves to a arbitrary urgent window, "0x..." just
- *                  resolves to the given window given its hexadecimal window id,
- *                  a decimal number its decimal window id.
- * \return          Window id, or 0, if unconvertable
- */
-Window get_window(const string& str) {
-    // managed window?
-    auto client = get_client(str.c_str());
-    if (client) {
-        return client->window_;
-    }
-
-    // unmanaged window? try to convert from base 16 or base 10 at the same time
-    try {
-        return Converter<WindowID>::parse(str);
-    } catch (...) {
-        return 0;
-    }
-}
-
 void Client::fuzzy_fix_initial_position() {
     // find out the top-left-most position of the decoration,
     // considering the current settings of possible floating decorations
