@@ -152,8 +152,6 @@ void reset_client_colors();
 
 Client* get_client_from_window(Window window);
 Client* get_current_client();
-Client* get_client(const char* str);
-Window get_window(const std::string& str);
 
 // sets a client property, depending on argv[0]
 int client_set_property_command(int argc, char** argv);
