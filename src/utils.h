@@ -81,9 +81,6 @@ std::string utf8_string_at(const std::string& str, size_t offset);
 // returns an posix sh escaped string or NULL if there is nothing to escape
 // if a new string is returned, then the caller has to free it
 std::string posix_sh_escape(const std::string& source);
-// does the reverse action to posix_sh_escape by modifing the string
-void posix_sh_compress_inplace(char* str);
-
 
 /**
  *  Substitute for std::make_unique in C++11
