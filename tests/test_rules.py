@@ -633,8 +633,9 @@ def test_float_transient_for(hlwm, x11, transient_for):
     assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(transient_for)
 
 
-def test_apply_rules_invalid_window(hlwm):
-    hlwm.call_xfail(['apply_rules', 'invalidWindowId']) \
+@pytest.mark.parametrize('command', ['apply_rules', 'apply_tmp_rule'])
+def test_apply_rules_invalid_window(hlwm, command):
+    hlwm.call_xfail([command, 'invalidWindowId']) \
         .expect_stderr(r'No such.*client')
 
 
