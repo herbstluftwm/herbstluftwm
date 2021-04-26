@@ -456,9 +456,19 @@ class HlwmProcess:
 
 
 class HcIdle:
-    def __init__(self, hlwm):
+    def __init__(self, hlwm, zero_separated=False):
+        """
+        hlwm is the HlwmBridge
+        zero_separated denotes whether the hooks are zero byte separated
+        (otherwise, they are newline-separated)
+        """
         self.hlwm = hlwm
-        self.proc = subprocess.Popen([hlwm.HC_PATH, '--idle'],
+        self.separator = b'\n'
+        command = [hlwm.HC_PATH, '--idle']
+        if zero_separated:
+            command = [hlwm.HC_PATH, '-0', '--idle']
+            self.separator = b'\x00'
+        self.proc = subprocess.Popen(command,
                                      stdout=subprocess.PIPE,
                                      bufsize=0)
         # we don't know how fast self.proc connects to hlwm.
@@ -473,9 +483,20 @@ class HcIdle:
         assert number_sent > 0
         number_received = 0
         while number_received < number_sent:
-            line = self.proc.stdout.readline().decode().rstrip('\n').split('\t')
+            line = self.read_hook()
             assert line[0] == 'hc_idle_bootup'
             number_received = int(line[1])
+
+    def read_hook(self):
+        """read exactly one hook. This blocks if there is on herbstclient's stdout none."""
+        line_bytes = b''
+        while True:
+            b = self.proc.stdout.read(1)
+            if b == self.separator:
+                break
+            else:
+                line_bytes += b
+        return line_bytes.decode().split('\t')
 
     def hooks(self):
         """return all hooks since the last call of this function"""
@@ -483,7 +504,7 @@ class HcIdle:
         self.hlwm.call(['emit_hook', 'hc_idle_logging_marker'])
         hooks = []
         while True:
-            line = self.proc.stdout.readline().decode().rstrip('\n').split('\t')
+            line = self.read_hook()
             if line[0] == 'hc_idle_logging_marker':
                 break
             else:
