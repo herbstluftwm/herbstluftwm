@@ -6,6 +6,7 @@ import pytest
 import sys
 import time
 import contextlib
+from conftest import HcIdle
 from Xlib import X, Xatom
 
 HC_PATH = os.path.join(os.path.abspath(os.environ['PWD']), 'herbstclient')
@@ -145,6 +146,22 @@ def test_lastarg_only(hlwm, repeat):
     assert proc.stdout.read().splitlines() == expected_lines
     proc.wait(20)
     assert proc.returncode == 0
+
+
+@pytest.mark.parametrize('zero_separated', [True, False])
+def test_zero_byte_separator(hlwm, zero_separated):
+    hc_idle = HcIdle(hlwm, zero_separated)
+
+    hooks = [
+        ['hook_without_args'],
+        ['hook_with', 'arg'],
+        ['hook_with', 'two', 'args'],
+    ]
+    for h in hooks:
+        hlwm.call(['emit_hook'] + h)
+
+    for h in hooks:
+        assert h == hc_idle.read_hook()
 
 
 def test_version_without_hlwm_running():
