@@ -148,7 +148,7 @@ def test_lastarg_only(hlwm, repeat):
     assert proc.returncode == 0
 
 
-@pytest.mark.parametrize('zero_separated', [True, False])  # use more repetitions to test the race-condtion
+@pytest.mark.parametrize('zero_separated', [True, False])
 def test_zero_byte_separator(hlwm, zero_separated):
     hc_idle = HcIdle(hlwm, zero_separated)
 
