@@ -261,9 +261,6 @@ int main(int argc, char* argv[]) {
         char* output = NULL;
         char* error = NULL;
         HCConnection* con = hc_connect();
-        // if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
-        //     fprintf(stderr, "warning: no locale support\n");
-        // }
         if (!con) {
             if (!g_quiet) {
                 fprintf(stderr, "Error: Cannot open display.\n");

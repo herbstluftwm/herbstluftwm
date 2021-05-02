@@ -10,7 +10,6 @@
 
 using std::string;
 using std::vector;
-using std::experimental::optional;
 
 IpcServer::IpcServer(XConnection& xconnection)
     : X(xconnection)
@@ -44,7 +43,7 @@ void IpcServer::addConnection(Window window) {
 }
 
 bool IpcServer::handleConnection(Window win, CallHandler callback) {
-    optional<vector<std::string>> maybeArguments =
+    std::experimental::optional<vector<string>> maybeArguments =
             X.getWindowPropertyTextList(win, X.atom(HERBST_IPC_ARGS_ATOM));
     if (!maybeArguments.has_value()) {
         // if the args atom is not present any more then it already has been
