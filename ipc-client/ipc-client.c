@@ -121,7 +121,9 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     }
     // set arguments
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop);
+    if (Success != Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop)) {
+        fprintf(stderr, "Error: could not create Utf-8 TextProperty\n");
+    }
     XSetTextProperty(con->display, con->client_window, &text_prop, con->atom_args);
     XFree(text_prop.value);
 
