@@ -121,12 +121,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     }
     // set arguments
     XTextProperty text_prop;
-    if (Success != Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop)) {
-        if (Success != XmbTextListToTextProperty(con->display, argv, argc, XStdICCTextStyle, &text_prop)) {
-            fprintf(stderr, "Error: can not create TextProperty\n");
-            return false;
-        }
-    }
+    Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop);
     XSetTextProperty(con->display, con->client_window, &text_prop, con->atom_args);
     XFree(text_prop.value);
 
