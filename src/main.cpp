@@ -265,7 +265,7 @@ int custom_hook_emit(Input input) {
 
 static void execvp_helper(char *const command[]) {
     execvp(command[0], command);
-    std::cerr << "herbstluftwm: execvp \"" << command << "\"";
+    std::cerr << "herbstluftwm: execvp \"" << command[0] << "\"";
     perror(" failed");
 }
 
