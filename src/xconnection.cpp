@@ -244,30 +244,15 @@ static string iso_8859_1_to_utf8(const char* source) {
 }
 
 std::experimental::optional<string> XConnection::getWindowProperty(Window window, Atom atom) {
-    string result;
-    char** list = nullptr;
-    int n = 0;
-    XTextProperty prop;
-
-    if (0 == XGetTextProperty(m_display, window, &prop, atom)) {
-        return std::experimental::optional<string>();
+    std::experimental::optional<vector<string>> elements
+            = getWindowPropertyTextList(window, atom);
+    if (!elements.has_value()) {
+        return {};
     }
-    // convert text property to a gstring
-    if (prop.encoding == XA_STRING) {
-        // a XA_STRING is always encoded in ISO 8859-1
-        result = iso_8859_1_to_utf8(reinterpret_cast<char *>(prop.value));
-    } else if (prop.encoding == utf8StringAtom_) {
-        result = reinterpret_cast<char *>(prop.value);
-    } else {
-        if (XmbTextPropertyToTextList(m_display, &prop, &list, &n) >= Success
-            && n > 0 && *list)
-        {
-            result = *list;
-            XFreeStringList(list);
-        }
+    if (elements.value().empty()) {
+        return {};
     }
-    XFree(prop.value);
-    return result;
+    return elements.value()[0];
 }
 
 //! implement XChangeProperty for type=ATOM('UTF8_STRING')
@@ -400,16 +385,16 @@ std::experimental::optional<vector<Window>>
 std::experimental::optional<vector<string>>
     XConnection::getWindowPropertyTextList(Window window, Atom property)
 {
-    Atom actual_type;
+    Atom prop_type;
     int format;
     unsigned long bytes_left;
     char* items_return; // TODO: char* or unsigned char*?
     unsigned long count;
     int status = XGetWindowProperty(m_display, window,
             property, 0, ULONG_MAX, False, AnyPropertyType,
-            &actual_type, &format, &count, &bytes_left,
+            &prop_type, &format, &count, &bytes_left,
             (unsigned char**)&items_return);
-    if (Success != status || actual_type == None || format == 0) {
+    if (Success != status || prop_type == None || format == 0) {
         return {};
     }
     if (format != 8) {
@@ -422,10 +407,33 @@ std::experimental::optional<vector<string>>
     unsigned long offset = 0;
     vector<string> arguments;
     while (offset < count) {
-        // copy into a new string object:
-        arguments.push_back(items_return + offset);
+        char* textChunk = items_return + offset;
+        unsigned long textChunkLen = strlen(textChunk);
+        // copy into a new string object and convert to utf8 if necessary:
+        if (prop_type == XA_STRING) {
+            // a XA_STRING is always encoded in ISO 8859-1
+            arguments.push_back(iso_8859_1_to_utf8(textChunk));
+        } else if (prop_type == utf8StringAtom_) {
+            arguments.push_back(textChunk);
+        } else {
+            // try to convert via XmbTextPropertyToTextList, just like
+            // xprop does:
+            XTextProperty textprop;
+            textprop.encoding = prop_type;
+            textprop.format = 8;
+            textprop.nitems = textChunkLen + 1;
+            textprop.value = reinterpret_cast<unsigned char*>(textChunk);
+            int n = 0;
+            char** list = nullptr;
+            if (XmbTextPropertyToTextList(m_display, &textprop, &list, &n) == Success
+                && n > 0 && *list)
+            {
+                arguments.push_back(*list);
+                XFreeStringList(list);
+            }
+        }
         // skip the string, and skip the null-byte
-        offset += strlen(items_return + offset) + 1;
+        offset += textChunkLen + 1;
     }
     XFree(items_return);
     return { arguments };
