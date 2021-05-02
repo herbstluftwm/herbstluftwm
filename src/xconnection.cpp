@@ -404,19 +404,11 @@ std::experimental::optional<vector<string>>
                         XGetAtomName(m_display, property), window, format);
         XFree(items_return);
     }
-    // if the window property is a text list, then
-    // items_return contains multiple strings, separated by null-bytes.
-    // to avoid that we read more than 'count' bytes from items_return,
-    // we just put a null byte at the end:
-    if (count == 0) {
-        return { vector<string>() };
-    } else {
-        // items_return[count - 1] = 0;
-    }
     unsigned long offset = 0;
     vector<string> arguments;
     while (offset < count) {
         char* textChunk = items_return + offset;
+        // let us hope that items_return is properly null-byte terminated.
         unsigned long textChunkLen = strlen(textChunk);
         // copy into a new string object and convert to utf8 if necessary:
         if (prop_type == XA_STRING) {
