@@ -408,6 +408,9 @@ std::experimental::optional<vector<string>>
     if (Success != Xutf8TextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
         if (Success != XmbTextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
             XFree(text_prop.value);
+            fprintf(stderr, "herbstluftwm error: could not parse the "
+                            " %s atom of window 0x%lx to a text list\n",
+                            XGetAtomName(m_display, property), window);
             return {};
         }
     }
