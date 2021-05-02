@@ -411,7 +411,7 @@ std::experimental::optional<vector<string>>
     if (count == 0) {
         return { vector<string>() };
     } else {
-        items_return[count - 1] = 0;
+        // items_return[count - 1] = 0;
     }
     unsigned long offset = 0;
     vector<string> arguments;
