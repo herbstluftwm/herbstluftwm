@@ -1,6 +1,7 @@
 #include <X11/Xlib.h>
 #include <assert.h>
 #include <getopt.h>
+#include <locale.h>
 #include <regex.h>
 #include <signal.h>
 #include <stdbool.h>
