@@ -265,7 +265,7 @@ int custom_hook_emit(Input input) {
 
 static void execvp_helper(char *const command[]) {
     execvp(command[0], command);
-    std::cerr << "herbstluftwm: execvp \"" << command[0] << "\"";
+    std::cerr << "herbstluftwm: execvp \"" << command << "\"";
     perror(" failed");
 }
 
@@ -274,7 +274,6 @@ int spawn(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    printf("====> %s..\n", argv[1]);
     if (fork() == 0) {
         // only look in child
         if (g_display) {
