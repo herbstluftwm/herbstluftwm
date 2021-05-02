@@ -7,6 +7,7 @@
 #include <X11/extensions/Xrender.h>
 #include <unistd.h>
 #include <climits>
+#include <cstring>
 #include <iostream>
 
 #include "globals.h"
@@ -399,25 +400,34 @@ std::experimental::optional<vector<Window>>
 std::experimental::optional<vector<string>>
     XConnection::getWindowPropertyTextList(Window window, Atom property)
 {
-    XTextProperty text_prop;
-    if (!XGetTextProperty(m_display, window, &text_prop, property)) {
+    Atom actual_type;
+    int format;
+    unsigned long bytes_left;
+    char* items_return; // TODO: char* or unsigned char*?
+    unsigned long count;
+    int status = XGetWindowProperty(m_display, window,
+            property, 0, ULONG_MAX, False, AnyPropertyType,
+            &actual_type, &format, &count, &bytes_left,
+            (unsigned char**)&items_return);
+    if (Success != status || actual_type == None || format == 0) {
         return {};
     }
-    char** list_return;
-    int count;
-    if (Success != XmbTextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
-        XFree(text_prop.value);
+    if (format != 8) {
         fprintf(stderr, "herbstluftwm error: can not parse the "
-                        " atom \'%s\' of window 0x%lx to a text list\n",
-                        XGetAtomName(m_display, property), window);
-        return {};
+                        " atom \'%s\' of window 0x%lx: expected format=8 but got"
+                        " format=%d\n",
+                        XGetAtomName(m_display, property), window, format);
+        XFree(items_return);
     }
+    unsigned long offset = 0;
     vector<string> arguments;
-    for (int i = 0; i < count; i++) {
-        arguments.push_back(list_return[i]);
+    while (offset < count) {
+        // copy into a new string object:
+        arguments.push_back(items_return + offset);
+        // skip the string, and skip the null-byte
+        offset += strlen(items_return + offset) + 1;
     }
-    XFreeStringList(list_return);
-    XFree(text_prop.value);
+    XFree(items_return);
     return { arguments };
 }
 
