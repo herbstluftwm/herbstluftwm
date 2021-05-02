@@ -461,6 +461,7 @@ int main(int argc, char* argv[]) {
     parse_arguments(argc, argv, g);
 
     if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+        setlocale(LC_CTYPE, "C");
         std::cerr << "warning: no locale support" << endl;
     }
     XConnection::setExitOnError(g.exitOnXlibError);
