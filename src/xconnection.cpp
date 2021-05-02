@@ -287,9 +287,19 @@ void XConnection::setPropertyString(Window w, Atom property, const vector<string
         value_c_str.push_back(s.c_str());
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(
-        m_display, (char**) value_c_str.data(), value_c_str.size(),
-        XUTF8StringStyle, &text_prop);
+    int status = Xutf8TextListToTextProperty(
+                    m_display, (char**) value_c_str.data(), value_c_str.size(),
+                    XUTF8StringStyle, &text_prop);
+    if (status != Success) {
+        // maybe no locale support.
+        status = XmbTextListToTextProperty(
+                    m_display, (char**) value_c_str.data(), value_c_str.size(),
+                    XStdICCTextStyle, &text_prop);
+    }
+    if (status != Success) {
+        HSDebug("Can not create text list\n");
+        return;
+    }
     XSetTextProperty(m_display, w, &text_prop, property);
     XFree(text_prop.value);
 }
@@ -396,8 +406,10 @@ std::experimental::optional<vector<string>>
     char** list_return;
     int count;
     if (Success != Xutf8TextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
-        XFree(text_prop.value);
-        return {};
+        if (Success != XmbTextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
+            XFree(text_prop.value);
+            return {};
+        }
     }
     vector<string> arguments;
     for (int i = 0; i < count; i++) {
