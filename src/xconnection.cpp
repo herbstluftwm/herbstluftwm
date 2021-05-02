@@ -406,7 +406,10 @@ std::experimental::optional<vector<string>>
     }
     unsigned long offset = 0;
     vector<string> arguments;
-    while (offset < count) {
+    // the trailing 0 at items_return[count] might be crucial:
+    // if the string list ends with the empty string, then we
+    // need to access items_return[count].
+    while (offset <= count) {
         char* textChunk = items_return + offset;
         // let us hope that items_return is properly null-byte terminated.
         unsigned long textChunkLen = strlen(textChunk);
@@ -431,6 +434,8 @@ std::experimental::optional<vector<string>>
             {
                 arguments.push_back(*list);
                 XFreeStringList(list);
+            } else {
+                fprintf(stderr, "herbstluftwm warning: can not read text property\n");
             }
         }
         // skip the string, and skip the null-byte

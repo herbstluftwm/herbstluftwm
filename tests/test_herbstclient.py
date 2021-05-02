@@ -414,3 +414,18 @@ def test_ipc_reply_wrong_format(x11, order, faulty_reply_index):
     assert re.search(f'could not get window property "{faulty_name}"', hc.reply.stderr)
     assert not re.search('EEE', hc.reply.stderr)
     assert hc.reply.returncode == 1
+
+
+def test_command_tokenization(hlwm):
+    cmd2output = [
+        (['echo', 'foo', '', 'bar'], 'foo  bar\n'),
+        (['echo', '', 'foo'], ' foo\n'),
+        (['echo', '', 'g'], ' g\n'),
+        (['echo', 'x'], 'x\n'),
+        (['echo', ''], '\n'),
+        (['echo', 'foo', ''], 'foo \n'),
+        (['echo', 'foo', '', '', 'bar'], 'foo   bar\n'),
+        (['echo', 'foo', '', ''], 'foo  \n'),
+    ]
+    for cmd, output in cmd2output:
+        assert hlwm.call(cmd).stdout == output
