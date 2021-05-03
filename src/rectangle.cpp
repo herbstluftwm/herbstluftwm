@@ -1,6 +1,7 @@
 #include "rectangle.h"
 
 #include <X11/Xutil.h>
+#include <limits>
 #include <queue>
 
 #include "ipc-protocol.h"
