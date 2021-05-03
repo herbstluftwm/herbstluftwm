@@ -1,6 +1,7 @@
 #include "floating.h"
 
 #include <algorithm>
+#include <limits>
 #include <climits>
 #include <cstdlib>
 #include <unordered_set>
