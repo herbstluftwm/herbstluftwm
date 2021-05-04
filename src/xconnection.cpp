@@ -441,6 +441,7 @@ std::experimental::optional<vector<string>>
                                 atomName(property).c_str(),
                                 window,
                                 atomName(prop_type).c_str());
+                XFree(items_return);
                 return {};
             }
         }
