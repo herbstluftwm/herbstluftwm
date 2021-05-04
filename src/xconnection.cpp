@@ -393,7 +393,7 @@ std::experimental::optional<vector<string>>
     int status = XGetWindowProperty(m_display, window,
             property, 0, ULONG_MAX, False, AnyPropertyType,
             &prop_type, &format, &count, &bytes_left,
-            (unsigned char**)&items_return);
+            &items_return);
     if (Success != status || prop_type == None || format == 0) {
         return {};
     }
