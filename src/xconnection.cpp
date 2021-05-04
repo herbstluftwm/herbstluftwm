@@ -388,7 +388,7 @@ std::experimental::optional<vector<string>>
     Atom prop_type;
     int format;
     unsigned long bytes_left;
-    char* items_return; // TODO: char* or unsigned char*?
+    unsigned char* items_return;
     unsigned long count;
     int status = XGetWindowProperty(m_display, window,
             property, 0, ULONG_MAX, False, AnyPropertyType,
@@ -410,15 +410,15 @@ std::experimental::optional<vector<string>>
     // if the string list ends with the empty string, then we
     // need to access items_return[count].
     while (offset <= count) {
-        char* textChunk = items_return + offset;
+        unsigned char* textChunk = items_return + offset;
         // let us hope that items_return is properly null-byte terminated.
-        unsigned long textChunkLen = strlen(textChunk);
+        unsigned long textChunkLen = strlen(reinterpret_cast<char*>(textChunk));
         // copy into a new string object and convert to utf8 if necessary:
         if (prop_type == XA_STRING) {
             // a XA_STRING is always encoded in ISO 8859-1
-            arguments.push_back(iso_8859_1_to_utf8(textChunk));
+            arguments.push_back(iso_8859_1_to_utf8(reinterpret_cast<char*>(textChunk)));
         } else if (prop_type == utf8StringAtom_) {
-            arguments.push_back(textChunk);
+            arguments.push_back(reinterpret_cast<char*>(textChunk));
         } else {
             // try to convert via XmbTextPropertyToTextList, just like
             // xprop does:
@@ -426,7 +426,7 @@ std::experimental::optional<vector<string>>
             textprop.encoding = prop_type;
             textprop.format = 8;
             textprop.nitems = textChunkLen + 1;
-            textprop.value = reinterpret_cast<unsigned char*>(textChunk);
+            textprop.value = textChunk;
             int n = 0;
             char** list = nullptr;
             if (XmbTextPropertyToTextList(m_display, &textprop, &list, &n) == Success
