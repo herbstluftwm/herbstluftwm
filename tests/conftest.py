@@ -323,10 +323,16 @@ class HlwmProcess:
         stdout_bytes = bytes()
 
         def match_found():
-            if until_stdout and (until_stdout in stdout):
-                return True
-            if until_stderr and (until_stderr in stderr):
-                return True
+            if until_stdout:
+                if isinstance(until_stdout, str) and until_stdout in stdout:
+                    return True
+                if hasattr(until_stdout, 'search') and until_stdout.search(stdout):
+                    return True
+            if until_stderr:
+                if isinstance(until_stderr, str) and until_stderr in stderr:
+                    return True
+                if hasattr(until_stderr, 'search') and until_stderr.search(stderr):
+                    return True
             return False
 
         started = datetime.now()
@@ -705,7 +711,7 @@ class X11:
             return False
         return bool(hints.flags & Xutil.UrgencyHint)
 
-    def set_property_textlist(self, property_name, value, utf8=True, window=None):
+    def set_property_textlist(self, property_name, value, utf8=True, property_type=None, window=None):
         """set a ascii textlist property by its string name on the root window, or any other window"""
         if window is None:
             window = self.root
@@ -718,10 +724,11 @@ class X11:
             else:
                 bvalue.append(0)
             bvalue += entry.encode()
-        proptype = Xatom.STRING
-        if utf8:
-            proptype = self.display.get_atom('UTF8_STRING')
-        window.change_property(prop, proptype, 8, bytes(bvalue))
+        if property_type is None:
+            property_type = Xatom.STRING
+            if utf8:
+                property_type = self.display.get_atom('UTF8_STRING')
+        window.change_property(prop, property_type, 8, bytes(bvalue))
 
     def set_property_cardinal(self, property_name, value, window=None):
         if window is None:

@@ -398,11 +398,12 @@ std::experimental::optional<vector<string>>
         return {};
     }
     if (format != 8) {
-        fprintf(stderr, "herbstluftwm error: can not parse the "
+        fprintf(stderr, "herbstluftwm: error: can not parse the "
                         " atom \'%s\' of window 0x%lx: expected format=8 but got"
                         " format=%d\n",
                         XGetAtomName(m_display, property), window, format);
         XFree(items_return);
+        return {};
     }
     unsigned long offset = 0;
     vector<string> arguments;
@@ -435,7 +436,12 @@ std::experimental::optional<vector<string>>
                 arguments.push_back(*list);
                 XFreeStringList(list);
             } else {
-                fprintf(stderr, "herbstluftwm warning: can not read text property\n");
+                fprintf(stderr, "herbstluftwm: error: can not parse the "
+                                " atom \'%s\' of window 0x%lx: unknown text format \'%s\'\n",
+                                XGetAtomName(m_display, property),
+                                window,
+                                XGetAtomName(m_display, prop_type));
+                return {};
             }
         }
         // skip the string, and skip the null-byte
