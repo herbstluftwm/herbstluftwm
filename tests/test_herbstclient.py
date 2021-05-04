@@ -416,7 +416,12 @@ def test_ipc_reply_wrong_format(x11, order, faulty_reply_index):
     assert hc.reply.returncode == 1
 
 
-def test_command_tokenization(hlwm):
+def test_command_tokenization_in_x11_property(hlwm):
+    """
+    Test that the string list is correctly encoded to and decoded
+    from the x11 property. In particular, we test that '' as the last
+    token is not dropped when reading the x11 property.
+    """
     cmd2output = [
         (['echo', 'foo', '', 'bar'], 'foo  bar\n'),
         (['echo', '', 'foo'], ' foo\n'),
