@@ -401,7 +401,7 @@ std::experimental::optional<vector<string>>
         fprintf(stderr, "herbstluftwm: error: can not parse the "
                         " atom \'%s\' of window 0x%lx: expected format=8 but got"
                         " format=%d\n",
-                        XGetAtomName(m_display, property), window, format);
+                        atomName(property).c_str(), window, format);
         XFree(items_return);
         return {};
     }
@@ -438,9 +438,9 @@ std::experimental::optional<vector<string>>
             } else {
                 fprintf(stderr, "herbstluftwm: error: can not parse the "
                                 " atom \'%s\' of window 0x%lx: unknown text format \'%s\'\n",
-                                XGetAtomName(m_display, property),
+                                atomName(property).c_str(),
                                 window,
-                                XGetAtomName(m_display, prop_type));
+                                atomName(prop_type).c_str());
                 return {};
             }
         }
