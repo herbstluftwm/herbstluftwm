@@ -103,10 +103,13 @@ public:
 class Consequence {
 public:
     /*! An Applier modifies the given ClientChanges object, and possibly throws an
-     * exception (std::invalid_argument, std::out_of_range) if the value in the
-     * Consequence object is invalid.
+     * exception (std::invalid_argument, std::out_of_range) on run-time errors.
      */
     using Applier = std::function<void(const Consequence*, const Client*, ClientChanges*)>;
+    /*! An entry in the Appliers map returns an Applier, given the argument
+     * to the consequence and possibly throws an exception if the argument
+     * is of the wrong format.
+     */
     using Appliers = const std::map<std::string, std::function<Applier(const std::string&)>>;
     static Appliers appliers;
 

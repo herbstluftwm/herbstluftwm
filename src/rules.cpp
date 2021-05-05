@@ -14,6 +14,12 @@ using std::string;
 using std::function;
 
 
+/**
+ * A helper function to define rule consequences that directly
+ * write to a member of ClientConsequences of (plain) type T.
+ *
+ * This function returns an entry of the Consequence:appliers map.
+ */
 template <typename T>
 function<Consequence::Applier(const string&)>
     setMember(T ClientChanges::* member)
@@ -26,6 +32,12 @@ function<Consequence::Applier(const string&)>
     };
 }
 
+/**
+ * A helper function to define rule consequences that directly
+ * write to a member of ClientConsequences of type optional<T>
+ *
+ * This function returns an entry of the Consequence:appliers map.
+ */
 template <typename T>
 function<Consequence::Applier(const string&)>
     setOptionalMember(std::experimental::optional<T> ClientChanges::* member)
