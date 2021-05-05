@@ -280,7 +280,6 @@ class IpcServer:
         """wait for at least one herbstclient to connect"""
         self.display.sync()
         while attempts >= 0:
-            # while self.display.pending_events() >= 1:
             self.display.next_event()
             windows = self.screen.root.query_tree().children
             self.hc_requests = []
