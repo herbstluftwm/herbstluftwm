@@ -11,6 +11,33 @@
 #include "xconnection.h"
 
 using std::string;
+using std::function;
+
+
+template <typename T>
+function<Consequence::Applier(const string&)>
+    setMember(T ClientChanges::* member)
+{
+    return [member](const string& valueStr) -> Consequence::Applier {
+        T valueParsed = Converter<T>::parse(valueStr);
+        return [member,valueParsed](const Consequence*, const Client*, ClientChanges* changes) -> void {
+            (*changes).*member = valueParsed;
+        };
+    };
+}
+
+template <typename T>
+function<Consequence::Applier(const string&)>
+    setOptionalMember(std::experimental::optional<T> ClientChanges::* member)
+{
+    return [member](const string& valueStr) -> Consequence::Applier {
+        T valueParsed = Converter<T>::parse(valueStr);
+        return [member,valueParsed](const Consequence*, const Client*, ClientChanges* changes) -> void {
+            (*changes).*member = valueParsed;
+        };
+    };
+}
+
 
 /// GLOBALS ///
 
@@ -25,27 +52,28 @@ const std::map<string, Condition::Matcher> Condition::matchers = {
     { "windowrole",     &Condition::matchesWindowrole        },
 };
 
-const std::map<string, Consequence::Applier> Consequence::appliers = {
-    { "tag",            &Consequence::applyTag             },
-    { "index",          &Consequence::applyIndex           },
-    { "focus",          &Consequence::applyFocus           },
-    { "switchtag",      &Consequence::applySwitchtag       },
-    { "manage",         &Consequence::applyManage          },
-    { "floating",       &Consequence::applyFloating        },
-    { "pseudotile",     &Consequence::applyPseudotile      },
-    { "fullscreen",     &Consequence::applyFullscreen      },
-    { "ewmhrequests",   &Consequence::applyEwmhrequests    },
-    { "ewmhnotify",     &Consequence::applyEwmhnotify      },
-    { "hook",           &Consequence::applyHook            },
-    { "keymask",        &Consequence::applyKeyMask         },
-    { "keys_inactive",  &Consequence::applyKeysInactive    },
-    { "monitor",        &Consequence::applyMonitor         },
-    { "floatplacement", &Consequence::applyFloatplacement  },
+const std::map<string, function<Consequence::Applier(const string&)>> Consequence::appliers = {
+    { "tag",            [] (const string&) { return &Consequence::applyTag; } },
+    { "index",          [] (const string&) { return &Consequence::applyIndex; } },
+    { "focus",          setMember(&ClientChanges::focus) },
+    { "switchtag",      setMember(&ClientChanges::switchtag) },
+    { "manage",         setMember(&ClientChanges::manage) },
+    { "floating",       setOptionalMember(&ClientChanges::floating) },
+    { "pseudotile",     setOptionalMember(&ClientChanges::pseudotile) },
+    { "fullscreen",     setOptionalMember(&ClientChanges::fullscreen) },
+    { "ewmhrequests",   setOptionalMember(&ClientChanges::ewmhRequests) },
+    { "ewmhnotify",     setOptionalMember(&ClientChanges::ewmhNotify) },
+    { "hook",           [] (const string&) { return &Consequence::applyHook; } },
+    { "keymask",        setOptionalMember(&ClientChanges::keyMask) },
+    { "keys_inactive",  setOptionalMember(&ClientChanges::keysInactive) },
+    { "monitor",        [] (const string&) { return &Consequence::applyMonitor;        } },
+    { "floatplacement", setMember(&ClientChanges::floatplacement) },
 };
 
-bool Rule::addCondition(string name, char op, const char* value, bool negated, Output output) {
+bool Rule::addCondition(const Condition::Matchers::const_iterator& it, char op, const char* value, bool negated, Output output) {
     Condition cond;
     cond.negated = negated;
+    const string& name = it->first;
 
     cond.conditionCreationTime = get_monotonic_timestamp();
 
@@ -99,21 +127,18 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
  *
  * @retval false if the consequence cannot be added (malformed)
  */
-bool Rule::addConsequence(string name, char op, const char* value, Output output) {
+bool Rule::addConsequence(const Consequence::Appliers::const_iterator& it, const char* value, Output output) {
     Consequence cons;
-    switch (op) {
-        case '=':
-            cons.value_type = CONSEQUENCE_VALUE_TYPE_STRING;
-            cons.value = value;
-            break;
-
-        default:
-            output.perror() << "Unknown rule consequence operation \"" << op << "\"\n";
-            return false;
-            break;
+    cons.name = it->first;
+    cons.value = value;
+    try {
+        cons.apply = it->second(value);
+    } catch(std::exception& err) {
+        output.perror() << "Invalid argument \"" << value
+                << "\" to consequence \"" << it->first
+                << "\": " << err.what() << "\n";
+        return false;
     }
-
-    cons.name = name;
 
     consequences.push_back(cons);
     return true;
@@ -177,7 +202,7 @@ bool Rule::evaluate(Client* client, ClientChanges& changes, Output output)
         // apply all consequences
         for (auto& cons : consequences) {
             try {
-                Consequence::appliers.at(cons.name)(&cons, client, &changes);
+                cons.apply(&cons, client, &changes);
             } catch (std::exception& e) {
                 output.error()
                        << "Invalid argument \"" << cons.value
@@ -315,62 +340,16 @@ void Consequence::applyTag(const Client* client, ClientChanges* changes) const {
     changes->tag_name = value;
 }
 
-void Consequence::applyFocus(const Client* client, ClientChanges* changes) const {
-    changes->focus = Converter<bool>::parse(value, changes->focus);
-}
-
-void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
-    changes->manage = Converter<bool>::parse(value, changes->manage);
-}
-
-void Consequence::applyFloating(const Client *client, ClientChanges *changes) const
-{
-    changes->floating = Converter<bool>::parse(value, client->floating_);
-}
-
 void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {
     changes->tree_index = value;
-}
-
-void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) const {
-    changes->pseudotile = Converter<bool>::parse(value, client->pseudotile_);
-}
-
-void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
-    changes->fullscreen = Converter<bool>::parse(value);
-}
-
-void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {
-    changes->switchtag = Converter<bool>::parse(value, changes->switchtag);
-}
-
-void Consequence::applyEwmhrequests(const Client* client, ClientChanges* changes) const {
-    changes->ewmhRequests = Converter<bool>::parse(value, client->ewmhrequests_);
-}
-
-void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) const {
-    changes->ewmhNotify = Converter<bool>::parse(value, client->ewmhnotify_);
 }
 
 void Consequence::applyHook(const Client* client, ClientChanges* changes) const {
     hook_emit({ "rule", value, WindowID(client->window_).str() });
 }
 
-void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {
-    changes->keyMask = Converter<RegexStr>::parse(value);
-}
-
-void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes) const
-{
-    changes->keysInactive = Converter<RegexStr>::parse(value);
-}
-
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
     changes->monitor_name = value;
-}
-
-void Consequence::applyFloatplacement(const Client* client, ClientChanges* changes) const {
-    changes->floatplacement = Converter<ClientPlacement>::parse(value);
 }
 
 template<>

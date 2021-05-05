@@ -25,7 +25,8 @@ class Condition {
 public:
 
     using Matcher = std::function<bool(const Condition*, const Client*)>;
-    static const std::map<std::string, Matcher> matchers;
+    using Matchers = const std::map<std::string, Matcher>;
+    static Matchers matchers;
 
     std::string name;
     int value_type = 0;
@@ -106,28 +107,18 @@ public:
      * Consequence object is invalid.
      */
     using Applier = std::function<void(const Consequence*, const Client*, ClientChanges*)>;
-    static const std::map<std::string, Applier> appliers;
+    using Appliers = const std::map<std::string, std::function<Applier(const std::string&)>>;
+    static Appliers appliers;
 
     std::string name;
-    int value_type = 0;
     std::string value;
+    Applier apply;
 
 private:
     void applyTag(const Client* client, ClientChanges* changes) const;
     void applyIndex(const Client* client, ClientChanges* changes) const;
-    void applyFocus(const Client* client, ClientChanges* changes) const;
-    void applySwitchtag(const Client* client, ClientChanges* changes) const;
-    void applyManage(const Client* client, ClientChanges* changes) const;
-    void applyFloating(const Client* client, ClientChanges* changes) const;
-    void applyPseudotile(const Client* client, ClientChanges* changes) const;
-    void applyFullscreen(const Client* client, ClientChanges* changes) const;
-    void applyEwmhrequests(const Client* client, ClientChanges* changes) const;
-    void applyEwmhnotify(const Client* client, ClientChanges* changes) const;
     void applyHook(const Client* client, ClientChanges* changes) const;
-    void applyKeyMask(const Client* client, ClientChanges* changes) const;
-    void applyKeysInactive(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
-    void applyFloatplacement(const Client* client, ClientChanges* changes) const;
 };
 
 class Rule {
@@ -146,8 +137,8 @@ public:
     time_t birth_time; // timestamp of at creation
 
     bool setLabel(char op, std::string value, Output output);
-    bool addCondition(std::string name, char op, const char* value, bool negated, Output output);
-    bool addConsequence(std::string name, char op, const char* value, Output output);
+    bool addCondition(const Condition::Matchers::const_iterator& it, char op, const char* value, bool negated, Output output);
+    bool addConsequence(const Consequence::Appliers::const_iterator& it, const char* value, Output output);
 
     void print(Output output);
 private:
