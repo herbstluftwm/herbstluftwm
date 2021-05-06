@@ -28,6 +28,12 @@ def test_color_rgba(hlwm):
     hlwm.call('compare theme.color = #9fbc00ff')
     hlwm.call('compare theme.color != #9fbc00f0')
 
+    # test alpha value '09' which should not be
+    # misinterpreted as an invalid octal number:
+    hlwm.attr.theme.color = '#9fbc1109'
+    assert hlwm.attr.theme.color() == '#9fbc1109'
+    hlwm.call('compare theme.color = #9fbc1109')
+
 
 def test_color_invalid(hlwm):
     hlwm.call_xfail('set_attr theme.color #9xbc00') \

@@ -4,7 +4,6 @@ import os
 import re
 import pytest
 import sys
-import time
 import contextlib
 from conftest import HcIdle
 from Xlib import X, Xatom
@@ -272,12 +271,16 @@ class IpcServer:
         self.screen.root.change_property(x11.display.intern_atom('__HERBST_HOOK_WIN_ID'),
                                          Xatom.ATOM, 32, hook_win_id)
 
+        # listen for XCreateWindow events
+        self.screen.root.change_attributes(event_mask=X.SubstructureNotifyMask)
+        self.display.sync()
         self.hc_requests = []  # list of running 'hc' callers
 
-    def wait_for_hc(self, timeout=2):
+    def wait_for_hc(self, attempts=3):
         """wait for at least one herbstclient to connect"""
-        while timeout >= 0:
-            self.display.sync()
+        self.display.sync()
+        while attempts >= 0:
+            self.display.next_event()
             windows = self.screen.root.query_tree().children
             self.hc_requests = []
             for w in windows:
@@ -287,8 +290,7 @@ class IpcServer:
             if len(self.hc_requests) > 0:
                 return
 
-            timeout -= 1
-            time.sleep(1)
+            attempts -= 1
 
         raise Exception("No herbstclient instances showed up")
 
@@ -342,8 +344,9 @@ def hc_context(args=['echo', 'ping']):
     print(f'"hc {args_str}" has the error output: {reply.stderr}', file=sys.stderr)
 
 
+@pytest.mark.parametrize('repeat', range(0, 10))  # number of repetitions to detect race-conditions
 @pytest.mark.parametrize('utf8', [True, False])
-def test_ipc_reply_with_error_channel(x11, utf8):
+def test_ipc_reply_with_error_channel(x11, repeat, utf8):
     server = IpcServer(x11)
     with hc_context() as hc:
         server.wait_for_hc()
