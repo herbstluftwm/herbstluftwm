@@ -5,6 +5,7 @@
 
 #include "argparse.h"
 #include "client.h"
+#include "clientmanager.h"
 #include "completion.h"
 #include "ewmh.h"
 #include "floating.h"
