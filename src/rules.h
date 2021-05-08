@@ -95,6 +95,7 @@ public:
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> floating;
+    std::experimental::optional<Rectangle> floatingGeometry;
     std::experimental::optional<bool> pseudotile;
     std::experimental::optional<bool> ewmhRequests;
     std::experimental::optional<bool> ewmhNotify;

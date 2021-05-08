@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Rectangle
 
 
 string_props = [
@@ -23,6 +24,7 @@ consequences = [
     'manage',
     'index',
     'floating',
+    'floating_geometry',
     'pseudotile',
     'ewmhrequests',
     'ewmhnotify',
@@ -963,3 +965,28 @@ def test_smart_placement_within_monitor(hlwm):
     # is still within the monitor
     assert inner_geometry.x - bw >= 0
     assert inner_geometry.y - bw >= 0
+
+
+@pytest.mark.parametrize('rule_first', [True, False])
+@pytest.mark.parametrize('visible_tag', [True, False])
+def test_floating_geometry(hlwm, x11, rule_first, visible_tag):
+    if not rule_first:
+        _, winid = x11.create_client()  # client first
+
+    if not visible_tag:
+        hlwm.call('add othertag')
+        hlwm.call('rule tag=othertag')
+    geo = Rectangle(30, 40, 140, 170)
+    hlwm.call('rule floating=on focus=on floating_geometry=' + geo.to_user_str())
+
+    if rule_first:
+        _, winid = x11.create_client()  # client second
+    else:
+        # apply fresh rules to long existing client
+        hlwm.call(['apply_rules', winid])
+
+    if not visible_tag:
+        hlwm.call('use othertag')
+
+    assert hlwm.attr.clients.focus.floating_geometry() == geo
+    assert hlwm.attr.clients.focus.content_geometry() == geo
