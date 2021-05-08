@@ -128,7 +128,7 @@ def test_directional_shift_resize_left_up(hlwm, command, direction, put_obstacle
     hlwm.call(['jumpto', client])
     hlwm.call([command, direction])  # the actual shift/resize
 
-    # check that we top left corner of the window is adjusted as expected
+    # check that the top left corner of the window is adjusted as expected
     new_geo = hlwm.attr.clients.focus.floating_geometry()
     assert expected_pos == (new_geo.x, new_geo.y)
 
