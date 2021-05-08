@@ -1,5 +1,4 @@
 import pytest
-import re
 
 
 string_props = [
@@ -56,13 +55,13 @@ def test_add_simple_rule_with_dashes(hlwm):
 
 
 def test_add_many_labeled_rules(hlwm):
-    # Add set of rules with every consequence and every valid combination of
+    # Add set of rules with every valid combination of
     # property and match operator appearing at least once:
 
-    # Make a single, long list of all consequences (with unique rhs values):
+    # Make a single, long list of all consequences which accept any string:
     consequences_str = \
         ' '.join(['{}=a{}b'.format(c, idx)
-                  for idx, c in enumerate(consequences, start=4117)])
+                  for idx, c in enumerate(['tag', 'monitor'], start=4117)])
 
     # Make three sets of long conditions lists: for numeric matches, string
     # equality and regexp equality:
@@ -126,27 +125,6 @@ def test_add_rule_maxage_condition_operator(hlwm, command):
 def test_add_rule_maxage_condition_integer(hlwm, command):
     call = hlwm.call_xfail(f'{command} maxage=foo')
     call.expect_stderr('rule: Cannot parse integer from "foo"')
-
-
-@pytest.mark.parametrize('rulearg,errormsg', [
-    ("fullscreen=foo", 'only.*are valid booleans'),
-    ("keymask=(", 'Parenthesis is not closed'),
-    ("floatplacement=bar", 'Expecting one of: center, '),
-])
-@pytest.mark.parametrize('command', ['apply_rules', 'apply_tmp_rule'])
-def test_rule_parse_error_printed_at_client(hlwm, command, rulearg, errormsg):
-    winid, _ = hlwm.create_client()
-    full_cmd = [command, winid]
-    if command == 'apply_rules':
-        hlwm.call(['rule', rulearg])
-    else:
-        full_cmd += [rulearg]
-
-    proc = hlwm.unchecked_call(full_cmd)
-
-    # the command does not fail, but the error
-    # message appears on stderr
-    assert re.search(errormsg, proc.stderr)
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
@@ -339,12 +317,34 @@ def test_condition_class(hlwm):
     assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
-def test_consequence_invalid_argument(hlwm):
-    # TODO: make this command fail at some point:
-    hlwm.call('rule focus=not-a-boolean')
+@pytest.mark.parametrize('rulearg,errormsg', [
+    ("fullscreen=foo", 'only.*are valid booleans'),
+    ("keymask=(", 'Parenthesis is not closed'),
+    ("floatplacement=bar", 'Expecting one of: center, '),
+])
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule'])
+def test_consequence_parse_error_correct_error_message(hlwm, command, rulearg, errormsg):
+    full_cmd = [command, rulearg]
+    if command == 'apply_tmp_rule':
+        winid, _ = hlwm.create_client()
+        full_cmd = [command, winid, rulearg]
 
-    # this must not crash:
-    hlwm.create_client()
+    hlwm.call_xfail(full_cmd) \
+        .expect_stderr(errormsg)
+
+
+def test_consequence_parse_error_general(hlwm):
+    """
+    Test that the rule parsing can fail for almost all consequences
+    and roughly check the error message
+    """
+    for c in consequences:
+        if c in ['tag', 'monitor', 'index', 'hook']:
+            continue
+        invalid_arg = 'invalid(arg'  # invalid for any type!
+        invalid_arg_escaped = r'invalid\(arg'
+        hlwm.call_xfail(['rule', f'{c}={invalid_arg}']) \
+            .expect_stderr(f'Invalid.*"{invalid_arg_escaped}".*to.*"{c}":')
 
 
 class RuleMode:
@@ -744,16 +744,6 @@ def test_floatplacement_for_invisible_tag(hlwm, x11):
         == (500 / 2, 550 / 2)
 
 
-def test_floatplacement_parser(hlwm, hlwm_process, x11):
-    hlwm.call('rule floatplacement=notInTheList')
-    with hlwm_process.wait_stderr_match('Expecting one of: center, none'):
-        # here, it's important that we use a non-syncing way of creating
-        # a client, because the syncing would interfere with the
-        # above wait_stderr_match(). This is why we can't use
-        # hlwm.create_client() here
-        x11.create_client(sync_hlwm=False)
-
-
 def assert_that_rectangles_do_not_overlap(rectangles):
     """given a list of rectangles and a description (any string)
     verify that all the rectangles are disjoint. The rectangles
@@ -949,13 +939,9 @@ def test_apply_tmp_rule_focus(hlwm):
 
 
 def test_apply_tmp_rule_parse_error(hlwm, hlwm_process):
-    # FIXME: Here, we only check that it does not crash if we pass an
-    # unparseable argument.. In the future, this should be a proper error
-    # message for 'apply_tmp_rule'!
     hlwm.create_client()
-    proc = hlwm.unchecked_call('apply_tmp_rule --all focus=not-a-bool')
-    assert re.search('Invalid argument "not-a-bool" for rule consequence "focus"', proc.stderr)
-    assert proc.stdout == ''
+    hlwm.call_xfail('apply_tmp_rule --all focus=not-a-bool') \
+        .expect_stderr('Invalid argument "not-a-bool" to consequence "focus"')
 
 
 def test_smart_placement_within_monitor(hlwm):

@@ -1313,45 +1313,43 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +focus+::
     decides whether the client gets the input focus in its tag. The default is
-    *off*. 'VALUE' can be *on*, *off* or *toggle*.
+    *off*. 'VALUE' is a boolean (*on* or *off*).
 
 +switchtag+::
     if +focus+ is activated and the client is put to a not focused tag, then
     +switchtag+ tells whether the client's tag will be shown or not. If the tag
     is shown on any monitor but is not focused, the client's tag only is brought
     to the current monitor if *swap_monitors_to_get_tag* is activated. 'VALUE'
-    can be *on*, *off* or *toggle*.
+    is a boolean (*on* or *off*).
 
 +manage+::
     decides whether the client will be managed or not. The default is *on*.
-    'VALUE' can be *on*, *off* or *toggle*.
+    'VALUE' is a boolean (*on* or *off*).
 
 +index+::
     moves the window to a specified index in the tree. 'VALUE' is a
     <<FRAME_INDEX,*frame index*>>.
 
 +floating+::
-    sets the floating state of the client. 'VALUE' can be *on*, *off* or
-    *toggle*.
+    sets the floating state of the client. 'VALUE' is a boolean.
 
 +pseudotile+::
-    sets the pseudotile state of the client. 'VALUE' can be *on*, *off* or
-    *toggle*.
+    sets the pseudotile state of the client. 'VALUE' is a boolean.
 
 +ewmhrequests+::
     sets whether the window state (the fullscreen state and the demands
     attention flag) can be changed by the application via ewmh itself. This does
-    not affect the initial fullscreen state requested by the window. 'VALUE' can
-    be *on*, *off* or *toggle*, it defaults to *on*.
+    not affect the initial fullscreen state requested by the window. 'VALUE' is
+    a boolean; it defaults to *on*.
 
 +ewmhnotify+::
     sets whether hlwm should let the client know about EMWH changes (currently
     only the fullscreen state). If this is set, applications do not change to
-    their fullscreen-mode while still being fullscreen. 'VALUE' can be *on*,
-    *off* or *toggle*, it defaults to *on*.
+    their fullscreen-mode while still being fullscreen. 'VALUE' is a boolean,
+    it defaults to *on*.
 
 +fullscreen+::
-    sets the fullscreen flag of the client. 'VALUE' can be *on* or *off*.
+    sets the fullscreen flag of the client. 'VALUE' is a boolean.
 
 +hook+::
     emits the custom hook +rule+ 'VALUE' 'WINID' when this rule is triggered by
