@@ -5,6 +5,7 @@
 
 #include "argparse.h"
 #include "client.h"
+#include "clientmanager.h"
 #include "completion.h"
 #include "ewmh.h"
 #include "floating.h"
@@ -489,7 +490,8 @@ int HSTag::resizeCommand(Input input, Output output)
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
         if (!Floating::resizeDirection(this, client, direction)) {
-            // no error message because this shouldn't happen anyway
+            output.perror() << "window " << Converter<Client*>::str(client)
+                            << " is too small to be shrunk" << endl;
             return HERBST_FORBIDDEN;
         }
     } else {
