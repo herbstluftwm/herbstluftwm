@@ -245,3 +245,77 @@ def test_focus_directional_between_identical_geometries(hlwm, forward, backward)
         status = hlwm.unchecked_call(['focus', forward]).returncode
 
     assert sorted(traversed) == sorted(clients)
+
+
+@pytest.mark.parametrize('direction', ['up', 'down', 'left', 'right'])
+def test_resize_shrink_client(hlwm, direction):
+    hlwm.attr.settings.snap_gap = 5
+    hlwm.attr.tags.focus.floating = True
+    hlwm.attr.monitors.focus.geometry = Rectangle(x=0, y=0, width=800, height=900)
+
+    hlwm.create_client()
+    hlwm.attr.clients.focus.sizehints_floating = False
+    # place the client roughly in the center of the monitor:
+    geo_orig = Rectangle(x=200, y=200, width=300, height=400)
+    hlwm.attr.clients.focus.floating_geometry = geo_orig
+    # shift the client towards the monitor edge in the specified 'direction'
+    hlwm.call(['shift', direction])
+    geo_moved = hlwm.attr.clients.focus.floating_geometry()
+    # and the size is as originally
+    assert geo_moved.width == geo_orig.width
+    assert geo_moved.height == geo_orig.height
+
+    # calling 'resize' with the same direction forces the client to shrink:
+    hlwm.call(['resize', direction])
+
+    geo_shrunk = hlwm.attr.clients.focus.floating_geometry()
+    if direction in ['up', 'down']:
+        # client was shrunk in height
+        assert geo_shrunk.width == geo_moved.width
+        assert geo_shrunk.height == geo_moved.height // 2
+    else:
+        # client was shrunk in width
+        assert geo_shrunk.width == geo_moved.width // 2
+        assert geo_shrunk.height == geo_moved.height
+
+    if direction in ['right', 'down']:
+        # bottom right corner stays unchanged
+        assert geo_shrunk.x + geo_shrunk.width == geo_moved.x + geo_moved.width
+        assert geo_shrunk.y + geo_shrunk.height == geo_moved.y + geo_moved.height
+    else:
+        # top left corner stays unchanged
+        assert geo_shrunk.x == geo_moved.x
+        assert geo_shrunk.y == geo_moved.y
+
+
+@pytest.mark.parametrize('direction', ['up', 'down', 'left', 'right'])
+def test_resize_shrink_not_possible(hlwm, direction):
+    hlwm.attr.settings.snap_gap = 5
+    hlwm.attr.tags.focus.floating = True
+
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients.focus.sizehints_floating = False
+    # place the client roughly in the center of the monitor:
+    geo_orig = Rectangle(x=200, y=200, width=160, height=140)
+    hlwm.attr.clients.focus.floating_geometry = geo_orig
+
+    # call resize multiple times
+    for i in range(0, 15):
+        proc = hlwm.unchecked_call(['resize', direction])
+        if proc.returncode != 0:
+            assert f"{winid} is too small to be shrunk" in proc.stderr
+            break
+    geo_final = hlwm.attr.clients.focus.floating_geometry()
+
+    # after calling 'resize' that often, the minimum window size
+    # must have been reached. So calling it again will not change the geometry:
+    hlwm.call_xfail(['resize', direction]).expect_stderr('too small')
+    assert geo_final == hlwm.attr.clients.focus.floating_geometry()
+
+    if direction in ['up', 'down']:
+        assert geo_orig.width == geo_final.width
+    else:
+        assert geo_orig.height == geo_final.height
+
+    assert geo_final.width >= 50
+    assert geo_final.height >= 50

@@ -16,6 +16,10 @@ output always on stdout. Before, both were printed to the same channel,
 either to stdout or stderr depending on the command's exit status. This
 mainly affects combined commands.
 
+In the rules, 'toggle' can not be used anymore in rule consequences. Moreover,
+invalid arguments to rule consequences now will be reported during 'rule'
+creation, already.
+
 Only for people using the git-version: During the development of 0.9.3, the
 'content_geometry' attribute of clients initially had the name
 'geometry_reported'.

@@ -116,17 +116,8 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
 
 
 def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
-    hlwm.call('keybind x add anothertag')
-    # Note: In future work, we could make this fail right away. But
-    # currently, that is not the case.
-    hlwm.call('rule once keys_inactive=[b-a]')
-    hlwm.create_client()
-
-    keyboard.press('x')
-
-    # since there is no valid keys_inactive, the command must have been
-    # executed:
-    assert 'anothertag' in hlwm.list_children('tags.by-name.')
+    hlwm.call_xfail('rule once keys_inactive=[b-a]') \
+        .expect_stderr(r'Invalid .*\[b-a\].*:.*Invalid range in bracket')
 
 
 @pytest.mark.parametrize('prefix', ['', 'Mod1+'])
