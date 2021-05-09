@@ -123,6 +123,7 @@ private:
     void applyIndex(const Client* client, ClientChanges* changes) const;
     void applyHook(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
+    static Consequence::Applier parseFloatingGeometry(const std::string&);
 };
 
 class Rule {
