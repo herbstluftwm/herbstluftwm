@@ -366,7 +366,7 @@ void Consequence::applyMonitor(const Client* client, ClientChanges* changes) con
     changes->monitor_name = value;
 }
 
-Consequence::Applier Consequence::parseFloatingGeometry(const std::string& source)
+Consequence::Applier Consequence::parseFloatingGeometry(const string& source)
 {
     Rectangle geo = Converter<Rectangle>::parse(source);
     if (geo.width < WINDOW_MIN_WIDTH || geo.height < WINDOW_MIN_HEIGHT) {
