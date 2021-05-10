@@ -406,7 +406,7 @@ int ClientManager::applyChanges(Client* client, ClientChanges changes, Output ou
     bool clientNeedsRelayout = false;
     if (changes.floatingGeometry.has_value()) {
         // if the floating geometry changed, make sure
-        // that the client's possition is updated
+        // that the client's position is updated
         clientNeedsRelayout = true;
     }
     if (changes.fullscreen.has_value()) {

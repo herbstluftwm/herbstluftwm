@@ -969,23 +969,28 @@ def test_smart_placement_within_monitor(hlwm):
     assert inner_geometry.y - bw >= 0
 
 
-@pytest.mark.parametrize('rule_first', [True, False])
+@pytest.mark.parametrize('command', ['rule', 'apply_rules', 'apply_tmp_rule'])
 @pytest.mark.parametrize('visible_tag', [True, False])
-def test_floating_geometry(hlwm, x11, rule_first, visible_tag):
-    if not rule_first:
+def test_floating_geometry(hlwm, x11, command, visible_tag):
+    if command != 'rule':
         _, winid = x11.create_client()  # client first
+
+    geo = Rectangle(30, 40, 140, 170)
+    rule = ['floating=on', 'focus=on', 'floating_geometry=' + geo.to_user_str()]
 
     if not visible_tag:
         hlwm.call('add othertag')
-        hlwm.call('rule tag=othertag')
-    geo = Rectangle(30, 40, 140, 170)
-    hlwm.call('rule floating=on focus=on floating_geometry=' + geo.to_user_str())
+        rule += ['tag=othertag']
 
-    if rule_first:
+    if command == 'rule':
+        hlwm.call(['rule'] + rule)
         _, winid = x11.create_client()  # client second
-    else:
+    elif command == 'apply_rules':
         # apply fresh rules to long existing client
+        hlwm.call(['rule'] + rule)
         hlwm.call(['apply_rules', winid])
+    else:
+        hlwm.call(['apply_tmp_rule', winid] + rule)
 
     if not visible_tag:
         hlwm.call('use othertag')
