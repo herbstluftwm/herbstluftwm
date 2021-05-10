@@ -237,7 +237,7 @@ def test_focus_directional_between_identical_geometries(hlwm, forward, backward)
     while status == 0:
         status = hlwm.unchecked_call(['focus', backward]).returncode
 
-    # go in the oposite direction and check that we traverse all clients
+    # go in the opposite direction and check that we traverse all clients
     traversed = []
     status = 0
     while status == 0:
