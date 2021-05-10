@@ -66,8 +66,9 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
         }
 
         // Check if lhs is a condition name
-        if (Condition::matchers.count(lhs)) {
-            bool success = rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
+        Condition::Matchers::const_iterator maybe_condition = Condition::matchers.find(lhs);
+        if (maybe_condition != Condition::matchers.end()) {
+            bool success = rule.addCondition(maybe_condition, oper, rhs.c_str(), negated, output);
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
             }
@@ -75,13 +76,14 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
         }
 
         // Check if lhs is a consequence name
-        if (Consequence::appliers.count(lhs)) {
+        Consequence::Appliers::const_iterator maybe_consequence = Consequence::appliers.find(lhs);
+        if (maybe_consequence != Consequence::appliers.end()) {
             if (oper == '~') {
                 output.perror() << "Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
             }
 
-            bool success = rule.addConsequence(lhs, oper, rhs.c_str(), output);
+            bool success = rule.addConsequence(maybe_consequence, rhs.c_str(), output);
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
             }
