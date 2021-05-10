@@ -85,6 +85,62 @@ def test_directional_shift_right(hlwm, x11, start_y_rel, hits_obstacle):
     assert x + winwidth + snap_gap == width
 
 
+@pytest.mark.parametrize('command', ['shift', 'resize'])
+@pytest.mark.parametrize('direction', ['left', 'up'])
+@pytest.mark.parametrize('put_obstacle', [True, False])
+def test_directional_shift_resize_left_up(hlwm, command, direction, put_obstacle):
+    """
+    run: shift/resize up/left
+    possibly put a window obstacle in the way
+    """
+    hlwm.attr.tags.focus.floating = True
+    client, _ = hlwm.create_client()
+    bw = 3
+    hlwm.attr.theme.border_width = bw
+    gap = 2
+    hlwm.attr.settings.snap_gap = gap
+    hlwm.attr.clients[client].sizehints_floating = False
+    old_geo = Rectangle(x=160, y=170, width=80, height=90)
+    hlwm.attr.clients[client].floating_geometry = old_geo
+
+    # possibly put a window obstacle between the 'client' and the screen edge:
+    if put_obstacle:
+        obstacle, _ = hlwm.create_client()
+        hlwm.attr.clients[obstacle].sizehints_floating = False
+        obstacle_pos = 100 + bw
+        if direction == 'up':
+            hlwm.attr.clients[obstacle].floating_geometry = \
+                Rectangle(x=0, y=0, width=400, height=100)
+        elif direction == 'left':
+            hlwm.attr.clients[obstacle].floating_geometry = \
+                Rectangle(x=0, y=0, width=100, height=400)
+    else:
+        # the next obstacle is the screen edge
+        obstacle_pos = 0
+
+    if direction == 'up':
+        # expected position after shift up: same x, different y
+        expected_pos = (160, obstacle_pos + bw + gap)
+    elif direction == 'left':
+        # expected position after shift left: different x, same y
+        expected_pos = (obstacle_pos + bw + gap, 170)
+
+    hlwm.call(['jumpto', client])
+    hlwm.call([command, direction])  # the actual shift/resize
+
+    # check that the top left corner of the window is adjusted as expected
+    new_geo = hlwm.attr.clients.focus.floating_geometry()
+    assert expected_pos == (new_geo.x, new_geo.y)
+
+    if command == 'shift':
+        # shift means: size is unchanged
+        assert (old_geo.width, old_geo.height) == (new_geo.width, new_geo.height)
+    else:
+        # resize means: bottom right corner is unchanged
+        assert old_geo.x + old_geo.width == new_geo.x + new_geo.width
+        assert old_geo.y + old_geo.height == new_geo.y + new_geo.height
+
+
 def test_floating_command_no_tag(hlwm):
     assert hlwm.get_attr('tags.0.floating') == hlwm.bool(False)
 
@@ -158,6 +214,37 @@ def test_resize_floating_client(hlwm, x11, direction):
     if direction == 'down':
         assert y_before + geom_after.height == mon_height
         assert geom_after.width == geom_before.width
+
+
+@pytest.mark.parametrize('forward,backward', [
+    ('left', 'right'),
+    ('up', 'down'),
+    ('right', 'left'),
+    ('down', 'left'),
+])
+def test_focus_directional_between_identical_geometries(hlwm, forward, backward):
+    hlwm.call('set_layout max')
+    hlwm.call('floating on')
+
+    # create clients with identical geometry
+    clients = []
+    for _ in range(0, 4):
+        winid, _ = hlwm.create_client(position=(40, 50))
+        clients.append(winid)
+
+    # search the "first" client
+    status = 0
+    while status == 0:
+        status = hlwm.unchecked_call(['focus', backward]).returncode
+
+    # go in the opposite direction and check that we traverse all clients
+    traversed = []
+    status = 0
+    while status == 0:
+        traversed.append(hlwm.attr.clients.focus.winid())
+        status = hlwm.unchecked_call(['focus', forward]).returncode
+
+    assert sorted(traversed) == sorted(clients)
 
 
 @pytest.mark.parametrize('direction', ['up', 'down', 'left', 'right'])
