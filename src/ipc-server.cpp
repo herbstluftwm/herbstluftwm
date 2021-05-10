@@ -43,26 +43,14 @@ void IpcServer::addConnection(Window window) {
 }
 
 bool IpcServer::handleConnection(Window win, CallHandler callback) {
-    XTextProperty text_prop;
-    if (!XGetTextProperty(X.display(), win, &text_prop, X.atom(HERBST_IPC_ARGS_ATOM))) {
+    std::experimental::optional<vector<string>> maybeArguments =
+            X.getWindowPropertyTextList(win, X.atom(HERBST_IPC_ARGS_ATOM));
+    if (!maybeArguments.has_value()) {
         // if the args atom is not present any more then it already has been
         // executed (e.g. after being called by ipc_add_connection())
         return false;
     }
-    char** list_return;
-    int count;
-    if (Success != Xutf8TextPropertyToTextList(X.display(), &text_prop, &list_return, &count)) {
-        fprintf(stderr, "herbstluftwm: Warning: could not parse the %s atom of herbstclient "
-                        "window %d to utf8 list\n",
-                        HERBST_IPC_ARGS_ATOM, (unsigned int)win);
-        XFree(text_prop.value);
-        return false;
-    }
-    vector<string> arguments;
-    for (int i = 0; i < count; i++) {
-        arguments.push_back(list_return[i]);
-    }
-    auto result = callback(arguments);
+    auto result = callback(maybeArguments.value());
     // send output back
     int status = result.exitCode;
     // Mark this command as executed
@@ -72,9 +60,6 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
-    // cleanup
-    XFreeStringList(list_return);
-    XFree(text_prop.value);
     return true;
 }
 
