@@ -5,6 +5,7 @@ import subprocess
 import textwrap
 from conftest import BINDIR, HlwmProcess
 import conftest
+from Xlib import X, Xatom
 
 
 HLWM_PATH = os.path.join(BINDIR, 'herbstluftwm')
@@ -157,3 +158,45 @@ def test_command_not_found(hlwm):
     call = hlwm.unchecked_call(f'chain , echo foo , {command} argument , anothercmd')
     assert re.search(message, call.stderr)
     assert re.search('foo', call.stdout)
+
+
+class IpcClient:
+    WM_CLASS = 'HERBST_IPC_CLASS'
+    IPC_ARGS = '_HERBST_IPC_ARGS'
+
+    def __init__(self, x11):
+        self.x11 = x11
+        self.win = x11.root.create_window(
+            0, 0, 50, 50,  # geometry
+            2,  # border width
+            x11.screen.root_depth,
+            X.InputOutput,
+            X.CopyFromParent)
+        self.win.set_wm_class(IpcClient.WM_CLASS, IpcClient.WM_CLASS)
+
+
+def test_ipc_server_wrong_property_format(hlwm, hlwm_process, x11):
+    ipcclient = IpcClient(x11)
+    winid_str = x11.winid_str(ipcclient.win)
+    message = f"error.*'{IpcClient.IPC_ARGS}'.*{winid_str}.*"
+    message += "expected format=8 but.*format=32"
+    with hlwm_process.wait_stderr_match(re.compile(message)):
+        ipcclient.win.change_property(
+            x11.display.intern_atom(IpcClient.IPC_ARGS),
+            Xatom.STRING, 32,  # property type and format
+            [12, 24])
+        x11.display.flush()
+
+
+def test_ipc_server_wrong_property_type(hlwm, hlwm_process, x11):
+    ipcclient = IpcClient(x11)
+    winid_str = x11.winid_str(ipcclient.win)
+    unknown_prop_type = "UNKNOWN_PROPERTY_TYPE"
+    message = f"error.*'{IpcClient.IPC_ARGS}'.*{winid_str}.*{unknown_prop_type}"
+    with hlwm_process.wait_stderr_match(re.compile(message)):
+        ipcclient.win.change_property(
+            x11.display.intern_atom(IpcClient.IPC_ARGS),
+            x11.display.intern_atom(unknown_prop_type),
+            8,  # property type and format
+            [12, 24])
+        x11.display.flush()

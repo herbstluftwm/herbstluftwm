@@ -7,6 +7,7 @@
 #include <X11/extensions/Xrender.h>
 #include <unistd.h>
 #include <climits>
+#include <cstring>
 #include <iostream>
 
 #include "globals.h"
@@ -243,30 +244,15 @@ static string iso_8859_1_to_utf8(const char* source) {
 }
 
 std::experimental::optional<string> XConnection::getWindowProperty(Window window, Atom atom) {
-    string result;
-    char** list = nullptr;
-    int n = 0;
-    XTextProperty prop;
-
-    if (0 == XGetTextProperty(m_display, window, &prop, atom)) {
-        return std::experimental::optional<string>();
+    std::experimental::optional<vector<string>> elements
+            = getWindowPropertyTextList(window, atom);
+    if (!elements.has_value()) {
+        return {};
     }
-    // convert text property to a gstring
-    if (prop.encoding == XA_STRING) {
-        // a XA_STRING is always encoded in ISO 8859-1
-        result = iso_8859_1_to_utf8(reinterpret_cast<char *>(prop.value));
-    } else if (prop.encoding == utf8StringAtom_) {
-        result = reinterpret_cast<char *>(prop.value);
-    } else {
-        if (XmbTextPropertyToTextList(m_display, &prop, &list, &n) >= Success
-            && n > 0 && *list)
-        {
-            result = *list;
-            XFreeStringList(list);
-        }
+    if (elements.value().empty()) {
+        return {};
     }
-    XFree(prop.value);
-    return result;
+    return elements.value()[0];
 }
 
 //! implement XChangeProperty for type=ATOM('UTF8_STRING')
@@ -287,9 +273,19 @@ void XConnection::setPropertyString(Window w, Atom property, const vector<string
         value_c_str.push_back(s.c_str());
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(
-        m_display, (char**) value_c_str.data(), value_c_str.size(),
-        XUTF8StringStyle, &text_prop);
+    int status = Xutf8TextListToTextProperty(
+                    m_display, (char**) value_c_str.data(), value_c_str.size(),
+                    XUTF8StringStyle, &text_prop);
+    if (status != Success) {
+        // maybe no locale support.
+        status = XmbTextListToTextProperty(
+                    m_display, (char**) value_c_str.data(), value_c_str.size(),
+                    XStdICCTextStyle, &text_prop);
+    }
+    if (status != Success) {
+        HSDebug("Can not create text list\n");
+        return;
+    }
     XSetTextProperty(m_display, w, &text_prop, property);
     XFree(text_prop.value);
 }
@@ -389,22 +385,70 @@ std::experimental::optional<vector<Window>>
 std::experimental::optional<vector<string>>
     XConnection::getWindowPropertyTextList(Window window, Atom property)
 {
-    XTextProperty text_prop;
-    if (!XGetTextProperty(m_display, window, &text_prop, property)) {
+    Atom prop_type;
+    int format;
+    unsigned long bytes_left;
+    unsigned char* items_return;
+    unsigned long count;
+    int status = XGetWindowProperty(m_display, window,
+            property, 0, ULONG_MAX, False, AnyPropertyType,
+            &prop_type, &format, &count, &bytes_left,
+            &items_return);
+    if (Success != status || prop_type == None || format == 0) {
         return {};
     }
-    char** list_return;
-    int count;
-    if (Success != Xutf8TextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
-        XFree(text_prop.value);
+    if (format != 8) {
+        fprintf(stderr, "herbstluftwm: error: can not parse the"
+                        " atom \'%s\' of window 0x%lx: expected format=8 but got"
+                        " format=%d\n",
+                        atomName(property).c_str(), window, format);
+        XFree(items_return);
         return {};
     }
+    unsigned long offset = 0;
     vector<string> arguments;
-    for (int i = 0; i < count; i++) {
-        arguments.push_back(list_return[i]);
+    // the trailing 0 at items_return[count] might be crucial:
+    // if the string list ends with the empty string, then we
+    // need to access items_return[count].
+    while (offset <= count) {
+        unsigned char* textChunk = items_return + offset;
+        // let us hope that items_return is properly null-byte terminated.
+        unsigned long textChunkLen = strlen(reinterpret_cast<char*>(textChunk));
+        // copy into a new string object and convert to utf8 if necessary:
+        if (prop_type == XA_STRING) {
+            // a XA_STRING is always encoded in ISO 8859-1
+            arguments.push_back(iso_8859_1_to_utf8(reinterpret_cast<char*>(textChunk)));
+        } else if (prop_type == utf8StringAtom_) {
+            arguments.push_back(reinterpret_cast<char*>(textChunk));
+        } else {
+            // try to convert via XmbTextPropertyToTextList, just like
+            // xprop does:
+            XTextProperty textprop;
+            textprop.encoding = prop_type;
+            textprop.format = 8;
+            textprop.nitems = textChunkLen + 1;
+            textprop.value = textChunk;
+            int n = 0;
+            char** list = nullptr;
+            if (XmbTextPropertyToTextList(m_display, &textprop, &list, &n) == Success
+                && n > 0 && *list)
+            {
+                arguments.push_back(*list);
+                XFreeStringList(list);
+            } else {
+                fprintf(stderr, "herbstluftwm: error: can not parse the"
+                                " atom \'%s\' of window 0x%lx: unknown text format \'%s\'\n",
+                                atomName(property).c_str(),
+                                window,
+                                atomName(prop_type).c_str());
+                XFree(items_return);
+                return {};
+            }
+        }
+        // skip the string, and skip the null-byte
+        offset += textChunkLen + 1;
     }
-    XFreeStringList(list_return);
-    XFree(text_prop.value);
+    XFree(items_return);
     return { arguments };
 }
 
