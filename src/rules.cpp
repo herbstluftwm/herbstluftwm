@@ -5,6 +5,7 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "globals.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -71,6 +72,7 @@ const std::map<string, function<Consequence::Applier(const string&)>> Consequenc
     { "switchtag",      setMember(&ClientChanges::switchtag) },
     { "manage",         setMember(&ClientChanges::manage) },
     { "floating",       setOptionalMember(&ClientChanges::floating) },
+    { "floating_geometry", parseFloatingGeometry },
     { "pseudotile",     setOptionalMember(&ClientChanges::pseudotile) },
     { "fullscreen",     setOptionalMember(&ClientChanges::fullscreen) },
     { "ewmhrequests",   setOptionalMember(&ClientChanges::ewmhRequests) },
@@ -362,6 +364,17 @@ void Consequence::applyHook(const Client* client, ClientChanges* changes) const 
 
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
     changes->monitor_name = value;
+}
+
+Consequence::Applier Consequence::parseFloatingGeometry(const string& source)
+{
+    Rectangle geo = Converter<Rectangle>::parse(source);
+    if (geo.width < WINDOW_MIN_WIDTH || geo.height < WINDOW_MIN_HEIGHT) {
+        throw std::invalid_argument("Rectangle too small");
+    }
+    return [geo](const Consequence*, const Client*, ClientChanges* changes) {
+        changes->floatingGeometry = geo;
+    };
 }
 
 template<>

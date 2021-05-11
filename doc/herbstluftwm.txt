@@ -1372,6 +1372,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
       as possible. If there are multiple options with the least overlap, then
       the position with the least overlap to tiling windows is chosen.
 
++floating_geometry+::
+    Sets the client's +floating_geometry+ attribute. The 'VALUE' is a rectangle,
+    interpreted relatively to the monitor.
+
 A rule's behaviour can be configured by some special 'FLAGS':
 
     * +not+: negates the next 'CONDITION'.

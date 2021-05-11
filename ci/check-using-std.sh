@@ -25,7 +25,7 @@ found_something=0
 # set -x
 for symbol in $usethis; do
     # Find offending occurrences of "std::" prefixes:
-    grep --perl-regexp --color=auto '(?<!using )std::'"$symbol"'\b' src/*.cpp
+    grep -n --perl-regexp --color=auto '(?<!using )std::'"$symbol"'\b' src/*.cpp
     grepret=$?
     if [[ $grepret == 0 ]]; then
         found_something=1

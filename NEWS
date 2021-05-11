@@ -37,6 +37,9 @@ Current git version
   * The 'cycle' command now also cycles through floating windows.
   * The 'rule' command now reports errors already during rule creation.
   * In rule consequences, 'toggle' is not allowed anymore.
+  * New rule consequences:
+    - 'floating_geometry' for setting the attribute of the same name (i.e.
+      position and size of the new client)
   * The python bindings automatically convert from and to python's types
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients

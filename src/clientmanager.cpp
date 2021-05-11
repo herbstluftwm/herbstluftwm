@@ -345,6 +345,15 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
     if (changes.keysInactive.has_value()) {
         client->keysInactive_ = changes.keysInactive.value();
     }
+    if (changes.floatingGeometry.has_value()) {
+        Rectangle geo = changes.floatingGeometry.value();
+        // do not simply copy the geometry to the attribute
+        // but possibly apply the size hints:
+        if (client->sizehints_floating_()) {
+            client->applysizehints(&geo.width, &geo.height);
+        }
+        client->float_size_ = geo;
+    }
 }
 
 int ClientManager::applyRulesCmd(Input input, Output output) {
@@ -394,6 +403,12 @@ int ClientManager::applyChanges(Client* client, ClientChanges changes, Output ou
     }
     // do the simple attributes first
     setSimpleClientAttributes(client, changes);
+    bool clientNeedsRelayout = false;
+    if (changes.floatingGeometry.has_value()) {
+        // if the floating geometry changed, make sure
+        // that the client's position is updated
+        clientNeedsRelayout = true;
+    }
     if (changes.fullscreen.has_value()) {
         client->fullscreen_ = changes.fullscreen.value();
     }
@@ -424,13 +439,19 @@ int ClientManager::applyChanges(Client* client, ClientChanges changes, Output ou
         }
         TagManager* tagman = Root::get()->tags();
         tagman->moveClient(client, tag, changes.tree_index, changes.focus);
+        clientNeedsRelayout = false; // the above relayouts the tag
     } else if (changes.focus && (client != focus())) {
         // focus the client
         client->tag()->focusClient(client);
         Root::get()->monitors->relayoutTag(client->tag());
+        clientNeedsRelayout = false; // the above relayouts the tag
     }
     if (monitor && switch_tag && tag) {
         monitor_set_tag(monitor, tag);
+    }
+    if (clientNeedsRelayout) {
+        // if the client still has not been resized yet:
+        Root::get()->monitors->relayoutTag(client->tag());
     }
     return 0;
 }
