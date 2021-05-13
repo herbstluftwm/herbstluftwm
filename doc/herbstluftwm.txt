@@ -1374,7 +1374,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +floating_geometry+::
     Sets the client's +floating_geometry+ attribute. The 'VALUE' is a rectangle,
-    interpreted relatively to the monitor.
+    interpreted relatively to the monitor. If +floatplacement+ is also specified
+    for the client (possibly by another rule), then only the size of the
+    +floating_geometry+ is used. In order to force the position from the
+    geometry, it is necessary to add +floatplacement=none+.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

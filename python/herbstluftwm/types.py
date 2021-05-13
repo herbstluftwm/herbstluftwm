@@ -5,6 +5,28 @@ primarily, types used in attributes.
 """
 
 
+class Point:
+    """
+    A point on the 2D plane
+    """
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __floordiv__(self, scalar):
+        """divide by scalar factor, forcing to integer coordinates"""
+        return Point(self.x // scalar, self.y // scalar)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self) -> str:
+        return f'Point({self.x}, {self.y})'
+
+
 class Rectangle:
     """
     A rectangle on the screen, defined by its size and its distance to
@@ -48,6 +70,18 @@ class Rectangle:
         are adjusted by the provided deltas.
         """
         return Rectangle(self.x + dx, self.y + dy, self.width + dw, self.height + dh)
+
+    def topleft(self) -> Point:
+        """the top left corner of the rectangle"""
+        return Point(self.x, self.y)
+
+    def center(self) -> Point:
+        """the center of the rectangle, forced to integer coordinates"""
+        return self.topleft() + self.size() // 2
+
+    def size(self) -> Point:
+        """width and height of the rectangle"""
+        return Point(self.width, self.height)
 
 
 class HlwmType:

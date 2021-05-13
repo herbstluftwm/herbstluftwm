@@ -362,7 +362,7 @@ class RuleMode:
 def create_client(hlwm, rule_mode: RuleMode, rule):
     """create a client and the given rule. if client_before_rules, then
     first create the client, and later apply the rule to it via the
-    apply_rule command"""
+    apply_rules command"""
     if rule_mode == RuleMode.APPLY_RULES:
         winid, _ = hlwm.create_client()
         hlwm.call(['rule'] + rule)
@@ -997,3 +997,31 @@ def test_floating_geometry(hlwm, x11, command, visible_tag):
 
     assert hlwm.attr.clients.focus.floating_geometry() == geo
     assert hlwm.attr.clients.focus.content_geometry() == geo
+
+
+@pytest.mark.parametrize('place_center', [True, False])
+def test_floating_geometry_and_placement(hlwm, x11, place_center):
+    hlwm.attr.tags.focus.floating = True
+
+    rule_geo = Rectangle(30, 40, 140, 170)
+    rule = ['floating_geometry=' + rule_geo.to_user_str()]
+    if place_center:
+        rule += ['floatplacement=center']
+    else:
+        # also add another rule whose floatplacement is then overwritten:
+        hlwm.call('rule floatplacement=center')
+        rule += ['floatplacement=none']
+
+    # 'floatplacement' is only applied by 'rule', so no test
+    # for 'apply_tmp_rule' or 'apply_rules'
+    hlwm.call(['rule'] + rule)
+    _, winid = x11.create_client()
+
+    client_geo = hlwm.attr.clients[winid].floating_geometry()
+    monitor_geo = hlwm.attr.monitors.focus.geometry()
+
+    assert client_geo.size() == rule_geo.size()
+    if place_center:
+        assert client_geo.center() == monitor_geo.center()
+    else:
+        assert client_geo.topleft() == rule_geo.topleft()
