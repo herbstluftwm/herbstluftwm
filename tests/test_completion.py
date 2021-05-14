@@ -167,8 +167,8 @@ def test_completable_commands(hlwm, request, run_destructives):
     }
     allowed_stderr = re.compile('({})'.format('|'.join([
         'A (monitor|tag) with the name.*already exists',
-        'No such.*client: urgent',  # for apply_rules
-        'Could not find client "(urgent|)"',  # for drag
+        'No such.*client: (urgent|longest-minimized|last-minimized)',  # for apply_rules
+        'Could not find client "(urgent|longest-minimized|last-minimized|)"',  # for drag
         'No neighbour found',  # for resize and similar commands
         r'There are no \(non-minimized\) floating windows; cannot focus',  # for floating_focused
     ])))

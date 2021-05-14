@@ -110,11 +110,20 @@ Client* ClientManager::parse(const string& identifier)
         }
         throw std::invalid_argument("No client is urgent");
     }
+    if (identifier == "last-minimized" || identifier == "longest-minimized") {
+        bool oldest = identifier == "longest-minimized";
+        Client *c = Root::get()->tags()->focus_->minimizedClient(oldest);
+        if (c) {
+            return c;
+        } else {
+            throw std::invalid_argument("No client is minimized");
+        }
+    }
     Window win = {};
     try {
         win = Converter<WindowID>::parse(identifier);
     } catch (const std::exception&) {
-        throw std::invalid_argument("Invalid format, expecting 0xWINID or \'urgent\' or \'\'");
+        throw std::invalid_argument("Invalid format, expecting 0xWINID or a description, e.g. \'urgent\'.");
     }
     auto entry = clients_.find(win);
     if (entry != clients_.end()) {
@@ -136,6 +145,8 @@ Client* ClientManager::client(const string &identifier) {
 void ClientManager::completeEntries(Completion& complete)
 {
     complete.full("urgent");
+    complete.full("last-minimized");
+    complete.full("longest-minimized");
     for (const auto& it : clients_) {
         complete.full(Converter<WindowID>::str(it.first));
     }

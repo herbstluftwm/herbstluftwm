@@ -33,6 +33,8 @@ Current git version
     settings for compatibility).
   * New object 'types' containing documentation on (attribute-) types.
   * New command 'attr_type' printing the type of a given attribute.
+  * New client alias 'last-minimized' and 'longest-minimized' for focusing
+    and unminimizing minimized clients.
   * Relative values for integer attributes ('+=N' and '-=N')
   * The 'cycle' command now also cycles through floating windows.
   * The 'rule' command now reports errors already during rule creation.
