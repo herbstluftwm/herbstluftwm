@@ -183,11 +183,18 @@ def test_minimized_client_completions(hlwm):
 
 
 def test_minimized_client_invalid_arg(hlwm):
-    hlwm.call_xfail('jumpto longest-minimized') \
-        .expect_stderr('No client is minimized')
+    for _ in range(0, 2):
+        hlwm.call_xfail('jumpto longest-minimized') \
+            .expect_stderr('No client is minimized')
 
-    hlwm.call_xfail('jumpto last-minimized') \
-        .expect_stderr('No client is minimized')
+        hlwm.call_xfail('jumpto last-minimized') \
+            .expect_stderr('No client is minimized')
+
+        # the error does not change if we add another
+        # non-minimized floating client:
+        non_min, _ = hlwm.create_client()
+        hlwm.attr.clients[non_min].floating = True
+        hlwm.attr.clients[non_min].minimized = False
 
 
 @pytest.mark.parametrize("ewmhstate", [True, False])
