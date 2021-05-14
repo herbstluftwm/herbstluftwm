@@ -160,9 +160,14 @@ def test_jumpto_longest_minimized_last_minimized(hlwm, noop, arg, expected_idx):
         hlwm.attr.clients[clients[2 + expected_idx]].minimized = True
         hlwm.attr.clients[another_client].minimized = False
 
-    # also minimize another client but put it on another tag:
+    # Add some more clients that should not interfere with the minimized aliases:
+    # 1. add another floating client that's not minimized
+    other_float, _ = hlwm.create_client()
+    hlwm.attr.clients[other_float].floating = True
+    hlwm.attr.clients[other_float].minimized = False
+    # 2. minimize another client but put it on another tag:
     hlwm.call('add othertag')
-    hlwm.call('rule tag=othertag')
+    hlwm.call('rule once tag=othertag')
     on_other_tag, _ = hlwm.create_client()
     hlwm.attr.clients[on_other_tag].minimized = True
 
