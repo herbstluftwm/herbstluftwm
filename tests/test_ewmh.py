@@ -1,6 +1,7 @@
 import conftest
 import os
 import pytest
+from herbstluftwm.types import Point
 from Xlib import X
 import Xlib
 
@@ -445,3 +446,83 @@ def test_net_supported(hlwm, x11):
     for prop in expected_actions:
         atom = x11.display.intern_atom(prop)
         assert atom in supported_actions
+
+
+def test_close_window(hlwm, x11):
+    # we use hlwm's create_client and not x11's because
+    # it's easier to wait for the process to shut down
+    winid, proc = hlwm.create_client()
+    assert winid in hlwm.list_children('clients')
+    x11.ewmh.setCloseWindow(x11.window(winid))
+    x11.sync_with_hlwm()
+
+    # wait for client to shut down
+    proc.wait(10)
+    assert winid not in hlwm.list_children('clients')
+
+
+class NetWmMoveResize:
+    # defines from the EWMH doc on _NET_WM_MOVERESIZE:
+    # https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45377754090464
+    SIZE_TOPLEFT = 0
+    SIZE_TOP = 1
+    SIZE_TOPRIGHT = 2
+    SIZE_RIGHT = 3
+    SIZE_BOTTOMRIGHT = 4
+    SIZE_BOTTOM = 5
+    SIZE_BOTTOMLEFT = 6
+    SIZE_LEFT = 7
+    MOVE = 8   # movement only
+    SIZE_KEYBOARD = 9   # size via keyboard
+    MOVE_KEYBOARD = 10  # move via keyboard
+    CANCEL = 11  # cancel operation
+
+
+@pytest.mark.parametrize('action_nr,is_moving', [
+    (NetWmMoveResize.MOVE, True),
+    (NetWmMoveResize.MOVE_KEYBOARD, True),
+    # test some resizing operations
+    # (but not all, because hlwm does not distinguish anyway)
+    (NetWmMoveResize.SIZE_KEYBOARD, False),
+    (NetWmMoveResize.SIZE_RIGHT, False),
+    (NetWmMoveResize.SIZE_BOTTOM, False),
+    (NetWmMoveResize.SIZE_BOTTOMLEFT, False),
+])
+def test_initiate_drag(hlwm, mouse, x11, action_nr, is_moving):
+    hlwm.attr.tags.focus.floating = True
+    winHandle, winid = x11.create_client()
+    geo_before = hlwm.attr.clients[winid].floating_geometry()
+    mouse_pos = geo_before.center() + Point(2, 2)
+    mouse.move_to(mouse_pos.x, mouse_pos.y)
+    x11.ewmh._setProperty('_NET_WM_MOVERESIZE', [0, 0, action_nr, 1, 2], winHandle)
+    x11.sync_with_hlwm()
+
+    assert hlwm.attr.clients.dragged.winid() == winid
+
+    delta = Point(30, 40)
+    mouse.move_relative(delta.x, delta.y)
+
+    geo_afterwards = hlwm.attr.clients[winid].floating_geometry()
+    if is_moving:
+        assert geo_before.size() == geo_afterwards.size()
+        assert geo_before.topleft() + delta == geo_afterwards.topleft()
+    else:
+        # it's resizing
+        assert geo_before.topleft() == geo_afterwards.topleft()
+        assert geo_before.size() + delta == geo_afterwards.size()
+
+
+def test_cancel_drag(hlwm, x11):
+    hlwm.attr.tags.focus.floating = True
+    winHandle, winid = x11.create_client()
+    hlwm.call(['drag', winid, 'move'])
+
+    def is_dragging():
+        return 'dragged' in hlwm.list_children('clients')
+
+    assert is_dragging()
+
+    x11.ewmh._setProperty('_NET_WM_MOVERESIZE', [0, 0, NetWmMoveResize.CANCEL, 1, 2], winHandle)
+    x11.sync_with_hlwm()
+
+    assert not is_dragging()
