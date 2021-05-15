@@ -494,7 +494,6 @@ def test_initiate_drag(hlwm, mouse, x11, action_nr, is_moving):
     geo_before = hlwm.attr.clients[winid].floating_geometry()
     mouse_pos = geo_before.center() + Point(2, 2)
     mouse.move_to(mouse_pos.x, mouse_pos.y)
-    # x11.display.warp_pointer(mouse_pos.x, mouse_pos.y)
     x11.ewmh._setProperty('_NET_WM_MOVERESIZE', [0, 0, action_nr, 1, 2], winHandle)
     x11.sync_with_hlwm()
 
