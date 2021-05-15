@@ -804,3 +804,42 @@ def test_hide_covered_windows(hlwm, x11):
             # c2 is not on the screen:
             assert geom2.x + geom2.width <= 0
             assert geom2.y + geom2.height <= 0
+
+
+def test_monitor_reference_via_direction(hlwm):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    # the monitors are arranged such that
+    # monitor '2' is right of monitor '0'
+    # +-------+-------+
+    # |       |   1   |
+    # +   0   +-------+
+    # |       |       |
+    # |       |   2   |
+    # |       |       |
+    # +-------+-------+
+    monitors = ['400x600+0+0', '400x100+400+0', '400x500+400+100']
+    direction_names = ['left', 'right', 'up', 'down']
+    monitor2neighbour = [
+        [None, 2, None, None],
+        [0, None, None, 2],
+        [0, None, 1, None],
+    ]
+    hlwm.call(['set_monitors'] + monitors)
+    for idx, neighbours in enumerate(monitor2neighbour):
+        for dir_idx, direction in enumerate(direction_names):
+            hlwm.call(f'focus_monitor {idx}')
+            assert hlwm.attr.monitors.focus.index() == idx
+
+            expected_idx = neighbours[dir_idx]
+            if expected_idx is None:
+                hlwm.call_xfail(f'focus_monitor -{direction}') \
+                    .expect_stderr(f'No such monitor: -{direction}')
+            else:
+                hlwm.call(f'focus_monitor -{direction}')
+                assert hlwm.attr.monitors.focus.index() == expected_idx
+
+
+def test_invalid_monitor_dash_name(hlwm):
+    hlwm.call_xfail('focus_monitor -wrongarg') \
+        .expect_stderr('No such monitor: -wrongarg')
