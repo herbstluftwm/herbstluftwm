@@ -1,4 +1,5 @@
 import pytest
+import random
 from herbstluftwm.types import Rectangle
 
 
@@ -134,6 +135,66 @@ def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
 
     assert hlwm.get_attr('clients.focus.winid') == winid
     assert hlwm.get_attr('clients.focus.urgent') == 'false'
+
+
+@pytest.mark.parametrize("arg,expected_idx", [
+    ('longest-minimized', 0),
+    ('last-minimized', -1),
+])
+@pytest.mark.parametrize("noop", [True, False])
+def test_jumpto_longest_minimized_last_minimized(hlwm, noop, arg, expected_idx):
+    clients = hlwm.create_clients(5)
+    another_client, _ = hlwm.create_client()
+
+    random.shuffle(clients)  # use a different order than creation order
+
+    if noop:
+        hlwm.attr.clients[clients[2]].minimized = False  # should not change anything
+
+    for c in clients:
+        hlwm.attr.clients[c].minimized = True
+
+    if noop:
+        # should not change anything if we re-write the attribute
+        # of some other client:
+        hlwm.attr.clients[clients[2 + expected_idx]].minimized = True
+        hlwm.attr.clients[another_client].minimized = False
+
+    # Add some more clients that should not interfere with the minimized aliases:
+    # 1. add another floating client that's not minimized
+    other_float, _ = hlwm.create_client()
+    hlwm.attr.clients[other_float].floating = True
+    hlwm.attr.clients[other_float].minimized = False
+    # 2. minimize another client but put it on another tag:
+    hlwm.call('add othertag')
+    hlwm.call('rule once tag=othertag')
+    on_other_tag, _ = hlwm.create_client()
+    hlwm.attr.clients[on_other_tag].minimized = True
+
+    hlwm.call(['jumpto', arg])
+
+    assert hlwm.attr.clients.focus.winid() == clients[expected_idx]
+    assert hlwm.attr.clients.focus.minimized() is False
+
+
+def test_minimized_client_completions(hlwm):
+    assert 'last-minimized' in hlwm.complete('jumpto')
+    assert 'longest-minimized' in hlwm.complete('jumpto')
+
+
+def test_minimized_client_invalid_arg(hlwm):
+    for _ in range(0, 2):
+        hlwm.call_xfail('jumpto longest-minimized') \
+            .expect_stderr('No client is minimized')
+
+        hlwm.call_xfail('jumpto last-minimized') \
+            .expect_stderr('No client is minimized')
+
+        # the error does not change if we add another
+        # non-minimized floating client:
+        non_min, _ = hlwm.create_client()
+        hlwm.attr.clients[non_min].floating = True
+        hlwm.attr.clients[non_min].minimized = False
 
 
 @pytest.mark.parametrize("ewmhstate", [True, False])

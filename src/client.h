@@ -43,6 +43,8 @@ public:
     int         ignore_unmaps_ = 0;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
                                 // notify event
+    //! the last time when minimized_ was changed (with discrete time ticks).
+    long long int minimizedLastChange_ = 0;
     // for size hints
     float mina_ = 0;
     float maxa_ = 0;

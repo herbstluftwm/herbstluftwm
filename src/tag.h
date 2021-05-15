@@ -55,6 +55,7 @@ public:
     bool hasVisibleFloatingClients() const;
     void foreachClient(std::function<void(Client*)> loopBody);
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
+    Client* minimizedClient(bool oldest);
     Client* focusedClient();
     std::string oldName_;  // Previous name of the tag, in case it got renamed
 

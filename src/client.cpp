@@ -95,7 +95,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
-    minimized_.changed().connect(this, &Client::updateEwmhState);
+    minimized_.changed().connect([this]() {
+        static long long minimizedTick = 0;
+        minimizedLastChange_ = minimizedTick++;
+        this->updateEwmhState();
+    });
 
     float_size_.setWritable();
     float_size_.changedByUser().connect(this, &Client::floatingGeometryChanged);

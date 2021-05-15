@@ -457,4 +457,20 @@ fi
 ----
 
 
+Q: How can I unminimize all minimized clients?
+----------------------------------------------
+The following keybinding unminimizes all clients on the current tag:
+-----
+hc keybind Mod4-Ctrl-m \
+   substitute FOCUS "tags.focus.name" \
+   foreach CLIENT clients. \
+     sprintf MINATT "%c.minimized" CLIENT \
+     sprintf TAGATT "%c.tag" CLIENT and \
+       , compare MINATT "=" "true" \
+       , compare TAGATT "=" FOCUS \
+       , set_attr MINATT false
+-----
+It iterates over all clients, compares its +tag+ attribute sets the +minimized+
+attribute to +false+.
+
 

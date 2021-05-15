@@ -136,7 +136,7 @@ def test_raise_lower_invalid_arg(hlwm):
         hlwm.call_xfail([command, 'foobar']) \
             .expect_stderr('Window id is not numeric') \
             .expect_stderr('; or:') \
-            .expect_stderr("expecting 0xWINID or 'urgent'")
+            .expect_stderr("expecting 0xWINID or a description")
 
         hlwm.call_xfail([command, '01two']) \
             .expect_stderr('invalid characters at position 2')

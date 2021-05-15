@@ -227,6 +227,38 @@ void HSTag::focusFrame(shared_ptr<FrameLeaf> frameToFocus)
     needsRelayout_.emit();
 }
 
+/**
+ * @brief Find a minimized client on this tag
+ * @param if oldest is true, return the client that's minimized
+ * for the longest time, otherwise, return the most recently minimized client
+ * @return A pointer to the minimized client and nullptr
+ * if there is no minimized client on this tag.
+ */
+Client* HSTag::minimizedClient(bool oldest)
+{
+    Client* chosen = nullptr;
+    for (Client* c : floating_clients_) {
+        if (!c->minimized_()) {
+            continue;
+        }
+        // always pick c if chosen is still null
+        bool cIsBetter = chosen == nullptr;
+        if (oldest) {
+            // looking for the longest minimized client
+            // by the lazy `||` we are safe if chosen == nullptr
+            cIsBetter = cIsBetter || c->minimizedLastChange_ < chosen->minimizedLastChange_;
+        } else {
+            // looking for the most recently minimized client
+            // by the lazy `||` we are safe if chosen == nullptr
+            cIsBetter = cIsBetter || c->minimizedLastChange_ > chosen->minimizedLastChange_;
+        }
+        if (cIsBetter) {
+            chosen = c;
+        }
+    }
+    return chosen;
+}
+
 Client *HSTag::focusedClient()
 {
     if (floating_focused()) {
