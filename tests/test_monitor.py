@@ -233,6 +233,23 @@ def test_detect_monitors_affects_list_monitors(hlwm):
     assert list_monitors_before == hlwm.call('list_monitors').stdout
 
 
+def test_list_monitors_mentions_name(hlwm):
+    def some_monitor_is_named():
+        return ", named" in hlwm.call('list_monitors').stdout
+
+    # initially, no monitor has a name
+    assert not some_monitor_is_named()
+
+    # assign the current monitor a name
+    hlwm.attr.monitors.focus.name = "somemonitor"
+    assert some_monitor_is_named()
+    assert "somemonitor" in hlwm.call('list_monitors').stdout
+
+    # remove the name again
+    hlwm.attr.monitors.focus.name = ""
+    assert not some_monitor_is_named()
+
+
 def test_rename_monitor(hlwm):
     hlwm.call('rename_monitor 0 foo')
 
