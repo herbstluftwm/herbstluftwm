@@ -118,7 +118,7 @@ public:
     void lower();
 
     void send_configure(bool force);
-    bool applysizehints(int *w, int *h);
+    bool applysizehints(int* w, int* h, bool force = false);
     void updatesizehints();
 
     void set_visible(bool visible);
