@@ -308,6 +308,16 @@ void XConnection::setPropertyCardinal(Window w, Atom property, const vector<long
                     (unsigned char*)(value.data()), value.size());
 }
 
+/**
+ * @brief wrapper around XDeleteProperty
+ * @param w
+ * @param property
+ */
+void XConnection::deleteProperty(Window w, Atom property)
+{
+    XDeleteProperty(m_display, w, property);
+}
+
 std::experimental::optional<Window> XConnection::getTransientForHint(Window win)
 {
     Window master;

@@ -163,6 +163,7 @@ void ClientManager::add(Client* client)
         this->clientStateChanged.emit(client);
     });
     addChild(client, client->window_id_str);
+    clientAdded.emit(client);
 }
 
 void ClientManager::setDragged(Client* client) {
