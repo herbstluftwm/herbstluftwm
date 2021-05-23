@@ -440,3 +440,71 @@ def test_floating_geometry_change(hlwm, minimized, floating, x11, othertag):
         if not minimized and not othertag:
             assert (clientobj.content_geometry() == geom) == floating
             assert (x11.get_absolute_top_left(handle) == (geom.x, geom.y)) == floating
+
+
+@pytest.mark.parametrize("client_float,tag_float", [
+    (True, False), (False, True), (True, True),
+])
+def test_floating_effectively_on_attribute_change(hlwm, client_float, tag_float):
+    client, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[client]
+    assert clientobj.floating_effectively() is False
+
+    if client_float:
+        clientobj.floating = True
+    if tag_float:
+        hlwm.attr.tags.focus.floating = True
+
+    assert clientobj.floating_effectively() is True
+
+
+def test_floating_effectively_on_tag_move(hlwm):
+    hlwm.call('add othertag')
+    hlwm.attr.tags['by-name'].othertag.floating = True
+    client, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[client]
+    assert clientobj.floating_effectively() is False
+
+    assert clientobj.winid() == client
+    hlwm.call('move othertag')
+    assert clientobj.floating_effectively() is True
+
+    # move back to non-floating tag
+    hlwm.call(f'bring {client}')
+    assert clientobj.floating_effectively() is False
+
+
+def test_floating_effectively_on_floating_rule(hlwm):
+    hlwm.call('rule floating=on')
+    client, _ = hlwm.create_client()
+    assert hlwm.attr.clients[client].floating_effectively() is True
+
+
+def test_floating_effectively_on_tag_rule(hlwm):
+    hlwm.call('add floattag')
+    hlwm.attr.tags['by-name'].floattag.floating = True
+    hlwm.call('rule tag=floattag')
+
+    client, _ = hlwm.create_client()
+    assert hlwm.attr.clients[client].floating_effectively() is True
+
+
+def test_floating_effectively_x11_property(hlwm, x11):
+    handle, winid = x11.create_client()
+
+    for client_float in [True, False]:
+        for tag_float in [True, False]:
+            hlwm.attr.clients[winid].floating = client_float
+            hlwm.attr.tags.focus.floating = tag_float
+            x11.sync_with_hlwm()
+            prop_float = x11.get_property('HLWM_FLOATING_WINDOW', handle)
+            prop_tile = x11.get_property('HLWM_TILING_WINDOW', handle)
+
+            if client_float or tag_float:
+                assert hlwm.attr.clients[winid].floating_effectively() is True
+                assert prop_float[0] == 1
+                assert prop_tile is None
+            else:
+                assert hlwm.attr.clients[winid].floating_effectively() is False
+                assert prop_float is None
+                assert prop_tile[0] == 1

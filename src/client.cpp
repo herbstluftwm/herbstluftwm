@@ -42,6 +42,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
     , minimized_(this,  "minimized", false)
+    , floating_effectively_(this,  "floating_effectively", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
     , parent_frame_(*this,  "parent_frame", &Client::parentFrame)
@@ -133,7 +134,13 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     minimized_.setDoc(
                 "whether this client is minimized (also called "
                 "iconified).");
-    floating_.setDoc("whether this client is floated above the tiled clients.");
+    floating_.setDoc("whether this client is set as a (single-window) floating client. "
+                     "If set, the client is floated above the tiled clients.");
+    floating_effectively_.setDoc(
+                "whether this client is in the floating state currently. "
+                "This is the case if the client\'s tag is set to floating mode or "
+                "if the client itself is set as floating. Its value is also indicated "
+                "via the X11 properties HLWM_FLOATING_WINDOW and HLWM_TILING_WINDOW.");
     pseudotile_.setDoc(
                 "if activated, the client always has its floating "
                 "window size, even if it is in tiling mode.");

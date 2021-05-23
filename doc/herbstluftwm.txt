@@ -1635,8 +1635,8 @@ independent from their indices and can be modified using the *raise_monitor*
 command. The current stack is illustrated by the *stack* command.
 
 [[EWMH]]
-EWMH
-----
+EWMH and X11 Properties
+-----------------------
 As far as possible, herbstluftwm tries to be EWMH compliant. That includes:
 
   - Information about tag names and client lists is provided.
@@ -1644,6 +1644,10 @@ As far as possible, herbstluftwm tries to be EWMH compliant. That includes:
     other windows.
   - Client requests like getting focused are only processed if the setting
     'focus_stealing_prevention' is disabled.
+
+Moreover, herbstluftwm sets the X11 properties 'HLWM_FLOATING_WINDOW' and
+'HLWM_TILING_WINDOW' to indicate whether a window is in floating or tiling mode,
+that is, the value of the client's 'floating_effectively' attribute.
 
 ENVIRONMENT VARIABLES
 ---------------------

@@ -53,6 +53,7 @@ public:
     void setPropertyString(Window w, Atom property, const std::vector<std::string>& value);
     void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);
     void setPropertyCardinal(Window w, Atom property, const std::vector<long>& value);
+    void deleteProperty(Window w, Atom property);
     std::experimental::optional<Window> getTransientForHint(Window win);
     std::vector<Window> queryTree(Window window);
     static void setExitOnError(bool exitOnError);
