@@ -1,4 +1,5 @@
 import pytest
+from herbstluftwm.types import Point
 
 
 def read_values(hlwm, attributes):
@@ -101,3 +102,35 @@ def test_font_type_non_existing_font(hlwm):
     value = '-Some long font name that hopefully does not exist'
     hlwm.call_xfail(['set_attr', 'theme.title_font', value]) \
         .expect_stderr(f"(cannot allocate font.*'{value}'|{value}.*The following charsets are unknown)")
+
+
+@pytest.mark.parametrize("floating", [True, False])
+def test_decoration_geometry_vs_content_geometry(hlwm, floating):
+    hlwm.attr.tags.focus.floating = floating
+    hlwm.attr.theme.border_width = 1
+    hlwm.attr.theme.title_height = 12
+    hlwm.attr.theme.padding_left = 2
+    hlwm.attr.theme.padding_right = 3
+    hlwm.attr.theme.padding_top = 4
+    hlwm.attr.theme.padding_bottom = 5
+
+    winid, _ = hlwm.create_client()
+
+    content = hlwm.attr.clients[winid].content_geometry()
+    decoration = hlwm.attr.clients[winid].decoration_geometry()
+
+    assert decoration.topleft() + Point(1 + 2, 1 + 4 + 12) == content.topleft()
+    assert content.bottomright() + Point(1 + 3, 1 + 5) == decoration.bottomright()
+
+
+@pytest.mark.parametrize("floating", [True, False])
+def test_decoration_geometry_vs_x11_data(hlwm, x11, floating):
+    hlwm.attr.tags.focus.floating = floating
+
+    handle, winid = x11.create_client()
+    hlwm.attr.clients[winid].floating = floating
+
+    geoX11 = x11.get_absolute_geometry(x11.get_decoration_window(handle))
+    geoAttr = hlwm.attr.clients[winid].decoration_geometry()
+
+    assert geoAttr == geoX11

@@ -82,6 +82,7 @@ public:
     DynAttribute_<std::string> window_class_;
     DynAttribute_<std::string> window_instance_;
     Attribute_<Rectangle> content_geometry_;
+    DynAttribute_<Rectangle> decoration_geometry_;
 
 public:
     void init_from_X();
@@ -133,6 +134,7 @@ public:
     void updateEwmhState();
 private:
     void floatingGeometryChanged();
+    Rectangle decorationGeometry();
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();
