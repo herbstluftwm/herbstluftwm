@@ -343,10 +343,10 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
 
 /**
  * @brief Update the given window size according to the client's size hints
- * @param width
- * @param height
- * @param If set, always apply the size hints. If not set, only
- * apply the size hints if the according sizehints_/floating_sizehints_tiling_
+ * @param w width
+ * @param h height
+ * @param force If set, always apply the size hints. If not set, only
+ * apply the size hints if the according sizehints_floating_ / sizehints_tiling_
  * attribute is set
  * @return whether the size changed
  */
