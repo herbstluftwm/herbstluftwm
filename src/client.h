@@ -65,6 +65,7 @@ public:
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
     Attribute_<bool> minimized_;
+    Attribute_<bool> floating_effectively_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;
     DynChild_<FrameLeaf> parent_frame_;

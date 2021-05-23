@@ -152,6 +152,7 @@ void HSTag::applyClientState(Client* client)
     if (!hasVisibleFloatingClients()) {
         floating_focused = false;
     }
+    client->floating_effectively_ = floating() || client->floating_();
     bool client_becomes_visible = !client->minimized_() && this->visible();
     if (client_becomes_visible) {
         needsRelayout_.emit();
@@ -290,6 +291,7 @@ void HSTag::insertClient(Client* client, string frameIndex, bool focus)
         }
         target->insertClient(client, focus);
     }
+    client->floating_effectively_ = floating() || client->floating_();
 }
 
 void HSTag::insertClientSlice(Client* client)
@@ -570,6 +572,9 @@ void HSTag::onGlobalFloatingChange(bool newState)
             stack->sliceRemoveLayer(slice, LAYER_FLOATING);
         }
     }
+    frame->root_->foreachClient([newState] (Client* client) {
+        client->floating_effectively_ = newState || client->floating_();
+    });
     needsRelayout_.emit();
 }
 

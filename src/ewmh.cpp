@@ -7,6 +7,7 @@
 #include <cstdio>
 
 #include "client.h"
+#include "clientmanager.h"
 #include "globals.h"
 #include "hlwmcommon.h"
 #include "layout.h"
@@ -92,6 +93,8 @@ Ewmh::Ewmh(XConnection& xconnection)
         auto atom = XInternAtom(X_.display(), init.second, False);
         wmatom_[static_cast<size_t>(init.first)] = atom;
     }
+    hlwmFloatingWindow_ = X_.atom("HLWM_FLOATING_WINDOW");
+    hlwmTilingWindow_ = X_.atom("HLWM_TILING_WINDOW");
 
     readInitialEwmhState();
 
@@ -226,6 +229,15 @@ void Ewmh::InitialState::print(FILE *file)
 void Ewmh::injectDependencies(Root* root) {
     root_ = root;
     tags_ = root->tags();
+    // listen to changes regarding floating state:
+    root->clients->clientAdded.connect([this](Client* client) {
+        // on a new client, initially set the x11 property:
+        updateFloatingState(client);
+        // and listen to changes of the floating state:
+        client->floating_effectively_.changed().connect([this,client]() {
+            updateFloatingState(client);
+        });
+    });
 }
 
 void Ewmh::updateAll() {
@@ -513,6 +525,21 @@ void Ewmh::updateWindowState(Client* client) {
     /* write it to the window */
     XChangeProperty(X_.display(), client->window_, netatom_[NetWmState], XA_ATOM,
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
+}
+
+/**
+ * @brief Set an x11 property reporting the client's floating state
+ * @param the client
+ */
+void Ewmh::updateFloatingState(Client* client)
+{
+    if (client->is_client_floated()) {
+        X_.setPropertyCardinal(client->window_, hlwmFloatingWindow_, {1});
+        X_.deleteProperty(client->window_, hlwmTilingWindow_);
+    } else {
+        X_.deleteProperty(client->window_, hlwmFloatingWindow_);
+        X_.setPropertyCardinal(client->window_, hlwmTilingWindow_, {1});
+    }
 }
 
 void Ewmh::clearClientProperties(Window win) {

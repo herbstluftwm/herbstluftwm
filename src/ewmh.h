@@ -148,6 +148,7 @@ public:
     void updateActiveWindow(Window win);
     void updateCurrentDesktop();
     void updateWindowState(Client* client);
+    void updateFloatingState(Client* client);
     void updateFrameExtents(Window win, int left, int right, int top, int bottom);
     bool isWindowStateSet(Window win, Atom hint);
     bool isFullscreenSet(Window win);
@@ -186,6 +187,8 @@ private:
     void readInitialEwmhState();
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last] = {};
+    Atom hlwmFloatingWindow_; //! x11 property set on floated clients
+    Atom hlwmTilingWindow_; //! x11 property set on tiled clients
 
     //! array with Window-IDs in initial mapping order for _NET_CLIENT_LIST
     std::vector<Window> netClientList_;
