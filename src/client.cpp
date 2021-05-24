@@ -59,6 +59,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , window_class_(this, "class", &Client::getWindowClass)
     , window_instance_(this, "instance", &Client::getWindowInstance)
     , content_geometry_(this, "content_geometry", {})
+    , decoration_geometry_(this, "decoration_geometry", &Client::decorationGeometry)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -159,8 +160,12 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "the geometry of the application content, that is, not taking "
                 "the decoration into account. "
                 "Also, this is the last window geometry that "
-                "was reported to the client application."
-     );
+                "was reported to the client application.");
+    decoration_geometry_.setDoc(
+                "the geometry of the client, taking the window decoration "
+                "into account. "
+                "The position is the global window position, that is, "
+                "relative to the top left corner of the entire screen");
 }
 
 void Client::init_from_X() {
@@ -654,6 +659,11 @@ void Client::floatingGeometryChanged()
     if (is_client_floated()) {
         needsRelayout.emit(tag());
     }
+}
+
+Rectangle Client::decorationGeometry()
+{
+    return dec->last_outer();
 }
 
 string Client::getWindowClass()
