@@ -346,8 +346,16 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
     dec->resize_outline(rect, scheme);
 }
 
-// from dwm.c
-bool Client::applysizehints(int *w, int *h) {
+/**
+ * @brief Update the given window size according to the client's size hints
+ * @param w width
+ * @param h height
+ * @param force If set, always apply the size hints. If not set, only
+ * apply the size hints if the according sizehints_floating_ / sizehints_tiling_
+ * attribute is set
+ * @return whether the size changed
+ */
+bool Client::applysizehints(int* w, int* h, bool force) {
     bool baseismin;
 
     /* set minimum possible */
@@ -359,7 +367,7 @@ bool Client::applysizehints(int *w, int *h) {
     if (*w < WINDOW_MIN_WIDTH) {
         *w = WINDOW_MIN_WIDTH;
     }
-    bool sizehints = (this->is_client_floated() || this->pseudotile_)
+    bool sizehints = force || (this->is_client_floated() || this->pseudotile_)
                         ? this->sizehints_floating_
                         : this->sizehints_tiling_;
     if (sizehints) {
@@ -645,7 +653,7 @@ void Client::floatingGeometryChanged()
 {
     Rectangle geom = float_size_();
     if (sizehints_floating_()) {
-        applysizehints(&geom.width, &geom.height);
+        applysizehints(&geom.width, &geom.height, true);
         float_size_ = geom;
     }
     if (is_client_floated()) {

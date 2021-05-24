@@ -537,6 +537,9 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                 client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
+                Rectangle geom = client->float_size_;
+                client->applysizehints(&geom.width, &geom.height, true);
+                client->float_size_ = geom;
                 Monitor* m = find_monitor_with_tag(client->tag());
                 if (m) {
                     m->applyLayout();
