@@ -46,7 +46,7 @@ seen link:herbstluftwm.html[online].
 
 Community & Support
 -------------------
-You are welcome to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+
+You are welcome to join the IRC channel +#herbstluftwm+ on +irc.libera.chat+
 for asking question or simply to hang out with fellow herbstluftwm users and developers.
 There is also a community on reddit
 link:https://www.reddit.com/r/herbstluftwm[r/herbstluftwm].

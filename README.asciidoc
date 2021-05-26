@@ -27,7 +27,7 @@ particular the http://herbstluftwm.org/tutorial.html[herbstluftwm tutorial]
 for the first steps (also available as `man herbstluftwm-tutorial` after
 installing herbstluftwm on your system).
 
-You are welcome to join the IRC channel `#herbstluftwm` on `irc.freenode.net`.
+You are welcome to join the IRC channel `#herbstluftwm` on `irc.libera.chat`.
 
 Installation
 ------------

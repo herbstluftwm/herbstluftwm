@@ -1672,7 +1672,7 @@ See the *herbstluftwm* Github issues: https://github.com/herbstluftwm/herbstluft
 
 COMMUNITY
 ---------
-Feel free to join the IRC channel '#herbstluftwm' on 'irc.freenode.net'.
+Feel free to join the IRC channel '#herbstluftwm' on 'irc.libera.chat'.
 
 AUTHOR
 ------
