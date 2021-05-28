@@ -8,6 +8,7 @@
 #include "x11-types.h"
 
 class Client;
+class FontData;
 class Settings;
 class DecorationScheme;
 class XConnection;
@@ -40,6 +41,9 @@ private:
     void redrawPixmap();
     void updateFrameExtends();
     unsigned long get_client_color(Color color);
+
+    void drawText(Pixmap& pix, GC& gc, const FontData& fontData,
+                  const Color& color, Point2D position, const std::string& text);
 
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
