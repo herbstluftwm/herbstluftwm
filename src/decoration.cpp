@@ -410,43 +410,59 @@ void Decoration::redrawPixmap() {
                        inner.height - dec->last_actual_rect.height);
     }
     if (s.title_height() > 0) {
-        FontData& fontData = s.title_font->data();
-        string title = client_->title_();
         Point2D titlepos = {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
         };
-        if (fontData.xftFont_) {
-            Visual* xftvisual = visual ? visual : xcon.visual();
-            Colormap xftcmap = colormap ? colormap : xcon.colormap();
-            XftDraw* xftd = XftDrawCreate(display, pix, xftvisual, xftcmap);
-            XRenderColor xrendercol = {
-                    s.title_color->red_,
-                    s.title_color->green_,
-                    s.title_color->blue_,
-                    // TODO: make xft respect the alpha value
-                    0xffff, // alpha as set by XftColorAllocName()
-            };
-            XftColor xftcol = { };
-            XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
-            XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
-                           titlepos.x, titlepos.y,
-                           (const XftChar8*)title.c_str(), title.size());
-            XftDrawDestroy(xftd);
-            XftColorFree(display, xftvisual, xftcmap, &xftcol);
-        } else if (fontData.xFontSet_) {
-            XSetForeground(display, gc, get_client_color(s.title_color));
-            XmbDrawString(display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
-                    title.c_str(), title.size());
-        } else if (fontData.xFontStruct_) {
-            XSetForeground(display, gc, get_client_color(s.title_color));
-            XFontStruct* font = s.title_font->data().xFontStruct_;
-            XSetFont(display, gc, font->fid);
-            XDrawString(display, pix, gc, titlepos.x, titlepos.y,
-                    title.c_str(), title.size());
-        }
+        drawText(pix, gc, s.title_font->data(), s.title_color(),
+                 titlepos, client_->title_());
     }
     // clean up
     XFreeGC(display, gc);
+}
+
+/**
+ * @brief Draw a given text
+ * @param pix The pixmap
+ * @param gc The graphic context
+ * @param fontData
+ * @param color
+ * @param position The position of the left end of the baseline
+ * @param text
+ */
+void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const Color& color,
+                          Point2D position, const string& text)
+{
+    XConnection& xcon = xconnection();
+    Display* display = xcon.display();
+    if (fontData.xftFont_) {
+        Visual* xftvisual = visual ? visual : xcon.visual();
+        Colormap xftcmap = colormap ? colormap : xcon.colormap();
+        XftDraw* xftd = XftDrawCreate(display, pix, xftvisual, xftcmap);
+        XRenderColor xrendercol = {
+                color.red_,
+                color.green_,
+                color.blue_,
+                // TODO: make xft respect the alpha value
+                0xffff, // alpha as set by XftColorAllocName()
+        };
+        XftColor xftcol = { };
+        XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
+        XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
+                       position.x, position.y,
+                       (const XftChar8*)text.c_str(), text.size());
+        XftDrawDestroy(xftd);
+        XftColorFree(display, xftvisual, xftcmap, &xftcol);
+    } else if (fontData.xFontSet_) {
+        XSetForeground(display, gc, get_client_color(color));
+        XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
+                text.c_str(), text.size());
+    } else if (fontData.xFontStruct_) {
+        XSetForeground(display, gc, get_client_color(color));
+        XFontStruct* font = fontData.xFontStruct_;
+        XSetFont(display, gc, font->fid);
+        XDrawString(display, pix, gc, position.x, position.y,
+                text.c_str(), text.size());
+    }
 }
 
