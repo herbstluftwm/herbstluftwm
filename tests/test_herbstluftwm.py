@@ -3,8 +3,9 @@ import os
 import pytest
 import subprocess
 import textwrap
-from conftest import BINDIR, HlwmProcess
+from conftest import BINDIR, HlwmProcess, HlwmBridge
 import conftest
+import os.path
 from Xlib import X, Xatom
 
 
@@ -19,6 +20,46 @@ def test_reload(hlwm_process, hlwm):
         assert not proc.stderr
         assert not proc.stdout
         assert proc.returncode == 0
+
+
+@pytest.mark.parametrize("with_client", [True, False])
+@pytest.mark.parametrize("explicit_arg", [True, False])
+def test_wmexec_to_self(hlwm, hlwm_process, with_client, explicit_arg):
+    if with_client:
+        winid, _ = hlwm.create_client()
+    # modify some attribute such that we can verify that hlwm re-booted
+    hlwm.attr.settings.snap_gap = 13
+
+    # Restart hlwm:
+    args = [hlwm_process.bin_path, '--verbose'] if explicit_arg else []
+    p = hlwm.unchecked_call(['wmexec'] + args,
+                            read_hlwm_output=False)
+    assert p.returncode == 0
+    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+
+    assert hlwm.attr.settings.snap_gap() != 13
+    if with_client:
+        assert winid in hlwm.list_children('clients')
+
+
+@pytest.mark.parametrize("with_client", [True, False])
+def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
+    hlwm = HlwmBridge(xvfb.display, hlwm_process)
+    if with_client:
+        hlwm.create_client()
+    # We need at least one client, otherwise xvfb messes with the test
+    winid, _ = hlwm.create_client()
+
+    file_path = tmpdir / 'witness.txt'
+    assert not os.path.isfile(file_path)
+    p = hlwm.unchecked_call(['wmexec', 'touch', file_path],
+                            read_hlwm_output=False)
+    assert p.returncode == 0
+
+    # the hlwm process execs to 'touch' which then terminates on its own.
+    hlwm_process.proc.wait()
+
+    os.path.isfile(file_path)
 
 
 def test_herbstluftwm_already_running(hlwm):

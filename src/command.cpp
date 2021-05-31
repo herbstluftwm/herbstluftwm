@@ -35,39 +35,6 @@ CommandBinding::CommandBinding(function<int()> cmd)
     , completion_([](Completion& c) { c.none(); })
 {}
 
-// Nearly all of the following can go away, if all C-style command functions
-// have been migrated to int(Input, Output).
-
-/* Creates an ephemeral argv array from the given Input */
-function <int(Input,Output)> CommandBinding::commandFromCFunc(
-        function <int(int argc, char**argv, Output output)> func) {
-    return [func](Input args, Output out) {
-        /* Note that instead of copying the arguments, we point to their
-         * original location here. This only works because Input stores its
-         * payload in shared pointers and other references to them are held
-         * until the command is finished.
-         */
-        shared_ptr<char*> argv(new char*[args.size() + 1],
-                std::default_delete<char*[]>());
-
-        // Most of the commands want a char**, not a const char**. Let's
-        // hope, they don't actually modify it.
-        argv.get()[0] = const_cast<char*>(args.command().c_str());
-        auto elem = args.begin();
-        for (size_t i = 0; i < args.size(); i++, elem++) {
-            argv.get()[i+1] = const_cast<char*>(elem->c_str());
-        }
-
-        return func(args.size() + 1, argv.get(), out);
-    };
-}
-
-CommandBinding::CommandBinding(int func(int argc, char** argv))
-    : command(commandFromCFunc([func](int argc, char **argv, Output) {
-                return func(argc, argv);
-            }))
-{}
-
 /** Complete the given list of arguments
  */
 void CommandBinding::complete(Completion& completion) const {
