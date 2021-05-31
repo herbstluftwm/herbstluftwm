@@ -279,7 +279,7 @@ static void execvp_helper(const vector<string>& command) {
 }
 
 int spawn(Input input) {
-    if (input.size() < 1) {
+    if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (fork() == 0) {
