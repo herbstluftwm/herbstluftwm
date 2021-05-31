@@ -90,9 +90,6 @@ private:
     Window                  resizeArea[4 * 3];
     static ResizeAction resizeAreaInfo(size_t idx);
     Rectangle resizeAreaGeometry(size_t idx, int borderWidth, int width, int height);
-    Window                  resizeTopLeft;
-    Window                  resizeTop;
-    Window                  resizeTopRight;
 private:
     Client* client_; // the client to decorate
     Settings& settings_;
