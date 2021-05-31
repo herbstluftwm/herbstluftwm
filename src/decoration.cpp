@@ -415,7 +415,7 @@ void Decoration::redrawPixmap() {
             static_cast<int>(s.title_height())
         };
         drawText(pix, gc, s.title_font->data(), s.title_color(),
-                 titlepos, client_->title_());
+                 titlepos, client_->title_(), inner.width);
     }
     // clean up
     XFreeGC(display, gc);
@@ -428,13 +428,20 @@ void Decoration::redrawPixmap() {
  * @param fontData
  * @param color
  * @param position The position of the left end of the baseline
+ * @param width The maximum width of the string (in pixels)
  * @param text
  */
 void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const Color& color,
-                          Point2D position, const string& text)
+                          Point2D position, const string& text, int width)
 {
     XConnection& xcon = xconnection();
     Display* display = xcon.display();
+    // shorten the text first:
+    size_t textLen = text.size();
+    while (textLen > 0 && fontData.textwidth(text, textLen) > width) {
+        textLen--;
+    }
+    int w = fontData.textwidth(text, textLen);
     if (fontData.xftFont_) {
         Visual* xftvisual = visual ? visual : xcon.visual();
         Colormap xftcmap = colormap ? colormap : xcon.colormap();
@@ -450,19 +457,19 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
         XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
         XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
                        position.x, position.y,
-                       (const XftChar8*)text.c_str(), text.size());
+                       (const XftChar8*)text.c_str(), textLen);
         XftDrawDestroy(xftd);
         XftColorFree(display, xftvisual, xftcmap, &xftcol);
     } else if (fontData.xFontSet_) {
         XSetForeground(display, gc, get_client_color(color));
         XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
-                text.c_str(), text.size());
+                text.c_str(), textLen);
     } else if (fontData.xFontStruct_) {
         XSetForeground(display, gc, get_client_color(color));
         XFontStruct* font = fontData.xFontStruct_;
         XSetFont(display, gc, font->fid);
         XDrawString(display, pix, gc, position.x, position.y,
-                text.c_str(), text.size());
+                text.c_str(), textLen);
     }
 }
 
