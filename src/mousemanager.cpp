@@ -203,8 +203,8 @@ string MouseManager::mouse_initiate_resize(Client* client, const ResizeAction& r
 {
     MouseDragHandler::Constructor constructor;
     if (client->is_client_floated()) {
-        constructor = [resize](MonitorManager* monitors, Client* client) -> shared_ptr<MouseDragHandler> {
-            auto mdh = make_shared<MouseDragHandlerFloating>(monitors, client, &MouseDragHandlerFloating::mouse_function_resize);
+        constructor = [resize](MonitorManager* monitors, Client* clientInner) -> shared_ptr<MouseDragHandler> {
+            auto mdh = make_shared<MouseDragHandlerFloating>(monitors, clientInner, &MouseDragHandlerFloating::mouse_function_resize);
             mdh->lockWidth = !resize.left && !resize.right;
             mdh->lockHeight = !resize.top && !resize.bottom;
             HSDebug("lw=%d, lh=%d\n", mdh->lockWidth, mdh->lockHeight);
