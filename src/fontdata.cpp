@@ -81,7 +81,7 @@ void FontData::initFromStr(const string& source)
  * @param glyphs Only consider that many glyphs from the given text
  * @return The width in pixels
  */
-int FontData::textwidth(const std::string& text, size_t len) const
+int FontData::textwidth(const string& text, size_t len) const
 {
     if (!s_xconnection) {
         return 0;
