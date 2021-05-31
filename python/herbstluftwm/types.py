@@ -75,6 +75,10 @@ class Rectangle:
         """the top left corner of the rectangle"""
         return Point(self.x, self.y)
 
+    def bottomright(self) -> Point:
+        """the bottom right corner of the rectangle"""
+        return Point(self.x + self.width, self.y + self.height)
+
     def center(self) -> Point:
         """the center of the rectangle, forced to integer coordinates"""
         return self.topleft() + self.size() // 2

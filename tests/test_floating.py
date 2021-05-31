@@ -1,4 +1,5 @@
 import pytest
+from Xlib import Xutil
 from herbstluftwm.types import Rectangle
 
 
@@ -319,3 +320,35 @@ def test_resize_shrink_not_possible(hlwm, direction):
 
     assert geo_final.width >= 50
     assert geo_final.height >= 50
+
+
+@pytest.mark.parametrize('floating', [True, False])
+def test_sizehint_change_applied(hlwm, x11, floating):
+    hlwm.attr.tags.focus.floating = floating
+    # create a client with a geometry that does not match the sizehints
+    # we will set later
+    handle, winid = x11.create_client()
+    old_geometry = Rectangle(x=30, y=40, width=111, height=121)
+    hlwm.attr.clients[winid].floating_geometry = old_geometry
+    if floating:
+        assert hlwm.attr.clients[winid].content_geometry().size() == old_geometry.size()
+
+    # update the size hints:
+    hints = {
+        'flags': Xutil.PResizeInc,
+        'width_inc': 5,
+        'height_inc': 7,
+    }
+    handle.set_wm_normal_hints(hints)
+    x11.sync_with_hlwm()
+
+    new_geometry = hlwm.attr.clients[winid].floating_geometry()
+    # the new size adheres to the size hints
+    assert new_geometry.width % hints['width_inc'] == 0
+    assert new_geometry.height % hints['height_inc'] == 0
+    # the new size changes only as little as necessary
+    assert abs(new_geometry.width - old_geometry.width) <= hints['width_inc']
+    assert abs(new_geometry.height - old_geometry.height) <= hints['height_inc']
+
+    if floating:
+        assert hlwm.attr.clients[winid].content_geometry().size() == new_geometry.size()

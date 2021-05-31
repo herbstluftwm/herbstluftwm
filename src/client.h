@@ -65,6 +65,7 @@ public:
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
     Attribute_<bool> minimized_;
+    Attribute_<bool> floating_effectively_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;
     DynChild_<FrameLeaf> parent_frame_;
@@ -81,6 +82,7 @@ public:
     DynAttribute_<std::string> window_class_;
     DynAttribute_<std::string> window_instance_;
     Attribute_<Rectangle> content_geometry_;
+    DynAttribute_<Rectangle> decoration_geometry_;
 
 public:
     void init_from_X();
@@ -118,7 +120,7 @@ public:
     void lower();
 
     void send_configure(bool force);
-    bool applysizehints(int *w, int *h);
+    bool applysizehints(int* w, int* h, bool force = false);
     void updatesizehints();
 
     void set_visible(bool visible);
@@ -132,6 +134,7 @@ public:
     void updateEwmhState();
 private:
     void floatingGeometryChanged();
+    Rectangle decorationGeometry();
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();

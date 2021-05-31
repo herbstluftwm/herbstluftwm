@@ -163,6 +163,7 @@ void ClientManager::add(Client* client)
         this->clientStateChanged.emit(client);
     });
     addChild(client, client->window_id_str);
+    clientAdded.emit(client);
 }
 
 void ClientManager::setDragged(Client* client) {
@@ -361,7 +362,7 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
         // do not simply copy the geometry to the attribute
         // but possibly apply the size hints:
         if (client->sizehints_floating_()) {
-            client->applysizehints(&geo.width, &geo.height);
+            client->applysizehints(&geo.width, &geo.height, true);
         }
         client->float_size_ = geo;
     }

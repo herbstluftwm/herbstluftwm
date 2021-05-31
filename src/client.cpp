@@ -42,6 +42,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
     , minimized_(this,  "minimized", false)
+    , floating_effectively_(this,  "floating_effectively", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
     , parent_frame_(*this,  "parent_frame", &Client::parentFrame)
@@ -58,6 +59,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , window_class_(this, "class", &Client::getWindowClass)
     , window_instance_(this, "instance", &Client::getWindowInstance)
     , content_geometry_(this, "content_geometry", {})
+    , decoration_geometry_(this, "decoration_geometry", &Client::decorationGeometry)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -133,7 +135,13 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     minimized_.setDoc(
                 "whether this client is minimized (also called "
                 "iconified).");
-    floating_.setDoc("whether this client is floated above the tiled clients.");
+    floating_.setDoc("whether this client is set as a (single-window) floating client. "
+                     "If set, the client is floated above the tiled clients.");
+    floating_effectively_.setDoc(
+                "whether this client is in the floating state currently. "
+                "This is the case if the client\'s tag is set to floating mode or "
+                "if the client itself is set as floating. Its value is also indicated "
+                "via the X11 properties HLWM_FLOATING_WINDOW and HLWM_TILING_WINDOW.");
     pseudotile_.setDoc(
                 "if activated, the client always has its floating "
                 "window size, even if it is in tiling mode.");
@@ -152,8 +160,12 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "the geometry of the application content, that is, not taking "
                 "the decoration into account. "
                 "Also, this is the last window geometry that "
-                "was reported to the client application."
-     );
+                "was reported to the client application.");
+    decoration_geometry_.setDoc(
+                "the geometry of the client, taking the window decoration "
+                "into account. "
+                "The position is the global window position, that is, "
+                "relative to the top left corner of the entire screen");
 }
 
 void Client::init_from_X() {
@@ -334,8 +346,16 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
     dec->resize_outline(rect, scheme);
 }
 
-// from dwm.c
-bool Client::applysizehints(int *w, int *h) {
+/**
+ * @brief Update the given window size according to the client's size hints
+ * @param w width
+ * @param h height
+ * @param force If set, always apply the size hints. If not set, only
+ * apply the size hints if the according sizehints_floating_ / sizehints_tiling_
+ * attribute is set
+ * @return whether the size changed
+ */
+bool Client::applysizehints(int* w, int* h, bool force) {
     bool baseismin;
 
     /* set minimum possible */
@@ -347,7 +367,7 @@ bool Client::applysizehints(int *w, int *h) {
     if (*w < WINDOW_MIN_WIDTH) {
         *w = WINDOW_MIN_WIDTH;
     }
-    bool sizehints = (this->is_client_floated() || this->pseudotile_)
+    bool sizehints = force || (this->is_client_floated() || this->pseudotile_)
                         ? this->sizehints_floating_
                         : this->sizehints_tiling_;
     if (sizehints) {
@@ -633,12 +653,17 @@ void Client::floatingGeometryChanged()
 {
     Rectangle geom = float_size_();
     if (sizehints_floating_()) {
-        applysizehints(&geom.width, &geom.height);
+        applysizehints(&geom.width, &geom.height, true);
         float_size_ = geom;
     }
     if (is_client_floated()) {
         needsRelayout.emit(tag());
     }
+}
+
+Rectangle Client::decorationGeometry()
+{
+    return dec->last_outer();
 }
 
 string Client::getWindowClass()
