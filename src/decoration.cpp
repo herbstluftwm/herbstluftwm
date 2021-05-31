@@ -441,7 +441,6 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
     while (textLen > 0 && fontData.textwidth(text, textLen) > width) {
         textLen--;
     }
-    int w = fontData.textwidth(text, textLen);
     if (fontData.xftFont_) {
         Visual* xftvisual = visual ? visual : xcon.visual();
         Colormap xftcmap = colormap ? colormap : xcon.colormap();
