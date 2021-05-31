@@ -12,6 +12,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
+#include "decoration.h"
 #include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
@@ -22,7 +23,9 @@
 #include "root.h"
 #include "tag.h"
 
+using std::make_shared;
 using std::vector;
+using std::shared_ptr;
 using std::string;
 using std::endl;
 
@@ -189,6 +192,24 @@ string MouseManager::mouse_initiate_resize(Client* client, const vector<string> 
     if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_resize);
+    } else {
+        auto frame = client->tag()->frame->findFrameWithClient(client);
+        constructor = MouseResizeFrame::construct(frame);
+    }
+    return mouse_initiate_drag(client, constructor);
+}
+
+string MouseManager::mouse_initiate_resize(Client* client, const ResizeAction& resize)
+{
+    MouseDragHandler::Constructor constructor;
+    if (client->is_client_floated()) {
+        constructor = [resize](MonitorManager* monitors, Client* client) -> shared_ptr<MouseDragHandler> {
+            auto mdh = make_shared<MouseDragHandlerFloating>(monitors, client, &MouseDragHandlerFloating::mouse_function_resize);
+            mdh->lockWidth = !resize.left && !resize.right;
+            mdh->lockHeight = !resize.top && !resize.bottom;
+            HSDebug("lw=%d, lh=%d\n", mdh->lockWidth, mdh->lockHeight);
+            return mdh;
+        };
     } else {
         auto frame = client->tag()->frame->findFrameWithClient(client);
         constructor = MouseResizeFrame::construct(frame);

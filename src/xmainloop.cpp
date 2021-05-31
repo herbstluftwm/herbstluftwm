@@ -221,8 +221,9 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
             bool raise = root_->settings->raise_on_click();
             focus_client(client, false, true, raise);
             if (be->window == client->decorationWindow()) {
-                if (client->dec->positionTriggersResize({be->x, be->y})) {
-                    mm->mouse_initiate_resize(client, {});
+                ResizeAction resize = client->dec->positionTriggersResize({be->x, be->y});
+                if (resize) {
+                    mm->mouse_initiate_resize(client, resize);
                 } else {
                     mm->mouse_initiate_move(client, {});
                 }
@@ -382,12 +383,16 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
     }
     // Warning: we have to set this to false again!
     duringEnterNotify_ = true;
+    Client* decorationClient = Decoration::toClient(ce->window);
+    if (decorationClient) {
+        decorationClient->dec->updateResizeAreaCursors();
+    }
     if (!root_->mouse->mouse_is_dragging()
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = root_->clients->client(ce->window);
         if (!c) {
-            c = Decoration::toClient(ce->window);
+            c = decorationClient;
         }
         shared_ptr<FrameLeaf> target;
         if (c && c->tag()->floating == false
@@ -439,12 +444,18 @@ void XMainLoop::mappingnotify(XMappingEvent* ev) {
 }
 
 void XMainLoop::motionnotify(XMotionEvent* event) {
-    // get newest motion notification
-    while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent *)event)) {
-        ;
+    // check if some buttons are pressed
+    if (event->state != 0) {
+        // get newest motion notification
+        while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent *)event)) {
+            ;
+        }
+        Point2D newCursorPos = { event->x_root,  event->y_root };
+        root_->mouse->handle_motion_event(newCursorPos);
+    } else {
+        // if no buttons are pressed:
+        HSDebug("Motion (%d,%d)\n", event->x, event->y);
     }
-    Point2D newCursorPos = { event->x_root,  event->y_root };
-    root_->mouse->handle_motion_event(newCursorPos);
 }
 
 void XMainLoop::mapnotify(XMapEvent* event) {

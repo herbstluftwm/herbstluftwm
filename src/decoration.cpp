@@ -3,7 +3,10 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/cursorfont.h>
 #include <limits>
+#include <vector>
+#include <algorithm>
 
 #include "client.h"
 #include "ewmh.h"
@@ -14,7 +17,9 @@
 #include "xconnection.h"
 
 using std::string;
+using std::swap;
 using std::vector;
+using std::pair;
 
 std::map<Window,Client*> Decoration::decwin2client;
 
@@ -106,6 +111,21 @@ void Decoration::createWindow() {
     dec->last_actual_rect.x -= dec->last_outer_rect.x;
     dec->last_actual_rect.y -= dec->last_outer_rect.y;
     decwin2client[decwin] = client_;
+
+    XSetWindowAttributes resizeAttr;
+    resizeAttr.event_mask = 0; // we don't want any events such that the decoration window
+                               // gets the events with the subwindow set to the respective
+                               // resizeArea window
+    resizeAttr.colormap = xcon.usesTransparency() ? xcon.colormap() : dec->colormap;
+    resizeAttr.background_pixel = BlackPixel(display, xcon.screen());
+    resizeAttr.border_pixel = BlackPixel(display, xcon.screen());
+    for (size_t i = 0; i < 12; i++) {
+        Window& win = resizeArea[i];
+        win = XCreateWindow(display, dec->decwin, 0, 0, 30, 30, 0,
+                            0, InputOnly, xcon.visual(),
+                            CWEventMask, &resizeAttr);
+        XMapWindow(display, win);
+    }
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_DECORATION_CLASS;
@@ -169,35 +189,64 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
     return last_scheme->inner_rect_to_outline(rect);
 }
 
+void Decoration::updateResizeAreaCursors()
+{
+    XConnection& xcon = xconnection();
+    for (size_t i = 0; i < 12; i++) {
+        Window& win = resizeArea[i];
+        ResizeAction act = resizeAreaInfo(i);
+        act = act * client_->possibleResizeActions();
+        auto cursor = act.toCursorShape();
+        if (cursor >= 0) {
+            XDefineCursor(xcon.display(), win, XCreateFontCursor(xcon.display(), cursor));
+        } else {
+            XUndefineCursor(xcon.display(), win);
+        }
+    }
+}
+
 /**
  * @brief Tell whether clicking on the decoration at the specified location
  * should result in resizing or moving the client
  * @param the location of the cursor, relative on this window
- * @return true if this should init resizing the client
- * false if this should init moving the client
+ * @return Flags indicating the decoration borders that should be resized
  */
-bool Decoration::positionTriggersResize(Point2D p)
+ResizeAction Decoration::positionTriggersResize(Point2D p)
 {
     if (!last_scheme) {
         // this should never happen, so we just randomly pick:
-        // always resize if there is no decoration scheme
-        return true;
+        // never resize if there is no decoration scheme
+        return ResizeAction();
     }
-    const
     auto border_width = static_cast<int>(last_scheme->border_width());
-    vector<Point2D> corners = {
-        {0,0},
-        {last_outer_rect.width - 1, last_outer_rect.height - 1},
-    };
-    for (const auto& c : corners) {
-        if (std::abs(p.x - c.x) < border_width) {
-            return true;
-        }
-        if (std::abs(p.y - c.y) < border_width) {
-            return true;
+    ResizeAction act;
+    if (p.x < border_width) {
+        act.left = True;
+    }
+    if (p.x + border_width >= last_outer_rect.width) {
+        act.right = True;
+    }
+    if (act.left || act.right) {
+        if (p.y < last_outer_rect.height / 3) {
+            act.top = True;
+        } else if (p.y > (2 * last_outer_rect.height) / 3) {
+            act.bottom = True;
         }
     }
-    return false;
+    if (p.y < border_width) {
+        act.top = True;
+    }
+    if (p.y + border_width >= last_outer_rect.height) {
+        act.bottom = True;
+    }
+    if (act.top || act.bottom) {
+        if (p.x < last_outer_rect.width / 3) {
+            act.left = True;
+        } else if (p.x > (2 * last_outer_rect.width) / 3) {
+            act.right = True;
+        }
+    }
+    return act;
 }
 
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
@@ -277,6 +326,18 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         XMoveResizeWindow(xcon.display(), bgwin,
                           changes.x, changes.y,
                           changes.width, changes.height);
+    }
+    // update geometry of resizeArea window
+    int bw = 0;
+    if (last_scheme) {
+        bw = last_scheme->border_width();
+    }
+    Rectangle areaGeo;
+    for (size_t i = 0; i < 12; i++) {
+        areaGeo = resizeAreaGeometry(i, bw, outline.width, outline.height);
+        XMoveResizeWindow(xcon.display(), resizeArea[i],
+                          areaGeo.x, areaGeo.y,
+                          areaGeo.width, areaGeo.height);
     }
     XMoveResizeWindow(xcon.display(), decwin,
                       outline.x, outline.y, outline.width, outline.height);
@@ -466,3 +527,104 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
     }
 }
 
+ResizeAction Decoration::resizeAreaInfo(size_t idx)
+{
+    /*
+     *  first half: horizontal edges
+     *  second half: vertical edges
+     *  -0-1-2-
+     * 6       9
+     * 7      10
+     * 8      11
+     *  -3-4-5-
+     */
+    ResizeAction act;
+    if (idx < 6) {
+        // horizontal edge
+        act.top = idx < 3;
+        act.bottom = idx >= 3;
+        act.left = (idx % 3) == 0;
+        act.right = (idx % 3) == 2;
+    } else {
+        // vertical edge
+        act.left = idx < 9;
+        act.right = idx >= 9;
+        act.top = (idx % 3) == 0;
+        act.bottom = (idx % 3) == 2;
+    }
+    return act;
+}
+
+Rectangle Decoration::resizeAreaGeometry(size_t idx, int borderWidth, int width, int height)
+{
+    if (idx < 6) {
+        int w3 = width / 3;
+        Rectangle geo;
+        // horizontal segments:
+        geo.height = borderWidth;
+        if (idx % 3 == 1) {
+            // middle segment
+            geo.width = width - 2 * w3;
+            geo.x = w3;
+        } else {
+            geo.width = w3;
+            if (idx % 3 == 0) {
+                // left segment
+                geo.x = 0;
+            } else {
+                // right segment
+                geo.x = width - w3;
+            }
+        }
+        if (idx < 3) {
+            // upper border
+            geo.y = 0;
+        } else {
+            geo.y = height - borderWidth;
+        }
+        return geo;
+    } else {
+        // vertical segments:
+        // its the same as horizontal segments, only
+        // with x- and y-dimensions swapped:
+        Rectangle geo = resizeAreaGeometry(idx - 6, borderWidth, height, width);
+        swap(geo.x, geo.y);
+        swap(geo.width, geo.height);
+        return geo;
+    }
+}
+
+
+/**
+ * @brief Return the x11 cursor shaper corresponding
+ * to the ResizeAction or return -1 if there is no cursor
+ * @return
+ */
+unsigned int ResizeAction::toCursorShape() const
+{
+    if (top) {
+        if (left) {
+            return XC_top_left_corner;
+        } else if (right) {
+            return XC_top_right_corner;
+        } else {
+            return XC_top_side;
+        }
+    } else if (bottom) {
+        if (left) {
+            return XC_bottom_left_corner;
+        } else if (right) {
+            return XC_bottom_right_corner;
+        } else {
+            return XC_bottom_side;
+        }
+    } else {
+        if (left) {
+            return XC_left_side;
+        } else if (right) {
+            return XC_right_side;
+        } else {
+            return -1;
+        }
+    }
+}

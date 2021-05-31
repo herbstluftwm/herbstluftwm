@@ -25,6 +25,9 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::pair;
+using std::vector;
+using std::shared_ptr;
 using std::string;
 using std::stringstream;
 
@@ -460,6 +463,43 @@ void Client::updatesizehints() {
     }
     //this->isfixed = (this->maxw && this->minw && this->maxh && this->minh
     //             && this->maxw == this->minw && this->maxh == this->minh);
+}
+
+ResizeAction Client::possibleResizeActions()
+{
+    if (is_client_floated()) {
+        ResizeAction act;
+        act.left = true;
+        act.right = true;
+        act.top = true;
+        act.bottom = true;
+        // floating clients can be resized into all directions
+        return act;
+    } else {
+        ResizeAction act;
+        shared_ptr<FrameLeaf> frame = tag_->frame->findFrameWithClient(this);
+        vector<pair<Direction, bool*>> directions = {
+            { Direction::Left, &(act.left) },
+            { Direction::Right, &(act.right) },
+            { Direction::Up, &(act.top) },
+            { Direction::Down, &(act.bottom) },
+        };
+        int idx = frame->clientIndex(this);
+        for (auto& it : directions) {
+            Direction dir = it.first;
+            if (frame->getInnerNeighbourIndex(dir, idx) >= 0) {
+                // if the client has a neighbour within this frame in the specified
+                // direction, then we can't resize.
+                *(it.second) = false;
+            } else {
+                // if the client touches the outside of its frame,
+                // we can resize if the frame has a neighbour in the
+                // specified direction
+                *(it.second) = (bool)frame->neighbour(dir);
+            }
+        }
+        return act;
+    }
 }
 
 

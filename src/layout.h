@@ -122,6 +122,7 @@ public:
     void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
+    int clientIndex(Client* client);
     std::shared_ptr<Frame> neighbour(Direction direction);
     std::vector<Client*> removeAllClients();
 
@@ -130,7 +131,7 @@ public:
 
     friend class Frame;
     void setVisible(bool visible);
-    int getInnerNeighbourIndex(Direction direction);
+    int getInnerNeighbourIndex(Direction direction, int startIndex = -1);
     DynAttribute_<int> client_count_;
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
