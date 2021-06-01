@@ -197,7 +197,7 @@ void Decoration::updateResizeAreaCursors()
         ResizeAction act = resizeAreaInfo(i);
         act = act * client_->possibleResizeActions();
         auto cursor = act.toCursorShape();
-        if (cursor >= 0) {
+        if (cursor == XC_left_ptr) {
             XDefineCursor(xcon.display(), win, XCreateFontCursor(xcon.display(), cursor));
         } else {
             XUndefineCursor(xcon.display(), win);
@@ -597,7 +597,7 @@ Rectangle Decoration::resizeAreaGeometry(size_t idx, int borderWidth, int width,
 
 /**
  * @brief Return the x11 cursor shaper corresponding
- * to the ResizeAction or return -1 if there is no cursor
+ * to the ResizeAction or the default cursor shape
  * @return
  */
 unsigned int ResizeAction::toCursorShape() const
@@ -624,7 +624,7 @@ unsigned int ResizeAction::toCursorShape() const
         } else if (right) {
             return XC_right_side;
         } else {
-            return -1;
+            return XC_left_ptr;
         }
     }
 }
