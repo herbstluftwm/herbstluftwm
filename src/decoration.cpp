@@ -197,8 +197,8 @@ void Decoration::updateResizeAreaCursors()
         ResizeAction act = resizeAreaInfo(i);
         act = act * client_->possibleResizeActions();
         auto cursor = act.toCursorShape();
-        if (cursor == XC_left_ptr) {
-            XDefineCursor(xcon.display(), win, XCreateFontCursor(xcon.display(), cursor));
+        if (cursor.has_value()) {
+            XDefineCursor(xcon.display(), win, XCreateFontCursor(xcon.display(), cursor.value()));
         } else {
             XUndefineCursor(xcon.display(), win);
         }
@@ -600,7 +600,7 @@ Rectangle Decoration::resizeAreaGeometry(size_t idx, int borderWidth, int width,
  * to the ResizeAction or the default cursor shape
  * @return
  */
-unsigned int ResizeAction::toCursorShape() const
+std::experimental::optional<unsigned int> ResizeAction::toCursorShape() const
 {
     if (top) {
         if (left) {
@@ -624,7 +624,7 @@ unsigned int ResizeAction::toCursorShape() const
         } else if (right) {
             return XC_right_side;
         } else {
-            return XC_left_ptr;
+            return {};
         }
     }
 }

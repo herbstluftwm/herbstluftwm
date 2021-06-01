@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <map>
 
+#include "optional.h"
 #include "rectangle.h"
 #include "x11-types.h"
 
@@ -22,7 +23,7 @@ public:
     operator bool() const {
         return left || right || top || bottom;
     }
-    unsigned int toCursorShape() const;
+    std::experimental::optional<unsigned int> toCursorShape() const;
     ResizeAction operator*(const ResizeAction& other) {
         ResizeAction act;
         act.left = left && other.left;
