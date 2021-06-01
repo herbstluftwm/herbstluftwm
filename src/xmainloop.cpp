@@ -444,18 +444,12 @@ void XMainLoop::mappingnotify(XMappingEvent* ev) {
 }
 
 void XMainLoop::motionnotify(XMotionEvent* event) {
-    // check if some buttons are pressed
-    if (event->state != 0) {
-        // get newest motion notification
-        while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent *)event)) {
-            ;
-        }
-        Point2D newCursorPos = { event->x_root,  event->y_root };
-        root_->mouse->handle_motion_event(newCursorPos);
-    } else {
-        // if no buttons are pressed:
-        HSDebug("Motion (%d,%d)\n", event->x, event->y);
+    // get newest motion notification
+    while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent *)event)) {
+        ;
     }
+    Point2D newCursorPos = { event->x_root,  event->y_root };
+    root_->mouse->handle_motion_event(newCursorPos);
 }
 
 void XMainLoop::mapnotify(XMapEvent* event) {
