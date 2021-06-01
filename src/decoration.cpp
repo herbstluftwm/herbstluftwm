@@ -49,7 +49,6 @@ Decoration::Decoration(Client* client, Settings& settings)
     : client_(client),
       settings_(settings)
 {
-    memset(resizeArea, 0, sizeof(resizeArea));
 }
 
 void Decoration::createWindow() {

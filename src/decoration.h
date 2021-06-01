@@ -88,7 +88,7 @@ private:
     Window                  bgwin = 0;
     /** 4 sides with 3 sections each.
      */
-    Window                  resizeArea[4 * 3];
+    Window                  resizeArea[4 * 3] = {};
     static ResizeAction resizeAreaInfo(size_t idx);
     Rectangle resizeAreaGeometry(size_t idx, int borderWidth, int width, int height);
 private:
