@@ -4,9 +4,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
+#include <algorithm>
 #include <limits>
 #include <vector>
-#include <algorithm>
 
 #include "client.h"
 #include "ewmh.h"
