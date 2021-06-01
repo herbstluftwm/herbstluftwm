@@ -558,6 +558,11 @@ ResizeAction Decoration::resizeAreaInfo(size_t idx)
 Rectangle Decoration::resizeAreaGeometry(size_t idx, int borderWidth, int width, int height)
 {
     if (idx < 6) {
+        if (borderWidth <= 0) {
+            // ensure that the rectangles returned are not empty
+            // i.e. that they have non-zero height and width
+            borderWidth = 1;
+        }
         int w3 = width / 3;
         Rectangle geo;
         // horizontal segments:
