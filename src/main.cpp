@@ -436,6 +436,9 @@ int main(int argc, char* argv[]) {
     if (g.trueTransparency) {
         X->tryInitTransparency();
     }
+    // ignore sigchld, but set it anyway such that we don't
+    // receive anything on on stopped children (SA_NOCLDSTOP)
+    sigaction_signal(SIGCHLD, [](int) {});
     sigaction_signal(SIGINT,  handle_signal);
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
