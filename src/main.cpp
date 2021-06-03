@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 
+#include "autostart.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
@@ -52,23 +53,21 @@ Display*    g_display;
 Window      g_root;
 
 // module internals:
-static char*    g_autostart_path = nullptr; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static bool     g_exec_before_quit = false;
 static char**   g_exec_args = nullptr;
 static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-void execute_autostart_file();
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
-static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     MetaCommands* meta_commands = root->meta_commands.get();
     GlobalCommands* global_cmds = root->global_commands.get();
 
+    Autostart* autostart = root->autostart();
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();
     MonitorManager* monitors = root->monitors();
@@ -90,7 +89,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                            &MetaCommands::completeCommandShifted1}},
         {"silent",         {meta_commands, &MetaCommands::silentCommand,
                                            &MetaCommands::completeCommandShifted1}},
-        {"reload",         {[] { execute_autostart_file(); return 0; }}},
+        {"reload",         {autostart, &Autostart::reloadCmdDummyOutput }},
         {"version",        { version }},
         {"list_commands",  { list_commands }},
         {"list_monitors",  {monitors, &MonitorManager::list_monitors }},
@@ -318,43 +317,6 @@ int wmexec(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-void execute_autostart_file() {
-    string path;
-    if (g_autostart_path) {
-        path = g_autostart_path;
-    } else {
-        // find right directory
-        char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-        if (xdg_config_home) {
-            path = xdg_config_home;
-        } else {
-            char* home = getenv("HOME");
-            if (!home) {
-                HSWarning("Will not run autostart file. "
-                          "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
-                return;
-            }
-            path = string(home) + "/.config";
-        }
-        path += "/" HERBSTLUFT_AUTOSTART;
-    }
-    if (0 == fork()) {
-        if (g_display) {
-            close(ConnectionNumber(g_display));
-        }
-        setsid();
-        execl(path.c_str(), path.c_str(), nullptr);
-
-        const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
-        HSDebug("Cannot execute %s, falling back to %s\n", path.c_str(), global_autostart);
-        execl(global_autostart, global_autostart, nullptr);
-
-        fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);
-        perror(" failed");
-        exit(EXIT_FAILURE);
-    }
-}
-
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
     int noTransparency = !g.trueTransparency;
@@ -390,7 +352,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                     exit(0);
                 }
             case 'c':
-                g_autostart_path = optarg;
+                g.autostartPath = optarg;
                 break;
             case 'l':
                 g.initial_monitors_locked = 1;
@@ -430,13 +392,6 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     g.trueTransparency = !noTransparency;
 }
 
-static void remove_zombies(int) {
-    int bgstatus;
-    while (waitpid(-1, &bgstatus, WNOHANG) > 0) {
-        ;
-    }
-}
-
 static void handle_signal(int signal) {
     HSDebug("Interrupted by signal %d\n", signal);
     if (g_main_loop) {
@@ -459,6 +414,7 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
 int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
+    g.globalAutostartPath = HERBSTLUFT_GLOBAL_AUTOSTART;
 
     if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
         std::cerr << "warning: no locale support" << endl;
@@ -480,8 +436,6 @@ int main(int argc, char* argv[]) {
     if (g.trueTransparency) {
         X->tryInitTransparency();
     }
-    // remove zombies on SIGCHLD
-    sigaction_signal(SIGCHLD, remove_zombies);
     sigaction_signal(SIGINT,  handle_signal);
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
@@ -514,7 +468,8 @@ int main(int argc, char* argv[]) {
     tag_force_update_flags();
     all_monitors_apply_layout();
     ewmh->updateAll();
-    execute_autostart_file();
+    mainloop.childExited.connect(root->autostart(), &Autostart::childExited);
+    root->autostart()->reloadCmd();
 
     // main loop
     mainloop.run();

@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <sys/wait.h>
 #include <iostream>
 #include <memory>
 
@@ -31,6 +32,7 @@
 #include "watchers.h"
 #include "xconnection.h"
 
+using std::make_pair;
 using std::function;
 using std::shared_ptr;
 using std::string;
@@ -165,10 +167,16 @@ void XMainLoop::run() {
     fd_set in_fds;
     x11_fd = ConnectionNumber(X_.display());
     while (!aboutToQuit_) {
+        // before making the process hang in the `select` call,
+        // first collect all zombies:
+        collectZombies();
+        // set the the `select` sets:
         FD_ZERO(&in_fds);
         FD_SET(x11_fd, &in_fds);
         // wait for an event or a signal
         select(x11_fd + 1, &in_fds, nullptr, nullptr, nullptr);
+        // if `select` was interrupted by a signal, then it was maybe SIGCHILD
+        collectZombies();
         if (aboutToQuit_) {
             break;
         }
@@ -182,6 +190,19 @@ void XMainLoop::run() {
             root_->watchers->scanForChanges();
             XSync(X_.display(), False);
         }
+    }
+}
+
+void XMainLoop::collectZombies()
+{
+    int childInfo;
+    pid_t childPid;
+    while (true) {
+        childPid = waitpid(-1, &childInfo, WNOHANG);
+        if (childPid <= 0) {
+            break;
+        }
+        childExited.emit(make_pair(childPid, WEXITSTATUS(childInfo)));
     }
 }
 
