@@ -78,7 +78,8 @@ void FontData::initFromStr(const string& source)
 /**
  * @brief compute the with of the given text
  * @param text The text
- * @param glyphs Only consider that many glyphs from the given text
+ * @param len Only consider that many glyphs or bytes from the given text,
+ *            depending on the concrete font type
  * @return The width in pixels
  */
 int FontData::textwidth(const string& text, size_t len) const
@@ -103,5 +104,5 @@ int FontData::textwidth(const string& text, size_t len) const
     if (xFontStruct_) {
         return XTextWidth(xFontStruct_, text.c_str(), len);
     }
-    return -1;
+    return 0;
 }

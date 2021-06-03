@@ -149,7 +149,6 @@ def test_title_does_not_exceed_width(hlwm, x11, font):
         utf8titles = []
 
     for title in [w * '=', w * '|'] + utf8titles:
-        print("title = " + title)
         img = screenshot_with_title(x11, handle, title)
         # verify that the title does not span too wide to the
         # left or to the right:
