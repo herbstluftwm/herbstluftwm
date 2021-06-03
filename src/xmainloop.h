@@ -4,8 +4,8 @@
 #include <X11/Xlib.h>
 #include <unistd.h> // for pid_t
 
-#include "signal.h"
 #include "ipc-server.h"
+#include "signal.h"
 #include "x11-types.h"
 
 class Client;

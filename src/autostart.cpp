@@ -1,7 +1,8 @@
 #include "autostart.h"
-#include "globals.h"
 
 #include <unistd.h>
+
+#include "globals.h"
 
 using std::pair;
 using std::string;
