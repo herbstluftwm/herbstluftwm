@@ -47,8 +47,6 @@ def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
     hlwm = HlwmBridge(xvfb.display, hlwm_process)
     if with_client:
         hlwm.create_client()
-    # We need at least one client, otherwise xvfb messes with the test
-    winid, _ = hlwm.create_client()
 
     file_path = tmpdir / 'witness.txt'
     assert not os.path.isfile(file_path)
