@@ -74,3 +74,35 @@ void FontData::initFromStr(const string& source)
                 string("cannot allocate font \'") + source + "\'");
     }
 }
+
+/**
+ * @brief compute the with of the given text
+ * @param text The text
+ * @param len Only consider that many glyphs or bytes from the given text,
+ *            depending on the concrete font type
+ * @return The width in pixels
+ */
+int FontData::textwidth(const string& text, size_t len) const
+{
+    if (!s_xconnection) {
+        return 0;
+    }
+    if (xftFont_) {
+        XGlyphInfo info;
+        XftTextExtentsUtf8(s_xconnection->display(),
+                           xftFont_,
+                           const_cast<FcChar8*>(reinterpret_cast<const FcChar8*>(text.data())),
+                           len,
+                           &info);
+        return info.xOff;
+    }
+    if (xFontSet_) {
+        XRectangle logical;
+        Xutf8TextExtents(xFontSet_, text.c_str(), static_cast<int>(len), nullptr, &logical);
+        return logical.width;
+    }
+    if (xFontStruct_) {
+        return XTextWidth(xFontStruct_, text.c_str(), len);
+    }
+    return 0;
+}

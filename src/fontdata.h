@@ -19,6 +19,7 @@ public:
     ~FontData();
 
     void initFromStr(const std::string& source);
+    int textwidth(const std::string& text, size_t len) const;
 
     struct _XftFont* xftFont_ = nullptr;
     XFontStruct* xFontStruct_ = nullptr;
