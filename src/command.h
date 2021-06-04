@@ -108,13 +108,6 @@ public:
     {
     }
 
-    // FIXME: Remove after C++ transition
-    // The following constructors are only there to ease the transition from
-    // C functions to C++
-    CommandBinding(int func(int argc, char** argv, Output output))
-        : command(commandFromCFunc(func)) {}
-    CommandBinding(int func(int argc, char** argv));
-
     bool hasCompletion() const { return (bool)completion_; }
     void complete(Completion& completion) const;
 
