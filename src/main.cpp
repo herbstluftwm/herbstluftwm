@@ -45,6 +45,7 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 // globals:
 int g_verbose = 0;
@@ -54,14 +55,15 @@ Window      g_root;
 // module internals:
 static char*    g_autostart_path = nullptr; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static bool     g_exec_before_quit = false;
-static char**   g_exec_args = nullptr;
+static vector<string> g_exec_args = {};
 static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
+static void execvp_helper(const vector<string>& command);
 void execute_autostart_file();
-int spawn(int argc, char** argv);
-int wmexec(int argc, char** argv);
+int spawn(Input input);
+int wmexec(Input input);
 static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
 
@@ -263,15 +265,21 @@ int custom_hook_emit(Input input) {
     return 0;
 }
 
-static void execvp_helper(char *const command[]) {
-    execvp(command[0], command);
+static void execvp_helper(const vector<string>& command) {
+    // duplicate the vector to have space for the terminating nullptr entry:
+    char** exec_args = new char*[command.size() + 1];
+    for (size_t i = 0; i < command.size(); i++) {
+        exec_args[i] = const_cast<char*>(command[i].c_str());
+    }
+    exec_args[command.size()] = nullptr;
+    execvp(exec_args[0], exec_args);
     std::cerr << "herbstluftwm: execvp \"" << command[0] << "\"";
     perror(" failed");
+    delete[] exec_args;
 }
 
-// spawn() heavily inspired by dwm.c
-int spawn(int argc, char** argv) {
-    if (argc < 2) {
+int spawn(Input input) {
+    if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (fork() == 0) {
@@ -279,40 +287,16 @@ int spawn(int argc, char** argv) {
         if (g_display) {
             close(ConnectionNumber(g_display));
         }
-        // shift all args in argv by 1 to the front
-        // so that we have space for a NULL entry at the end for execvp
-        char** execargs = argv_duplicate(argc, argv);
-        free(execargs[0]);
-        int i;
-        for (i = 0; i < argc-1; i++) {
-            execargs[i] = execargs[i+1];
-        }
-        execargs[i] = nullptr;
         // do actual exec
         setsid();
-        execvp_helper(execargs);
+        execvp_helper(input.toVector());
         exit(0);
     }
     return 0;
 }
 
-int wmexec(int argc, char** argv) {
-    if (argc >= 2) {
-        // shift all args in argv by 1 to the front
-        // so that we have space for a NULL entry at the end for execvp
-        char** execargs = argv_duplicate(argc, argv);
-        free(execargs[0]);
-        int i;
-        for (i = 0; i < argc-1; i++) {
-            execargs[i] = execargs[i+1];
-        }
-        execargs[i] = nullptr;
-        // quit and exec to new window manger
-        g_exec_args = execargs;
-    } else {
-        // exec into same command
-        g_exec_args = nullptr;
-    }
+int wmexec(Input input) {
+    g_exec_args = input.toVector();
     g_exec_before_quit = true;
     g_main_loop->quit();
     return EXIT_SUCCESS;
@@ -532,14 +516,14 @@ int main(int argc, char* argv[]) {
     delete X;
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
-        if (g_exec_args) {
+        if (!g_exec_args.empty()) {
             // do actual exec
-            HSDebug("==> Doing wmexec to %s\n", g_exec_args[0]);
+            HSDebug("==> Doing wmexec to %s\n", g_exec_args[0].c_str());
             execvp_helper(g_exec_args);
         }
         // on failure or if no other wm given, then fall back
         HSDebug("==> Doing wmexec to %s\n", argv[0]);
-        execvp_helper(argv);
+        execvp(argv[0], argv);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
