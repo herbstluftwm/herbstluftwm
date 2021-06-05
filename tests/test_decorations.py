@@ -1,4 +1,5 @@
 from conftest import RawImage
+from conftest import HlwmBridge
 import pytest
 
 font_pool = [
@@ -69,8 +70,13 @@ def screenshot_with_title(x11, win_handle, title):
     """ set the win_handle's window title and then
     take a screenshot
     """
-    win_handle.set_wm_name(title)
+    x11.set_property_textlist('_NET_WM_NAME', [title], window=win_handle)
     x11.sync_with_hlwm()
+    # double check that hlwm has updated the client's title:
+    winid = x11.winid_str(win_handle)
+    hlwm = HlwmBridge.INSTANCE
+    assert hlwm.attr.clients[winid].title() == title
+    # then, take the screenshot:
     return x11.decoration_screenshot(win_handle)
 
 
@@ -115,6 +121,58 @@ def test_title_different_letters_are_drawn(hlwm, x11, font):
 
     # then the number of pixels should have increased
     assert count1 < count2
+
+
+@pytest.mark.parametrize("font", font_pool)
+def test_title_does_not_exceed_width(hlwm, x11, font):
+    font_color = (255, 0, 0)  # a color available everywhere
+    bw = 30
+    hlwm.attr.theme.color = 'black'
+    hlwm.attr.theme.title_color = RawImage.rgb2string(font_color)
+    hlwm.attr.theme.title_height = 14
+    hlwm.attr.theme.padding_top = 0
+    hlwm.attr.theme.padding_left = 0
+    hlwm.attr.theme.padding_right = 0
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.theme.title_font = font
+    handle, winid = x11.create_client()
+
+    # set a title that is too wide to be displayed in its entirety:
+    w = hlwm.attr.clients[winid].decoration_geometry().width
+
+    if font[0] != '-':
+        # for xft fonts, also test utf8 window titles
+        utf8titles = [w * '♥']
+    else:
+        # for plain X fonts, it does not seem to work in tox/pytest
+        # (but strangely, it works in a manual Xephyr session)
+        utf8titles = []
+
+    for title in [w * '=', w * '|'] + utf8titles:
+        img = screenshot_with_title(x11, handle, title)
+        # verify that the title does not span too wide to the
+        # left or to the right:
+        # find leftmost non-black pixel:
+        leftmost_font_x = None
+        for x in range(0, w):
+            for y in range(0, 14):  # only verify top `title_height`-many pixels
+                if img.pixel(x, y) != (0, 0, 0):
+                    leftmost_font_x = x
+                    break
+            if leftmost_font_x is not None:
+                break
+        # find rightmost non-black pixel:
+        rightmost_font_x = None
+        for x in range(w - 1, 0, -1):
+            for y in range(0, 14):  # only verify top `title_height`-many pixels
+                if img.pixel(x, y) != (0, 0, 0):
+                    rightmost_font_x = x
+                    break
+            if rightmost_font_x is not None:
+                break
+
+        assert leftmost_font_x >= bw
+        assert rightmost_font_x < bw + hlwm.attr.clients[winid].content_geometry().width
 
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
