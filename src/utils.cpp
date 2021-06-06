@@ -330,7 +330,10 @@ string spawnProcess(const vector<string>& command, pid_t* retChildPid)
         int errnum = execvp_helper(command);
         // if exec failed: send the error number to the parent process
         close(readAndWriteFd[0]); // close the reading side
-        write(readAndWriteFd[1], &errnum, sizeof(errnum));
+        size_t written = write(readAndWriteFd[1], &errnum, sizeof(errnum));
+        if (written != sizeof(errnum)) {
+            std::cerr << "Failure when writing to pipe to parent process" << endl;
+        }
         close(readAndWriteFd[1]);
         exit(0);
     } else {
