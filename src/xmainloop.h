@@ -2,8 +2,10 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <unistd.h> // for pid_t
 
 #include "ipc-server.h"
+#include "signal.h"
 #include "x11-types.h"
 
 class Client;
@@ -18,6 +20,8 @@ public:
     //! quit the main loop as soon as possible
     void quit();
     using EventHandler = void (XMainLoop::*)(XEvent*);
+    //! a child process exited with the given status
+    Signal_<std::pair<pid_t, int>> childExited;
 
     void dropEnterNotifyEvents();
 private:
@@ -26,6 +30,8 @@ private:
     Root* root_;
     bool aboutToQuit_;
     EventHandler handlerTable_[LASTEvent];
+
+    void collectZombies();
     // event handlers
     void buttonpress(XButtonEvent* be);
     void buttonrelease(XButtonEvent* event);

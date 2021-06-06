@@ -8,6 +8,7 @@
 
 // new object tree root.
 
+class Autostart;
 class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class FrameLeaf;
@@ -36,6 +37,8 @@ public:
     bool exitOnXlibError = false;
     bool importTagsFromEwmh = true;
     bool trueTransparency = true; // try true transparency via xrender
+    std::string autostartPath = {};
+    std::string globalAutostartPath = {}; // system-wide autostart file
 };
 
 class Root : public Object {
@@ -52,6 +55,7 @@ public:
     void shutdown();
 
     // (in alphabetical order)
+    Child_<Autostart> autostart;
     Child_<ClientManager> clients;
     Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
