@@ -175,7 +175,7 @@ void XMainLoop::run() {
         FD_SET(x11_fd, &in_fds);
         // wait for an event or a signal
         select(x11_fd + 1, &in_fds, nullptr, nullptr, nullptr);
-        // if `select` was interrupted by a signal, then it was maybe SIGCHILD
+        // if `select` was interrupted by a signal, then it was maybe SIGCHLD
         collectZombies();
         if (aboutToQuit_) {
             break;

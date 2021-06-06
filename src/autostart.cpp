@@ -21,7 +21,7 @@ Autostart::Autostart(const string& autostartFromCmdLine, const string& globalAut
                 "or $HOME is used.");
     global_autostart_path_.setDoc("Path of the system-wide autostart, used as a fallback.");
     pid_.setDoc(
-                "the process id of the last autostart invokation. "
+                "the process id of the last autostart invocation. "
                 "Even if the autostart is not running anymore, its pid "
                 "is still present here.");
     running_.setDoc("whether the autostart process (with \'pid\') is still running.");
