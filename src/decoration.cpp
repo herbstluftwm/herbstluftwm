@@ -119,7 +119,7 @@ void Decoration::createWindow() {
     resizeAttr.colormap = xcon.usesTransparency() ? xcon.colormap() : dec->colormap;
     resizeAttr.background_pixel = BlackPixel(display, xcon.screen());
     resizeAttr.border_pixel = BlackPixel(display, xcon.screen());
-    for (size_t i = 0; i < 12; i++) {
+    for (size_t i = 0; i < resizeAreaSize; i++) {
         Window& win = resizeArea[i];
         win = XCreateWindow(display, dec->decwin, 0, 0, 30, 30, 0,
                             0, InputOnly, xcon.visual(),
@@ -192,7 +192,7 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
 void Decoration::updateResizeAreaCursors()
 {
     XConnection& xcon = xconnection();
-    for (size_t i = 0; i < 12; i++) {
+    for (size_t i = 0; i < resizeAreaSize; i++) {
         Window& win = resizeArea[i];
         ResizeAction act = resizeAreaInfo(i);
         act = act * client_->possibleResizeActions();
@@ -333,7 +333,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         bw = last_scheme->border_width();
     }
     Rectangle areaGeo;
-    for (size_t i = 0; i < 12; i++) {
+    for (size_t i = 0; i < resizeAreaSize; i++) {
         areaGeo = resizeAreaGeometry(i, bw, outline.width, outline.height);
         XMoveResizeWindow(xcon.display(), resizeArea[i],
                           areaGeo.x, areaGeo.y,

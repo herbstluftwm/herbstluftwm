@@ -87,9 +87,9 @@ private:
     // especially not repainting or background filling to avoid flicker on
     // unmap
     Window                  bgwin = 0;
-    /** 4 sides with 3 sections each.
-     */
-    Window                  resizeArea[4 * 3] = {};
+    /** 12 = 4 sides with 3 sections each. */
+    static constexpr size_t resizeAreaSize = 4 * 3;
+    Window                  resizeArea[resizeAreaSize] = {};
     static ResizeAction resizeAreaInfo(size_t idx);
     Rectangle resizeAreaGeometry(size_t idx, int borderWidth, int width, int height);
 private:
