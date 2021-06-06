@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "autostart.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
@@ -28,7 +29,8 @@ using std::shared_ptr;
 shared_ptr<Root> Root::root_;
 
 Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer)
-    : clients(*this, "clients")
+    : autostart(*this, "autostart")
+    , clients(*this, "clients")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
     , mouse(*this, "mouse")
@@ -48,6 +50,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     , ewmh_(ewmh)
 {
     // initialize root children (alphabetically)
+    autostart.init(g.autostartPath, g.globalAutostartPath);
     clients.init();
     keys.init();
     monitors.init();
