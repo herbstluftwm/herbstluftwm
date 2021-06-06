@@ -2,9 +2,9 @@ import re
 import os
 import pytest
 import subprocess
-import textwrap
-from conftest import BINDIR, HlwmProcess
+from conftest import BINDIR, HlwmBridge
 import conftest
+import os.path
 from Xlib import X, Xatom
 
 
@@ -19,6 +19,44 @@ def test_reload(hlwm_process, hlwm):
         assert not proc.stderr
         assert not proc.stdout
         assert proc.returncode == 0
+
+
+@pytest.mark.parametrize("with_client", [True, False])
+@pytest.mark.parametrize("explicit_arg", [True, False])
+def test_wmexec_to_self(hlwm, hlwm_process, with_client, explicit_arg):
+    if with_client:
+        winid, _ = hlwm.create_client()
+    # modify some attribute such that we can verify that hlwm re-booted
+    hlwm.attr.settings.snap_gap = 13
+
+    # Restart hlwm:
+    args = [hlwm_process.bin_path, '--verbose'] if explicit_arg else []
+    p = hlwm.unchecked_call(['wmexec'] + args,
+                            read_hlwm_output=False)
+    assert p.returncode == 0
+    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+
+    assert hlwm.attr.settings.snap_gap() != 13
+    if with_client:
+        assert winid in hlwm.list_children('clients')
+
+
+@pytest.mark.parametrize("with_client", [True, False])
+def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
+    hlwm = HlwmBridge(xvfb.display, hlwm_process)
+    if with_client:
+        hlwm.create_client()
+
+    file_path = tmpdir / 'witness.txt'
+    assert not os.path.isfile(file_path)
+    p = hlwm.unchecked_call(['wmexec', 'touch', file_path],
+                            read_hlwm_output=False)
+    assert p.returncode == 0
+
+    # the hlwm process execs to 'touch' which then terminates on its own.
+    hlwm_process.proc.wait()
+
+    os.path.isfile(file_path)
 
 
 def test_herbstluftwm_already_running(hlwm):
@@ -55,63 +93,6 @@ def test_herbstluftwm_replace(hlwm_spawner, xvfb):
     assert hlwm_new.call('echo ping').stdout == 'ping\n'
 
     hlwm_proc_new.shutdown()
-
-
-def test_herbstluftwm_default_autostart(hlwm):
-    expected_tags = [str(tag) for tag in range(1, 10)]
-    default_autostart = os.path.join(os.path.abspath(BINDIR), 'share/autostart')
-    env_with_bindir_path = os.environ.copy()
-    env_with_bindir_path['PATH'] = BINDIR + ":" + env_with_bindir_path['PATH']
-    subprocess.run(['bash', '-e', default_autostart], check=True, env=env_with_bindir_path)
-
-    assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
-    # Test a random setting different from the default in settings.h:
-    assert hlwm.get_attr('settings.smart_frame_surroundings') == 'true'
-
-
-@pytest.mark.parametrize("method", ['home', 'xdg', 'shortopt', 'longopt'])
-def test_autostart_path(tmpdir, method, xvfb):
-    # herbstluftwm environment:
-    env = {
-        'DISPLAY': xvfb.display,
-    }
-    args = []  # extra command line args
-    if method == 'home':
-        autostart = tmpdir / '.config' / 'herbstluftwm' / 'autostart'
-        env['HOME'] = str(tmpdir)
-    elif method == 'xdg':
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        env['XDG_CONFIG_HOME'] = str(tmpdir)
-    elif method == 'longopt':
-        autostart = tmpdir / 'somename'
-        args += ['--autostart', str(autostart)]
-    else:
-        autostart = tmpdir / 'somename'
-        args += ['-c', str(autostart)]
-
-    autostart.ensure()
-    autostart.write(textwrap.dedent("""
-        #!/usr/bin/env bash
-        echo "hlwm autostart test"
-    """.lstrip('\n')))
-    autostart.chmod(0o755)
-    env = conftest.extend_env_with_whitelist(env)
-    hlwm_proc = HlwmProcess('hlwm autostart test', env, args)
-
-    # TODO: verify the path as soon as we have an autostart object
-
-    hlwm_proc.shutdown()
-
-
-def test_no_autostart(xvfb):
-    # no HOME, no XDG_CONFIG_HOME
-    env = {
-        'DISPLAY': xvfb.display,
-    }
-    env = conftest.extend_env_with_whitelist(env)
-    hlwm_proc = HlwmProcess('', env, [])
-    hlwm_proc.read_and_echo_output(until_stderr='Will not run autostart file.')
-    hlwm_proc.shutdown()
 
 
 def test_herbstluftwm_help_flags():
