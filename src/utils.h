@@ -108,5 +108,10 @@ std::string join_strings(const InContainer& in, const std::string& delim) {
     return out.str();
 }
 
+std::string trimRight(const std::string& source, const std::string& charsToRemove);
+
+int execvp_helper(const std::vector<std::string>& command);
+std::string spawnProcess(const std::vector<std::string>& command, pid_t* retChildPid = nullptr);
+
 #endif
 

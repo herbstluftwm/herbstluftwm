@@ -60,8 +60,7 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-static void execvp_helper(const vector<string>& command);
-int spawn(Input input);
+int spawn(Input input, Output output);
 int wmexec(Input input);
 int custom_hook_emit(Input input);
 
@@ -264,32 +263,14 @@ int custom_hook_emit(Input input) {
     return 0;
 }
 
-static void execvp_helper(const vector<string>& command) {
-    // duplicate the vector to have space for the terminating nullptr entry:
-    char** exec_args = new char*[command.size() + 1];
-    for (size_t i = 0; i < command.size(); i++) {
-        exec_args[i] = const_cast<char*>(command[i].c_str());
-    }
-    exec_args[command.size()] = nullptr;
-    execvp(exec_args[0], exec_args);
-    std::cerr << "herbstluftwm: execvp \"" << command[0] << "\"";
-    perror(" failed");
-    delete[] exec_args;
-}
-
-int spawn(Input input) {
+int spawn(Input input, Output output) {
     if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    if (fork() == 0) {
-        // only look in child
-        if (g_display) {
-            close(ConnectionNumber(g_display));
-        }
-        // do actual exec
-        setsid();
-        execvp_helper(input.toVector());
-        exit(0);
+    string msg = spawnProcess(input.toVector());
+    if (!msg.empty()) {
+        output.perror() << msg << endl;
+        return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
@@ -477,7 +458,9 @@ int main(int argc, char* argv[]) {
         if (!g_exec_args.empty()) {
             // do actual exec
             HSDebug("==> Doing wmexec to %s\n", g_exec_args[0].c_str());
-            execvp_helper(g_exec_args);
+            int error = execvp_helper(g_exec_args);
+            std::cerr << argv[0] << ": execvp \"" << g_exec_args[0]
+                      << "\" failed: " << trimRight(strerror(error), "\n") << endl;
         }
         // on failure or if no other wm given, then fall back
         HSDebug("==> Doing wmexec to %s\n", argv[0]);

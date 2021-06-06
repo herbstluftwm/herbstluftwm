@@ -5,6 +5,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrender.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <climits>
 #include <cstring>
@@ -48,6 +49,14 @@ XConnection* XConnection::connect(string display_name) {
     Display* d = XOpenDisplay(display_str);
     if (d == nullptr) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << endl;
+        exit(EXIT_FAILURE);
+    }
+    // set the connection to 'close on exec' such that child
+    // processes do not inherit the X connection.
+    // if F_GETFD fails (returning -1), then just take '0'
+    int flags = std::max(0, fcntl(ConnectionNumber(d), F_GETFD));
+    if (fcntl(ConnectionNumber(d), F_SETFD, flags | FD_CLOEXEC) == -1) {
+        std::cerr << "herbstluftwm: setting CLOEXEC for the X11 connection socket failed." << endl;
         exit(EXIT_FAILURE);
     }
     s_connection = new XConnection(d);

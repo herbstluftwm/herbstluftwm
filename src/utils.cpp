@@ -2,8 +2,11 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -16,6 +19,7 @@
 #endif
 
 using std::shared_ptr;
+using std::stringstream;
 using std::string;
 using std::vector;
 
@@ -258,3 +262,98 @@ string posix_sh_escape(const string& source) {
     }
     return target;
 }
+
+/**
+ * @brief Remove all characters at the end of 'source' that are in 'charsToRemove'
+ * @param source the source string
+ * @param charsToRemove characters to remove at the end of 'source'
+ * @return the trimmed source
+ */
+string trimRight(const string& source, const string& charsToRemove)
+{
+
+    size_t endpos = source.find_last_not_of(charsToRemove);
+    if (string::npos != endpos) {
+        return source.substr(0, endpos + 1);
+    } else {
+        // 'source' only consists of characters from 'charsToRemove'
+        return "";
+    }
+}
+
+/**
+ * @brief A c++ interface to execvp
+ * @param command The command for execvp()
+ * @return If there is an error, this function returns the error number.
+ *         On success, this function does not return.
+ */
+int execvp_helper(const vector<string>& command) {
+    // duplicate the vector to have space for the terminating nullptr entry:
+    char** exec_args = new char*[command.size() + 1];
+    for (size_t i = 0; i < command.size(); i++) {
+        exec_args[i] = const_cast<char*>(command[i].c_str());
+    }
+    exec_args[command.size()] = nullptr;
+    execvp(exec_args[0], exec_args);
+    int errnum = errno;
+    delete[] exec_args;
+    return errnum;
+}
+
+/**
+ * @brief spawn a new process for the given command
+ * @param command the command to execute, this must be non-empty
+ * @param retChildPid on success, the child pid is written
+ * @return {} on success or an error message if
+ *         the command could not be spawned.
+ */
+string spawnProcess(const vector<string>& command, pid_t* retChildPid)
+{
+    int readAndWriteFd[2]; // 0: for reading, 1: for writing
+    // create a pipe to send information from the child process
+    // to the parent process. Mark the file descriptors as FD_CLOEXEC
+    // such that they are closed on a successful execvp().
+    if (pipe(readAndWriteFd) == -1
+        || fcntl(readAndWriteFd[0], F_SETFD, FD_CLOEXEC) == -1
+        || fcntl(readAndWriteFd[1], F_SETFD, FD_CLOEXEC) == -1
+        )
+    {
+        return "Can not create pipe for communication with child process";
+    }
+    pid_t pid = fork();
+    if (pid == -1) {
+        return "Can not fork";
+    }
+    if (pid == 0) {
+        // in the child:
+        setsid();
+        int errnum = execvp_helper(command);
+        // if exec failed: send the error number to the parent process
+        close(readAndWriteFd[0]); // close the reading side
+        write(readAndWriteFd[1], &errnum, sizeof(errnum));
+        close(readAndWriteFd[1]);
+        exit(0);
+    } else {
+        // in the parent process (hlwm):
+        // first close the writing end of the pipe such that
+        // the reading end receives EOF if the child also closes
+        // the writing end.
+        close(readAndWriteFd[1]);
+        int errnum;
+        int count = read(readAndWriteFd[0], &errnum, sizeof(int));
+        close(readAndWriteFd[0]);
+        if (count == sizeof(int)) {
+            // exec failed, because an error number was sent through the pipe:
+            stringstream msg;
+            msg << "Executing \"" << command[0] << "\" failed: "
+                << trimRight(strerror(errnum), "\n");
+            return msg.str();
+        }
+        // success, because the pipe was closed by exec
+        if (retChildPid) {
+            *retChildPid = pid;
+        }
+        return {};
+    }
+}
+
