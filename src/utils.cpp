@@ -5,7 +5,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
-#include <cstring>
+#include <cstring> // for strerror()
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -18,6 +19,7 @@
 #include <mach/mach.h>
 #endif
 
+using std::endl;
 using std::shared_ptr;
 using std::stringstream;
 using std::string;
