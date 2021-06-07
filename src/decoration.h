@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <map>
 
+#include "optional.h"
 #include "rectangle.h"
 #include "x11-types.h"
 
@@ -12,6 +13,27 @@ class FontData;
 class Settings;
 class DecorationScheme;
 class XConnection;
+
+class ResizeAction {
+public:
+    bool left = false;
+    bool right = false;
+    bool top = false;
+    bool bottom = false;
+    operator bool() const {
+        return left || right || top || bottom;
+    }
+    std::experimental::optional<unsigned int> toCursorShape() const;
+    ResizeAction operator*(const ResizeAction& other) {
+        ResizeAction act;
+        act.left = left && other.left;
+        act.right = right && other.right;
+        act.top = top && other.top;
+        act.bottom = bottom && other.bottom;
+        return act;
+    }
+};
+
 
 class Decoration {
 public:
@@ -33,7 +55,9 @@ public:
     Rectangle last_outer() const { return last_outer_rect; }
     Rectangle inner_to_outer(Rectangle rect);
 
-    bool positionTriggersResize(Point2D p);
+    void updateResizeAreaCursors();
+
+    ResizeAction positionTriggersResize(Point2D p);
 
 private:
     static Visual* check_32bit_client(Client* c);
@@ -63,6 +87,11 @@ private:
     // especially not repainting or background filling to avoid flicker on
     // unmap
     Window                  bgwin = 0;
+    /** 12 = 4 sides with 3 sections each. */
+    static constexpr size_t resizeAreaSize = 4 * 3;
+    Window                  resizeArea[resizeAreaSize] = {};
+    static ResizeAction resizeAreaInfo(size_t idx);
+    Rectangle resizeAreaGeometry(size_t idx, int borderWidth, int width, int height);
 private:
     Client* client_; // the client to decorate
     Settings& settings_;

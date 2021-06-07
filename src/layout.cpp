@@ -546,6 +546,21 @@ bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t children
     return true;
 }
 
+/**
+ * @brief FrameLeaf::clientIndex
+ * @param client
+ * @return the index of the given client in this frame or -1
+ */
+int FrameLeaf::clientIndex(Client* client)
+{
+    for (size_t i = 0; i < clients.size(); i++) {
+        if (clients[i] == client) {
+            return static_cast<int>(i);
+        }
+    }
+    return -1;
+}
+
 
 void FrameSplit::swapChildren() {
     swap(a_,b_);
@@ -633,27 +648,33 @@ shared_ptr<Frame> FrameLeaf::neighbour(Direction direction) {
     return other;
 }
 
-//! finds the neighbour of the selected client in the specified direction
-// within the frame
-//! returns its index or -1 if there is none
-int FrameLeaf::getInnerNeighbourIndex(Direction direction) {
+/**
+ * @brief finds the neighbour of the selected client in the specified direction within the frame
+ * @param direction the direction
+ * @param startIndex the window whose neighbour shall be found or -1 for the selected window
+ * @return the index of the neighbour window or -1 if there is no neighbour
+ */
+int FrameLeaf::getInnerNeighbourIndex(Direction direction, int startIndex) {
+    if (startIndex < 0) {
+        startIndex = selection;
+    }
     int index = -1;
     int count = clientCount();
     switch (getLayout()) {
         case LayoutAlgorithm::vertical:
             if (direction == Direction::Down) {
-                index = selection + 1;
+                index = startIndex + 1;
             }
             if (direction == Direction::Up) {
-                index = selection - 1;
+                index = startIndex - 1;
             }
             break;
         case LayoutAlgorithm::horizontal:
             if (direction == Direction::Right) {
-                index = selection + 1;
+                index = startIndex + 1;
             }
             if (direction == Direction::Left) {
-                index = selection - 1;
+                index = startIndex - 1;
             }
             break;
         case LayoutAlgorithm::max:
@@ -664,26 +685,26 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction) {
             if (cols == 0) {
                 break;
             }
-            int r = selection / cols;
-            int c = selection % cols;
+            int r = startIndex / cols;
+            int c = startIndex % cols;
             switch (direction) {
                 case Direction::Down:
-                    index = selection + cols;
+                    index = startIndex + cols;
                     if (g_settings->gapless_grid() && index >= count && r == (rows - 2)) {
                         // if grid is gapless and we're in the second-last row
                         // then it means last client is below us
                         index = count - 1;
                     }
                     break;
-                case Direction::Up: index = selection - cols; break;
+                case Direction::Up: index = startIndex - cols; break;
                 case Direction::Right:
                     if (c < cols - 1) {
-                        index = selection + 1;
+                        index = startIndex + 1;
                     }
                     break;
                 case Direction::Left:
                     if (c > 0) {
-                        index = selection - 1;
+                        index = startIndex - 1;
                     }
                     break;
             }

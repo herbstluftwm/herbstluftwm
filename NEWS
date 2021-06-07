@@ -11,6 +11,7 @@ Current git version
   * New client attribute 'floating_effectively' and associated X11 properties
     'HLWM_FLOATING_WINDOW' and 'HLWM_TILING_WINDOW'
   * New read-only client attribute 'decoration_geometry'.
+  * The cursor shape now indicates resize options.
   * Bug fixes:
     - Update floating geometry if a client's size hints change
 
