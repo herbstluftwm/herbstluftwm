@@ -13,6 +13,7 @@ class Completion;
 class ClientManager;
 class MonitorManager;
 class MouseDragHandler;
+class ResizeAction;
 struct Point2D;
 
 class MouseManager : public Object {
@@ -41,6 +42,7 @@ public:
     std::string mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
     std::string mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
     std::string mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_initiate_resize(Client* client, const ResizeAction& resize);
     std::string mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 
 private:

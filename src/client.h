@@ -15,6 +15,7 @@
 #include "x11-types.h"
 
 class Decoration;
+class ResizeAction;
 class DecTriple;
 class Ewmh;
 class FrameLeaf;
@@ -122,6 +123,7 @@ public:
     void send_configure(bool force);
     bool applysizehints(int* w, int* h, bool force = false);
     void updatesizehints();
+    ResizeAction possibleResizeActions();
 
     void set_visible(bool visible);
 

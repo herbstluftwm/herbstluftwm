@@ -484,7 +484,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                 }
             } else {
                 // anything else is a resize
-                root_->mouse->mouse_initiate_resize(client, {});
+                root_->mouse->mouse_initiate_resize(client, vector<string>());
             }
             break;
         }

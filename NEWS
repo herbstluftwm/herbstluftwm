@@ -12,6 +12,7 @@ Current git version
     'HLWM_FLOATING_WINDOW' and 'HLWM_TILING_WINDOW'
   * The 'spawn' command now print an error message on exec failure
   * New read-only client attribute 'decoration_geometry'.
+  * The cursor shape now indicates resize options.
   * Bug fixes:
     - Update floating geometry if a client's size hints change
 

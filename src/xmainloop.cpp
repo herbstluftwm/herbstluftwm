@@ -242,8 +242,9 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
             bool raise = root_->settings->raise_on_click();
             focus_client(client, false, true, raise);
             if (be->window == client->decorationWindow()) {
-                if (client->dec->positionTriggersResize({be->x, be->y})) {
-                    mm->mouse_initiate_resize(client, {});
+                ResizeAction resize = client->dec->positionTriggersResize({be->x, be->y});
+                if (resize) {
+                    mm->mouse_initiate_resize(client, resize);
                 } else {
                     mm->mouse_initiate_move(client, {});
                 }
@@ -403,12 +404,16 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
     }
     // Warning: we have to set this to false again!
     duringEnterNotify_ = true;
+    Client* decorationClient = Decoration::toClient(ce->window);
+    if (decorationClient) {
+        decorationClient->dec->updateResizeAreaCursors();
+    }
     if (!root_->mouse->mouse_is_dragging()
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = root_->clients->client(ce->window);
         if (!c) {
-            c = Decoration::toClient(ce->window);
+            c = decorationClient;
         }
         shared_ptr<FrameLeaf> target;
         if (c && c->tag()->floating == false

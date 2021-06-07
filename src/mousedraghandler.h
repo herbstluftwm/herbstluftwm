@@ -61,6 +61,8 @@ public:
     void mouse_function_move(Point2D newCursorPos);
     void mouse_function_resize(Point2D newCursorPos);
     void mouse_function_zoom(Point2D newCursorPos);
+    bool lockWidth = false; // when resizing, do not modify the width
+    bool lockHeight = false; // when resizing, do not modify the height
 private:
     void assertDraggingStillSafe();
 

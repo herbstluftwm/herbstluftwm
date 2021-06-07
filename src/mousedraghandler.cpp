@@ -88,6 +88,22 @@ void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
         left = true;
         x_diff *= -1;
     }
+    if (lockWidth) {
+        x_diff = 0;
+        if (winDragClient_->mina_ > 0 || winDragClient_->maxa_ > 0) {
+            // if the client requires an aspect ratio, (e.g. mpv)
+            // then just keep current aspect ratio of the window
+            x_diff = (y_diff * winDragStart_.width) / winDragStart_.height;
+        }
+    }
+    if (lockHeight) {
+        y_diff = 0;
+        if (winDragClient_->mina_ > 0 || winDragClient_->maxa_ > 0) {
+            // if the client requires an aspect ratio, (e.g. mpv)
+            // then just keep current aspect ratio of the window
+            y_diff = (x_diff * winDragStart_.height) / winDragStart_.width;
+        }
+    }
     // avoid an overflow
     int new_width  = winDragClient_->float_size_->width + x_diff;
     int new_height = winDragClient_->float_size_->height + y_diff;
