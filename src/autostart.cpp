@@ -57,9 +57,6 @@ void Autostart::reloadCmd()
     pid_t pid = fork();
     if (0 == pid) {
         // in the child
-        if (g_display) {
-            close(ConnectionNumber(g_display));
-        }
         setsid();
         execl(path.c_str(), path.c_str(), nullptr);
 

@@ -41,6 +41,28 @@ def test_wmexec_to_self(hlwm, hlwm_process, with_client, explicit_arg):
         assert winid in hlwm.list_children('clients')
 
 
+@pytest.mark.parametrize("args,errormsg", [
+    (['nonexistent'], 'No such file or directory'),
+    (['/', 'dummy'], 'Permission denied'),
+])
+def test_wmexec_failure(hlwm, hlwm_process, args, errormsg):
+    # modify some attribute such that we can verify that hlwm re-booted
+    hlwm.attr.settings.snap_gap = 13
+
+    # wmexec to a non-existent binary:
+    p = hlwm.unchecked_call(['wmexec'] + args,
+                            read_hlwm_output=False)
+    # the 'wmexec' command itself works
+    assert p.returncode == 0
+    # but the actual exec fails:
+    expected_error = f'execvp "{args[0]}" failed: {errormsg}'
+    hlwm_process.read_and_echo_output(until_stderr=expected_error)
+    # and so hlwm does the exec to itself:
+    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+
+    assert hlwm.attr.settings.snap_gap() != 13
+
+
 @pytest.mark.parametrize("with_client", [True, False])
 def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
     hlwm = HlwmBridge(xvfb.display, hlwm_process)
