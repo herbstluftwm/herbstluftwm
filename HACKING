@@ -9,6 +9,22 @@ Beside writing code you can help herbstluftwm by testing, reporting bugs,
 writing/fixing documentation (e.g. by fixing spelling mistakes) or packaging it
 for distributions.
 
+Test Makefile Targets
+---------------------
+Use
+
+    make smoke-test
+
+to get rapidly a rough idea if your changes break anything. If nothing
+breaks, then you may want to run
+
+    make check
+
+to run a more extensive test suite.
+
+The following sections further describe, in detail, how to carry out a
+successful bug hunt in herbstluftwm's codebase.
+
 Testing herbstluftwm
 --------------------
 You can test herbstluftwm under any window manager. Install Xephyr and valgrind,
@@ -28,7 +44,6 @@ herbstluftwm (Alt-Shift-q or run herbstclient quit) to end testing.
 
 Running tests
 -------------
-
 Tests are run using pytest[1] and tox[2]. In addition to tox,
 you'll have to install additional dependencies, in order to successfully
 run the complete test suite:
