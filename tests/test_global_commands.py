@@ -1,5 +1,7 @@
 import pytest
 
+from conftest import PROCESS_SHUTDOWN_TIME
+
 
 def test_tag_status_invalid_monitor(hlwm):
     hlwm.call_xfail('tag_status foobar') \
@@ -75,7 +77,7 @@ def test_jumpto_bring_completion(hlwm):
         assert 'urgent' in res
 
         proc.kill()
-        proc.wait(10)
+        proc.wait(PROCESS_SHUTDOWN_TIME)
 
         res = hlwm.complete([cmd])
         assert winid not in res

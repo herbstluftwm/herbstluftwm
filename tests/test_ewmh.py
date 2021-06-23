@@ -1,6 +1,7 @@
 import conftest
 import os
 import pytest
+from conftest import PROCESS_SHUTDOWN_TIME
 from herbstluftwm.types import Point
 from Xlib import X
 import Xlib
@@ -457,7 +458,7 @@ def test_close_window(hlwm, x11):
     x11.sync_with_hlwm()
 
     # wait for client to shut down
-    proc.wait(10)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
     assert winid not in hlwm.list_children('clients')
 
 

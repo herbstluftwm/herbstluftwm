@@ -1,5 +1,6 @@
 import pytest
 import random
+from conftest import PROCESS_SHUTDOWN_TIME
 from herbstluftwm.types import Rectangle
 
 
@@ -58,7 +59,7 @@ def test_close_focused_client(hlwm, running_clients, running_clients_num):
 
     hlwm.call('close')
 
-    proc.wait(20)  # wait for the client to shut down
+    proc.wait(PROCESS_SHUTDOWN_TIME)  # wait for the client to shut down
     hlwm.call('true')  # sync with hlwm
     clients = hlwm.list_children('clients')
     # all other clients still run:
@@ -75,7 +76,7 @@ def test_close_unfocused_client(hlwm):
 
     hlwm.call(['close', unfocused])
 
-    proc.wait(10)  # wait
+    proc.wait(PROCESS_SHUTDOWN_TIME)  # wait
     # the other client is still running:
     assert hlwm.attr.clients.focus.winid() == focused
 
@@ -89,7 +90,7 @@ def test_close_unmanaged_client(hlwm):
 
     hlwm.call(['close', winid])
 
-    proc.wait(10)  # wait for the client to shut down
+    proc.wait(PROCESS_SHUTDOWN_TIME)  # wait for the client to shut down
 
 
 def test_close_completion(hlwm):
