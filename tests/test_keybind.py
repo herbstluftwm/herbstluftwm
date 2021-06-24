@@ -1,6 +1,8 @@
 import pytest
 import subprocess
 
+from conftest import PROCESS_SHUTDOWN_TIME
+
 
 @pytest.mark.parametrize('sep', ['-', '+'])
 def test_list_keybinds(hlwm, sep):
@@ -106,7 +108,7 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
     # instead, the client must quit because of received keypress:
     try:
         print(f"waiting for client proc {client_proc.pid}")
-        client_proc.wait(5)
+        client_proc.wait(PROCESS_SHUTDOWN_TIME)
     except subprocess.TimeoutExpired:
         assert False, "Expected client to quit, but it is still running"
 

@@ -1,5 +1,7 @@
 import pytest
 
+from conftest import PROCESS_SHUTDOWN_TIME
+
 
 def test_default_tag_exists_and_has_name(hlwm):
     assert hlwm.get_attr('tags.count') == '1'
@@ -252,7 +254,7 @@ def test_close_and_or_remove_floating(hlwm, command):
     # in any case no frame may have been removed
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
     # and the client is closed:
-    proc.wait(10)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 def test_close_and_remove_with_one_client(hlwm):
@@ -265,7 +267,7 @@ def test_close_and_remove_with_one_client(hlwm):
 
     # this closes the client and removes the frame
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
-    proc.wait(10)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 def test_close_and_remove_with_two_clients(hlwm):
@@ -280,7 +282,7 @@ def test_close_and_remove_with_two_clients(hlwm):
     # this closes the client, but does not remove the frame
     # since there is a client left
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
-    proc.wait(10)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 def test_close_and_remove_without_clients(hlwm):
@@ -303,7 +305,7 @@ def test_close_or_remove_client(hlwm):
     # On the first invocation:
     hlwm.call('close_or_remove')
     # only close the client
-    proc.wait(10)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
 
     # On the second invocation:

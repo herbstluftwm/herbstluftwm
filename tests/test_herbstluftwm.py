@@ -2,7 +2,7 @@ import re
 import os
 import pytest
 import subprocess
-from conftest import BINDIR, HlwmBridge
+from conftest import BINDIR, PROCESS_SHUTDOWN_TIME, HlwmBridge
 import conftest
 import os.path
 from Xlib import X, Xatom
@@ -97,7 +97,7 @@ def test_herbstluftwm_quit(hlwm_spawner, xvfb):
 
     hlwm.call('quit')
 
-    hlwm_proc.proc.wait(10)
+    hlwm_proc.proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 def test_herbstluftwm_replace(hlwm_spawner, xvfb):
@@ -108,7 +108,7 @@ def test_herbstluftwm_replace(hlwm_spawner, xvfb):
     hlwm_proc_new = hlwm_spawner(display=xvfb.display, args=['--replace'])
 
     # --replace should make the old hlwm process shut down:
-    hlwm_proc_old.proc.wait(10)
+    hlwm_proc_old.proc.wait(PROCESS_SHUTDOWN_TIME)
 
     # connect to new process
     hlwm_new = conftest.HlwmBridge(xvfb.display, hlwm_proc_new)
