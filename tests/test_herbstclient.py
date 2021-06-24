@@ -5,7 +5,7 @@ import re
 import pytest
 import sys
 import contextlib
-from conftest import HcIdle
+from conftest import PROCESS_SHUTDOWN_TIME, HcIdle
 from Xlib import X, Xatom
 
 HC_PATH = os.path.join(os.path.abspath(os.environ['PWD']), 'herbstclient')
@@ -109,7 +109,7 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     assert proc.stderr.read() == ''
     assert proc.stdout.read().splitlines() == \
         num_hooks_recv * ['matcher\tsomearg']
-    proc.wait(20)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
     assert proc.returncode == 0
 
 
@@ -143,7 +143,7 @@ def test_lastarg_only(hlwm, repeat):
     # first read output entirely to avoid blocking on the side
     # of herbstclient
     assert proc.stdout.read().splitlines() == expected_lines
-    proc.wait(20)
+    proc.wait(PROCESS_SHUTDOWN_TIME)
     assert proc.returncode == 0
 
 
