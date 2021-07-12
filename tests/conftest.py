@@ -267,6 +267,7 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         for client_proc in self.client_procs:
             client_proc.wait(PROCESS_SHUTDOWN_TIME)
         self.hc_idle.wait(PROCESS_SHUTDOWN_TIME)
+        self.hc_idle.stdout.close()
 
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
@@ -448,6 +449,8 @@ class HlwmProcess:
 
         # Make sure to read and echo all remaining output (esp. ASAN messages):
         self.read_and_echo_output(until_eof=True)
+        self.proc.stdout.close()
+        self.proc.stderr.close()
 
         if self.proc.returncode is None:
             # only wait the process if it hasn't been cleaned up
@@ -524,6 +527,7 @@ class HcIdle:
         except subprocess.TimeoutExpired:
             self.proc.kill()
             self.proc.wait(PROCESS_SHUTDOWN_TIME)
+        self.proc.stdout.close()
 
 
 @pytest.fixture()

@@ -111,6 +111,8 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
         num_hooks_recv * ['matcher\tsomearg']
     proc.wait(PROCESS_SHUTDOWN_TIME)
     assert proc.returncode == 0
+    proc.stdout.close()
+    proc.stderr.close()
 
 
 @pytest.mark.parametrize('repeat', range(0, 3))  # use more repetitions to test the race-condtion
@@ -145,6 +147,8 @@ def test_lastarg_only(hlwm, repeat):
     assert proc.stdout.read().splitlines() == expected_lines
     proc.wait(PROCESS_SHUTDOWN_TIME)
     assert proc.returncode == 0
+    proc.stdout.close()
+    proc.stderr.close()
 
 
 @pytest.mark.parametrize('zero_separated', [True, False])
@@ -342,6 +346,8 @@ def hc_context(args=['echo', 'ping']):
     args_str = ' '.join(args)
     print(f'"hc {args_str}" exited with status {reply.returncode} and output: {reply.stdout}')
     print(f'"hc {args_str}" has the error output: {reply.stderr}', file=sys.stderr)
+    proc.stdout.close()
+    proc.stderr.close()
 
 
 @pytest.mark.parametrize('repeat', range(0, 10))  # number of repetitions to detect race-conditions
