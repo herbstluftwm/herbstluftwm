@@ -1,0 +1,70 @@
+Users contributions
+===================
+
+How to contribute?
+------------------
+
+* Clone the repo with +git clone https://github.com/herbstlufwm/herbstluftwm+
+* Open the +www+ directory and open the +contrib.txt+ file
+* Add your contribution! It uses the asciidoc format.
+* Send your pull request!
+
+
+tag_spaces by AnomalousBit
+--------------------------
+
++tag_spaces+ is an extension to herbstluftwm that adds a new concept called tag spaces.
+
+A Tag Space is a group of tags along with keybindings that only operate on the currently selected tag space.
+
+The current / active tag space is selected by using keybinds and can be specified by name, relative or cardinal array index.
+
+By switching to a new tag space, the default Mod+[0-9] keybinds are remapped to the selected tag space and it's first N tags are automatically displayed on your first N monitors.
+
+Get it from https://github.com/AnomalousBit/tag_spaces[github!]
+
+
+Automatically disable focus_follows_mouse for floating windows by u/pmade
+-------------------------------------------------------------------------
+
+This script automatically turns off +focus_follows_mouse+ for floating windows, and turns it back on for tiled windows. Now you can use +focus_follows_mouse+ like normal but when a pesky dialog opens I have an extra step of clicking to lose focus.
+
+Get it from https://github.com/pjones/hlwmrc/blob/9f38a3023660c8c1b617be7689823f09115ecf75/bin/hlwm-ffm-skip-floats.sh[github!]
+
+Layout save and recall fuction by u/ToPow1
+------------------------------------------
+
+This function allow you to save your current layout and give it a name. You can save as many layouts as you like using the +zentity+ packages.
+
+The saved layouts can then called back on any TAG you like.
+
+This function is done with two short bash scripts. The first to save a layout and name it, the second to list the saved layouts and print it to the current TAG.
+
+I saved this scripts in my local $PATH directory and make them executable. To print the dialog to the screen you need to install "zenity" if you not already have it on your system. You also need to create a folder to save the layouts: $ mkdir ~/.config/herbstluftwm/layouts .
+
+To call the scripts I add two keybinds to my HLWM autostart: hc keybind Mod1-j spawn save-layout.sh and hc keybinds Mod1-k spawn recall-layout.sh
+
+save-layout.sh
+
+---
+#!/usr/bin/bash
+
+LAY=`herbstclient dump`
+ENT=`echo "herbstclient load '$LAY'"` 
+
+FI=`zenity --entry --title="Save the current Layout" --text="Enter name of new Layout:" --entry-text "NewLayout"`
+
+echo "$ENT" > ~/.config/herbstluftwm/layouts/$FI 
+---
+
+recall-layout.sh
+
+---
+#!/usr/bin/bash
+
+LO=`ls -C ~/.config/herbstluftwm/layouts/`
+
+SEL=`zenity --list --title="Choose a Layout" --column="Layouts" $LO`
+
+cat ~/.config/herbstluftwm/layouts/$SEL | bash
+---

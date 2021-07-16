@@ -50,6 +50,8 @@ faq-toc.html: faq-content.html ./gentoc.sh
 
 faq.html: faq-toc.html
 
+contrib.html: contrib.txt
+
 favicon.ico: ../share/herbstluftwm.svg
 	convert -density 256x256 -background transparent $< \
         -define icon:auto-resize -colors 256 $@
