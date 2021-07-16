@@ -23,7 +23,7 @@ tabs = OrderedDict([
         ("download", "Download"),
     ])),
     ("Users contributions", OrderedDict([
-		("contrib", "Users contributions"),
+        ("contrib", "Users contributions"),
     ])),
     # ("Wiki", "http://wiki.herbstluftwm.org"),
 ])
