@@ -1,40 +1,14 @@
 Users contributions
 ===================
 
+* tag_spaces by AnomalousBit: groups of tags similar to KDE Plasma activities. Get it from https://github.com/AnomalousBit/tag_spaces[github!]
+* Automatically disable focus_follows_mouse for floating windows by u/pmade. Get it from https://github.com/pjones/hlwmrc/blob/9f38a3023660c8c1b617be7689823f09115ecf75/bin/hlwm-ffm-skip-floats.sh[github!]
+* Layout save and recall fuction by u/ToPow1. Get it from https://www.reddit.com/r/herbstluftwm/comments/o13vny/layout_save_and_recall_function_for_herbstluftwm[this post on reddit!]
+
 How to contribute?
 ------------------
 
 * Clone the repo with +git clone https://github.com/herbstlufwm/herbstluftwm+
 * Open the +herbstluftwm/www/contrib.txt+ file.
 * Edit the file and add your contribution! It uses the https://powerman.name/doc/asciidoc[asciidoc format].
-* Send your pull request! If you want to test the site run the +make+ command (it needs asciidoc installed). Just remember to run +make clean+ before sending the pull request.
-
-tag_spaces by AnomalousBit
---------------------------
-
-+tag_spaces+ is an extension to herbstluftwm that adds a new concept called tag spaces.
-
-A Tag Space is a group of tags along with keybindings that only operate on the currently selected tag space.
-
-The current / active tag space is selected by using keybinds and can be specified by name, relative or cardinal array index.
-
-By switching to a new tag space, the default Mod+[0-9] keybinds are remapped to the selected tag space and it's first N tags are automatically displayed on your first N monitors.
-
-Get it from https://github.com/AnomalousBit/tag_spaces[github!]
-
-
-Automatically disable focus_follows_mouse for floating windows by u/pmade
--------------------------------------------------------------------------
-
-This script automatically turns off +focus_follows_mouse+ for floating windows, and turns it back on for tiled windows. Now you can use +focus_follows_mouse+ like normal but when a pesky dialog opens I have an extra step of clicking to lose focus.
-
-Get it from https://github.com/pjones/hlwmrc/blob/9f38a3023660c8c1b617be7689823f09115ecf75/bin/hlwm-ffm-skip-floats.sh[github!]
-
-Layout save and recall fuction by u/ToPow1
-------------------------------------------
-
-This function allow you to save your current layout and give it a name using the +zentity+ package. You can save as many layouts as you like and the saved layouts can then called back on any TAG you like.
-
-This function is done with two short bash scripts. The first to save a layout and name it, the second to list the saved layouts and print it to the current TAG.
-
-Get it from https://www.reddit.com/r/herbstluftwm/comments/o13vny/layout_save_and_recall_function_for_herbstluftwm[this post on reddit!]
+* Send your pull request! If you want to test the site run the +make+ command (it needs asciidoc installed). 
