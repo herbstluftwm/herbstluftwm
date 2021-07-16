@@ -5,10 +5,9 @@ How to contribute?
 ------------------
 
 * Clone the repo with +git clone https://github.com/herbstlufwm/herbstluftwm+
-* Open the +www+ directory and open the +contrib.txt+ file
-* Add your contribution! It uses the asciidoc format.
-* Send your pull request!
-
+* Open the +herbstluftwm/www/contrib.txt+ file.
+* Edit the file and add your contribution! It uses the https://powerman.name/doc/asciidoc[asciidoc format].
+* Send your pull request! If you want to test the site run the +make+ command (it needs asciidoc installed). Just remember to run +make clean+ before sending the pull request.
 
 tag_spaces by AnomalousBit
 --------------------------
@@ -46,7 +45,8 @@ To call the scripts I add two keybinds to my HLWM autostart: hc keybind Mod1-j s
 
 save-layout.sh
 
----
+----
+
 #!/usr/bin/bash
 
 LAY=`herbstclient dump`
@@ -55,11 +55,13 @@ ENT=`echo "herbstclient load '$LAY'"`
 FI=`zenity --entry --title="Save the current Layout" --text="Enter name of new Layout:" --entry-text "NewLayout"`
 
 echo "$ENT" > ~/.config/herbstluftwm/layouts/$FI 
----
+
+----
 
 recall-layout.sh
 
----
+----
+
 #!/usr/bin/bash
 
 LO=`ls -C ~/.config/herbstluftwm/layouts/`
@@ -67,4 +69,5 @@ LO=`ls -C ~/.config/herbstluftwm/layouts/`
 SEL=`zenity --list --title="Choose a Layout" --column="Layouts" $LO`
 
 cat ~/.config/herbstluftwm/layouts/$SEL | bash
----
+
+----
