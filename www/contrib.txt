@@ -33,12 +33,8 @@ Get it from https://github.com/pjones/hlwmrc/blob/9f38a3023660c8c1b617be7689823f
 Layout save and recall fuction by u/ToPow1
 ------------------------------------------
 
-This function allow you to save your current layout and give it a name. You can save as many layouts as you like using the +zentity+ packages. The saved layouts can then called back on any TAG you like.
+This function allow you to save your current layout and give it a name using the +zentity+ package. You can save as many layouts as you like and the saved layouts can then called back on any TAG you like.
 
 This function is done with two short bash scripts. The first to save a layout and name it, the second to list the saved layouts and print it to the current TAG.
-
-I saved this scripts in my local $PATH directory and make them executable. To print the dialog to the screen you need to install "zenity" if you not already have it on your system. You also need to create a folder to save the layouts: $ mkdir ~/.config/herbstluftwm/layouts .
-
-To call the scripts I add two keybinds to my HLWM autostart: hc keybind Mod1-j spawn save-layout.sh and hc keybinds Mod1-k spawn recall-layout.sh
 
 Get it from https://www.reddit.com/r/herbstluftwm/comments/o13vny/layout_save_and_recall_function_for_herbstluftwm[this post on reddit!]
