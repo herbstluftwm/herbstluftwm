@@ -8,7 +8,7 @@ Users contributions
 How to contribute?
 ------------------
 
-* Clone the repo with +git clone https://github.com/herbstlufwm/herbstluftwm+
+* Clone the repo with +git clone https://github.com/herbstluftwm/herbstluftwm+
 * Open the +herbstluftwm/www/contrib.txt+ file.
-* Edit the file and add your contribution! It uses the https://powerman.name/doc/asciidoc[asciidoc format].
-* Send your pull request! If you want to test the site run the +make+ command (it needs asciidoc installed). 
+* Edit the file and add your contribution. It uses the https://powerman.name/doc/asciidoc[asciidoc format].
+* Send your pull request; If you want to test the site run the +make+ command (it needs asciidoc installed).
