@@ -22,6 +22,7 @@
 #include "mousedraghandler.h"
 #include "root.h"
 #include "tag.h"
+#include "x11-utils.h"
 
 using std::make_shared;
 using std::vector;
@@ -172,31 +173,34 @@ string MouseManager::mouse_initiate_move(Client* client, const vector<string> &c
     return mouse_initiate_drag(
                 client,
                 MouseDragHandlerFloating::construct(
-                    &MouseDragHandlerFloating::mouse_function_move));
+                    &MouseDragHandlerFloating::mouse_function_move),
+                    {});
 }
 
 string MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
+    ResizeAction ra = client->dec->resizeFromRoughCursorPosition(get_cursor_position());
     if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_zoom);
     } else {
         auto frame = client->tag()->frame->findFrameWithClient(client);
-        constructor = MouseResizeFrame::construct(frame);
+        constructor = MouseResizeFrame::construct(frame, ra);
     }
-    return mouse_initiate_drag(client, constructor);
+    return mouse_initiate_drag(client, constructor, ra);
 }
 
 string MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
+    ResizeAction ra = client->dec->resizeFromRoughCursorPosition(get_cursor_position());
     if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_resize);
     } else {
         auto frame = client->tag()->frame->findFrameWithClient(client);
-        constructor = MouseResizeFrame::construct(frame);
+        constructor = MouseResizeFrame::construct(frame, ra);
     }
-    return mouse_initiate_drag(client, constructor);
+    return mouse_initiate_drag(client, constructor, ra);
 }
 
 string MouseManager::mouse_initiate_resize(Client* client, const ResizeAction& resize)
@@ -207,14 +211,13 @@ string MouseManager::mouse_initiate_resize(Client* client, const ResizeAction& r
             auto mdh = make_shared<MouseDragHandlerFloating>(monitors, clientInner, &MouseDragHandlerFloating::mouse_function_resize);
             mdh->lockWidth = !resize.left && !resize.right;
             mdh->lockHeight = !resize.top && !resize.bottom;
-            HSDebug("lw=%d, lh=%d\n", mdh->lockWidth, mdh->lockHeight);
             return mdh;
         };
     } else {
         auto frame = client->tag()->frame->findFrameWithClient(client);
-        constructor = MouseResizeFrame::construct(frame);
+        constructor = MouseResizeFrame::construct(frame, resize);
     }
-    return mouse_initiate_drag(client, constructor);
+    return mouse_initiate_drag(client, constructor, resize);
 }
 
 string MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
@@ -235,10 +238,24 @@ string MouseManager::mouse_call_command(Client* client, const vector<string> &cm
     return {};
 }
 
-string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler)
+/**
+ * @brief If a client is dragged, provide information how the drag
+ * affects the client's geometry.
+ * @return
+ */
+ResizeAction MouseManager::resizeAction()
+{
+    if (dragHandler_) {
+        return dragHandler_->resizeAction_;
+    }
+    return {};
+}
+
+string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler, ResizeAction resize)
 {
     try {
         dragHandler_ = createHandler(monitors_, client);
+        dragHandler_->resizeAction_ = resize;
         // only grab pointer if dragHandler_ could be started
         clients_->setDragged(client);
     }  catch (const MouseDragHandler::DragNotPossible& e) {
