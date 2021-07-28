@@ -255,7 +255,7 @@ string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler:
 {
     try {
         dragHandler_ = createHandler(monitors_, client);
-        dragHandler_->resizeAction_ = resize;
+        dragHandler_->resizeAction_ = resize * client->possibleResizeActions();
         // only grab pointer if dragHandler_ could be started
         clients_->setDragged(client);
     }  catch (const MouseDragHandler::DragNotPossible& e) {

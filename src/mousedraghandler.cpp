@@ -237,6 +237,9 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<FrameLea
         dragDistanceUnitY_ = dfY->lastRect().height;
         dragStartFractionY_ = dfY->getFraction();
     }
+    if (!dfX && !dfY) {
+        throw DragNotPossible("No neighbour frame");
+    }
 }
 
 void MouseResizeFrame::finalize()
