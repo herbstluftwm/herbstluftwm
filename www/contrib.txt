@@ -1,0 +1,14 @@
+Users contributions
+===================
+
+* tag_spaces by AnomalousBit: groups of tags similar to KDE Plasma activities. Get it from https://github.com/AnomalousBit/tag_spaces[github!]
+* Automatically disable focus_follows_mouse for floating windows by u/pmade. Get it from https://github.com/pjones/hlwmrc/blob/9f38a3023660c8c1b617be7689823f09115ecf75/bin/hlwm-ffm-skip-floats.sh[github!]
+* Layout save and recall function by u/ToPow1. Get it from https://www.reddit.com/r/herbstluftwm/comments/o13vny/layout_save_and_recall_function_for_herbstluftwm[this post on reddit!]
+
+How to contribute?
+------------------
+
+* Clone the repo with +git clone https://github.com/herbstluftwm/herbstluftwm+
+* Open the +herbstluftwm/www/contrib.txt+ file.
+* Edit the file and add your contribution. It uses the https://powerman.name/doc/asciidoc[asciidoc format].
+* Send your pull request; If you want to test the site run the +make+ command (it needs asciidoc installed).
