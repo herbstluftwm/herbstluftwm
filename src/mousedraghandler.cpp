@@ -10,6 +10,7 @@
 
 using std::make_shared;
 using std::shared_ptr;
+using std::weak_ptr;
 
 MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Client* dragClient, DragFunction function)
   : monitors_(monitors)
@@ -214,8 +215,8 @@ void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
 }
 
 MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<FrameLeaf> frame,
-                     std::weak_ptr<FrameSplit> splitX,
-                     std::weak_ptr<FrameSplit> splitY)
+                     weak_ptr<FrameSplit> splitX,
+                     weak_ptr<FrameSplit> splitY)
     : monitors_(monitors)
     , dragFrameX_(splitX)
     , dragFrameY_(splitY)
