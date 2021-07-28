@@ -13,6 +13,7 @@ Current git version
   * The 'spawn' command now prints an error message on exec failure
   * New read-only client attribute 'decoration_geometry'.
   * The cursor shape now indicates resize options.
+  * Frames can be simultaneously resized in x and y direction with the mouse.
   * Bug fixes:
     - Update floating geometry if a client's size hints change
 
