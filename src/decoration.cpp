@@ -250,10 +250,10 @@ ResizeAction Decoration::positionTriggersResize(Point2D p)
 }
 
 /**
- * @brief Find the most apropriate ResizeAction given the current
+ * @brief Find the most appropriate ResizeAction given the current
  * cursor position. This is a very fuzzy version of positionTriggersResize()
  * @param the cursor position
- * @return
+ * @return the suggested return action
  */
 ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
 {
