@@ -991,7 +991,11 @@ class MultiscreenDisplay:
 
     def __exit__(self, type_param, value, traceback):
         self.proc.terminate()
-        self.proc.wait(PROCESS_SHUTDOWN_TIME)
+        try:
+            self.proc.wait(PROCESS_SHUTDOWN_TIME)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+            self.proc.wait(PROCESS_SHUTDOWN_TIME)
 
 
 @pytest.fixture()

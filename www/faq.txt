@@ -233,9 +233,20 @@ mplayer that would be +xv+, for firefox dialogs it is +Dialog+).
 Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames
 -----------------------------------------------------------------------------------------------------------
 Existing tags are not affected by a change of that variable (only new
-ones), so be sure to set it *before* creating any tags. A current
-workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
-autostart file.  You can also 'cycle_layout' in existing tags.
+ones), so be sure to set it *before* creating any tags.
+
+In order to change the layout algorithm for the existing root-frames on all
+tags, put the following in the autostart after setting +default_frame_layout+:
+----
+hc substitute ALGO settings.default_frame_layout \
+    foreach T tags.by-name. \
+    sprintf ATTR '%c.tiling.root.algorithm' T \
+    set_attr ATTR ALGO
+----
+
+On old herbstluftwm versions, a workaround is to put +hc split vertical 0.5; hc
+remove+ at the end in your autostart file.  You can also 'cycle_layout' in
+existing tags.
 
 [[PANELS]]
 Q: How can I start external panels correctly?
