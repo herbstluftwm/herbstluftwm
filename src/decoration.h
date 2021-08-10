@@ -58,6 +58,7 @@ public:
     void updateResizeAreaCursors();
 
     ResizeAction positionTriggersResize(Point2D p);
+    ResizeAction resizeFromRoughCursorPosition(Point2D cursor);
 
 private:
     static Visual* check_32bit_client(Client* c);

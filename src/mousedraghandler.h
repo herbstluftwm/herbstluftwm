@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 
+#include "decoration.h"
 #include "fixprecdec.h"
 #include "rectangle.h"
 
@@ -12,6 +13,7 @@ class FrameSplit;
 class HSTag;
 class Monitor;
 class MonitorManager;
+class ResizeAction;
 
 /**
  * @brief The abstract class MouseDragHandler encapsulates what drag handling
@@ -40,6 +42,9 @@ public:
     //! a MouseDragHandler::Constructor creates a MouseDragHandler object, given the
     //! MonitorManager (as a dependency) and the actual client to drag.
     typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> Constructor;
+
+    //! the way in which the current drag handler affects the window dimensions
+    ResizeAction resizeAction_;
 protected:
     MouseDragHandler() {};
 };
@@ -82,19 +87,25 @@ private:
  */
 class MouseResizeFrame : public MouseDragHandler {
 public:
-    MouseResizeFrame(MonitorManager* monitors, std::shared_ptr<FrameLeaf> frame);
+    MouseResizeFrame(MonitorManager* monitors,
+                     std::shared_ptr<FrameLeaf> frame,
+                     std::weak_ptr<FrameSplit> splitX,
+                     std::weak_ptr<FrameSplit> splitY);
     virtual ~MouseResizeFrame() {};
     virtual void finalize();
     virtual void handle_motion_event(Point2D newCursorPos);
-    static Constructor construct(std::shared_ptr<FrameLeaf> frame);
+    static Constructor construct(std::shared_ptr<FrameLeaf> frame, const ResizeAction& direction);
 private:
     void assertDraggingStillSafe();
 
     MonitorManager*  monitors_;
     Point2D          buttonDragStart_ = {};
-    std::weak_ptr<FrameSplit> dragFrame_; //! the frame whose split is adjusted
-    FixPrecDec       dragStartFraction_ = FixPrecDec::fromInteger(0); //! initial fraction
-    int              dragDistanceUnit_; //! 100% split ratio in pixels
+    std::weak_ptr<FrameSplit> dragFrameX_; //! the frame whose split is adjusted in x direction
+    FixPrecDec       dragStartFractionX_ = FixPrecDec::fromInteger(0); //! initial fraction
+    int              dragDistanceUnitX_ = 1; //! 100% split ratio in pixels
+    std::weak_ptr<FrameSplit> dragFrameY_; //! the frame whose split is adjusted in y direction
+    FixPrecDec       dragStartFractionY_ = FixPrecDec::fromInteger(0); //! initial fraction
+    int              dragDistanceUnitY_ = 1; //! 100% split ratio in pixels
     HSTag*           dragTag_; //! the tag containing the dragFrame
     Monitor*         dragMonitor_ = nullptr; //! the monitor with the dragFrame
     unsigned long    dragMonitorIndex_ = 0;

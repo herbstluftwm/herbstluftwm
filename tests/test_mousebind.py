@@ -1,6 +1,6 @@
 import pytest
-import re
 import math
+from herbstluftwm.types import Point
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
 # in Xvfb when running tests in the CI. Therefore, we maintain two lists of
@@ -181,25 +181,66 @@ def test_drag_minimized_client(hlwm):
         .expect_stderr('cannot drag invisible client')
 
 
-def test_drag_resize_tiled_client(hlwm, mouse):
+@pytest.mark.parametrize('align', ['horizontal', 'vertical'])
+def test_drag_resize_tiled_client(hlwm, mouse, align):
     winid, _ = hlwm.create_client()
-    layout = '(split horizontal:{}:1 (clients max:0) (clients max:0 {}))'
-    hlwm.call(['load', layout.format('0.5', winid)])
+    layout = '(split {}:{}:1 (clients max:0) (clients max:0 {}))'
+    hlwm.call(['load', layout.format(align, '0.5', winid)])
     # Just positioning the mouse pointer, no need to wait for hlwm
     mouse.move_into(winid, x=10, y=30, wait=False)
 
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
-    mouse.move_relative(200, 300)
+    delta = Point(200, 150)
+    mouse.move_relative(delta.x, delta.y)
 
-    monitor_width = int(hlwm.call('monitor_rect').stdout.split(' ')[2])
-    layout_str = hlwm.call('dump').stdout
-    layout_ma = re.match(layout.replace('(', r'\(')
-                               .replace(')', r'\)')
-                               .format('([^:]*)', '.*'), layout_str)
-    expected = 0.5 + 200 / monitor_width
-    actual = float(layout_ma.group(1))
+    monitor_geo = hlwm.attr.monitors.focus.geometry()
+    if align == 'horizontal':
+        expected = 0.5 + delta.x / monitor_geo.width
+    else:
+        expected = 0.5 + delta.y / monitor_geo.height
+    actual = float(hlwm.attr.tags.focus.tiling.root.fraction())
     assert math.isclose(actual, expected, abs_tol=0.01)
+
+
+@pytest.mark.parametrize('dir1', ['left', 'right'])
+@pytest.mark.parametrize('dir2', ['top', 'bottom'])
+def test_drag_resize_tiled_client_in_two_directions(hlwm, mouse, dir1, dir2):
+    winid, _ = hlwm.create_client()
+    # create two splits, keeping the client focused:
+    hlwm.call(['split', dir1])
+    # split the client again:
+    hlwm.call(['split', dir2])
+
+    # dir1 and dir2 implicitly define which corner of the frame is dragged
+    def dragged_corner(rectangle):
+        x = rectangle.x
+        y = rectangle.y
+        if dir1 == 'right':
+            x += rectangle.width
+        if dir2 == 'bottom':
+            y += rectangle.height
+        return Point(x, y)
+
+    geo_before = hlwm.attr.clients.focus.decoration_geometry()
+    corner_before = dragged_corner(geo_before)
+    # Just move the mouse pointer into the interesting corner.
+    # "into" means that the cursor is not on the corner but slightly
+    # moved to the center of the window:
+    cursor_rel = (corner_before * 9 + geo_before.center()) // 10 - geo_before.topleft()
+    mouse.move_into(winid, x=cursor_rel.x, y=cursor_rel.y, wait=False)
+
+    hlwm.call(['drag', winid, 'resize'])
+    assert hlwm.get_attr('clients.dragged.winid') == winid
+
+    delta = Point(80, 70)
+    mouse.move_relative(delta.x, delta.y)
+
+    geo_after = hlwm.attr.clients.focus.decoration_geometry()
+    corner_after = dragged_corner(geo_after)
+    corner_expected = corner_before + delta
+    assert math.isclose(corner_expected.x, corner_after.x, abs_tol=0.01)
+    assert math.isclose(corner_expected.y, corner_after.y, abs_tol=0.01)
 
 
 @pytest.mark.parametrize('live_update', [True, False])

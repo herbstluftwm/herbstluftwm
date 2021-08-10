@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/cursorfont.h>
 #include <sys/wait.h>
 #include <iostream>
 #include <memory>
@@ -632,10 +633,13 @@ IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
 void XMainLoop::draggedClientChanges(Client* draggedClient)
 {
     if (draggedClient) {
+        ResizeAction ra = root_->mouse->resizeAction();
+        auto maybeCursor = ra.toCursorShape();
+        Cursor cursorShape = XCreateFontCursor(X_.display(), maybeCursor.value_or(XC_fleur));
         // listen for mouse motion events:
         XGrabPointer(X_.display(), draggedClient->x11Window(), True,
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
-                GrabModeAsync, None, None, CurrentTime);
+                GrabModeAsync, None, cursorShape, CurrentTime);
     } else { // no client is dragged -> ungrab and clear the queue
         XUngrabPointer(X_.display(), CurrentTime);
         // remove all enternotify-events from the event queue that were

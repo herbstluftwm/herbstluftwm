@@ -249,6 +249,29 @@ ResizeAction Decoration::positionTriggersResize(Point2D p)
     return act;
 }
 
+/**
+ * @brief Find the most appropriate ResizeAction given the current
+ * cursor position. This is a very fuzzy version of positionTriggersResize()
+ * @param the cursor position
+ * @return the suggested return action
+ */
+ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
+{
+    if (!last_scheme) {
+        // this should never happen, so we just randomly pick:
+        // never resize if there is no decoration scheme
+        return ResizeAction();
+    }
+    Point2D cursorRelativeToCenter =
+            cursor - last_outer_rect.tl() - last_outer_rect.dimensions() / 2;
+    ResizeAction ra;
+    ra.left = cursorRelativeToCenter.x < 0;
+    ra.right = !ra.left;
+    ra.top = cursorRelativeToCenter.y < 0;
+    ra.bottom = !ra.top;
+    return ra;
+}
+
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
     auto inner = scheme.outline_to_inner_rect(outline);
