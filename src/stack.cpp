@@ -113,7 +113,11 @@ void Slice::extractWindowsFromSlice(bool real_clients, HSLayer layer,
             if (real_clients) {
                 yield(data.client->x11Window());
             } else {
-                yield(data.client->decorationWindow());
+                if (data.client->decorated_()) {
+                    yield(data.client->decorationWindow());
+                } else {
+                    yield(data.client->x11Window());
+                }
             }
             break;
         case Type::WindowSlice:

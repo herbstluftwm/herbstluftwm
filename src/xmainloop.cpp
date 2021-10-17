@@ -486,6 +486,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         // also update the window title - just to be sure
         c->update_title();
     } else if (!root_->ewmh_.isOwnWindow(event->window)
+               && !Decoration::toClient(event->window)
                && !is_herbstluft_window(X_.display(), event->window)) {
         // the window is not managed.
         HSDebug("MapNotify: briefly managing 0x%lx to apply rules\n", event->window);
@@ -590,8 +591,12 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
 }
 
 void XMainLoop::unmapnotify(XUnmapEvent* event) {
-    HSDebug("name is: UnmapNotify for %lx\n", event->window);
-    root_->clients()->unmap_notify(event->window);
+    HSDebug("name is: UnmapNotify for window=0x%lx and event=0x%lx\n", event->window, event->event);
+    if (event->window == event->event) {
+        // reparenting the window creates multiple unmap notify events,
+        // both for the root window and the window itself.
+        root_->clients()->unmap_notify(event->window);
+    }
     if (event->send_event) {
         // if the event was synthetic, then we need to understand it as a kind request
         // by the window to be unmanaged. I don't understand fully how this is implied

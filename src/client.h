@@ -39,6 +39,7 @@ public:
     Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
+    Attribute_<bool> decorated_;
     Attribute_<bool> visible_;
     bool        dragged_ = false;  // if this client is dragged currently
     int         ignore_unmaps_ = 0;  // Ignore one unmap for each reparenting
@@ -136,6 +137,7 @@ public:
     void updateEwmhState();
 private:
     void floatingGeometryChanged();
+    void fixParentWindow(bool decorated);
     Rectangle decorationGeometry();
     std::string getWindowClass();
     std::string getWindowInstance();

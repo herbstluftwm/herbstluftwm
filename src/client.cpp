@@ -40,6 +40,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
     , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
+    , decorated_(this, "decorated", true)
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
@@ -72,6 +73,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
+    decorated_.setWritable();
     floating_.setWritable();
     keyMask_.setWritable();
     keysInactive_.setWritable();
@@ -110,6 +112,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     float_size_.changedByUser().connect(this, &Client::floatingGeometryChanged);
 
     init_from_X();
+    decorated_.setDoc("whether window border and title are drawn");
     visible_.setDoc("whether this client is rendered currently");
     parent_frame_.setDoc("the frame contaning this client if the client is tiled");
     setDoc("a managed window");
@@ -193,10 +196,13 @@ void Client::make_full_client() {
     // reparented back to root
     XChangeSaveSet(X_.display(), window_, SetModeInsert);
     XReparentWindow(X_.display(), window_, dec->decorationWindow(), 40, 40);
-    // if this client is visible, then reparenting will make it invisible
-    // and will create a unmap notify event
     if (visible_()) {
-        ignore_unmaps_++;
+        // if this client is visible, then reparenting will make it invisible
+        // and will create a unmap notify event.
+        // the xmainloop only reacts to unmap events that come from the window
+        // itself (event->event), and not from the root window. At the present
+        // point, we did not call XSelectInput() yet, so the above
+        // XReparentWindow does not trigger an event for the window.
         visible_ = false;
     }
     // get events from window
@@ -209,6 +215,7 @@ void Client::make_full_client() {
                             |EnterWindowMask|PropertyChangeMask);
     // redraw decoration on title change
     title_.changed().connect(dec.get(), &Decoration::redraw);
+    decorated_.changed().connect(this, &Client::fixParentWindow);
 }
 
 void Client::listen_for_events() {
@@ -585,12 +592,16 @@ void Client::set_visible(bool visible) {
         XGrabServer(X_.display());
         ewmh.windowUpdateWmState(this->window_, WmState::WSNormalState);
         XMapWindow(X_.display(), this->window_);
-        XMapWindow(X_.display(), this->dec->decorationWindow());
+        if (decorated_()) {
+            XMapWindow(X_.display(), this->dec->decorationWindow());
+        }
         XUngrabServer(X_.display());
     } else {
         /* we unmap the client itself so that we can get MapRequest
            events, and because the ICCCM tells us to! */
-        XUnmapWindow(X_.display(), this->dec->decorationWindow());
+        if (decorated_()) {
+            XUnmapWindow(X_.display(), this->dec->decorationWindow());
+        }
         XUnmapWindow(X_.display(), this->window_);
         ewmh.windowUpdateWmState(this->window_, WmState::WSIconicState);
         this->ignore_unmaps_++;
@@ -699,6 +710,25 @@ void Client::floatingGeometryChanged()
     if (is_client_floated()) {
         needsRelayout.emit(tag());
     }
+}
+
+/**
+ * @brief to be called whenever the 'decorated' attribute changed
+ */
+void Client::fixParentWindow(bool decorated)
+{
+    if (!decorated) {
+        XReparentWindow(X_.display(), window_, X_.root(), 40, 40);
+        XUnmapWindow(X_.display(), dec->decorationWindow());
+    } else {
+        if (visible_()) {
+            XMapWindow(X_.display(), dec->decorationWindow());
+        }
+        XReparentWindow(X_.display(), window_, dec->decorationWindow(), 40, 40);
+    }
+    // the unmap triggers an unmap notify for the window itself
+    ignore_unmaps_++;
+    needsRelayout.emit(this->tag());
 }
 
 Rectangle Client::decorationGeometry()
