@@ -509,3 +509,37 @@ def test_floating_effectively_x11_property(hlwm, x11):
                 assert hlwm.attr.clients[winid].floating_effectively() is False
                 assert prop_float is None
                 assert prop_tile[0] == 1
+
+
+def assert_decoration_state_correct(hlwm, x11, winid):
+    handle = x11.window(winid)
+    client_obj = hlwm.attr.clients[winid]
+    assert client_obj.content_geometry() \
+        == x11.get_absolute_geometry(handle)
+    if not client_obj.decorated():
+        assert client_obj.content_geometry() == client_obj.decoration_geometry()
+
+
+def test_decorated_off_vs_x11(hlwm, x11):
+    handle, winid = x11.create_client()
+    hlwm.attr.theme.border_width = 11
+    for floating in [True, False]:
+        hlwm.attr.clients[winid].floating = floating
+        for decorated in [True, False]:
+            hlwm.attr.clients[winid].decorated = decorated
+
+            assert_decoration_state_correct(hlwm, x11, winid)
+
+
+def test_decorated_off_floating_geometry_correct(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.attr.theme.border_width = 8
+    client_obj = hlwm.attr.clients[winid]
+
+    client_obj.floating_geometry = Rectangle(10, 20, 200, 100)
+    client_obj.floating = True
+    client_obj.decorated = False
+
+    assert client_obj.floating_geometry() == client_obj.decoration_geometry()
+
+

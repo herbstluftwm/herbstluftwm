@@ -174,7 +174,12 @@ Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
-    resize_outline(scheme.inner_rect_to_outline(inner), scheme);
+    // if the client is undecorated, the outline is identical to the inner geometry
+    // otherwise, we convert the geometry using the theme
+    auto outline = (client_->decorated_())
+                   ? scheme.inner_rect_to_outline(inner)
+                   : inner;
+    resize_outline(outline, scheme);
     last_rect_inner = true;
 }
 
