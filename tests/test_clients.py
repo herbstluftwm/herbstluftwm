@@ -541,5 +541,3 @@ def test_decorated_off_floating_geometry_correct(hlwm):
     client_obj.decorated = False
 
     assert client_obj.floating_geometry() == client_obj.decoration_geometry()
-
-
