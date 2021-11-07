@@ -516,12 +516,22 @@ def assert_decoration_state_correct(hlwm, x11, winid):
     client_obj = hlwm.attr.clients[winid]
     assert client_obj.content_geometry() \
         == x11.get_absolute_geometry(handle)
-    if not client_obj.decorated():
+    tree = handle.query_tree()
+    if client_obj.decorated():
+        # assume no-zero border:
+        assert client_obj.content_geometry() != client_obj.decoration_geometry()
+        assert tree.root != tree.parent
+    else:
+        # for undecorated
         assert client_obj.content_geometry() == client_obj.decoration_geometry()
+        assert tree.root == tree.parent
+
+    assert client_obj.visible() \
+        == (handle.get_attributes().map_state == 2)
 
 
 def test_decorated_off_vs_x11(hlwm, x11):
-    handle, winid = x11.create_client()
+    _, winid = x11.create_client()
     hlwm.attr.theme.border_width = 11
     for floating in [True, False]:
         hlwm.attr.clients[winid].floating = floating
@@ -529,6 +539,52 @@ def test_decorated_off_vs_x11(hlwm, x11):
             hlwm.attr.clients[winid].decorated = decorated
 
             assert_decoration_state_correct(hlwm, x11, winid)
+
+
+@pytest.mark.parametrize("decorated", [True, False])
+def test_decorated_after_tag_change(hlwm, x11, decorated):
+    _, winid = x11.create_client()
+    hlwm.attr.theme.border_width = 11
+    hlwm.attr.clients[winid].decorated = decorated
+
+    assert_decoration_state_correct(hlwm, x11, winid)
+
+    # switch to other tag
+    hlwm.call('add othertag')
+    hlwm.call('use othertag')
+    assert hlwm.attr.clients[winid].visible() is False
+    assert_decoration_state_correct(hlwm, x11, winid)
+
+    # switch back to visible tag
+    hlwm.call('use_previous')
+    assert hlwm.attr.clients[winid].visible() is True
+    assert_decoration_state_correct(hlwm, x11, winid)
+
+
+def test_decorated_change_while_minimized(hlwm, x11):
+    _, winid = x11.create_client()
+    hlwm.attr.theme.border_width = 11
+    client_obj = hlwm.attr.clients[winid]
+    client_obj.decorated = False
+    sequence = [
+        # change decoration on -> off while minimized
+        ("decorated", True),
+        ("minimized", True),
+        ("decorated", False),
+        ("minimized", False),
+
+        # change decoration off -> on while minimized
+        ("decorated", False),
+        ("minimized", False),
+        ("minimized", True),
+        ("decorated", True),
+        ("minimized", False),
+    ]
+
+    for attribute, value in sequence:
+        client_obj[attribute] = value
+        assert hlwm.attr.clients[winid].visible() is not client_obj['minimized']
+        assert_decoration_state_correct(hlwm, x11, winid)
 
 
 def test_decorated_off_floating_geometry_correct(hlwm):
