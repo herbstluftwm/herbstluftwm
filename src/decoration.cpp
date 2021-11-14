@@ -174,7 +174,12 @@ Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
-    resize_outline(scheme.inner_rect_to_outline(inner), scheme);
+    // if the client is undecorated, the outline is identical to the inner geometry
+    // otherwise, we convert the geometry using the theme
+    auto outline = (client_->decorated_())
+                   ? scheme.inner_rect_to_outline(inner)
+                   : inner;
+    resize_outline(outline, scheme);
     last_rect_inner = true;
 }
 
@@ -274,7 +279,11 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
 
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
+    bool decorated = client_->decorated_();
     auto inner = scheme.outline_to_inner_rect(outline);
+    if (!decorated) {
+        inner = outline;
+    }
     Window win = client_->window_;
 
     auto tile = inner;
@@ -294,15 +303,19 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     //    return;
     //}
 
-    if (scheme.tight_decoration()) {
+    if (decorated && scheme.tight_decoration()) {
         // updating the outline only has an affect for tiled clients
         // because for floating clients, this has been done already
         // right when the window size changed.
         outline = scheme.inner_rect_to_outline(inner);
     }
     last_inner_rect = inner;
-    inner.x -= outline.x;
-    inner.y -= outline.y;
+    if (decorated) {
+        // if the window is decorated, then x/y are relative
+        // to the decoration window's top left
+        inner.x -= outline.x;
+        inner.y -= outline.y;
+    }
     XWindowChanges changes;
     changes.x = inner.x;
     changes.y = inner.y;
@@ -337,33 +350,40 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         last_actual_rect.width = changes.width;
         last_actual_rect.height = changes.height;
     }
-    redrawPixmap();
     XConnection& xcon = xconnection();
-    XSetWindowBackgroundPixmap(xcon.display(), decwin, pixmap);
-    if (!size_changed) {
-        // if size changes, then the window is cleared automatically
-        XClearWindow(xcon.display(), decwin);
-    }
-    if (!client_->dragged_ || settings_.update_dragged_clients()) {
+    if (decorated) {
+        redrawPixmap();
+        XSetWindowBackgroundPixmap(xcon.display(), decwin, pixmap);
+        if (!size_changed) {
+            // if size changes, then the window is cleared automatically
+            XClearWindow(xcon.display(), decwin);
+        }
+        if (!client_->dragged_ || settings_.update_dragged_clients()) {
+            XConfigureWindow(xcon.display(), win, mask, &changes);
+            XMoveResizeWindow(xcon.display(), bgwin,
+                              changes.x, changes.y,
+                              changes.width, changes.height);
+        }
+    } else {
+        // resize the client window
         XConfigureWindow(xcon.display(), win, mask, &changes);
-        XMoveResizeWindow(xcon.display(), bgwin,
-                          changes.x, changes.y,
-                          changes.width, changes.height);
     }
     // update geometry of resizeArea window
-    int bw = 0;
-    if (last_scheme) {
-        bw = last_scheme->border_width();
+    if (decorated) {
+        int bw = 0;
+        if (last_scheme) {
+            bw = last_scheme->border_width();
+        }
+        Rectangle areaGeo;
+        for (size_t i = 0; i < resizeAreaSize; i++) {
+            areaGeo = resizeAreaGeometry(i, bw, outline.width, outline.height);
+            XMoveResizeWindow(xcon.display(), resizeArea[i],
+                              areaGeo.x, areaGeo.y,
+                              areaGeo.width, areaGeo.height);
+        }
+        XMoveResizeWindow(xcon.display(), decwin,
+                          outline.x, outline.y, outline.width, outline.height);
     }
-    Rectangle areaGeo;
-    for (size_t i = 0; i < resizeAreaSize; i++) {
-        areaGeo = resizeAreaGeometry(i, bw, outline.width, outline.height);
-        XMoveResizeWindow(xcon.display(), resizeArea[i],
-                          areaGeo.x, areaGeo.y,
-                          areaGeo.width, areaGeo.height);
-    }
-    XMoveResizeWindow(xcon.display(), decwin,
-                      outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
         client_->send_configure(false);
@@ -376,6 +396,12 @@ void Decoration::updateFrameExtends() {
     int top  = last_inner_rect.y - last_outer_rect.y;
     int right = last_outer_rect.width - last_inner_rect.width - left;
     int bottom = last_outer_rect.height - last_inner_rect.height - top;
+    if (!client_->decorated_()) {
+        left = 0;
+        top = 0;
+        right = 0;
+        bottom = 0;
+    }
     client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
 }
 
@@ -398,8 +424,10 @@ void Decoration::change_scheme(const DecorationScheme& scheme) {
 
 void Decoration::redraw()
 {
-    if (last_scheme) {
-        change_scheme(*last_scheme);
+    if (client_->decorated_()) {
+        if (last_scheme) {
+            change_scheme(*last_scheme);
+        }
     }
 }
 
