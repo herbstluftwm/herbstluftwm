@@ -336,7 +336,7 @@ void Client::redrawRelevantTabBars()
         // if this client is mentioned in another client's tab bar,
         // then update also that
         FrameLeaf* parent = parentFrame();
-        if (parent->getLayout() == LayoutAlgorithm::max) {
+        if (parent && parent->getLayout() == LayoutAlgorithm::max) {
             parent->foreachClient([&](Client* otherClient) {
                 if (otherClient != this) {
                     otherClient->dec->redraw();
@@ -780,6 +780,11 @@ FrameLeaf* Client::parentFrame()
     if (is_client_floated()) {
         return nullptr;
     } else {
+        if (!tag_) {
+            // a fallback if this is called in the early
+            // phase of a client object
+            return nullptr;
+        }
         return tag_->frame->findFrameWithClient(this).get();
     }
 }
