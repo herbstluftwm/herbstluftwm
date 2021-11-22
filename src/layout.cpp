@@ -255,6 +255,7 @@ TilingResult FrameLeaf::layoutMax(Rectangle rect) {
         if (client == clients[selection]) {
             step.needsRaise = true;
         }
+        step.tabs = clients;
         res.add(client, step);
     }
     return res;

@@ -214,7 +214,7 @@ void Client::make_full_client() {
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
     // redraw decoration on title change
-    title_.changed().connect(dec.get(), &Decoration::redraw);
+    title_.changed().connect(this, &Client::redraw);
     decorated_.changed().connect(this, &Client::fixParentWindow);
 }
 
@@ -314,12 +314,40 @@ const DecTriple& Client::getDecTriple() {
     return theme[mostRecentThemeType];
 }
 
+const DecorationScheme& Client::getDecorationScheme(bool focused)
+{
+    return getDecTriple()(focused, urgent_());
+}
+
 void Client::setup_border(bool focused) {
-    dec->change_scheme(getDecTriple()(focused, urgent_()));
+    dec->change_scheme(getDecorationScheme(focused));
+    redrawRelevantTabBars();
+}
+
+void Client::redraw()
+{
+    this->dec->redraw();
+    redrawRelevantTabBars();
+}
+
+void Client::redrawRelevantTabBars()
+{
+    if (!is_client_floated()) {
+        // if this client is mentioned in another client's tab bar,
+        // then update also that
+        FrameLeaf* parent = parentFrame();
+        if (parent->getLayout() == LayoutAlgorithm::max) {
+            parent->foreachClient([&](Client* otherClient) {
+                if (otherClient != this) {
+                    otherClient->dec->redraw();
+                }
+            });
+        }
+    }
 }
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
-    dec->resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
+    dec->resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()), {});
     mostRecentThemeType = Theme::Type::Fullscreen;
 }
 
@@ -337,8 +365,9 @@ void Client::lower()
  * @param the outer geometry of the client
  * @param whether this client has the focus
  * @param whether the client should use the 'minimal decoration' scheme
+ * @param the tabs of the current window
  */
-void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration) {
+void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, vector<Client*> tabs) {
     // only apply minimal decoration if the window is not pseudotiled
     auto themetype = (minimalDecoration && !pseudotile_())
             ? Theme::Type::Minimal : Theme::Type::Tiling;
@@ -353,7 +382,7 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
         rect.width = std::min(outline.width, rect.width);
         rect.height = std::min(outline.height, rect.height);
     }
-    dec->resize_outline(rect, scheme);
+    dec->resize_outline(rect, scheme, tabs);
 }
 
 /**

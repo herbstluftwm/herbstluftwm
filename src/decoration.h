@@ -41,7 +41,7 @@ public:
     void createWindow();
     virtual ~Decoration();
     // resize such that the decorated outline of the window fits into rect
-    void resize_outline(Rectangle outline, const DecorationScheme& scheme);
+    void resize_outline(Rectangle outline, const DecorationScheme& scheme, std::vector<Client*> tabs);
 
     // resize such that the window content fits into rect
     void resize_inner(Rectangle inner, const DecorationScheme& scheme);
@@ -77,6 +77,7 @@ private:
     Rectangle   last_inner_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
+    std::vector<Client*>    tabs_ = {}; //! the tabs shown in the decoration
     /* X specific things */
     Visual*                 visual = nullptr;
     Colormap                colormap = 0;

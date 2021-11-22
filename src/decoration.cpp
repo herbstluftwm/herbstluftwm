@@ -179,7 +179,7 @@ void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
     auto outline = (client_->decorated_())
                    ? scheme.inner_rect_to_outline(inner)
                    : inner;
-    resize_outline(outline, scheme);
+    resize_outline(outline, scheme, {});
     last_rect_inner = true;
 }
 
@@ -277,7 +277,7 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
     return ra;
 }
 
-void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
+void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
 {
     bool decorated = client_->decorated_();
     auto inner = scheme.outline_to_inner_rect(outline);
@@ -340,6 +340,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
                      || outline.height != last_outer_rect.height;
     last_outer_rect = outline;
     last_rect_inner = false;
+    tabs_ = tabs;
     client_->last_size_ = inner;
     last_scheme = &scheme;
     // redraw
@@ -418,7 +419,7 @@ void Decoration::change_scheme(const DecorationScheme& scheme) {
     if (last_rect_inner) {
         resize_inner(last_inner_rect, scheme);
     } else {
-        resize_outline(last_outer_rect, scheme);
+        resize_outline(last_outer_rect, scheme, tabs_);
     }
 }
 
@@ -526,8 +527,107 @@ void Decoration::redrawPixmap() {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
         };
-        drawText(pix, gc, s.title_font->data(), s.title_color(),
-                 titlepos, client_->title_(), inner.width);
+        if (tabs_.size() <= 1) {
+            drawText(pix, gc, s.title_font->data(), s.title_color(),
+                     titlepos, client_->title_(), inner.width);
+        } else {
+            int tabWidth = outer.width / tabs_.size();
+            int tabIndex = 0;
+            int tabPadLeft = inner.x;
+            // if there is more than one tab
+            for (Client* tabClient : tabs_) {
+                bool isFirst = tabClient == tabs_.front();
+                bool isLast = tabClient == tabs_.back();
+                // we use the geometry from client_'s scheme,
+                // but the colors from TabScheme
+                const DecorationScheme& tabScheme =
+                        (tabClient == client_)
+                        ? s : tabClient->getDecorationScheme(false);
+                Rectangle tabGeo {
+                    tabIndex * tabWidth,
+                    0,
+                    tabWidth + int(isLast ? (outer.width % tabs_.size()) : 0),
+                    int(s.title_height() + s.padding_top()), // tab height
+                };
+                int titleWidth = tabGeo.width;
+                if (tabClient == client_) {
+                    tabGeo.height += s.border_width() - s.inner_width();
+                }
+                // tab background
+                vector<XRectangle> fillRects = {
+                    { (short)tabGeo.x, (short)tabGeo.y,
+                      (unsigned short)tabGeo.width, (unsigned short)tabGeo.height },
+                };
+                XSetForeground(display, gc, get_client_color(tabScheme.border_color));
+                XFillRectangles(display, pix, gc, &fillRects.front(), fillRects.size());
+                vector<XRectangle> borderRects = {
+                    // top edge
+                    { (short)tabGeo.x, (short)tabGeo.y,
+                      (unsigned short)tabGeo.width, (unsigned short)tabScheme.outer_width },
+                };
+                if (isFirst) {
+                    // edge on the left
+                    borderRects.push_back(
+                    { (short)tabGeo.x, (short)tabGeo.y,
+                      (unsigned short)tabScheme.outer_width, (unsigned short)tabGeo.height }
+                    );
+                } else if (client_ == tabClient) {
+                    // shorter edge on the left
+                    borderRects.push_back(
+                    { (short)tabGeo.x, (short)tabGeo.y,
+                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
+                    );
+                }
+                if (isLast) {
+                    // edge on the right
+                    borderRects.push_back(
+                    { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
+                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)tabGeo.height }
+                    );
+                    titleWidth -= tabScheme.outer_width;
+                } else if (client_ == tabClient) {
+                    // shorter edge on the right
+                    borderRects.push_back(
+                    { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
+                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
+                    );
+                    titleWidth -= tabScheme.outer_width;
+                }
+                XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
+                XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
+                if (client_ != tabClient) {
+                    // horizontal border connecting the focused tab with the outer border
+                    Point2D westEnd = tabGeo.bl();
+                    XSetForeground(display, gc, get_client_color(s.outer_color));
+                    XFillRectangle(display, pix, gc,
+                                   westEnd.x, westEnd.y,
+                                   tabGeo.width, s.outer_width()
+                                   );
+                    // horizontal border connecting the focused tab content with the outer border
+                    int remainingBorderColorHeight = s.border_width() - s.inner_width() - s.outer_width();
+                    int fillWidth = tabGeo.width;
+                    if (isFirst || isLast) {
+                        fillWidth -= s.outer_width();
+                    }
+                    if (isFirst) {
+                        westEnd.x += s.outer_width();
+                    }
+                    XSetForeground(display, gc, get_client_color(s.border_color));
+                    XFillRectangle(display, pix, gc,
+                                   westEnd.x,
+                                   westEnd.y + s.outer_width(),
+                                   fillWidth, remainingBorderColorHeight
+                                   );
+                }
+                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
+                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
+                         tabClient->title_(), titleWidth - tabPadLeft);
+                tabIndex++;
+            }
+        }
     }
     // clean up
     XFreeGC(display, gc);

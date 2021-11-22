@@ -243,7 +243,7 @@ void Monitor::applyLayout() {
             c->resize_floating(this, clientFocused);
         } else {
             bool minDec = p.second.minimalDecoration;
-            c->resize_tiling(p.second.geometry, clientFocused, minDec);
+            c->resize_tiling(p.second.geometry, clientFocused, minDec, p.second.tabs);
         }
     }
     for (auto& c : tag->floating_clients_) {
