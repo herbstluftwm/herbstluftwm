@@ -37,6 +37,12 @@ public:
 
 class Decoration {
 public:
+    class ClickArea {
+    public:
+        Rectangle area_ = {}; //! where to click
+        Client* tabClient_ = {}; //! the client that will get activated
+    };
+
     Decoration(Client* client_, Settings& settings_);
     void createWindow();
     virtual ~Decoration();
@@ -57,6 +63,7 @@ public:
 
     void updateResizeAreaCursors();
 
+    std::experimental::optional<ClickArea> positionHasButton(Point2D p);
     ResizeAction positionTriggersResize(Point2D p);
     ResizeAction resizeFromRoughCursorPosition(Point2D cursor);
 
@@ -78,6 +85,7 @@ private:
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
     std::vector<Client*>    tabs_ = {}; //! the tabs shown in the decoration
+    std::vector<ClickArea>  buttons_ = {};
     /* X specific things */
     Visual*                 visual = nullptr;
     Colormap                colormap = 0;

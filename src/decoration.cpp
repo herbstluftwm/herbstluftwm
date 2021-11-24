@@ -210,6 +210,17 @@ void Decoration::updateResizeAreaCursors()
     }
 }
 
+std::experimental::optional<Decoration::ClickArea>
+Decoration::positionHasButton(Point2D p)
+{
+    for (auto& button : buttons_) {
+        if (button.area_.contains(p)) {
+            return button;
+        }
+    }
+    return {};
+}
+
 /**
  * @brief Tell whether clicking on the decoration at the specified location
  * should result in resizing or moving the client
@@ -467,6 +478,7 @@ void Decoration::redrawPixmap() {
         }
         dec->pixmap = XCreatePixmap(display, decwin, outer.width, outer.height, depth);
     }
+    buttons_.clear();
     Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(display, pix, 0, nullptr);
 
@@ -549,6 +561,13 @@ void Decoration::redrawPixmap() {
                     tabWidth + int(isLast ? (outer.width % tabs_.size()) : 0),
                     int(s.title_height() + s.padding_top()), // tab height
                 };
+                if (tabClient != client_) {
+                    // only add clickable buttons for the other clients
+                    ClickArea tabButton;
+                    tabButton.area_ = tabGeo;
+                    tabButton.tabClient_ = tabClient;
+                    buttons_.push_back(tabButton);
+                }
                 int titleWidth = tabGeo.width;
                 if (tabClient == client_) {
                     tabGeo.height += s.border_width() - s.inner_width();

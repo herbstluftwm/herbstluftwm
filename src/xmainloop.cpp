@@ -239,15 +239,27 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
         if (!client) {
             client = Decoration::toClient(be->window);
         }
+        if (client && client->dec)
         if (client) {
+            Client* tabClient = {};
+            if (client->dec->decorationWindow() && be->button == Button1) {
+                auto maybeClick = client->dec->positionHasButton({be->x, be->y});
+                if (maybeClick.has_value()) {
+                    tabClient = maybeClick.value().tabClient_;
+                }
+            }
             bool raise = root_->settings->raise_on_click();
-            focus_client(client, false, true, raise);
-            if (be->window == client->decorationWindow()) {
-                ResizeAction resize = client->dec->positionTriggersResize({be->x, be->y});
-                if (resize) {
-                    mm->mouse_initiate_resize(client, resize);
-                } else {
-                    mm->mouse_initiate_move(client, {});
+            if (tabClient) {
+                focus_client(tabClient, false, true, raise);
+            } else {
+                focus_client(client, false, true, raise);
+                if (be->window == client->decorationWindow()) {
+                    ResizeAction resize = client->dec->positionTriggersResize({be->x, be->y});
+                    if (resize) {
+                        mm->mouse_initiate_resize(client, resize);
+                    } else {
+                        mm->mouse_initiate_move(client, {});
+                    }
                 }
             }
         }
