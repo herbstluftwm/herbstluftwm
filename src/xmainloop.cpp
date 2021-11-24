@@ -239,7 +239,6 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
         if (!client) {
             client = Decoration::toClient(be->window);
         }
-        if (client && client->dec)
         if (client) {
             Client* tabClient = {};
             if (client->dec->decorationWindow() && be->button == Button1) {
