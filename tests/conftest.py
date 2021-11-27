@@ -865,6 +865,15 @@ class X11:
         else:
             return tree.parent
 
+    def get_window_under_cursor(self):
+        parent = None
+        window = self.root
+        while window is not None and window != 0:
+            parent = window
+            window = window.query_pointer().child
+            print("window under cursor: {}".format(window))
+        return parent
+
     def get_absolute_top_left(self, window):
         """return the absolute (x,y) coordinate of the given window,
         i.e. relative to the root window"""
