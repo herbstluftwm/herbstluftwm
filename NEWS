@@ -7,6 +7,8 @@ older versions.
 Current git version
 -------------------
 
+  * Tabbed window titles in the 'max' layout algorithm (controllable via the
+    'tabbed_max' setting)
   * New autostart object with attributes 'path', 'running', 'pid', 'last_status'
   * New client attribute 'floating_effectively' and associated X11 properties
     'HLWM_FLOATING_WINDOW' and 'HLWM_TILING_WINDOW'
