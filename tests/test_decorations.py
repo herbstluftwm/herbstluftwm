@@ -349,7 +349,6 @@ def test_decoration_tab_title_update(hlwm, x11):
     assert x11.decoration_screenshot(win_handles[0]).color_count(text_color) > 5
 
 
-
 @pytest.mark.parametrize("running_clients_num", [4])
 def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clients_num):
     hlwm.call(['load', '(clients max:0 {})'.format(' '.join(running_clients))])
