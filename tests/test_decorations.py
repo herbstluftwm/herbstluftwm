@@ -254,3 +254,27 @@ def test_frame_holes_for_pseudotiled_client(hlwm, x11, frame_bg_transparent):
     img.pixel(0, h // 2) == black
     img.pixel(w - 1, h // 2) == black
     img.pixel(w // 2, h // 2) == black
+
+
+def test_decoration_click_into_window_does_not_change_tab(hlwm, mouse):
+    wins = hlwm.create_clients(2)
+    hlwm.call(['load', '(clients max:1 {})'.format(' '.join(wins))])
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+
+    assert hlwm.attr.clients.focus.winid() == wins[1]
+
+    # move into the window and click:
+    mouse.move_into(wins[0], x=4, y=4)
+    mouse.click('1')
+
+    # this does not change the focus:
+    assert hlwm.attr.clients.focus.winid() == wins[1]
+
+    # to double check:
+    # if the cursor was 8px further up, the click
+    # however would change the tab
+    mouse.move_relative(0, -8)
+    mouse.click('1')
+
+    assert hlwm.attr.clients.focus.winid() == wins[0]

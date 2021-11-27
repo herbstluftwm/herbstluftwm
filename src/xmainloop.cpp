@@ -241,7 +241,9 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
         }
         if (client) {
             Client* tabClient = {};
-            if (client->dec->decorationWindow() && be->button == Button1) {
+            if (be->window == client->dec->decorationWindow()
+                && be->button == Button1)
+            {
                 auto maybeClick = client->dec->positionHasButton({be->x, be->y});
                 if (maybeClick.has_value()) {
                     tabClient = maybeClick.value().tabClient_;
