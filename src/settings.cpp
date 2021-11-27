@@ -136,7 +136,7 @@ Settings::Settings()
     );
     tabbed_max.setDoc(
         "if activated, multiple windows in a frame with the \'max\' "
-        "algorithm are drawn as tabs."
+        "layout algorithm are drawn as tabs."
     );
 }
 
