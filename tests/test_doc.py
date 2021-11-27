@@ -211,3 +211,22 @@ def test_help_on_children_vs_json(hlwm, clsname, object_path, json_doc):
             # then there should be one in the cpp source
             # and thus also not in the help output:
             assert f"Entry '{name}'" not in help_txt
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_attribute_doc_in_json(hlwm, clsname, object_path, json_doc):
+    """
+    Verify that if an attribute has a doc string (according to the 'help' command)
+    then the doc string is also present in the json.
+    """
+    path = object_path(hlwm)
+
+    for _, attribute in json_doc['objects'][clsname]['attributes'].items():
+        name = attribute['name']
+        help_txt = hlwm.call(['help', f'{path}.{name}'.lstrip('.')]).stdout
+        # the doc is the last line of the help text
+        doc_in_help = help_txt.strip().splitlines()[-1]
+        if not doc_in_help.startswith('Current value:'):
+            # if there is a doc printed by 'help', then it
+            # should also be present in the json:
+            assert doc_in_help == attribute['doc']

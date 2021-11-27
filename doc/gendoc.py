@@ -456,11 +456,12 @@ class ObjectInformation:
     def process_member_init(self):
         """try to pass collected member initializations and docs to members"""
         for (clsname, attrs), attr in self.member2info.items():
-            if attr.constructor_args is not None:
-                continue
-            init_list = self.member2init.get((clsname, attr.cpp_name), None)
-            if init_list is not None:
-                attr.add_constructor_args(init_list)
+            if attr.constructor_args is None:
+                # if the attribute wasn't initialized directly during declaration,
+                # then try to find it from the initalizer lists:
+                init_list = self.member2init.get((clsname, attr.cpp_name), None)
+                if init_list is not None:
+                    attr.add_constructor_args(init_list)
             doc = self.member2doc.get((clsname, attr.cpp_name), None)
             if doc is not None:
                 attr.doc = doc
