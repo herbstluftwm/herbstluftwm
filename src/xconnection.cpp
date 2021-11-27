@@ -622,3 +622,29 @@ const char* XConnection::requestCodeToString(int requestCode)
     }
     return nullptr;
 }
+
+#define DetailCodeAndString(C)  { C, #C }
+/**
+ * @brief print the name of the 'detail' of a XFocusedChangedEvent
+ * @param the 'detail' of a XFocusedChangedEvent
+ * @return
+ */
+const char* XConnection::focusChangedDetailToString(int focusedChangedEventDetail)
+{
+    vector<pair<int, const char*>> table = {
+        DetailCodeAndString(NotifyAncestor),
+        DetailCodeAndString(NotifyVirtual),
+        DetailCodeAndString(NotifyInferior),
+        DetailCodeAndString(NotifyNonlinear),
+        DetailCodeAndString(NotifyNonlinearVirtual),
+        DetailCodeAndString(NotifyPointer),
+        DetailCodeAndString(NotifyPointerRoot),
+        DetailCodeAndString(NotifyDetailNone),
+    };
+    for (auto& e : table) {
+        if (e.first == focusedChangedEventDetail) {
+            return e.second;
+        }
+    }
+    return nullptr;
+}

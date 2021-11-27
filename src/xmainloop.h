@@ -42,7 +42,7 @@ private:
     void destroynotify(XUnmapEvent* event);
     void enternotify(XCrossingEvent* ce);
     void expose(XEvent* event);
-    void focusin(XEvent* event);
+    void focusin(XFocusChangeEvent* event);
     void keypress(XKeyEvent* event);
     void mappingnotify(XMappingEvent* event);
     void motionnotify(XMotionEvent* event);

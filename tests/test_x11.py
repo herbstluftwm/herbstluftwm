@@ -1,4 +1,5 @@
 import pytest
+from Xlib import X
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -47,3 +48,17 @@ def test_client_moveresizes_itself(hlwm, x11):
     assert (win_geo.width, win_geo.height) == (300, 200)
     x, y = x11.get_absolute_top_left(w)
     assert (x, y) == (60, 70)
+
+
+def test_focus_steal_via_xsetinputfocus(hlwm, x11):
+    oldfocus, old_id = x11.create_client()
+    newfocus, new_id = x11.create_client()
+
+    hlwm.call(['jumpto', old_id])
+    assert hlwm.attr.clients.focus.winid() == old_id
+
+    # steal the focus like XSetInputFocus in `xdotool windowfocus` would do it:
+    x11.display.set_input_focus(newfocus, X.RevertToParent, X.CurrentTime)
+    x11.display.sync()
+
+    assert hlwm.attr.clients.focus.winid() == new_id
