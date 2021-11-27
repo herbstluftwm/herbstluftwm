@@ -363,5 +363,3 @@ def test_fullscreen_above_unmanaged(hlwm, x11, mouse, decorated):
     # double check that disabling fullscreen lowers the window again:
     hlwm.attr.clients[fs_winid].fullscreen = False
     assert x11.get_window_under_cursor() == um
-
-
