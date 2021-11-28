@@ -126,7 +126,7 @@ hc set frame_gap 4
 hc attr theme.title_height 15
 hc attr theme.title_font 'Dejavu Sans:pixelsize=12'  # example using Xft
 # hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
-hc attr theme.padding_top 2  # space below the title's baseline (i.e. text depth)
+hc attr theme.padding_top 3  # space below the title's baseline (i.e. text depth)
 hc attr theme.active.color '#345F0Cef'
 hc attr theme.title_color '#ffffff'
 hc attr theme.normal.color '#323232dd'
@@ -146,7 +146,7 @@ for state in active urgent normal ; do
     hc substitute C theme.${state}.inner_color \
         attr theme.${state}.outer_color C
 done
-hc attr theme.active.outer_width 1
+hc attr theme.tiling.outer_width 1
 hc attr theme.background_color '#141414'
 
 hc set window_gap 0

@@ -243,7 +243,7 @@ void Monitor::applyLayout() {
             c->resize_floating(this, clientFocused);
         } else {
             bool minDec = p.second.minimalDecoration;
-            c->resize_tiling(p.second.geometry, clientFocused, minDec);
+            c->resize_tiling(p.second.geometry, clientFocused, minDec, p.second.tabs);
         }
     }
     for (auto& c : tag->floating_clients_) {
@@ -539,7 +539,11 @@ void Monitor::restack() {
      * manually such that it is above the panel */
     Client* client = tag->focusedClient();
     if (client && client->fullscreen_) {
-        fullscreenFocus = client->decorationWindow();
+        if (client->decorated_()) {
+            fullscreenFocus = client->decorationWindow();
+        } else {
+            fullscreenFocus = client->x11Window();
+        }
         XRaiseWindow(g_display, fullscreenFocus);
     }
     // collect all other windows in a vector and pass it to XRestackWindows

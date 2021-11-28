@@ -336,3 +336,30 @@ def test_focused_on_other_monitor_above_fullscreen(hlwm, focus_other_monitor):
     # above
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
         == [win_focused, win_fullscreen]
+
+
+@pytest.mark.parametrize("decorated", [True, False])
+def test_fullscreen_above_unmanaged(hlwm, x11, mouse, decorated):
+    """
+    This test verifies that normal windows are below unmanaged windows (such as
+    panels) and that focused fullscreen windows cover the unmanaged windows.
+    """
+    # create an un-managed window:
+    um, um_winid = x11.create_client(geometry=(100, 100, 100, 100), force_unmanage=True)
+
+    # create a managed window without decorations
+    fs, fs_winid = x11.create_client()
+    hlwm.attr.clients[fs_winid].decorated = decorated
+
+    # move to the middle of the unmanaged window
+    mouse.move_to(150, 150)
+    # unmanaged windows are above normal windows:
+    assert x11.get_window_under_cursor() == um
+
+    # but below fullscreen windows:
+    hlwm.attr.clients[fs_winid].fullscreen = True
+    assert x11.get_window_under_cursor() == fs
+
+    # double check that disabling fullscreen lowers the window again:
+    hlwm.attr.clients[fs_winid].fullscreen = False
+    assert x11.get_window_under_cursor() == um
