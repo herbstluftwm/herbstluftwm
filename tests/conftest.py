@@ -681,6 +681,13 @@ class RawImage:
                 count += 1
         return count
 
+    def color_count_dict(self):
+        """return a dictionary telling how often each color occurs"""
+        result = {}
+        for pix in self.data:
+            result[pix] = result.get(pix, 0) + 1
+        return result
+
     @staticmethod
     def rgb2string(rgb_triple):
         return '#%02x%02x%02x' % rgb_triple
@@ -850,6 +857,10 @@ class X11:
     def decoration_screenshot(self, win_handle):
         decoration = self.get_decoration_window(win_handle)
         return self.screenshot(decoration)
+
+    def set_window_title(self, win_handle, title):
+        self.set_property_textlist('_NET_WM_NAME', [title], window=win_handle)
+        self.sync_with_hlwm()
 
     def sync_with_hlwm(self):
         self.display.sync()

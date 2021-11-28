@@ -1077,6 +1077,10 @@ raise_on_click (Boolean)::
     If set, a window is raised if it is clicked. The value of this setting is
     only noticed in floating mode.
 
+tabbed_max (Boolean)::
+    If set, multiple windows in a frame with the 'max'
+    layout algorithm are drawn as tabs.
+
 window_border_width (Integer)::
     Border width of a window.
     *Warning:* This only exists for compatibility reasons; it is only an alias for

@@ -111,7 +111,7 @@ public:
     Rectangle outer_floating_rect();
 
     void setup_border(bool focused);
-    void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration);
+    void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, std::vector<Client*> tabs);
     void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
@@ -138,6 +138,8 @@ public:
 private:
     void floatingGeometryChanged();
     void fixParentWindow(bool decorated);
+    void redraw();
+    void redrawRelevantTabBars();
     Rectangle decorationGeometry();
     std::string getWindowClass();
     std::string getWindowInstance();
@@ -152,6 +154,7 @@ private:
     XConnection& X_;
     std::string tagName();
     const DecTriple& getDecTriple();
+    const DecorationScheme& getDecorationScheme(bool focused);
     Theme::Type mostRecentThemeType;
 };
 

@@ -20,6 +20,7 @@ public:
                          //! by another window (e.g. in max layout)
     bool minimalDecoration = false; //! minimal window decration, e.g. when
                                     //! smart_window_surroundings is active
+    std::vector<Client*> tabs = {}; //! tabs, including the client itself
 };
 
 // a tiling result contains the movement commands etc. for all clients

@@ -1,3 +1,4 @@
+from herbstluftwm.types import Point
 from conftest import RawImage
 from conftest import HlwmBridge
 import pytest
@@ -70,8 +71,7 @@ def screenshot_with_title(x11, win_handle, title):
     """ set the win_handle's window title and then
     take a screenshot
     """
-    x11.set_property_textlist('_NET_WM_NAME', [title], window=win_handle)
-    x11.sync_with_hlwm()
+    x11.set_window_title(win_handle, title)
     # double check that hlwm has updated the client's title:
     winid = x11.winid_str(win_handle)
     hlwm = HlwmBridge.INSTANCE
@@ -254,3 +254,141 @@ def test_frame_holes_for_pseudotiled_client(hlwm, x11, frame_bg_transparent):
     img.pixel(0, h // 2) == black
     img.pixel(w - 1, h // 2) == black
     img.pixel(w // 2, h // 2) == black
+
+
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_decoration_tab_colors(hlwm, x11, running_clients, running_clients_num):
+    active_color = (200, 23, 0)  # something unique
+    normal_color = (23, 200, 0)  # something unique
+    hlwm.attr.theme.active.color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.active.title_color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.normal.color = RawImage.rgb2string(normal_color)
+    hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
+
+    hlwm.attr.theme.title_height = 20
+    hlwm.call(['set_layout', 'max'])
+    # split twice to make tab area smaller and screenshots faster :-)
+    hlwm.call(['split', 'bottom'])
+    hlwm.call(['split', 'bottom'])
+
+    winhandle = x11.window(hlwm.attr.clients.focus.winid())
+    img = x11.decoration_screenshot(winhandle)
+    color_count = img.color_count_dict()
+    # we have three tabs, and one of them should have the active color:
+    assert color_count[active_color] * (running_clients_num - 1) == color_count[normal_color]
+
+    # if we disable tabs, then the 'normal_color' should disappear:
+    hlwm.attr.settings.tabbed_max = False
+    winhandle = x11.window(hlwm.attr.clients.focus.winid())
+    img = x11.decoration_screenshot(winhandle)
+    new_color_count = img.color_count_dict()
+    assert normal_color not in new_color_count
+    assert new_color_count[active_color] == running_clients_num * color_count[active_color]
+
+
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_decoration_tab_urgent(hlwm, x11, running_clients, running_clients_num):
+    active_color = (200, 23, 0)  # something unique
+    normal_color = (23, 200, 0)  # something unique
+    urgent_color = (17, 2, 189)  # something unique
+    hlwm.attr.theme.active.color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.active.title_color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.normal.color = RawImage.rgb2string(normal_color)
+    hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
+    hlwm.attr.theme.urgent.color = RawImage.rgb2string(urgent_color)
+    hlwm.attr.theme.urgent.title_color = RawImage.rgb2string(urgent_color)
+
+    hlwm.attr.theme.title_height = 20
+    hlwm.call(['load', '(clients max:0 {})'.format(' '.join(running_clients))])
+    # split twice to make tab area smaller and screenshots faster :-)
+    hlwm.call(['split', 'bottom'])
+    hlwm.call(['split', 'bottom'])
+
+    winhandle = x11.window(running_clients[0])
+    img = x11.decoration_screenshot(winhandle)
+    color_count = img.color_count_dict()
+    assert urgent_color not in color_count
+
+    # make one of the unfocused tabs urgent
+    x11.make_window_urgent(x11.window(running_clients[2]))
+    img = x11.decoration_screenshot(winhandle)
+    new_color_count = img.color_count_dict()
+    assert urgent_color in new_color_count
+    # there is one 'normal' and one 'urgent' tab, so the colors should
+    # appear similarly often:
+    assert new_color_count[urgent_color] == new_color_count[normal_color]
+    assert new_color_count[normal_color] == color_count[normal_color] / 2
+
+
+def test_decoration_tab_title_update(hlwm, x11):
+    text_color = (212, 189, 140)
+    hlwm.attr.theme.title_color = RawImage.rgb2string(text_color)
+    hlwm.attr.theme.title_height = 20
+    hlwm.call(['set_layout', 'max'])
+    # split twice to make tab area smaller and screenshots faster :-)
+    hlwm.call(['split', 'bottom'])
+    hlwm.call(['split', 'bottom'])
+
+    count = 5
+    win_handles = [x11.create_client()[0] for _ in range(0, count)]
+
+    # empty all window titles:
+    for wh in win_handles:
+        x11.set_window_title(wh, '')
+
+    # focus handle 0:
+    hlwm.call(['jumpto', x11.winid_str(win_handles[0])])
+
+    # take a screenshot, it should not contain the text_color:
+    assert x11.decoration_screenshot(win_handles[0]).color_count(text_color) == 0
+
+    # change the title of an unfocused window:
+    x11.set_window_title(win_handles[2], 'SOMETHING')
+    # this change should now be visible in the tab bar, at least 5 pixels
+    # should have this color now:
+    assert x11.decoration_screenshot(win_handles[0]).color_count(text_color) > 5
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clients_num):
+    hlwm.call(['load', '(clients max:0 {})'.format(' '.join(running_clients))])
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+
+    geo = hlwm.attr.clients.focus.decoration_geometry()
+    tabbar_top_left = geo.topleft()
+    tabbar_bottom_right = geo.topleft() + Point(geo.width, hlwm.attr.theme.title_height())
+    for idx in reversed(range(0, running_clients_num)):
+        # pick a point between top left corner of the title bar
+        # and the bottom right corner of the title bar:
+        # the extra 0.5 makes that we click in the middle of the tab
+        ratio = (idx + 0.5) / running_clients_num
+        cursor = tabbar_top_left * (1 - ratio) + tabbar_bottom_right * ratio
+        mouse.move_to(cursor.x, cursor.y)
+        mouse.click('1')
+
+        assert hlwm.attr.clients.focus.winid() == running_clients[idx]
+
+
+def test_decoration_click_into_window_does_not_change_tab(hlwm, mouse):
+    wins = hlwm.create_clients(2)
+    hlwm.call(['load', '(clients max:1 {})'.format(' '.join(wins))])
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+
+    assert hlwm.attr.clients.focus.winid() == wins[1]
+
+    # move into the window and click:
+    mouse.move_into(wins[0], x=4, y=4)
+    mouse.click('1')
+
+    # this does not change the focus:
+    assert hlwm.attr.clients.focus.winid() == wins[1]
+
+    # to double check:
+    # if the cursor was 8px further up, the click
+    # however would change the tab
+    mouse.move_relative(0, -8)
+    mouse.click('1')
+
+    assert hlwm.attr.clients.focus.winid() == wins[0]

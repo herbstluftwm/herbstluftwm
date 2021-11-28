@@ -42,6 +42,10 @@ struct Rectangle {
 
     Rectangle intersectionWith(const Rectangle& other) const;
     int manhattanDistanceTo(Rectangle& other) const;
+    bool contains(Point2D p) const {
+        return x <= p.x && p.x < x + width
+                && y <= p.y && p.y < y + height;
+    };
 
     int x;
     int y;
