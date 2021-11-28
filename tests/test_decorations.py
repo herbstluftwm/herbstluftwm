@@ -363,7 +363,6 @@ def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clie
         # and the bottom right corner of the title bar:
         # the extra 0.5 makes that we click in the middle of the tab
         ratio = (idx + 0.5) / running_clients_num
-        print(f'ratio = {ratio}')
         cursor = tabbar_top_left * (1 - ratio) + tabbar_bottom_right * ratio
         mouse.move_to(cursor.x, cursor.y)
         mouse.click('1')
