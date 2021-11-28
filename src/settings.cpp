@@ -70,6 +70,7 @@ Settings::Settings()
         &raise_on_focus_temporarily,
         &raise_on_click,
         &gapless_grid,
+        &tabbed_max,
         &hide_covered_windows,
         &smart_frame_surroundings,
         &smart_window_surroundings,
@@ -111,6 +112,7 @@ Settings::Settings()
     frame_bg_transparent.setWritable();
     for (auto i : {&always_show_frame,
          &gapless_grid,
+         &tabbed_max,
          &smart_frame_surroundings,
          &smart_window_surroundings,
          &raise_on_focus_temporarily}) {
@@ -131,6 +133,10 @@ Settings::Settings()
     setDoc(
         "This has an attribute for each setting. Many settings are "
         "wrappers around attributes and only exist for compatibility."
+    );
+    tabbed_max.setDoc(
+        "if activated, multiple windows in a frame with the \'max\' "
+        "layout algorithm are drawn as tabs."
     );
 }
 
