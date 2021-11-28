@@ -309,7 +309,7 @@ def test_decoration_tab_urgent(hlwm, x11, running_clients, running_clients_num):
     color_count = img.color_count_dict()
     assert urgent_color not in color_count
 
-    # make one of the unfocsed tabs urgent
+    # make one of the unfocused tabs urgent
     x11.make_window_urgent(x11.window(running_clients[2]))
     img = x11.decoration_screenshot(winhandle)
     new_color_count = img.color_count_dict()
@@ -358,8 +358,6 @@ def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clie
     geo = hlwm.attr.clients.focus.decoration_geometry()
     tabbar_top_left = geo.topleft()
     tabbar_bottom_right = geo.topleft() + Point(geo.width, hlwm.attr.theme.title_height())
-    print(f"tl {tabbar_top_left}")
-    print(f"br {tabbar_bottom_right}")
     for idx in reversed(range(0, running_clients_num)):
         # pick a point between top left corner of the title bar
         # and the bottom right corner of the title bar:
