@@ -460,8 +460,40 @@ void XMainLoop::expose(XEvent* event) {
     //HSDebug("name is: Expose for window %lx\n", ewin);
 }
 
-void XMainLoop::focusin(XEvent* event) {
-    //HSDebug("name is: FocusIn\n");
+void XMainLoop::focusin(XFocusChangeEvent* event) {
+    // get the newest FocusIn event, otherwise we could trigger
+    // an endless loop of FocusIn events
+    while (XCheckMaskEvent(X_.display(), FocusChangeMask, (XEvent *)event)) {
+        ;
+    }
+    HSDebug("FocusIn for 0x%lx (%s)\n",
+            event->window,
+            XConnection::focusChangedDetailToString(event->detail));
+    if (event->type == FocusIn
+        && (event->detail == NotifyNonlinear
+            || event->detail == NotifyNonlinearVirtual))
+    {
+        // an event if an application steals input focus
+        // directly via XSetInputFocus, e.g. via `xdotool windowfocus`.
+        // also other applications do this, e.g. `emacsclient -n FILENAME`
+        // when an emacs window exist. There are still subtle differences between
+        // xdotool and emacsclient: xdotool generates detail=NotifyNonlinear
+        // whereas emacsclient only detail=NotifyNonlinearVirtual.
+        // I don't know how to prevent the keyboard input steal, so all we can
+        // do is to update clients.focus accordingly.
+        Window currentFocus = 0;
+        if (root_->clients->focus()) {
+            currentFocus = root_->clients->focus()->x11Window();
+        }
+        if (event->window != currentFocus) {
+            HSDebug("Window 0x%lx steals the focus\n", event->window);
+            Client* target = root_->clients->client(event->window);
+            // Warning: focus_client() itself calls XSetInputFocus() which might
+            // cause an endless loop if we didn't correctly cleared the
+            // event queue with XCheckMaskEvent() above!
+            focus_client(target, false, true, false);
+        }
+    }
 }
 
 void XMainLoop::keypress(XKeyEvent* event) {
