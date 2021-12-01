@@ -43,5 +43,10 @@ OutputChannels OutputChannels::stdio() {
 
 std::ostream& OutputChannels::perror()
 {
-    return error_ << commandName_ << ": ";
+    // prefix with the command name, if the command name is given
+    if (commandName_.empty()) {
+        return error_;
+    } else {
+        return error_ << commandName_ << ": ";
+    }
 }

@@ -711,12 +711,47 @@ def test_foreach_invalid_object(hlwm):
         .expect_stderr('"clients." has no child named "foobar"')
 
 
+def test_foreach_invalid_flag(hlwm):
+    hlwm.call_xfail('foreach C --filter-typo=X tags. echo C') \
+        .expect_stderr('"" has no child named "--filter-typo=X"')
+    hlwm.call_xfail('foreach C --filter-name=( tags. echo C') \
+        .expect_stderr('Parenthesis is not closed')
+    hlwm.call_xfail('foreach C tags. get_attr --filter-name=X') \
+        .expect_stderr('has no attribute "--filter-name=X"')
+
+
+def test_foreach_filter_name(hlwm):
+    w1, _ = hlwm.create_client()
+    w2, _ = hlwm.create_client()
+    expected = sorted(['clients.' + w for w in [w1, w2]])
+
+    proc = hlwm.call('foreach C clients. --filter-name=0x.* echo C')
+    assert sorted(proc.stdout.splitlines()) == expected
+
+    without_filter = hlwm.call('foreach C clients. echo C')
+    assert len(without_filter.stdout.splitlines()) == 3
+
+    # the filter really affects the name, not the path:
+    assert hlwm.call('foreach C clients. --filter-name=clients. echo C').stdout == ''
+    # the filter is a full match, not a submatch:
+    assert hlwm.call('foreach C clients. --filter-name=x echo C').stdout == ''
+
+
 def test_foreach_object_completion(hlwm):
     completions = hlwm.complete(['foreach', 'X', 'tags.'], position=2, partial=True)
     # objects are completed
     assert 'tags.by-name.' in completions
     # attributes are not completed
     assert 'tags.count' not in completions
+
+
+def test_foreach_flags_completion(hlwm):
+    flag_name = '--filter-name='
+    assert flag_name in hlwm.complete(['foreach'], partial=True)
+    assert flag_name in hlwm.complete(['foreach', 'X'], partial=True)
+    assert flag_name in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
+    # do not complete flags when the first command token appeared
+    assert flag_name not in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)
 
 
 def test_foreach_identfier_completion(hlwm):

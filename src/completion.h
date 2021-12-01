@@ -6,6 +6,8 @@
 #include "arglist.h"
 #include "commandio.h"
 
+class ArgParse;
+
 namespace Commands {
 void complete(Completion& completion);
 }
@@ -72,6 +74,10 @@ public:
      * wrapper around complete_against_commands.
      */
     friend void Commands::complete(Completion& completion);
+    /**
+     * Similarly, grant ArgParse full access to private members:
+     */
+    friend class ArgParse;
 
     void completeCommands(size_t offset);
     void withPrefix(const std::string& prependPrefix, std::function<void(Completion&)> callback);

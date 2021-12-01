@@ -15,18 +15,76 @@
 #include "completion.h"
 #include "finite.h"
 #include "ipc-protocol.h"
+#include "regexstr.h"
 
 using std::endl;
 using std::function;
 using std::pair;
 using std::string;
 using std::stringstream;
+using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;
 
 extern char** environ;
 
+/**
+ * @brief The ObjectPointer class holds the pointer
+ * to an Object and also it's path. Its main usage is
+ * for the argument parsing of commands that accept an
+ * object path as an argument.
+ *
+ * There is no parser directly for Object* because this would
+ * make the calls to the parser to Monitor* ambiguous.
+ */
+class ObjectPointer {
+public:
+    string path_ = {}; //! the normalized object path without trailing '.'
+    Object* object_ = {};
+    static Object* root_; //! MetaCommands is responsible for setting this
+};
+
+Object* ObjectPointer::root_ = {};
+
+template<> ObjectPointer Converter<ObjectPointer>::parse(const std::string& source) {
+    if (ObjectPointer::root_) {
+        ObjectPointer op;
+        op.path_ = source;
+        // normalize op.path_:
+        while (!op.path_.empty() && *(op.path_.rbegin()) == OBJECT_PATH_SEPARATOR) {
+            // while the last character is a dot, erase it:
+            op.path_.erase(op.path_.size() - 1);
+        }
+        stringstream output;
+        OutputChannels channels {"", output, output};
+        Path path { op.path_, OBJECT_PATH_SEPARATOR };
+        op.object_ = ObjectPointer::root_->child(path, channels);
+        if (!op.object_) {
+            string message = output.str();
+            throw std::invalid_argument(message);
+        }
+        return op;
+    } else {
+        throw std::logic_error("ObjectPointer::root_ not initialized");
+    }
+}
+template<> std::string Converter<ObjectPointer>::str(ObjectPointer payload)
+{
+    return payload.path_;
+}
+template<> void Converter<ObjectPointer>::complete(Completion& complete, ObjectPointer const*)
+{
+
+    if (ObjectPointer::root_) {
+        MetaCommands::completeObjectPath(complete, ObjectPointer::root_);
+    } else {
+        throw std::logic_error("ObjectPointer::root_ not initialized");
+    }
+}
+
+
 MetaCommands::MetaCommands(Object& root_) : root(root_) {
+    ObjectPointer::root_ = &root;
 }
 
 int MetaCommands::get_attr_cmd(Input in, Output output) {
@@ -215,22 +273,40 @@ void MetaCommands::substitute_complete(Completion& complete)
     }
 }
 
-int MetaCommands::foreachCmd(Input input, Output output)
+void MetaCommands::foreachCommand(CallOrComplete invoc)
 {
-    string ident, pathString;
-    if (!(input >> ident >> pathString)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    // remove trailing dots to avoid parsing issues:
-    while (!pathString.empty() && pathString.back() == OBJECT_PATH_SEPARATOR) {
-        // while the last character is a dot, erase it:
-        pathString.erase(pathString.size() - 1);
-    }
+    RegexStr filterName = {};
+    string ident;
+    ObjectPointer object;
+    ArgParse ap;
+    ap.mandatory(ident).mandatory(object);
+    ap.flags({
+        {"--filter-name=", filterName},
+    });
+    ap.command(invoc,
+               [&](Completion& complete) {
+        // in the additional tokens, complete the identifier
+        complete.full(ident);
+        // and the command itself
+        complete.completeCommands(0);
+    },
+               [&](ArgList command, Output output) -> int {
+        if (command.empty()) {
+            return  HERBST_NEED_MORE_ARGS;
+        }
+        Input cmd = { *(command.begin()), command.begin() + 1, command.end() };
+        return foreachChild(ident, object.object_, object.path_, filterName, cmd, output);
+    });
+}
+
+int MetaCommands::foreachChild(std::string ident,
+                               Object* object,
+                               std::string pathString,
+                               const RegexStr& filterName,
+                               Input nestedCommand,
+                               Output output)
+{
     Path path { pathString, OBJECT_PATH_SEPARATOR };
-    Object* object = root.child(path, output);
-    if (!object) {
-        return HERBST_INVALID_ARGUMENT;
-    }
 
     // collect the paths of all children of this object
     vector<string> childPaths;
@@ -241,28 +317,20 @@ int MetaCommands::foreachCmd(Input input, Output output)
         pathString += OBJECT_PATH_SEPARATOR;
     }
     for (const auto& entry : object->children()) {
+        if (!filterName.empty() && !filterName.matches(entry.first)) {
+            // if we filter by name and the entry name does not match the filter,
+            // then skip this child
+            continue;
+        }
         childPaths.push_back(pathString + entry.first);
     }
     int  lastStatusCode = 0;
     for (const auto& child : childPaths) {
-        Input carryover = input.fromHere();
+        Input carryover = nestedCommand;
         carryover.replace(ident, child);
         lastStatusCode = Commands::call(carryover, output);
     }
     return lastStatusCode;
-}
-
-void MetaCommands::foreachComplete(Completion& complete)
-{
-    if (complete == 0) {
-        // no completion for the identifier
-    } else if (complete == 1) {
-        completeObjectPath(complete);
-    } else {
-        // later, complete the identifier
-        complete.full(complete[0]);
-        complete.completeCommands(2);
-    }
 }
 
 //! parse a format string or throw an exception

@@ -921,10 +921,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
           +
           (Note how the +%c+ changes to +%s+)
 
-foreach 'IDENTIFIER' 'OBJECT' 'COMMAND' ['ARGS' ...]::
+foreach 'IDENTIFIER' 'OBJECT' [*--filter-name=*'REGEX'] 'COMMAND' ['ARGS' ...]::
     For each child of the given 'OBJECT' the 'COMMAND' is called with its
-    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. The
-    exit code is the exit code of the command executed last. Examples:
+    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. If
+    *--filter-name=*'REGEX' is passed, then only children are considered whose
+    name match the specified 'REGEX'. The exit code is the exit code of the
+    command executed last. Examples:
 
         * +foreach T tags.by-name. echo T+ +
           +
