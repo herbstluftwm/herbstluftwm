@@ -53,8 +53,6 @@ public:
                      Object* object,
                      std::string pathString,
                      const RegexStr& filterName, Input nestedCommand, Output output);
-    int foreachCmd(Input input, Output output);
-    void foreachComplete(Completion& complete);
     int sprintf_cmd(Input input, Output output);
     void sprintf_complete(Completion& complete);
     int new_attr_cmd(Input input, Output output);
