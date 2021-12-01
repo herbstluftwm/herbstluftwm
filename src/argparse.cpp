@@ -202,8 +202,8 @@ void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
  * @param the command, taking unparsed tokens
  */
 void ArgParse::command(CallOrComplete invocation,
-                       std::function<void (Completion&)> complete,
-                       std::function<int (ArgList, Output)> command)
+                       function<void (Completion&)> complete,
+                       function<int (ArgList, Output)> command)
 {
     if (invocation.complete_) {
         completion(*(invocation.complete_));

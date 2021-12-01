@@ -46,7 +46,7 @@ public:
 
 Object* ObjectPointer::root_ = {};
 
-template<> ObjectPointer Converter<ObjectPointer>::parse(const std::string& source) {
+template<> ObjectPointer Converter<ObjectPointer>::parse(const string& source) {
     if (ObjectPointer::root_) {
         ObjectPointer op;
         op.path_ = source;
@@ -68,7 +68,7 @@ template<> ObjectPointer Converter<ObjectPointer>::parse(const std::string& sour
         throw std::logic_error("ObjectPointer::root_ not initialized");
     }
 }
-template<> std::string Converter<ObjectPointer>::str(ObjectPointer payload)
+template<> string Converter<ObjectPointer>::str(ObjectPointer payload)
 {
     return payload.path_;
 }
@@ -299,9 +299,9 @@ void MetaCommands::foreachCommand(CallOrComplete invoc)
     });
 }
 
-int MetaCommands::foreachChild(std::string ident,
+int MetaCommands::foreachChild(string ident,
                                Object* object,
-                               std::string pathString,
+                               string pathString,
                                const RegexStr& filterName,
                                Input nestedCommand,
                                Output output)
