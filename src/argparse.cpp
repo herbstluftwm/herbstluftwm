@@ -3,8 +3,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "globals.h"
 #include "completion.h"
+#include "globals.h"
 
 using std::endl;
 using std::function;
