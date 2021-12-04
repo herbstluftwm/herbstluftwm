@@ -24,7 +24,7 @@ enum class TextAlign {
 template <>
 struct is_finite<TextAlign> : std::true_type {};
 template<> Finite<TextAlign>::ValueList Finite<TextAlign>::values;
-template<> inline Type Attribute_<TextAlign>::staticType() { return Type::NAMES; };
+template<> inline Type Attribute_<TextAlign>::staticType() { return Type::NAMES; }
 
 /**
  * @brief An object of this class holds a font.
