@@ -196,7 +196,7 @@ void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
 /**
  * @brief Wrapper for commands that use argparse for the first
  * arguments, but then do something more complicated with the not
- * yet parsed tokens after the
+ * yet parsed tokens after the positional arguments and flags.
  * @param invocation
  * @param the completion function for the later tokens
  * @param the command, taking unparsed tokens
