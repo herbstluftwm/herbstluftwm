@@ -409,7 +409,8 @@ class ObjectInformation:
                 # assume that the next token in the list 'cpp_token' is a
                 # token group
                 cpp_token = cpp_token[4].enclosed_tokens[0]
-            if cpp_token[0:3] == ['LayoutAlgorithm', ':', ':']:
+            if len(cpp_token) == 4 and cpp_token[1:3] == [':', ':']:
+                # if the token is: EnumClass::value
                 cpp_token = cpp_token[3]
             if cpp_token == 'WINDOW_MANAGER_NAME':
                 cpp_token = 'herbstluftwm'

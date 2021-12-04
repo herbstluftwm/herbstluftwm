@@ -541,7 +541,7 @@ void Decoration::redrawPixmap() {
         };
         if (tabs_.size() <= 1) {
             drawText(pix, gc, s.title_font->data(), s.title_color(),
-                     titlepos, client_->title_(), inner.width);
+                     titlepos, client_->title_(), inner.width, s.title_align);
         } else {
             int tabWidth = outer.width / tabs_.size();
             int tabIndex = 0;
@@ -643,7 +643,7 @@ void Decoration::redrawPixmap() {
                 }
                 drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
                          tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
-                         tabClient->title_(), titleWidth - tabPadLeft);
+                         tabClient->title_(), titleWidth - tabPadLeft, s.title_align);
                 tabIndex++;
             }
         }
@@ -660,17 +660,26 @@ void Decoration::redrawPixmap() {
  * @param color
  * @param position The position of the left end of the baseline
  * @param width The maximum width of the string (in pixels)
+ * @param the horizontal alignment within this maximum width
  * @param text
  */
 void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const Color& color,
-                          Point2D position, const string& text, int width)
+                          Point2D position, const string& text, int width,
+                          const TextAlign& align)
 {
     XConnection& xcon = xconnection();
     Display* display = xcon.display();
     // shorten the text first:
     size_t textLen = text.size();
-    while (textLen > 0 && fontData.textwidth(text, textLen) > width) {
+    int textwidth = fontData.textwidth(text, textLen);
+    while (textLen > 0 && textwidth > width) {
         textLen--;
+        textwidth = fontData.textwidth(text, textLen);
+    }
+    switch (align) {
+    case TextAlign::left: break;
+    case TextAlign::center: position.x += (width - textwidth) / 2; break;
+    case TextAlign::right: position.x += width - textwidth; break;
     }
     if (fontData.xftFont_) {
         Visual* xftvisual = visual ? visual : xcon.visual();

@@ -10,6 +10,7 @@
 
 class Client;
 class FontData;
+enum class TextAlign;
 class Settings;
 class DecorationScheme;
 class XConnection;
@@ -76,7 +77,7 @@ private:
 
     void drawText(Pixmap& pix, GC& gc, const FontData& fontData,
                   const Color& color, Point2D position, const std::string& text,
-                  int width);
+                  int width, const TextAlign& align );
 
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
