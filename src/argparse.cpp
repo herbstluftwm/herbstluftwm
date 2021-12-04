@@ -1,13 +1,16 @@
 #include "argparse.h"
 
 #include <iostream>
+#include <sstream>
 
 #include "completion.h"
+#include "globals.h"
 
 using std::endl;
 using std::function;
 using std::pair;
 using std::string;
+using std::stringstream;
 
 /**
  * @brief try to parse the positional arguments and as many flags
@@ -183,6 +186,69 @@ void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
         } else {
             // if parsing did not fail
             status = command(invocation.inputOutput_->second);
+        }
+        if (invocation.exitCode_) {
+            *(invocation.exitCode_) = status;
+        }
+    }
+}
+
+/**
+ * @brief Wrapper for commands that use argparse for the first
+ * arguments, but then do something more complicated with the not
+ * yet parsed tokens after the positional arguments and flags.
+ * @param invocation
+ * @param the completion function for the later tokens
+ * @param the command, taking unparsed tokens
+ */
+void ArgParse::command(CallOrComplete invocation,
+                       function<void (Completion&)> complete,
+                       function<int (ArgList, Output)> command)
+{
+    if (invocation.complete_) {
+        completion(*(invocation.complete_));
+        // for the nested completion, we first try to parse
+        // as many arguments, and then parse the remaining tokens
+        // to the nested 'complete':
+        // step 1: try to parse tokens
+        // we don't know the command name at this point,
+        // but it does not matter, so let us pick "argparse"
+        Input input { "argparse", invocation.complete_->args_.toVector()};
+        stringstream dummyStream;
+        OutputChannels discardOutputChannels("argparse", dummyStream, dummyStream);
+        size_t tokensBeforeParsing = input.size();
+        if (!parsingFails(input, discardOutputChannels)) {
+            // if parsing does not fail, then let the nested
+            // completion function decide if further parameters are expected,
+            // so unset the flag:
+            invocation.complete_->noParameterExpected_ = false;
+            // step 2: create a new completion object by dropping the
+            // successfully parsed tokens:
+            size_t tokensAfterParsing = input.size();
+            HSAssert(tokensAfterParsing <= tokensBeforeParsing);
+            size_t tokensParsed = tokensBeforeParsing - tokensAfterParsing;
+            if (invocation.complete_->index() >= tokensParsed) {
+                // if we are asked to complete an argument that comes
+                // after the already parsed tokens.
+                // step 3: pass the remaining tokens to the custom completion:
+                Completion shifted = invocation.complete_->shifted(tokensParsed);
+                complete(shifted);
+                invocation.complete_->mergeResultsFrom(shifted);
+            }
+        }
+    }
+    if (invocation.inputOutput_) {
+        int status = 0;
+        if (parsingFails(invocation.inputOutput_->first,
+                         invocation.inputOutput_->second)) {
+            status = exitCode();
+        } else {
+            // if parsing did not fail, extract the remaining tokens:
+            ArgList remainingTokens = {
+                invocation.inputOutput_->first.begin(),
+                invocation.inputOutput_->first.end()
+            };
+            status = command(remainingTokens, invocation.inputOutput_->second);
         }
         if (invocation.exitCode_) {
             *(invocation.exitCode_) = status;

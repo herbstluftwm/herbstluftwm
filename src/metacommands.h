@@ -11,6 +11,7 @@
 
 class Object;
 class Completion;
+class RegexStr;
 
 /** this class collects high-level commands that don't need any internal
  * structures but instead just uses:
@@ -47,8 +48,11 @@ public:
 
     int substitute_cmd(Input input, Output output);
     void substitute_complete(Completion& complete);
-    int foreachCmd(Input input, Output output);
-    void foreachComplete(Completion& complete);
+    void foreachCommand(CallOrComplete invoc);
+    int foreachChild(std::string ident,
+                     Object* object,
+                     std::string pathString,
+                     const RegexStr& filterName, Input nestedCommand, Output output);
     int sprintf_cmd(Input input, Output output);
     void sprintf_complete(Completion& complete);
     int new_attr_cmd(Input input, Output output);

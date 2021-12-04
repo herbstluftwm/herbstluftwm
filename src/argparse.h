@@ -144,6 +144,9 @@ public:
     int exitCode() const { return errorCode_; }
 
     void command(CallOrComplete invocation, std::function<int(Output)> command);
+    void command(CallOrComplete invocation,
+                 std::function<void(Completion&)> complete,
+                 std::function<int(ArgList,Output)> command);
 
 private:
     void completion(Completion& complete);

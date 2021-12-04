@@ -232,7 +232,7 @@ def test_remove_attr(hlwm):
 
 @pytest.mark.parametrize('command_prefix', [
     ['substitute', 'ARG', 'tags.count'],
-    ['foreach', 'ARG', 'clients']
+    ['foreach', 'ARG', 'clients', '--filter-name=X']
 ])
 def test_metacommand(hlwm, command_prefix):
     """test the completion of a command that accepts another
