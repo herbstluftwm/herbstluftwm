@@ -779,7 +779,7 @@ def test_foreach_recursive_breadth_first(hlwm):
 
     without_client = object_paths()
 
-    # and put the a client in the frame leaf:
+    # and put the client in the frame leaf:
     winid, _ = hlwm.create_client()
 
     with_client = object_paths()
@@ -796,7 +796,7 @@ def test_foreach_recursive_breadth_first(hlwm):
             found_in_without_client = True
 
     assert found_in_without_client, \
-        "The frame must be listed under tags. before client creation"
+        "The frame must be listed under 'tags' before client creation"
 
     # the frame object must have been traversed when visiting
     # the client:
