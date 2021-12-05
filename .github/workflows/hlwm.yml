@@ -249,6 +249,7 @@ jobs:
           cat > CMakeLists.txt <<EOF
           project(Herbstluftwm)
           file(STRINGS VERSION VERSION) # read file 'VERSION'
+          set(CMAKE_INSTALL_SYSCONF_PREFIX /etc/)
           set(DOCDIR /tmp/)
           set(MANDIR /tmp/)
           add_subdirectory(doc)
