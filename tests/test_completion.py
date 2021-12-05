@@ -239,8 +239,9 @@ def test_metacommand(hlwm, command_prefix):
     command as the parameter
     """
     cmdlist = hlwm.call('list_commands').stdout.splitlines()
-    assert hlwm.complete(command_prefix) \
-        == sorted(['ARG'] + cmdlist)
+    # filter all flags out of the completions:
+    completions = [cmd for cmd in hlwm.complete(command_prefix) if cmd[0] != '-']
+    assert completions == sorted(['ARG'] + cmdlist)
 
 
 def test_posix_escape_via_use(hlwm):
