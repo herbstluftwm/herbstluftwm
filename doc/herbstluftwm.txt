@@ -921,11 +921,21 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
           +
           (Note how the +%c+ changes to +%s+)
 
-foreach 'IDENTIFIER' 'OBJECT' [*--filter-name=*'REGEX'] 'COMMAND' ['ARGS' ...]::
+foreach 'IDENTIFIER' 'OBJECT' [*--recursive*] [*--unique*] [*--filter-name=*'REGEX'] 'COMMAND' ['ARGS' ...]::
     For each child of the given 'OBJECT' the 'COMMAND' is called with its
-    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. If
-    *--filter-name=*'REGEX' is passed, then only children are considered whose
-    name match the specified 'REGEX'. The exit code is the exit code of the
+    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. The
+    options are:
+
+      - *--filter-name=*'REGEX' consider children whose name match the specified 'REGEX'.
+
+      - *--unique* do not print duplicates (some objects can be reached via
+        multiple paths, such as +clients.focus+)
+
+      - *--recursive* print 'OBJECT' and all its children of arbitrary depth in
+        breadth-first search order. This implicitly activates *--unique*.
+
+ ::
+    The exit code is the exit code of the
     command executed last. Examples:
 
         * +foreach T tags.by-name. echo T+ +
@@ -944,6 +954,9 @@ foreach 'IDENTIFIER' 'OBJECT' [*--filter-name=*'REGEX'] 'COMMAND' ['ARGS' ...]::
         * +foreach C clients. echo C+ prints the object paths of all clients,
           but the focused client twice, because it is mentioned in +clients.+
           twice: by window id and as +clients.focus+.
+
+        * +foreach F tags.focus.tiling.root. --recursive echo F+
+          prints the object paths of all frames on the focused tag.
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all

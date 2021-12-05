@@ -746,12 +746,108 @@ def test_foreach_object_completion(hlwm):
 
 
 def test_foreach_flags_completion(hlwm):
-    flag_name = '--filter-name='
-    assert flag_name in hlwm.complete(['foreach'], partial=True)
-    assert flag_name in hlwm.complete(['foreach', 'X'], partial=True)
-    assert flag_name in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
-    # do not complete flags when the first command token appeared
-    assert flag_name not in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)
+    for flag_name in ['--filter-name=', '--unique ', '--recursive ']:
+        assert flag_name in hlwm.complete(['foreach'], partial=True)
+        assert flag_name in hlwm.complete(['foreach', 'X'], partial=True)
+        assert flag_name in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
+        # do not complete flags when the first command token appeared
+        assert flag_name not in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)
+
+
+@pytest.mark.parametrize('running_clients_num', [5])
+def test_foreach_unique(hlwm, running_clients, running_clients_num):
+    cmd_prefix = ['foreach', 'C', 'clients.']
+    cmd_suffix = ['sprintf', 'WINID_ATTR', '%c.winid', 'C',
+                  'substitute', 'WINID', 'WINID_ATTR', 'echo', 'WINID']
+    uniq = hlwm.call(cmd_prefix + ['--unique'] + cmd_suffix).stdout.splitlines()
+    duplicates = hlwm.call(cmd_prefix + cmd_suffix).stdout.splitlines()
+
+    focus_winid = hlwm.attr.clients.focus.winid()
+
+    # the only difference between the two is the focused client
+    # which is represented twice in 'clients.'
+    assert sorted(duplicates) == sorted(uniq + [focus_winid])
+
+
+def test_foreach_recursive_breadth_first(hlwm):
+    hlwm.call('split bottom')
+    hlwm.call('split left')
+
+    def object_paths():
+        return hlwm.call(['foreach', 'X', '', '--recursive', 'echo', 'X']) \
+                   .stdout.splitlines()
+
+    without_client = object_paths()
+
+    # and put the a client in the frame leaf:
+    winid, _ = hlwm.create_client()
+
+    with_client = object_paths()
+
+    # since recursive is in breadth-first order,
+    # the client's parent_frame should be visited before
+    # the deeply nested tags.focus.tiling.(root|focused_frame)...
+
+    found_in_without_client = False
+    for tag_id in ['0', 'focus']:
+        frame_object = f'tags.{tag_id}.tiling.focused_frame'
+        assert frame_object not in with_client
+        if frame_object in without_client:
+            found_in_without_client = True
+
+    assert found_in_without_client, \
+        "The frame must be listed under tags. before client creation"
+
+    # the frame object must have been traversed when visiting
+    # the client:
+    if 'clients.focus' in with_client:
+        assert 'clients.focus.parent_frame' in with_client
+    else:
+        assert f'clients.{winid}.parent_frame' in with_client
+
+
+def test_foreach_recursive_lists_layout(hlwm):
+    cmd = 'foreach X tags.focus.tiling.root --recursive echo X'
+    for _ in range(0, 3):
+        # add another frame
+        hlwm.call('split bottom')
+        foreach_lines = hlwm.call(cmd).stdout.splitlines()
+        layout_lines = hlwm.call('layout').stdout.splitlines()
+
+        assert len(foreach_lines) == len(layout_lines)
+
+
+def test_foreach_recursive_filter_name(hlwm):
+    # create more tags
+    hlwm.call('add tag1')
+    hlwm.call('add 2')
+    hlwm.call('add 0')
+    hlwm.call('add tag')
+
+    cmd = [
+        'foreach', 'X', '',
+        '--filter-name=(tags|0|by-name)',
+        '--recursive',
+        'echo', 'X'
+    ]
+
+    objects = hlwm.call(cmd).stdout.splitlines()
+    expected_paths = [
+        'tags.0',
+        'tags.by-name',
+        'tags.by-name.0',
+    ]
+    for path in expected_paths:
+        assert path in objects
+
+    unexpected_paths = [
+        'clients',
+        'tags.1',
+        # the index of the following tag should not match the regex:
+        'tags.{}'.format(hlwm.attr.tags['by-name']['0'].index()),
+    ]
+    for path in unexpected_paths:
+        assert path not in objects
 
 
 def test_foreach_identfier_completion(hlwm):
