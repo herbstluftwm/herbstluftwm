@@ -617,6 +617,9 @@ void Decoration::redrawPixmap() {
                 }
                 XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
                 XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
+                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
+                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
+                         tabClient->title_(), titleWidth - tabPadLeft, s.title_align);
                 if (client_ != tabClient) {
                     // horizontal border connecting the focused tab with the outer border
                     Point2D westEnd = tabGeo.bl();
@@ -641,9 +644,6 @@ void Decoration::redrawPixmap() {
                                    fillWidth, remainingBorderColorHeight
                                    );
                 }
-                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
-                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
-                         tabClient->title_(), titleWidth - tabPadLeft, s.title_align);
                 tabIndex++;
             }
         }

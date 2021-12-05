@@ -8,6 +8,8 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <queue>
+#include <unordered_set>
 
 #include "argparse.h"
 #include "attribute_.h"
@@ -277,10 +279,14 @@ void MetaCommands::foreachCommand(CallOrComplete invoc)
 {
     RegexStr filterName = {};
     string ident;
+    bool unique;
+    bool recursive;
     ObjectPointer object;
     ArgParse ap;
     ap.mandatory(ident).mandatory(object);
     ap.flags({
+        {"--unique", &unique},
+        {"--recursive", &recursive},
         {"--filter-name=", filterName},
     });
     ap.command(invoc,
@@ -295,13 +301,16 @@ void MetaCommands::foreachCommand(CallOrComplete invoc)
             return  HERBST_NEED_MORE_ARGS;
         }
         Input cmd = { *(command.begin()), command.begin() + 1, command.end() };
-        return foreachChild(ident, object.object_, object.path_, filterName, cmd, output);
+        return foreachChild(ident, object.object_, object.path_,
+                            unique, recursive, filterName, cmd, output);
     });
 }
 
 int MetaCommands::foreachChild(string ident,
-                               Object* object,
+                               Object* parent,
                                string pathString,
+                               bool unique,
+                               bool recursive,
                                const RegexStr& filterName,
                                Input nestedCommand,
                                Output output)
@@ -313,16 +322,43 @@ int MetaCommands::foreachChild(string ident,
     // collect the children's names first to ensure that
     // object->children() is not changed by the commands we are
     // calling.
+    if (recursive) {
+        // if recursive, then one would also expect the root to be
+        // traversed:
+        childPaths.push_back(pathString);
+    }
     if (!pathString.empty()) {
         pathString += OBJECT_PATH_SEPARATOR;
     }
-    for (const auto& entry : object->children()) {
-        if (!filterName.empty() && !filterName.matches(entry.first)) {
-            // if we filter by name and the entry name does not match the filter,
-            // then skip this child
-            continue;
+    std::set<Object*> forbiddenObjects; // objects that may not be visited again
+    std::queue<pair<string,Object*>> todoList; // objects that still need to be visited
+    todoList.push(make_pair(pathString, parent));
+    while (!todoList.empty()) {
+        string objectPath = todoList.front().first;
+        Object* object = todoList.front().second;
+        todoList.pop();
+        for (const auto& entry : object->children()) {
+            Object* child = entry.second;
+            if (!filterName.empty() && !filterName.matches(entry.first)) {
+                // if we filter by name and the entry name does not match the filter,
+                // then skip this child
+                continue;
+            }
+            if (unique || recursive) {
+                if (forbiddenObjects.find(child) != forbiddenObjects.end()) {
+                    // if the object is already in the set of objects
+                    // that may not be visited again, then
+                    // skip this child;
+                    continue;
+                }
+                forbiddenObjects.insert(child);
+            }
+            string currentChildPath = objectPath + entry.first;
+            if (recursive) {
+                todoList.push(make_pair(currentChildPath + OBJECT_PATH_SEPARATOR, child));
+            }
+            childPaths.push_back(currentChildPath);
         }
-        childPaths.push_back(pathString + entry.first);
     }
     int  lastStatusCode = 0;
     for (const auto& child : childPaths) {
