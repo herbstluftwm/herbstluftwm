@@ -83,6 +83,7 @@ public:
     AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
                               // decoration and the window content
     AttributeProxy_<HSFont>  title_font = {"title_font", HSFont::fromStr("fixed")};
+    AttributeProxy_<TextAlign> title_align = {"title_align", TextAlign::left};
     AttributeProxy_<Color>   title_color = {"title_color", {"black"}};
     AttributeProxy_<Color>   inner_color = {"inner_color", {"black"}};
     AttributeProxy_<unsigned long>     inner_width = {"inner_width", 0};

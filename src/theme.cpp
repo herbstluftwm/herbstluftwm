@@ -56,6 +56,7 @@ DecorationScheme::DecorationScheme()
         &border_width,
         &title_height,
         &title_font,
+        &title_align,
         &title_color,
         &border_color,
         &tight_decoration,
@@ -90,6 +91,8 @@ DecorationScheme::DecorationScheme()
                             "the window decoration or only the window "
                             "contents of tiled clients (requires enabled "
                             "sizehints_tiling)");
+    title_align.setDoc("the horizontal alignment of the title within the tab "
+                       "or title bar. The value is one of: left, center, right");
     reset.setDoc("writing this resets all attributes to a default value");
 }
 

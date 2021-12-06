@@ -1,6 +1,7 @@
 from herbstluftwm.types import Point
 from conftest import RawImage
 from conftest import HlwmBridge
+import itertools
 import pytest
 
 font_pool = [
@@ -392,3 +393,57 @@ def test_decoration_click_into_window_does_not_change_tab(hlwm, mouse):
     mouse.click('1')
 
     assert hlwm.attr.clients.focus.winid() == wins[0]
+
+
+def test_textalign_completion(hlwm):
+    """Test the TextAlign converter"""
+    assert hlwm.complete(['attr', 'theme.title_align']) \
+        == sorted(['left', 'right', 'center'])
+    for k in hlwm.complete(['attr', 'theme.title_align']):
+        hlwm.attr.theme.title_align = k
+        assert hlwm.attr.theme.title_align() == k
+
+
+@pytest.mark.parametrize("client_count", [1, 2])
+def test_decoration_title_align(hlwm, x11, client_count):
+    """test the title_align attribute,
+    by computing the 'average' position of the title
+    """
+    text_color = (212, 189, 140)
+    hlwm.attr.theme.title_color = RawImage.rgb2string(text_color)
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+
+    win_handle, winid = x11.create_client()
+    hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'max'
+    while hlwm.attr.tags.focus.client_count() < client_count:
+        x11.create_client()
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    x11.set_window_title(win_handle, '-')
+
+    # compute the 'average' title position
+    align_to_title_pos = {}
+    for align in ['left', 'right', 'center']:
+        hlwm.attr.theme.title_align = align
+        img = x11.decoration_screenshot(win_handle)
+        point_sum = Point(0, 0)
+        point_count = 0
+        for x, y in itertools.product(range(0, img.width), range(0, img.height)):
+            if img.pixel(x, y) == text_color:
+                point_sum.x += x
+                point_sum.y += y
+                point_count += 1
+        # compute the average point:
+        align_to_title_pos[align] = point_sum // point_count
+
+    # all titles should be on the same height:
+    assert align_to_title_pos['left'].y == align_to_title_pos['center'].y
+    assert align_to_title_pos['center'].y == align_to_title_pos['right'].y
+
+    # the x coordinate should be different by at least this:
+    # the width of the decoration, divided by the number of tabs
+    # and divided by roughly 3 :-)
+    x_diff = hlwm.attr.clients.focus.decoration_geometry().width / client_count / 3
+    assert align_to_title_pos['left'].x + x_diff < align_to_title_pos['center'].x
+    assert align_to_title_pos['center'].x + x_diff < align_to_title_pos['right'].x

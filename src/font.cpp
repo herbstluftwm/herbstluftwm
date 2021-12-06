@@ -9,6 +9,12 @@ using std::shared_ptr;
 using std::string;
 using std::weak_ptr;
 
+template<>
+Finite<TextAlign>::ValueList Finite<TextAlign>::values = ValueListPlain {
+    { TextAlign::left, "left" },
+    { TextAlign::center, "center" },
+    { TextAlign::right, "right" },
+};
 
 /**
  * @brief This map caches loaded fonts, such that whenever the same

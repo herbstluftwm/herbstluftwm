@@ -7,9 +7,24 @@
 #include "attribute_.h"
 #include "converter.h"
 #include "entity.h"
+#include "finite.h"
 
 class FontData;
 class XConnection;
+
+/**
+ * @brief the horizontal alignment of text
+ */
+enum class TextAlign {
+    left,
+    center,
+    right,
+};
+
+template <>
+struct is_finite<TextAlign> : std::true_type {};
+template<> Finite<TextAlign>::ValueList Finite<TextAlign>::values;
+template<> inline Type Attribute_<TextAlign>::staticType() { return Type::NAMES; }
 
 /**
  * @brief An object of this class holds a font.

@@ -1,24 +1,33 @@
+queue_rules:
+  - name: default
+    conditions:
+      # Conditions to get out of the queue (= merged)
+      - check-success=Build and test on current ubuntu
+      - check-success=Build with Clang, run linters and static analyzers
+      - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
+
 pull_request_rules:
     - name: automatic merge on CI success and review
       conditions:
           - base=master
-          - status-success=Build and test on current ubuntu
-          - status-success=Build with Clang, run linters and static analyzers
-          - status-success=Build for 32bit with ancient GCC on Ubuntu 14.04
+          - check-success=Build and test on current ubuntu
+          - check-success=Build with Clang, run linters and static analyzers
+          - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
           - "#approved-reviews-by>=1"
-          - label≠wip
+          - "#changes-requested-reviews-by=0"
+          - label!=wip
       actions:
-          merge:
+          queue:
+              name: default
               method: squash
-              strict: smart
               commit_message: title+body
     - name: Implicitly allow t-wissmann to approve own pull requests
       conditions:
           - author=t-wissmann
-          - status-success=Build and test on current ubuntu
-          - status-success=Build with Clang, run linters and static analyzers
-          - status-success=Build for 32bit with ancient GCC on Ubuntu 14.04
-          - label≠wip
+          - check-success=Build and test on current ubuntu
+          - check-success=Build with Clang, run linters and static analyzers
+          - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
+          - label!=wip
           - label=self-approved
       actions:
           review:
