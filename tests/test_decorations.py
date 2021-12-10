@@ -125,7 +125,13 @@ def test_title_different_letters_are_drawn(hlwm, x11, font):
 
 
 @pytest.mark.parametrize("font", font_pool)
-def test_title_does_not_exceed_width(hlwm, x11, font):
+@pytest.mark.parametrize("ellipsis", [
+    '',
+    '...',
+    '…',
+    10 * 'a_very_long_string_that_takes_all_the_available_space',
+])
+def test_title_does_not_exceed_width(hlwm, x11, font, ellipsis):
     font_color = (255, 0, 0)  # a color available everywhere
     bw = 30
     hlwm.attr.theme.color = 'black'
@@ -136,14 +142,21 @@ def test_title_does_not_exceed_width(hlwm, x11, font):
     hlwm.attr.theme.padding_right = 0
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.title_font = font
+    hlwm.attr.settings.ellipsis = ellipsis
     handle, winid = x11.create_client()
 
     # set a title that is too wide to be displayed in its entirety:
     w = hlwm.attr.clients[winid].decoration_geometry().width
 
     if font[0] != '-':
+        three_bytes_per_glyph = 'ヘールブストルフト'
+        assert len(three_bytes_per_glyph.encode('UTF-8')) == 3 * len(three_bytes_per_glyph)
         # for xft fonts, also test utf8 window titles
-        utf8titles = [w * '♥']
+        utf8titles = [
+            w * '♥',
+            (w // 3) * 'äüöß',
+            (w // len(three_bytes_per_glyph)) * three_bytes_per_glyph,
+        ]
     else:
         # for plain X fonts, it does not seem to work in tox/pytest
         # (but strangely, it works in a manual Xephyr session)
@@ -174,6 +187,29 @@ def test_title_does_not_exceed_width(hlwm, x11, font):
 
         assert leftmost_font_x >= bw
         assert rightmost_font_x < bw + hlwm.attr.clients[winid].content_geometry().width
+
+
+@pytest.mark.parametrize("font", font_pool)
+def test_title_ellipsis_is_used(hlwm, x11, font):
+    font_color = (255, 0, 0)  # a color available everywhere
+    bw = 30
+    hlwm.attr.theme.color = 'black'
+    hlwm.attr.theme.title_color = RawImage.rgb2string(font_color)
+    hlwm.attr.theme.title_height = 14
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.theme.title_font = font
+    hlwm.attr.settings.ellipsis = 'abc'
+
+    handle, winid = x11.create_client()
+    assert screenshot_with_title(x11, handle, '   ').color_count(font_color) == 0
+    # set a title that is too wide to be displayed in its entirety:
+    w = hlwm.attr.clients[winid].decoration_geometry().width
+    count1 = screenshot_with_title(x11, handle, w * ' ').color_count(font_color)
+    assert count1 > 0
+    hlwm.attr.settings.ellipsis = 'abcabc'
+    count2 = screenshot_with_title(x11, handle, w * ' ').color_count(font_color)
+    assert count2 > 0
+    assert count2 == count1 * 2
 
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])

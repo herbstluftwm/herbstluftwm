@@ -79,6 +79,7 @@ Settings::Settings()
         &auto_detect_panels,
         &pseudotile_center_threshold,
         &update_dragged_clients,
+        &ellipsis,
         &tree_style,
         &wmname,
 
@@ -92,6 +93,7 @@ Settings::Settings()
     for (auto i : {&frame_gap, &frame_padding, &window_gap}) {
         i->changed().connect([] { all_monitors_apply_layout(); });
     }
+    ellipsis.changed().connect([] { all_monitors_apply_layout(); });
     hide_covered_windows.changed().connect([] { all_monitors_apply_layout(); });
     for (auto i : {
          &frame_border_active_color,
@@ -137,6 +139,10 @@ Settings::Settings()
     tabbed_max.setDoc(
         "if activated, multiple windows in a frame with the \'max\' "
         "layout algorithm are drawn as tabs."
+    );
+    ellipsis.setDoc(
+        "string to append when window or tab titles are shortened "
+        "to fit in the available space."
     );
 }
 
