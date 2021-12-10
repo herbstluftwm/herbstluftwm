@@ -125,13 +125,16 @@ Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect, size_t tabCoun
  */
 bool DecorationScheme::showTitle(size_t tabCount) const
 {
+    if (title_height() == 0) {
+        return false;
+    }
     switch (title_when()) {
-        case TitleWhen::always: return True;
-        case TitleWhen::never: return False;
+        case TitleWhen::always: return true;
+        case TitleWhen::never: return false;
         case TitleWhen::one_tab: return tabCount >= 1;
         case TitleWhen::multiple_tabs: return tabCount >= 2;
     }
-    return True; // Dead code. But otherwise, gcc complains
+    return true; // Dead code. But otherwise, gcc complains
 }
 
 Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect, size_t tabCount) const {
