@@ -376,7 +376,7 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
     if (this->pseudotile_) {
         Rectangle inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
-        auto outline = scheme.inner_rect_to_outline(inner);
+        auto outline = scheme.inner_rect_to_outline(inner, tabs.size());
         rect.x += std::max(0, (rect.width - outline.width)/2);
         rect.y += std::max(0, (rect.height - outline.height)/2);
         rect.width = std::min(outline.width, rect.width);
@@ -803,13 +803,14 @@ void Client::fuzzy_fix_initial_position() {
     int extreme_y = float_size_->y;
     const auto& t = theme[Theme::Type::Floating];
     mostRecentThemeType = Theme::Type::Floating;
-    auto r = t.active.inner_rect_to_outline(float_size_);
+    size_t tabCount = 0;
+    auto r = t.active.inner_rect_to_outline(float_size_, tabCount);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = t.normal.inner_rect_to_outline(float_size_);
+    r = t.normal.inner_rect_to_outline(float_size_, tabCount);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = t.urgent.inner_rect_to_outline(float_size_);
+    r = t.urgent.inner_rect_to_outline(float_size_, tabCount);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
     // if top left corner might be outside of the monitor, move it accordingly
