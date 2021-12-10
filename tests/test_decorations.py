@@ -404,6 +404,36 @@ def test_textalign_completion(hlwm):
         assert hlwm.attr.theme.title_align() == k
 
 
+def test_title_position_remains(hlwm, x11):
+    active_color = (212, 189, 140)
+    normal_color = (221, 198, 104)
+    hlwm.attr.theme.active.title_color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+    hlwm.attr.theme.outer_width = 3
+    hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'max'
+
+    handle1, win1 = x11.create_client()
+    x11.set_window_title(handle1, 'client 1')
+    handle2, win2 = x11.create_client()
+    x11.set_window_title(handle1, 'client 2')
+    for align in ['left', 'center', 'right']:
+        hlwm.attr.theme.title_align = align
+        hlwm.call(['jumpto', win1])
+        focus1 = x11.decoration_screenshot(handle1)
+        hlwm.call(['jumpto', win2])
+        focus2 = x11.decoration_screenshot(handle2)
+        assert focus1.height == focus2.height
+        assert focus1.width == focus2.width
+        titlebar_height = 10
+        for x, y in itertools.product(range(0, focus1.width), range(0, titlebar_height)):
+            assert (focus1.pixel(x, y) == active_color) == (focus2.pixel(x, y) == normal_color), \
+                f'mismatch at pixel ({x}, {y})'
+            assert (focus1.pixel(x, y) == normal_color) == (focus2.pixel(x, y) == active_color), \
+                f'mismatch at pixel ({x}, {y})'
+
+
 @pytest.mark.parametrize("client_count", [1, 2])
 def test_decoration_title_align(hlwm, x11, client_count):
     """test the title_align attribute,
