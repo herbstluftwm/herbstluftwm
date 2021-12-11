@@ -569,7 +569,7 @@ void Decoration::redrawPixmap() {
                     tabButton.tabClient_ = tabClient;
                     buttons_.push_back(tabButton);
                 }
-                int titleWidth = tabGeo.width;
+                int titleWidth = tabGeo.width - tabScheme.outer_width;
                 if (tabClient == client_) {
                     tabGeo.height += s.border_width() - s.inner_width();
                 }
@@ -606,7 +606,6 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)tabGeo.height }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 } else if (client_ == tabClient) {
                     // shorter edge on the right
                     borderRects.push_back(
@@ -614,7 +613,6 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 }
                 XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
                 XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
