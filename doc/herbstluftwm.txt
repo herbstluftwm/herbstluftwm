@@ -1377,10 +1377,11 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     consequence.
 
 +keymask+::
-    sets the keymask for a client (see <<KEYMASK, explanation in OBJECTS>>).
+    sets the keymask for a client (see the +keymask+ attribute documentation).
 
 +keys_inactive+::
-    sets a regex that determines which key bindings are inactive for a client (see <<KEYMASK, explanation in OBJECTS>>).
+    sets a regex that determines which key bindings are inactive for a client
+    (see the +keys_inactive+ attribute documentation).
 
 +floatplacement+::
     changes the floating position of a window. The 'VALUE' can be one of the
