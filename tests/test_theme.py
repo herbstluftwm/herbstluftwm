@@ -186,7 +186,7 @@ def test_title_when_behaviour(hlwm):
 def test_title_when_for_absence_of_tabs(hlwm, floating):
     """
     for floating clients or frames with an algorithm other than 'max',
-    there should no be tabs at all and thus the titlebar is
+    there should be no tabs at all and thus the titlebar is
     only shown if 'title_when' is 'always'.
     """
     hlwm.attr.theme.title_height = 10
