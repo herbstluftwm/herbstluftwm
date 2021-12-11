@@ -65,6 +65,7 @@ public:
     Attribute_<bool>          auto_detect_panels = {"auto_detect_panels", true};
     Attribute_<int>           pseudotile_center_threshold = {"pseudotile_center_threshold", 10};
     Attribute_<bool>          update_dragged_clients = {"update_dragged_clients", false};
+    Attribute_<string>        ellipsis = {"ellipsis", "..."};
     Attribute_<string>        tree_style = {"tree_style", "*| +`--."};
     Attribute_<string>        wmname = {"wmname", WINDOW_MANAGER_NAME};
     // for compatibility

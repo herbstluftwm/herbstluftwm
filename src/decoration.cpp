@@ -14,6 +14,7 @@
 #include "fontdata.h"
 #include "settings.h"
 #include "theme.h"
+#include "utils.h"
 #include "xconnection.h"
 
 using std::string;
@@ -556,7 +557,7 @@ void Decoration::redrawPixmap() {
                     tabButton.tabClient_ = tabClient;
                     buttons_.push_back(tabButton);
                 }
-                int titleWidth = tabGeo.width;
+                int titleWidth = tabGeo.width - tabScheme.outer_width;
                 if (tabClient == client_) {
                     tabGeo.height += s.border_width() - s.inner_width();
                 }
@@ -593,7 +594,6 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)tabGeo.height }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 } else if (client_ == tabClient) {
                     // shorter edge on the right
                     borderRects.push_back(
@@ -601,7 +601,6 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 }
                 XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
                 XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
@@ -660,9 +659,35 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
     // shorten the text first:
     size_t textLen = text.size();
     int textwidth = fontData.textwidth(text, textLen);
-    while (textLen > 0 && textwidth > width) {
-        textLen--;
-        textwidth = fontData.textwidth(text, textLen);
+    string with_ellipsis; // declaration here for sufficently long lifetime
+    const char* final_c_str = nullptr;
+    if (textwidth <= width) {
+        final_c_str = text.c_str();
+    } else {
+        // shorten title:
+        with_ellipsis = text + settings_.ellipsis();
+        // temporarily, textLen is the length of the text surviving from the
+        // original window title
+        while (textLen > 0 && textwidth > width) {
+            textLen--;
+            // remove the (multibyte-)character that ends at with_ellipsis[textLen]
+            size_t character_width = 1;
+            while (textLen > 0 && utf8_is_continuation_byte(with_ellipsis[textLen])) {
+                textLen--;
+                character_width++;
+            }
+            // now, textLen points to the first byte of the (multibyte-)character
+            with_ellipsis.erase(textLen, character_width);
+            textwidth = fontData.textwidth(with_ellipsis, with_ellipsis.size());
+        }
+        // make textLen refer to the actual string and shorten further if it
+        // is still too wide:
+        textLen = with_ellipsis.size();
+        while (textLen > 0 && textwidth > width) {
+            textLen--;
+            textwidth = fontData.textwidth(with_ellipsis, textLen);
+        }
+        final_c_str = with_ellipsis.c_str();
     }
     switch (align) {
     case TextAlign::left: break;
@@ -684,19 +709,19 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
         XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
         XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
                        position.x, position.y,
-                       (const XftChar8*)text.c_str(), textLen);
+                       (const XftChar8*)final_c_str, textLen);
         XftDrawDestroy(xftd);
         XftColorFree(display, xftvisual, xftcmap, &xftcol);
     } else if (fontData.xFontSet_) {
         XSetForeground(display, gc, get_client_color(color));
         XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
-                text.c_str(), textLen);
+                final_c_str, textLen);
     } else if (fontData.xFontStruct_) {
         XSetForeground(display, gc, get_client_color(color));
         XFontStruct* font = fontData.xFontStruct_;
         XSetFont(display, gc, font->fid);
         XDrawString(display, pix, gc, position.x, position.y,
-                text.c_str(), textLen);
+                final_c_str, textLen);
     }
 }
 

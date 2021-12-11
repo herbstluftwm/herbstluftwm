@@ -21,6 +21,7 @@ Current git version
   * New read-only client attribute 'decoration_geometry'.
   * New attribute 'decorated' to disable window decorations
   * The cursor shape now indicates resize options.
+  * New setting 'ellipsis'
   * Frames can be simultaneously resized in x and y direction with the mouse.
   * Bug fixes:
     - Update floating geometry if a client's size hints change

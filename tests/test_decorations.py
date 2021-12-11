@@ -125,7 +125,13 @@ def test_title_different_letters_are_drawn(hlwm, x11, font):
 
 
 @pytest.mark.parametrize("font", font_pool)
-def test_title_does_not_exceed_width(hlwm, x11, font):
+@pytest.mark.parametrize("ellipsis", [
+    '',
+    '...',
+    '…',
+    10 * 'a_very_long_string_that_takes_all_the_available_space',
+])
+def test_title_does_not_exceed_width(hlwm, x11, font, ellipsis):
     font_color = (255, 0, 0)  # a color available everywhere
     bw = 30
     hlwm.attr.theme.color = 'black'
@@ -136,14 +142,21 @@ def test_title_does_not_exceed_width(hlwm, x11, font):
     hlwm.attr.theme.padding_right = 0
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.title_font = font
+    hlwm.attr.settings.ellipsis = ellipsis
     handle, winid = x11.create_client()
 
     # set a title that is too wide to be displayed in its entirety:
     w = hlwm.attr.clients[winid].decoration_geometry().width
 
     if font[0] != '-':
+        three_bytes_per_glyph = 'ヘールブストルフト'
+        assert len(three_bytes_per_glyph.encode('UTF-8')) == 3 * len(three_bytes_per_glyph)
         # for xft fonts, also test utf8 window titles
-        utf8titles = [w * '♥']
+        utf8titles = [
+            w * '♥',
+            (w // 3) * 'äüöß',
+            (w // len(three_bytes_per_glyph)) * three_bytes_per_glyph,
+        ]
     else:
         # for plain X fonts, it does not seem to work in tox/pytest
         # (but strangely, it works in a manual Xephyr session)
@@ -174,6 +187,29 @@ def test_title_does_not_exceed_width(hlwm, x11, font):
 
         assert leftmost_font_x >= bw
         assert rightmost_font_x < bw + hlwm.attr.clients[winid].content_geometry().width
+
+
+@pytest.mark.parametrize("font", font_pool)
+def test_title_ellipsis_is_used(hlwm, x11, font):
+    font_color = (255, 0, 0)  # a color available everywhere
+    bw = 30
+    hlwm.attr.theme.color = 'black'
+    hlwm.attr.theme.title_color = RawImage.rgb2string(font_color)
+    hlwm.attr.theme.title_height = 14
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.theme.title_font = font
+    hlwm.attr.settings.ellipsis = 'abc'
+
+    handle, winid = x11.create_client()
+    assert screenshot_with_title(x11, handle, '   ').color_count(font_color) == 0
+    # set a title that is too wide to be displayed in its entirety:
+    w = hlwm.attr.clients[winid].decoration_geometry().width
+    count1 = screenshot_with_title(x11, handle, w * ' ').color_count(font_color)
+    assert count1 > 0
+    hlwm.attr.settings.ellipsis = 'abcabc'
+    count2 = screenshot_with_title(x11, handle, w * ' ').color_count(font_color)
+    assert count2 > 0
+    assert count2 == count1 * 2
 
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
@@ -402,6 +438,36 @@ def test_textalign_completion(hlwm):
     for k in hlwm.complete(['attr', 'theme.title_align']):
         hlwm.attr.theme.title_align = k
         assert hlwm.attr.theme.title_align() == k
+
+
+def test_title_position_remains(hlwm, x11):
+    active_color = (212, 189, 140)
+    normal_color = (221, 198, 104)
+    hlwm.attr.theme.active.title_color = RawImage.rgb2string(active_color)
+    hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
+    hlwm.attr.settings.tabbed_max = True
+    hlwm.attr.theme.title_height = 10
+    hlwm.attr.theme.outer_width = 3
+    hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'max'
+
+    handle1, win1 = x11.create_client()
+    x11.set_window_title(handle1, 'client 1')
+    handle2, win2 = x11.create_client()
+    x11.set_window_title(handle1, 'client 2')
+    for align in ['left', 'center', 'right']:
+        hlwm.attr.theme.title_align = align
+        hlwm.call(['jumpto', win1])
+        focus1 = x11.decoration_screenshot(handle1)
+        hlwm.call(['jumpto', win2])
+        focus2 = x11.decoration_screenshot(handle2)
+        assert focus1.height == focus2.height
+        assert focus1.width == focus2.width
+        titlebar_height = 10
+        for x, y in itertools.product(range(0, focus1.width), range(0, titlebar_height)):
+            assert (focus1.pixel(x, y) == active_color) == (focus2.pixel(x, y) == normal_color), \
+                f'mismatch at pixel ({x}, {y})'
+            assert (focus1.pixel(x, y) == normal_color) == (focus2.pixel(x, y) == active_color), \
+                f'mismatch at pixel ({x}, {y})'
 
 
 @pytest.mark.parametrize("client_count", [1, 2])
