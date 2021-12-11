@@ -70,6 +70,15 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 
 size_t      utf8_string_length(const std::string& str);
 std::string utf8_string_at(const std::string& str, size_t offset);
+/**
+ * @brief in utf8, a single unicode character may be spread over
+ * multiple bytes. This function tells whether a given byte
+ * is part of such a sequence but not the first one.
+ * see also https://stackoverflow.com/a/9356203/4400896
+ * @param ch
+ * @return
+ */
+inline bool utf8_is_continuation_byte(char ch) { return (ch & 0xc0) == 0x80; }
 
 #define RECTANGLE_EQUALS(a, b) (\
         (a).x == (b).x &&   \
