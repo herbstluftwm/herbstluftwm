@@ -50,8 +50,10 @@ public:
     void substitute_complete(Completion& complete);
     void foreachCommand(CallOrComplete invoc);
     int foreachChild(std::string ident,
-                     Object* object,
+                     Object* parent,
                      std::string pathString,
+                     bool unique,
+                     bool recursive,
                      const RegexStr& filterName, Input nestedCommand, Output output);
     int sprintf_cmd(Input input, Output output);
     void sprintf_complete(Completion& complete);

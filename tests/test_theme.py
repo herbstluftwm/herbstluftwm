@@ -1,6 +1,8 @@
 import pytest
 from herbstluftwm.types import Point
 
+TITLE_WHEN_VALUES = ['always', 'never', 'one_tab', 'multiple_tabs']
+
 
 def read_values(hlwm, attributes):
     """return a dict with the given attributes"""
@@ -134,3 +136,79 @@ def test_decoration_geometry_vs_x11_data(hlwm, x11, floating):
     geoAttr = hlwm.attr.clients[winid].decoration_geometry()
 
     assert geoAttr == geoX11
+
+
+def test_title_when_parsing(hlwm):
+    assert sorted(TITLE_WHEN_VALUES) == sorted(hlwm.complete(['attr', 'theme.title_when']))
+
+    for v in TITLE_WHEN_VALUES:
+        hlwm.attr.theme.title_when = v
+        assert hlwm.attr.theme.title_when() == v
+
+    hlwm.call_xfail('attr theme.title_when foobar') \
+        .expect_stderr('Expecting one of:.*always')
+
+
+def test_title_when_behaviour(hlwm):
+    hlwm.attr.theme.title_height = 10
+    hlwm.attr.theme.title_depth = 5
+    expected_title_size = 10 + 5
+    hlwm.attr.theme.padding_top = 4
+    bw = 3
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'max'
+
+    for client_count in range(1, 4):
+        hlwm.create_client()
+
+        for title_when in TITLE_WHEN_VALUES:
+            hlwm.attr.theme.title_when = title_when
+
+            content_geo = hlwm.attr.clients.focus.content_geometry()
+            decoration_geo = hlwm.attr.clients.focus.decoration_geometry()
+
+            assert content_geo.bottomright() + Point(bw, bw) == decoration_geo.bottomright()
+            assert decoration_geo.x + bw == content_geo.x
+            title_size = content_geo.y - decoration_geo.y - bw - hlwm.attr.theme.padding_top()
+
+            title_expected = title_when == 'always' \
+                or (title_when == 'one_tab' and client_count >= 1) \
+                or (title_when == 'multiple_tabs' and client_count >= 2)
+
+            if title_expected:
+                assert expected_title_size > 0
+                assert title_size == expected_title_size
+            else:
+                assert title_size == 0
+
+
+@pytest.mark.parametrize("floating", [True, False])
+def test_title_when_for_absence_of_tabs(hlwm, floating):
+    """
+    for floating clients or frames with an algorithm other than 'max',
+    there should be no tabs at all and thus the titlebar is
+    only shown if 'title_when' is 'always'.
+    """
+    hlwm.attr.theme.title_height = 10
+    hlwm.attr.theme.title_depth = 5
+    expected_title_size = 10 + 5
+    hlwm.attr.theme.padding_top = 4
+    bw = 3
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.tags.focus.floating = floating
+    hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'vertical'
+    for client_count in range(1, 4):
+        hlwm.create_client()
+
+        for title_when in TITLE_WHEN_VALUES:
+            hlwm.attr.theme.title_when = title_when
+            content_geo = hlwm.attr.clients.focus.content_geometry()
+            decoration_geo = hlwm.attr.clients.focus.decoration_geometry()
+
+            assert content_geo.bottomright() + Point(bw, bw) == decoration_geo.bottomright()
+            assert decoration_geo.x + bw == content_geo.x
+            title_size = content_geo.y - decoration_geo.y - bw - hlwm.attr.theme.padding_top()
+            if title_when == 'always':
+                assert title_size == expected_title_size
+            else:
+                assert title_size == 0

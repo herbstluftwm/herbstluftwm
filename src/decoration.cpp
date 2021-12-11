@@ -14,6 +14,7 @@
 #include "fontdata.h"
 #include "settings.h"
 #include "theme.h"
+#include "utils.h"
 #include "xconnection.h"
 
 using std::string;
@@ -161,23 +162,11 @@ Client* Decoration::toClient(Window decoration_window)
     }
 }
 
-Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
-    return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left, -*padding_top - *title_height,
-                      -*padding_right, -*padding_bottom);
-}
-
-Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
-    return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left, *padding_top + *title_height,
-                      *padding_right, *padding_bottom);
-}
-
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
     // if the client is undecorated, the outline is identical to the inner geometry
     // otherwise, we convert the geometry using the theme
     auto outline = (client_->decorated_())
-                   ? scheme.inner_rect_to_outline(inner)
+                   ? scheme.inner_rect_to_outline(inner, tabs_.size())
                    : inner;
     resize_outline(outline, scheme, {});
     last_rect_inner = true;
@@ -189,9 +178,9 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
         // Since the 'inner' rect is usually a floating geometry,
         // take a scheme from there.
         const DecorationScheme& fallback =  client_->theme.floating.normal;
-        return fallback.inner_rect_to_outline(rect);
+        return fallback.inner_rect_to_outline(rect, tabs_.size());
     }
-    return last_scheme->inner_rect_to_outline(rect);
+    return last_scheme->inner_rect_to_outline(rect, tabs_.size());
 }
 
 void Decoration::updateResizeAreaCursors()
@@ -291,7 +280,7 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
 {
     bool decorated = client_->decorated_();
-    auto inner = scheme.outline_to_inner_rect(outline);
+    auto inner = scheme.outline_to_inner_rect(outline, tabs.size());
     if (!decorated) {
         inner = outline;
     }
@@ -318,7 +307,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         // updating the outline only has an affect for tiled clients
         // because for floating clients, this has been done already
         // right when the window size changed.
-        outline = scheme.inner_rect_to_outline(inner);
+        outline = scheme.inner_rect_to_outline(inner, tabs.size());
     }
     last_inner_rect = inner;
     if (decorated) {
@@ -534,14 +523,14 @@ void Decoration::redrawPixmap() {
                        inner.width,
                        inner.height - dec->last_actual_rect.height);
     }
-    if (s.title_height() > 0) {
+    if (s.showTitle(tabs_.size())) {
         Point2D titlepos = {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
         };
         if (tabs_.size() <= 1) {
             drawText(pix, gc, s.title_font->data(), s.title_color(),
-                     titlepos, client_->title_(), inner.width);
+                     titlepos, client_->title_(), inner.width, s.title_align);
         } else {
             int tabWidth = outer.width / tabs_.size();
             int tabIndex = 0;
@@ -559,7 +548,7 @@ void Decoration::redrawPixmap() {
                     tabIndex * tabWidth,
                     0,
                     tabWidth + int(isLast ? (outer.width % tabs_.size()) : 0),
-                    int(s.title_height() + s.padding_top()), // tab height
+                    int(s.title_height() + s.title_depth()), // tab height
                 };
                 if (tabClient != client_) {
                     // only add clickable buttons for the other clients
@@ -568,7 +557,7 @@ void Decoration::redrawPixmap() {
                     tabButton.tabClient_ = tabClient;
                     buttons_.push_back(tabButton);
                 }
-                int titleWidth = tabGeo.width;
+                int titleWidth = tabGeo.width - tabScheme.outer_width;
                 if (tabClient == client_) {
                     tabGeo.height += s.border_width() - s.inner_width();
                 }
@@ -605,7 +594,6 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)tabGeo.height }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 } else if (client_ == tabClient) {
                     // shorter edge on the right
                     borderRects.push_back(
@@ -613,10 +601,12 @@ void Decoration::redrawPixmap() {
                       (unsigned short)tabScheme.outer_width,
                       (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
-                    titleWidth -= tabScheme.outer_width;
                 }
                 XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
                 XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
+                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
+                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
+                         tabClient->title_(), titleWidth - 2 * tabPadLeft, s.title_align);
                 if (client_ != tabClient) {
                     // horizontal border connecting the focused tab with the outer border
                     Point2D westEnd = tabGeo.bl();
@@ -641,9 +631,6 @@ void Decoration::redrawPixmap() {
                                    fillWidth, remainingBorderColorHeight
                                    );
                 }
-                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
-                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
-                         tabClient->title_(), titleWidth - tabPadLeft);
                 tabIndex++;
             }
         }
@@ -660,17 +647,52 @@ void Decoration::redrawPixmap() {
  * @param color
  * @param position The position of the left end of the baseline
  * @param width The maximum width of the string (in pixels)
+ * @param the horizontal alignment within this maximum width
  * @param text
  */
 void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const Color& color,
-                          Point2D position, const string& text, int width)
+                          Point2D position, const string& text, int width,
+                          const TextAlign& align)
 {
     XConnection& xcon = xconnection();
     Display* display = xcon.display();
     // shorten the text first:
     size_t textLen = text.size();
-    while (textLen > 0 && fontData.textwidth(text, textLen) > width) {
-        textLen--;
+    int textwidth = fontData.textwidth(text, textLen);
+    string with_ellipsis; // declaration here for sufficently long lifetime
+    const char* final_c_str = nullptr;
+    if (textwidth <= width) {
+        final_c_str = text.c_str();
+    } else {
+        // shorten title:
+        with_ellipsis = text + settings_.ellipsis();
+        // temporarily, textLen is the length of the text surviving from the
+        // original window title
+        while (textLen > 0 && textwidth > width) {
+            textLen--;
+            // remove the (multibyte-)character that ends at with_ellipsis[textLen]
+            size_t character_width = 1;
+            while (textLen > 0 && utf8_is_continuation_byte(with_ellipsis[textLen])) {
+                textLen--;
+                character_width++;
+            }
+            // now, textLen points to the first byte of the (multibyte-)character
+            with_ellipsis.erase(textLen, character_width);
+            textwidth = fontData.textwidth(with_ellipsis, with_ellipsis.size());
+        }
+        // make textLen refer to the actual string and shorten further if it
+        // is still too wide:
+        textLen = with_ellipsis.size();
+        while (textLen > 0 && textwidth > width) {
+            textLen--;
+            textwidth = fontData.textwidth(with_ellipsis, textLen);
+        }
+        final_c_str = with_ellipsis.c_str();
+    }
+    switch (align) {
+    case TextAlign::left: break;
+    case TextAlign::center: position.x += (width - textwidth) / 2; break;
+    case TextAlign::right: position.x += width - textwidth; break;
     }
     if (fontData.xftFont_) {
         Visual* xftvisual = visual ? visual : xcon.visual();
@@ -687,19 +709,19 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
         XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
         XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
                        position.x, position.y,
-                       (const XftChar8*)text.c_str(), textLen);
+                       (const XftChar8*)final_c_str, textLen);
         XftDrawDestroy(xftd);
         XftColorFree(display, xftvisual, xftcmap, &xftcol);
     } else if (fontData.xFontSet_) {
         XSetForeground(display, gc, get_client_color(color));
         XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
-                text.c_str(), textLen);
+                final_c_str, textLen);
     } else if (fontData.xFontStruct_) {
         XSetForeground(display, gc, get_client_color(color));
         XFontStruct* font = fontData.xFontStruct_;
         XSetFont(display, gc, font->fid);
         XDrawString(display, pix, gc, position.x, position.y,
-                text.c_str(), textLen);
+                final_c_str, textLen);
     }
 }
 

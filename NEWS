@@ -9,14 +9,19 @@ Current git version
 
   * Tabbed window titles in the 'max' layout algorithm (controllable via the
     'tabbed_max' setting)
+  * New decoration setting 'title_when' to control, when window titles and tabs
+    are shown.
+  * New decoration setting 'title_depth'.
   * New autostart object with attributes 'path', 'running', 'pid', 'last_status'
+  * New decoration attribute 'title_align'
   * New client attribute 'floating_effectively' and associated X11 properties
     'HLWM_FLOATING_WINDOW' and 'HLWM_TILING_WINDOW'
-  * New 'foreach' command line flag: '--filter-name='
+  * New 'foreach' command line flags: '--filter-name=', '--recursive', '--unique'
   * The 'spawn' command now prints an error message on exec failure
   * New read-only client attribute 'decoration_geometry'.
   * New attribute 'decorated' to disable window decorations
   * The cursor shape now indicates resize options.
+  * New setting 'ellipsis'
   * Frames can be simultaneously resized in x and y direction with the mouse.
   * Bug fixes:
     - Update floating geometry if a client's size hints change

@@ -94,7 +94,8 @@ size_t utf8_string_length(const string& str) {
    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
    size_t i = 0, j = 0;
    while (str[i]) {
-       if ((str[i] & 0xc0) != 0x80) {
+       // count all the non-continuation bytes
+       if (!utf8_is_continuation_byte(str[i])) {
            j++;
        }
      i++;

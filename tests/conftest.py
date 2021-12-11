@@ -710,10 +710,13 @@ class X11:
     def winid_str(self, window_handle):
         return hex(window_handle.id)
 
-    def make_window_urgent(self, window):
+    def make_window_urgent(self, window, sync_hlwm=True):
         """make window urgent"""
         window.set_wm_hints(flags=Xutil.UrgencyHint)
         self.display.sync()
+        if sync_hlwm:
+            # wait for hlwm to fully recognize it as a client
+            self.sync_with_hlwm()
 
     def is_window_urgent(self, window):
         """check urgency of a given window handle"""

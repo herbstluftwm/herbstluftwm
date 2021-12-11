@@ -1,18 +1,16 @@
 import setuptools
 import pathlib
-import os
 
 here = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(here, "README.md"), "r") as fh:
-    long_description = fh.read()
+long_description = (here / 'README.md').read_text()
 
 setuptools.setup(
     name="herbstluftwm",
     version='0.1.0',
     author="Thorsten Wißmann",
     author_email="edu@thorsten-wissmann.de",
-    description="python bindings for herbstluftwm",
+    description="Python bindings for herbstluftwm",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/herbstluftwm/herbstluftwm",

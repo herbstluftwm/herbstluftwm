@@ -262,7 +262,12 @@ jobs:
       - name: build doc
         run: |
           cd $BUILD
-          make all_doc 2> >(tee asciidoc-stderr.log)
+          # sometimes a2x fails because of xsltproc. so let us hope
+          # that it works within 4 attempts:
+          make -j1 all_doc 2> >(tee asciidoc-stderr.log) ||
+          make -j1 all_doc 2> >(tee asciidoc-stderr.log) ||
+          make -j1 all_doc 2> >(tee asciidoc-stderr.log) ||
+          make -j1 all_doc 2> >(tee asciidoc-stderr.log)
           echo == Checking that asciidoc built without warnings ==
           ! grep WARNING asciidoc-stderr.log # grep must not find warnings
       - name: build website
