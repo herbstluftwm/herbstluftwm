@@ -9,6 +9,9 @@ Current git version
 
   * Tabbed window titles in the 'max' layout algorithm (controllable via the
     'tabbed_max' setting)
+  * New decoration setting 'title_when' to control, when window titles and tabs
+    are shown.
+  * New decoration setting 'title_depth'.
   * New autostart object with attributes 'path', 'running', 'pid', 'last_status'
   * New decoration attribute 'title_align'
   * New client attribute 'floating_effectively' and associated X11 properties

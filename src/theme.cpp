@@ -3,6 +3,15 @@
 using std::vector;
 using std::string;
 
+template<>
+Finite<TitleWhen>::ValueList Finite<TitleWhen>::values = ValueListPlain {
+    { TitleWhen::always, "always" },
+    { TitleWhen::never, "never" },
+    { TitleWhen::one_tab, "one_tab" },
+    { TitleWhen::multiple_tabs, "multiple_tabs" },
+};
+
+
 Theme::Theme()
     : fullscreen(*this, "fullscreen")
     , tiling(*this, "tiling")
@@ -26,7 +35,7 @@ Theme::Theme()
           "          │                  ╻\n"
           "          │                  │\n"
           "    ┌────╴│╶─────────────────┷─────┐ ⎫ border_width\n"
-          "    │     │      color             │ ⎬ + title_height\n"
+          "    │     │      color             │ ⎬ + title_height + title_depth\n"
           "    │  ┌──┷─────────────────────┐  │ ⎭ + padding_top\n"
           "    │  │====================....│  │\n"
           "    │  │== window content ==....│  │\n"
@@ -55,6 +64,8 @@ DecorationScheme::DecorationScheme()
     , proxyAttributes_ ({
         &border_width,
         &title_height,
+        &title_depth,
+        &title_when,
         &title_font,
         &title_align,
         &title_color,
@@ -91,10 +102,48 @@ DecorationScheme::DecorationScheme()
                             "the window decoration or only the window "
                             "contents of tiled clients (requires enabled "
                             "sizehints_tiling)");
+    title_depth.setDoc("the space below the baseline of the window title");
+    title_when.setDoc("when to show the window title: always, never, "
+                      "if the the client is in a tabbed scenario like a max frame (+one_tab+), "
+                      "if there are +multiple_tabs+ to be shown.");
     title_align.setDoc("the horizontal alignment of the title within the tab "
                        "or title bar. The value is one of: left, center, right");
     reset.setDoc("writing this resets all attributes to a default value");
 }
+
+Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect, size_t tabCount) const {
+    return rect.adjusted(-*border_width, -*border_width)
+            .adjusted(-*padding_left,
+                      -*padding_top - (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
+                      -*padding_right, -*padding_bottom);
+}
+
+/**
+ * @brief whether to show the window titles
+ * @param the number of tabs
+ * @return
+ */
+bool DecorationScheme::showTitle(size_t tabCount) const
+{
+    if (title_height() == 0) {
+        return false;
+    }
+    switch (title_when()) {
+        case TitleWhen::always: return true;
+        case TitleWhen::never: return false;
+        case TitleWhen::one_tab: return tabCount >= 1;
+        case TitleWhen::multiple_tabs: return tabCount >= 2;
+    }
+    return true; // Dead code. But otherwise, gcc complains
+}
+
+Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect, size_t tabCount) const {
+    return rect.adjusted(*border_width, *border_width)
+            .adjusted(*padding_left,
+                      *padding_top + (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
+                      *padding_right, *padding_bottom);
+}
+
 
 DecTriple::DecTriple()
    : normal(*this, "normal")

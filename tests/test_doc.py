@@ -113,6 +113,7 @@ def types_and_shorthands():
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
         'TextAlign': 'n',
+        'TitleWhen': 'n',
         'font': 'f',
         'Rectangle': 'R',
         'WindowID': 'w',

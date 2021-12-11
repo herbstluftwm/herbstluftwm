@@ -162,23 +162,11 @@ Client* Decoration::toClient(Window decoration_window)
     }
 }
 
-Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
-    return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left, -*padding_top - *title_height,
-                      -*padding_right, -*padding_bottom);
-}
-
-Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
-    return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left, *padding_top + *title_height,
-                      *padding_right, *padding_bottom);
-}
-
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
     // if the client is undecorated, the outline is identical to the inner geometry
     // otherwise, we convert the geometry using the theme
     auto outline = (client_->decorated_())
-                   ? scheme.inner_rect_to_outline(inner)
+                   ? scheme.inner_rect_to_outline(inner, tabs_.size())
                    : inner;
     resize_outline(outline, scheme, {});
     last_rect_inner = true;
@@ -190,9 +178,9 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
         // Since the 'inner' rect is usually a floating geometry,
         // take a scheme from there.
         const DecorationScheme& fallback =  client_->theme.floating.normal;
-        return fallback.inner_rect_to_outline(rect);
+        return fallback.inner_rect_to_outline(rect, tabs_.size());
     }
-    return last_scheme->inner_rect_to_outline(rect);
+    return last_scheme->inner_rect_to_outline(rect, tabs_.size());
 }
 
 void Decoration::updateResizeAreaCursors()
@@ -292,7 +280,7 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
 {
     bool decorated = client_->decorated_();
-    auto inner = scheme.outline_to_inner_rect(outline);
+    auto inner = scheme.outline_to_inner_rect(outline, tabs.size());
     if (!decorated) {
         inner = outline;
     }
@@ -319,7 +307,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         // updating the outline only has an affect for tiled clients
         // because for floating clients, this has been done already
         // right when the window size changed.
-        outline = scheme.inner_rect_to_outline(inner);
+        outline = scheme.inner_rect_to_outline(inner, tabs.size());
     }
     last_inner_rect = inner;
     if (decorated) {
@@ -535,7 +523,7 @@ void Decoration::redrawPixmap() {
                        inner.width,
                        inner.height - dec->last_actual_rect.height);
     }
-    if (s.title_height() > 0) {
+    if (s.showTitle(tabs_.size())) {
         Point2D titlepos = {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
@@ -560,7 +548,7 @@ void Decoration::redrawPixmap() {
                     tabIndex * tabWidth,
                     0,
                     tabWidth + int(isLast ? (outer.width % tabs_.size()) : 0),
-                    int(s.title_height() + s.padding_top()), // tab height
+                    int(s.title_height() + s.title_depth()), // tab height
                 };
                 if (tabClient != client_) {
                     // only add clickable buttons for the other clients
