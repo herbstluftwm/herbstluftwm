@@ -84,6 +84,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     sizehints_floating_.setWritable();
     sizehints_tiling_.setWritable();
     minimized_.setWritable();
+    urgent_.setWritable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
         i->changed().connect(this, &Client::requestRedraw);
     }
@@ -153,7 +154,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "window size, even if it is in tiling mode.");
     ewmhrequests_.setDoc("if ewmh requests are permitted for this client");
     ewmhnotify_.setDoc("if the client is told about its state via ewmh");
-    urgent_.setDoc("the urgency state (also known as: demands attention)");
+    urgent_.setDoc("the urgency state (also known as: demands attention). "
+                   "The focused client can not be urgent.");
     sizehints_tiling_.setDoc("if sizehints for this client "
                              "should be respected in tiling mode");
     sizehints_floating_.setDoc("if sizehints for this client should "
@@ -185,7 +187,7 @@ void Client::init_from_X() {
     pgid_ = Root::get()->X.windowPgid(window_);
 
     update_title();
-    update_wm_hints();
+    readWmHints();
     updatesizehints();
 }
 
@@ -216,6 +218,7 @@ void Client::make_full_client() {
     // redraw decoration on title change
     title_.changed().connect(this, &Client::redraw);
     decorated_.changed().connect(this, &Client::fixParentWindow);
+    urgent_.changed().connect(this, &Client::urgencyAttributeChanged);
 }
 
 void Client::listen_for_events() {
@@ -307,7 +310,7 @@ void Client::window_focus() {
     // change. So as a workaround, we pass ourselves directly to KeyManager:
     Root::get()->keys()->ensureKeyMask(this);
 
-    this->set_urgent(false);
+    urgent_ = false;
 }
 
 const DecTriple& Client::getDecTriple() {
@@ -638,68 +641,48 @@ void Client::set_visible(bool visible) {
     this->visible_ = visible;
 }
 
-// heavily inspired by dwm.c
-void Client::set_urgent(bool state) {
-    if (this->urgent_() == state) {
-        // nothing to do
-        return;
-    }
+void Client::urgencyAttributeChanged(bool state)
+{
     if (this == manager.focus() && state == true) {
-        // ignore it if the focused client wants to be urgent
-        // because it will be removed by window_focus() anyway
+        // supress it if the focused client wants to be urgent
+        urgent_ = false;
         return;
     }
-    set_urgent_force(state);
-}
-
-void Client::set_urgent_force(bool state) {
     hook_emit({"urgent", state ? "on" : "off", WindowID(window_).str() });
-
-    this->urgent_ = state;
-
     setup_border(this == manager.focus());
-
-    XWMHints* wmh;
-    if (!(wmh = XGetWMHints(X_.display(), this->window_))) {
-        // just allocate new wm hints for the case the window
-        // did not have wm hints set before.
-        // here, we ignore what happens on insufficient memory
-        wmh = XAllocWMHints();
+    if (state != x11urgent_) {
+        x11urgent_ = state;
+        X_.setWindowUrgencyHint(window_, state);
     }
-    if (state) {
-        wmh->flags |= XUrgencyHint;
-    } else {
-        wmh->flags &= ~XUrgencyHint;
-    }
-
-    XSetWMHints(X_.display(), this->window_, wmh);
-    XFree(wmh);
     ewmh.updateWindowState(this);
     // report changes to tags
     tag_set_flags_dirty();
 }
 
 // heavily inspired by dwm.c
-void Client::update_wm_hints() {
+/**
+ * @brief read the WM Hints from the X11 window
+ * and set member variables x11urgent_ and neverfocus_ accordingly.
+ * After that, set urgent_ accordingly.
+ * @param forceNotUrgent: If set, then the urgency hint of the window
+ * is ignored and even reset to 'not urgent'.
+ */
+void Client::readWmHints(bool forceNotUrgent) {
     XWMHints* wmh = XGetWMHints(X_.display(), this->window_);
     if (!wmh) {
+        x11urgent_ = false;
+        neverfocus_ = false;
         return;
     }
 
-    Client* focused_client = manager.focus();
-    if ((focused_client == this)
-        && wmh->flags & XUrgencyHint) {
+    if (forceNotUrgent && (wmh->flags & XUrgencyHint)) {
         // remove urgency hint if window is focused
         wmh->flags &= ~XUrgencyHint;
         XSetWMHints(X_.display(), this->window_, wmh);
+        x11urgent_ = false;
     } else {
-        bool newval = (wmh->flags & XUrgencyHint) ? true : false;
-        if (newval != this->urgent_()) {
-            this->urgent_ = newval;
-            this->setup_border(focused_client == this);
-            hook_emit({"urgent", urgent_() ? "on":"off", WindowID(window_).str()});
-            tag_set_flags_dirty();
-        }
+        // set x11urgent_
+        x11urgent_ = wmh->flags & XUrgencyHint;
     }
     if (wmh->flags & InputHint) {
         this->neverfocus_ = !wmh->input;
@@ -707,6 +690,8 @@ void Client::update_wm_hints() {
         this->neverfocus_ = false;
     }
     XFree(wmh);
+    // make attribute reflect urgency hint:
+    urgent_ = x11urgent_;
 }
 
 void Client::update_title() {

@@ -715,11 +715,12 @@ class X11:
         window.set_wm_hints(flags=Xutil.UrgencyHint)
         self.display.sync()
         if sync_hlwm:
-            # wait for hlwm to fully recognize it as a client
+            # wait for hlwm to fully recognize the new wm hint
             self.sync_with_hlwm()
 
     def is_window_urgent(self, window):
         """check urgency of a given window handle"""
+        self.display.sync()
         hints = window.get_wm_hints()
         if hints is None:
             return False
