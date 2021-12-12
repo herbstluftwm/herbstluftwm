@@ -644,7 +644,7 @@ void Client::set_visible(bool visible) {
 void Client::urgencyAttributeChanged(bool state)
 {
     if (this == manager.focus() && state == true) {
-        // supress it if the focused client wants to be urgent
+        // suppress it if the focused client wants to be urgent
         urgent_ = false;
         return;
     }
