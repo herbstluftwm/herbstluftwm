@@ -1077,7 +1077,7 @@ def mouse(hlwm_process, hlwm):
                 hlwm.call('true')
 
         def move_relative(self, delta_x, delta_y, wait=True):
-            self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+            self.call_cmd(f'xdotool mousemove_relative --sync -- {delta_x} {delta_y}', shell=True)
             if wait:
                 # wait until all the mouse move events that were put in the
                 # queue by the above xdotool invokation are fully processed.

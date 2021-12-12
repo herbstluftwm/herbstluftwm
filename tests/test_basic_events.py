@@ -85,9 +85,11 @@ def test_focus_frame_by_mouse(hlwm, mouse, click, focus_follows_mouse):
 @pytest.mark.parametrize("click", [True, False])
 @pytest.mark.parametrize("focus_follows_mouse", [True, False])
 def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse):
-    hlwm.call('attr theme.border_width 50')
-    hlwm.call('attr theme.active.color red')
-    hlwm.call('attr theme.normal.color blue')
+    hlwm.attr.theme.border_width = 1
+    for side in ['top', 'bottom', 'left', 'right']:
+        hlwm.attr.themes[f'padding_{side}'] = 49
+    hlwm.attr.theme.active.color = 'red'
+    hlwm.attr.theme.normal.color = 'blue'
     hlwm.call('set_layout vertical')
     hlwm.call(['set', 'focus_follows_mouse', hlwm.bool(focus_follows_mouse)])
     winids = hlwm.create_clients(2)
