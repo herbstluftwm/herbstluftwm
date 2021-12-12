@@ -648,3 +648,24 @@ const char* XConnection::focusChangedDetailToString(int focusedChangedEventDetai
     }
     return nullptr;
 }
+
+void XConnection::setWindowUrgencyHint(Window window, bool urgent)
+{
+    XWMHints* wmh;
+    if (!(wmh = XGetWMHints(m_display, window))) {
+        // just allocate new wm hints for the case the window
+        // did not have wm hints set before.
+        // here, we ignore what happens on insufficient memory
+        wmh = XAllocWMHints();
+    }
+    bool currentState = (wmh->flags & XUrgencyHint) != 0;
+    if (currentState != urgent) {
+        if (urgent) {
+            wmh->flags |= XUrgencyHint;
+        } else {
+            wmh->flags &= ~XUrgencyHint;
+        }
+        XSetWMHints(m_display, window, wmh);
+    }
+    XFree(wmh);
+}

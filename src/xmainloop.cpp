@@ -612,7 +612,8 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             //        ev->atom,
             //        atomname);
             if (ev->atom == XA_WM_HINTS) {
-                client->update_wm_hints();
+                bool forceNotUrgent = root_->clients->focus() == client;
+                client->readWmHints(forceNotUrgent);
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
                 Rectangle geom = client->float_size_;
