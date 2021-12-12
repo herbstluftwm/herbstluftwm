@@ -87,7 +87,7 @@ def test_focus_frame_by_mouse(hlwm, mouse, click, focus_follows_mouse):
 def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse):
     hlwm.attr.theme.border_width = 1
     for side in ['top', 'bottom', 'left', 'right']:
-        hlwm.attr.themes[f'padding_{side}'] = 49
+        hlwm.attr.theme[f'padding_{side}'] = 49
     hlwm.attr.theme.active.color = 'red'
     hlwm.attr.theme.normal.color = 'blue'
     hlwm.call('set_layout vertical')
