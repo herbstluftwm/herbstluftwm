@@ -33,8 +33,6 @@ using std::stringstream;
 
 static int g_monitor_float_treshold = 24;
 
-static Client* lastfocus = nullptr;
-
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
@@ -246,68 +244,9 @@ Client* get_client_from_window(Window window) {
 
 // destroys a special client
 Client::~Client() {
-    if (lastfocus == this) {
-        lastfocus = nullptr;
-    }
     if (slice) {
         delete slice;
     }
-}
-
-void Client::window_unfocus() {
-    Root::get()->mouse->grab_client_buttons(this, false);
-}
-
-void Client::window_unfocus_last() {
-    if (lastfocus) {
-        lastfocus->window_unfocus();
-    }
-    // give focus to root window
-    Ewmh::get().clearInputFocus();
-    if (lastfocus) {
-        /* only emit the hook if the focus *really* changes */
-        hook_emit({"focus_changed", "0x0", ""});
-        Ewmh::get().updateActiveWindow(None);
-
-        // Enable all keys in the root window
-        Root::get()->keys()->clearActiveKeyMask();
-    }
-    lastfocus = 0;
-}
-
-void Client::window_focus() {
-    // set keyboard focus
-    if (!this->neverfocus_) {
-        XSetInputFocus(X_.display(), this->window_, RevertToPointerRoot, CurrentTime);
-    } else {
-        ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
-    }
-
-    if (this != lastfocus) {
-        /* FIXME: this is a workaround because window_focus always is called
-         * twice.
-         *
-         * only emit the hook if the focus *really* changes */
-        // unfocus last one
-        if (lastfocus) {
-            lastfocus->window_unfocus();
-        }
-        ewmh.updateActiveWindow(this->window_);
-        hook_emit({"focus_changed", WindowID(window_).str(), title_()});
-    }
-
-    // change window-colors
-    //HSDebug("window_focus ACTIVE: 0x%lx\n", client->window);
-    //client_setup_border(client, true);
-
-    lastfocus = this;
-    Root::get()->mouse->grab_client_buttons(this, true);
-
-    // XXX: At this point, ClientManager does not yet know about the focus
-    // change. So as a workaround, we pass ourselves directly to KeyManager:
-    Root::get()->keys()->ensureKeyMask(this);
-
-    this->set_urgent(false);
 }
 
 const DecTriple& Client::getDecTriple() {

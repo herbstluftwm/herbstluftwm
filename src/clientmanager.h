@@ -73,6 +73,7 @@ public:
     void applyTmpRuleCompletion(Completion& complete);
 
 protected:
+    void focusedClientChanges(Client* newFocus);
     int clientSetAttribute(std::string attribute, Input input, Output output);
     void setSimpleClientAttributes(Client* client, const ClientChanges& changes);
     Theme* theme;

@@ -266,10 +266,9 @@ void Monitor::applyLayout() {
     if (isFocused) {
         if (res.focus) {
             Root::get()->clients()->focus = res.focus;
-            res.focus->window_focus();
+            res.focus->urgent_ = false;
         } else {
             Root::get()->clients()->focus = {};
-            Client::window_unfocus_last();
         }
     }
 
