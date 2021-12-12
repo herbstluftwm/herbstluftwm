@@ -30,17 +30,17 @@ def cpp_source_doc_to_asciidoc(src, depth=1):
         lines = src.splitlines()
         new_lines = []
         in_code_block = False
-        for idx, l in enumerate(lines):
-            if l == '':
+        for idx, cur_l in enumerate(lines):
+            if cur_l == '':
                 continue
             new_paragraph = idx == 0 or lines[idx - 1] == ''
-            indented = l[0:2] == "  "
-            itemize = len(l) > 2 and l[3] in '*-'
+            indented = cur_l[0:2] == "  "
+            itemize = len(cur_l) > 2 and cur_l[3] in '*-'
             if not new_paragraph:
                 if in_code_block:
-                    new_lines.append(l[4:])  # dedent
+                    new_lines.append(cur_l[4:])  # dedent
                 else:
-                    new_lines.append(l)
+                    new_lines.append(cur_l)
             else:  # new paragraph:
                 if not indented or itemize:
                     if in_code_block:
@@ -59,10 +59,10 @@ def cpp_source_doc_to_asciidoc(src, depth=1):
                         new_lines.append('+')
                     new_lines.append(code_block_marker)
                 if in_code_block:
-                    new_lines.append(l[4:])  # dedent
+                    new_lines.append(cur_l[4:])  # dedent
                 else:
                     # normal lines:
-                    new_lines.append(l)
+                    new_lines.append(cur_l)
         if in_code_block:
             new_lines.append(code_block_marker)
         src = '\n'.join(new_lines)
