@@ -64,6 +64,7 @@ public:
 
     // attributes:
     Attribute_<bool> urgent_;
+    bool x11urgent_ = false;
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
     Attribute_<bool> minimized_;
@@ -116,7 +117,7 @@ public:
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
     void set_urgent(bool state);
-    void update_wm_hints();
+    void readWmHints(bool forceNotUrgent = false);
     void update_title();
     void raise();
     void lower();
@@ -128,7 +129,6 @@ public:
 
     void set_visible(bool visible);
 
-    void set_urgent_force(bool state);
     void requestClose(); //! ask the client to close
 
     void clear_properties();
@@ -137,6 +137,7 @@ public:
     void updateEwmhState();
 private:
     void floatingGeometryChanged();
+    void urgencyAttributeChanged(bool state);
     void fixParentWindow(bool decorated);
     void redraw();
     void redrawRelevantTabBars();

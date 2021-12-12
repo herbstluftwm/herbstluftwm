@@ -597,3 +597,45 @@ def test_decorated_off_floating_geometry_correct(hlwm):
     client_obj.decorated = False
 
     assert client_obj.floating_geometry() == client_obj.decoration_geometry()
+
+
+@pytest.mark.parametrize("other_client", [True, False])
+def test_urgent_attribute_triggers_tag_status(hlwm, hc_idle, other_client):
+    if other_client:
+        hlwm.create_client()
+
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+
+    winid, _ = hlwm.create_client()
+
+    # the new client is not focused:
+    assert 'focus' not in hlwm.list_children('clients') \
+        or hlwm.attr.clients.focus.winid() != winid
+
+    hc_idle.hooks()  # reset hooks
+    hlwm.attr.clients[winid].urgent = True  # make it urgent
+    assert ['tag_flags'] in hc_idle.hooks()
+    assert hlwm.attr.clients[winid].urgent() is True
+
+    hlwm.call('jumpto urgent')
+    assert hlwm.attr.clients[winid].urgent() is False
+    assert hlwm.attr.clients.focus.winid() == winid
+
+
+def test_focused_client_is_not_urgent(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients.focus.urgent = True
+    assert hlwm.attr.clients.focus.urgent() is False
+
+
+def test_urgent_attribute_written_to_x11(hlwm, x11):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    handle, winid = x11.create_client()
+
+    assert hlwm.attr.clients[winid].urgent() is False
+    for value in [True, False, True, False]:
+        hlwm.attr.clients[winid].urgent = value
+
+        assert x11.is_window_urgent(handle) == value

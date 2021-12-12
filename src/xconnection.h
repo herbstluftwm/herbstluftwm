@@ -33,6 +33,7 @@ public:
     // utility functions
     static const char* requestCodeToString(int requestCode);
     static const char* focusChangedDetailToString(int focusedChangedEventDetail);
+    void setWindowUrgencyHint(Window window, bool urgent);
     Rectangle windowSize(Window window);
     int windowPid(Window window);
     int windowPgid(Window window);

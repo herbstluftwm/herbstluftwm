@@ -386,7 +386,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                 // Focus stealing is not allowed, at least mark the client urgent
                 auto client = Root::common().client(me->window);
                 if (client) {
-                    client->set_urgent(true);
+                    client->urgent_ = true;
                 }
             }
             break;
@@ -433,7 +433,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                 { NetWmStateFullscreen,
                     client->fullscreen_,     [](Client* c, bool state){ c->fullscreen_ = state; } },
                 { NetWmStateDemandsAttention,
-                    client->urgent_,         [](Client* c, bool state){ c->set_urgent(state); } },
+                    client->urgent_,         [](Client* c, bool state){ c->urgent_ = state; } },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */
