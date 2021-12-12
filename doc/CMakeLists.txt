@@ -58,6 +58,7 @@ function(gen_manpage sourcefile man_nr)
     # additional arguments (${ARGN}) are passed as DEPENDS to the asciidoc command
     set(src "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.${man_nr}")
+    set(docbookxml "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.xml")
     STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
 
     # as a hack, every man page depends on gen_object_asciidoc, even though only
@@ -74,16 +75,34 @@ function(gen_manpage sourcefile man_nr)
             COMMENT "Using pre-built ${dst_prebuilt}"
             )
     else()
+        # if the documentation is built from scratch, add an intermediate step for
+        # the xml-based docbook format.
+        # add_dependencies("doc_man_${sourcefile}" "doc_man_${sourcefile}_xml")
+        # add_custom_target("doc_man_${sourcefile}_xml" ALL DEPENDS ${docbookxml})
         add_custom_command(
-            OUTPUT ${dst}
-            COMMAND ${ASCIIDOC_A2X}
-                    --no-xmllint
-                    -f manpage
+            OUTPUT ${dst} ${docbookxml}
+            # first create the docbook xml:
+            COMMAND ${ASCIIDOC}
+                    -o ${docbookxml}
+                    -b docbook45
                     -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
                     -a \"date=${BUILD_DATE}\"
                     -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
-                    --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
                     ${src}
+            # then, patch the xml:
+            COMMAND ${XSLTPROC}
+                --output ${docbookxml}
+                ${CMAKE_CURRENT_SOURCE_DIR}/literal2emph.xsl
+                ${docbookxml}
+            # and finally, create the man page from it:
+            COMMAND ${XSLTPROC}
+                --output ${dst}
+                --stringparam callout.graphics 0
+                --stringparam navig.graphics 0
+                --stringparam admon.textlabel 1
+                --stringparam admon.graphics 0
+                ${ASCIIDOC_MANPAGE_XSL}
+                ${docbookxml}
             DEPENDS ${src} ${ARGN}
             )
     endif()
@@ -132,6 +151,9 @@ if (WITH_DOCUMENTATION)
     if (NOT COPY_DOCUMENTATION)
         find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
         find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
+        find_program(XSLTPROC NAMES xsltproc DOC "Path to xsltproc")
+        set(ASCIIDOC_MANPAGE_XSL ${CMAKE_INSTALL_SYSCONF_PREFIX}/asciidoc/docbook-xsl/manpage.xsl
+            CACHE PATH "The manpage.xsl provided by asciidoc to generate man pages from docbook xml")
     endif()
 
     gen_manpage(herbstclient 1)
