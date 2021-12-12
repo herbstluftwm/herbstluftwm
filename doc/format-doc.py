@@ -12,7 +12,7 @@ def count_whitespace_prefix(string):
     return len(string)
 
 
-def cpp_source_doc_to_asciidoc(src):
+def cpp_source_doc_to_asciidoc(src, depth=1):
     """the doc in the cpp source sometimes can not be fully
     asciidoc compatible because it is also used for plain-text
     documentation in the 'help' command.
@@ -24,7 +24,48 @@ def cpp_source_doc_to_asciidoc(src):
     src = re.sub(r"'([^']*[^\\])'", r"'+++\1+++'", src)
 
     # indent any nested bullet items correctly
-    src = re.sub('\n  \\*', '\n  **', src)
+    src = re.sub('\n  \\*', '\n  {}*'.format(depth * '*'), src)
+    code_block_marker = '----'  # asciidoc syntax for code blocks
+    if '\n' in src:
+        lines = src.splitlines()
+        new_lines = []
+        in_code_block = False
+        for idx, l in enumerate(lines):
+            if l == '':
+                continue
+            new_paragraph = idx == 0 or lines[idx - 1] == ''
+            indented = l[0:2] == "  "
+            itemize = len(l) > 2 and l[3] in '*-'
+            if not new_paragraph:
+                if in_code_block:
+                    new_lines.append(l[4:])  # dedent
+                else:
+                    new_lines.append(l)
+            else:  # new paragraph:
+                if not indented or itemize:
+                    if in_code_block:
+                        new_lines.append(code_block_marker)  # end code block
+                        in_code_block = False
+                        if depth > 1:
+                            new_lines.append('+')
+                    elif len(new_lines) > 0:
+                        # link new paragraph to previous one
+                        new_lines[-1] = new_lines[-1] + ' +'
+                        new_lines.append(' +')
+                else:
+                    # if indented and not itemize: start of code block
+                    in_code_block = True
+                    if depth > 1:
+                        new_lines.append('+')
+                    new_lines.append(code_block_marker)
+                if in_code_block:
+                    new_lines.append(l[4:])  # dedent
+                else:
+                    # normal lines:
+                    new_lines.append(l)
+        if in_code_block:
+            new_lines.append(code_block_marker)
+        src = '\n'.join(new_lines)
     return src
 
 
@@ -75,10 +116,14 @@ def escape_string_value(string):
         return '\"\"'
     else:
         needs_quotes = False
-        for ch in '*|` ':
+        for ch in '*|` +':
             if ch in string:
                 needs_quotes = True
-        string = string.replace('"', '\\"').replace('\'', '\\\'')
+        string = string \
+            .replace('"', '\\"') \
+            .replace('\'', '\\\'') \
+            .replace('*', '&#42;') \
+            .replace('+', '&#43;')
         if needs_quotes:
             return '\"{}\"'.format(string)
         else:
@@ -164,7 +209,7 @@ class ObjectDocPrinter:
         objdoc = self.jsondoc['objects'][clsname]
         print(f'[[{identifier}]]', end='' if depth > 1 else '\n')
         if 'doc' in objdoc:
-            doc_txt = cpp_source_doc_to_asciidoc(objdoc['doc'])
+            doc_txt = cpp_source_doc_to_asciidoc(objdoc['doc'], depth=depth)
             if depth > 1:
                 print(multiline_for_bulletitem(doc_txt))
             else:
@@ -182,14 +227,15 @@ class ObjectDocPrinter:
             else:
                 default_val = ''
             if attr.get('doc', None) is not None:
-                docstr = ': ' + cpp_source_doc_to_asciidoc(attr['doc'])
+                docstr = ': ' + cpp_source_doc_to_asciidoc(attr['doc'], depth=(depth + 1))
             else:
                 docstr = ''
             # add multiple formats to the entry name such that the colors work
             # both in html and in the man page output
+            print('')
             print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
-            docstr = cpp_source_doc_to_asciidoc(child['doc'].strip()) \
+            docstr = cpp_source_doc_to_asciidoc(child['doc'].strip(), depth=(depth + 1)) \
                 if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
             if len(docstr) > 0:
@@ -212,6 +258,7 @@ class ObjectDocPrinter:
                 # at the moment
                 continue
             if child['type'] not in self.abstractclass:
+                print('')
                 print(f"{ws_prefix}{bulletprefix}{bullet} {itemname}: {docstr}", end='')
                 self.run(child['type'], path=path + [child['name']])
             else:
