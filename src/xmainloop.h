@@ -52,6 +52,9 @@ private:
     void propertynotify(XPropertyEvent* event);
     void unmapnotify(XUnmapEvent* event);
 
+    void focusedClientChanges(Client* newFocus);
+    Client* lastFocus_ = {}; // the old value of clients.focus
+
     bool duringEnterNotify_ = false; //! whether we are in enternotify()
 
     static IpcServer::CallResult callCommand(const std::vector<std::string>& call);

@@ -102,11 +102,6 @@ public:
     Window decorationWindow();
     friend void mouse_function_resize(XMotionEvent* me);
 
-    // other member functions
-    void window_focus();
-    void window_unfocus();
-    static void window_unfocus_last();
-
     void fuzzy_fix_initial_position();
 
     Rectangle outer_floating_rect();

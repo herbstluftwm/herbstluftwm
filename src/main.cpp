@@ -436,6 +436,10 @@ int main(int argc, char* argv[]) {
     tag_force_update_flags();
     all_monitors_apply_layout();
     ewmh->updateAll();
+    if (!root->clients->focus()) {
+        // if no client is focused, focus dummy window:
+        ewmh->clearInputFocus();
+    }
     mainloop.childExited.connect(root->autostart(), &Autostart::childExited);
     root->autostart()->reloadCmd();
 
