@@ -243,6 +243,30 @@ def test_drag_resize_tiled_client_in_two_directions(hlwm, mouse, dir1, dir2):
     assert math.isclose(corner_expected.y, corner_after.y, abs_tol=0.01)
 
 
+def test_client_resize_does_not_switch_tabs(hlwm, mouse):
+    bw = 5
+    hlwm.attr.theme.border_width = bw
+    hlwm.attr.theme.title_height = 20
+    winids = hlwm.create_clients(2)
+    winids_str = ' '.join(winids)
+    layout = f'(split horizontal:0.5:0 (clients max:0 {winids_str}) (clients vertical:0))'
+    hlwm.call(['load', layout])
+
+    client_geo = hlwm.attr.clients[winids[0]].decoration_geometry()
+    # clicking the top right corner does not switch the tabs:
+    mouse.move_to(client_geo.x + client_geo.width - bw // 2, client_geo.y + bw // 2)
+    mouse.mouse_press('1')
+
+    assert hlwm.attr.clients.dragged.winid() == winids[0]
+    assert hlwm.attr.clients.focus.winid() == winids[0]
+
+    # double check, that the tab was indeed just nearby:
+    mouse.mouse_release('1')
+    mouse.move_relative(-bw, bw)
+    mouse.click('1')
+    assert hlwm.attr.clients.focus.winid() == winids[1]
+
+
 @pytest.mark.parametrize('live_update', [True, False])
 def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     hlwm.attr.settings.update_dragged_clients = hlwm.bool(live_update)
@@ -332,6 +356,50 @@ def test_move_client_via_decoration(hlwm, x11, mouse, repeat):
         == (size_after.width, size_after.height)
     # but the location
     assert expected_position == x11.get_absolute_top_left(client)
+
+
+@pytest.mark.parametrize('floating', [True, False])
+def test_resize_unfocused_client(hlwm, mouse, floating):
+    hlwm.attr.theme.border_width = 5
+    winid, _ = hlwm.create_client()
+    focus, _ = hlwm.create_client()
+    # place clients side by side, with the focus on the left
+    layout = f'(split horizontal:0.5:0 (clients vertical:0 {focus}) (clients vertical:0 {winid}))'
+    hlwm.call(['load', layout])
+    if floating:
+        # steal the tiling layout to the floating geometries:
+        hlwm.attr.clients[winid].floating_geometry = hlwm.attr.clients[winid].content_geometry()
+        hlwm.attr.clients[focus].floating_geometry = hlwm.attr.clients[focus].content_geometry()
+        hlwm.attr.tags.focus.floating = True
+        hlwm.attr.clients[winid].sizehints_floating = False
+        hlwm.attr.settings.snap_distance = 0
+
+    assert hlwm.attr.clients.focus.winid() == focus
+
+    geo = hlwm.attr.clients[winid].decoration_geometry()
+    # move the cursor into the left border of the right hand client:
+    mouse.move_to(geo.x + 2, geo.y + geo.height // 2)
+    mouse.mouse_press('1')
+    assert hlwm.attr.clients.focus.winid() == focus
+    assert hlwm.attr.clients.dragged.winid() == winid
+
+    dx = 17
+    mouse.move_relative(-dx, -20)
+    mouse.mouse_release('1')
+    assert 'dragged' not in hlwm.list_children('clients')
+    new_geo = hlwm.attr.clients[winid].decoration_geometry()
+    # the window grew 13 pixels to the left:
+    assert new_geo.x == geo.x - dx
+    assert new_geo.width == geo.width + dx
+    assert hlwm.attr.clients.focus.winid() == focus, \
+        "the focus didn't change"
+    fraction_attr = hlwm.attr.tags.focus.tiling.root.fraction
+    if floating:
+        assert fraction_attr() == '0.5', \
+            "the tiling shouldn't change in floating resize"
+    else:
+        assert fraction_attr() != '0.5', \
+            "the tiling layout is updated"
 
 
 # we had a race condition here, so increase the likelyhood
