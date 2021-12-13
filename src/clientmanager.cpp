@@ -45,6 +45,8 @@ ClientManager::ClientManager()
     dragged.setDoc("the object of a client which is currently dragged"
                    " by the mouse, if any. See the documentation of the"
                    " mousebind command for examples.");
+
+    focus.changed().connect(this, &ClientManager::focusedClientChanges);
 }
 
 ClientManager::~ClientManager()
@@ -530,6 +532,19 @@ void ClientManager::applyTmpRuleCompletion(Completion& complete)
         completeEntries(complete);
     } else {
         Root::get()->rules->addRuleCompletion(complete);
+    }
+}
+
+/**
+ * @brief called whenever clients.focus changes
+ * @param newFocus
+ */
+void ClientManager::focusedClientChanges(Client* newFocus)
+{
+    if (newFocus) {
+        hook_emit({"focus_changed", newFocus->window_id_str(), newFocus->title_()});
+    } else {
+        hook_emit({"focus_changed", "0x0", ""});
     }
 }
 
