@@ -402,6 +402,38 @@ def test_resize_unfocused_client(hlwm, mouse, floating):
             "the tiling layout is updated"
 
 
+@pytest.mark.parametrize('resize_possible', [True, False])
+def test_border_click_either_focuses_or_resizez(hlwm, mouse, resize_possible):
+    """
+    when clicking on the outer decoration of a window, then this should either
+    trigger the resize or focus the client (if resizing is not possible).
+    """
+    hlwm.attr.theme.border_width = 5
+    hlwm.attr.settings.focus_follows_mouse = False
+    target, _ = hlwm.create_client()
+    focus, _ = hlwm.create_client()
+    if resize_possible:
+        # place clients below each other, with focus on the top
+        split_align = 'vertical'
+    else:
+        # place clients side by side, with the focus on the left
+        split_align = 'horizontal'
+    layout = f'(split {split_align}:0.5:0 (clients vertical:0 {focus}) (clients vertical:0 {target}))'
+    hlwm.call(['load', layout])
+    assert hlwm.attr.clients.focus.winid() == focus
+
+    target_geo = hlwm.attr.clients[target].decoration_geometry()
+    # click into the top of the decoration of the unfocused window.
+    click_point = target_geo.topleft() + Point(target_geo.width // 2, 3)
+    mouse.move_to(click_point.x, click_point.y)
+    mouse.mouse_press('1')
+
+    # this either starts dragging or focuses the 'target' window
+    focus_change = not resize_possible
+    assert ('dragged' in hlwm.list_children('clients')) == resize_possible
+    assert (hlwm.attr.clients.focus.winid() == target) == focus_change
+
+
 # we had a race condition here, so increase the likelyhood
 # that we really fixed it:
 @pytest.mark.parametrize('repeat', list(range(0, 100)))
