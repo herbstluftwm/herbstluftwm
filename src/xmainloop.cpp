@@ -246,6 +246,9 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
             bool decorationClicked = be->window == client->decorationWindow();
             if (decorationClicked) {
                 resize = client->dec->positionTriggersResize({be->x, be->y});
+                if (resize) {
+                    resize = resize * client->possibleResizeActions();
+                }
             }
             if (resize) {
                 mm->mouse_initiate_resize(client, resize);
