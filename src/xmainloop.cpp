@@ -83,6 +83,8 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
 
     root_->clients->dragged.changed()
             .connect(this, &XMainLoop::draggedClientChanges);
+    root_->clients->focus.changed()
+            .connect(this, &XMainLoop::focusedClientChanges);
 }
 
 //! scan for windows and add them to the list of managed clients
@@ -240,25 +242,34 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
             client = Decoration::toClient(be->window);
         }
         if (client) {
-            Client* tabClient = {};
-            if (be->window == client->dec->decorationWindow()
-                && be->button == Button1)
-            {
-                auto maybeClick = client->dec->positionHasButton({be->x, be->y});
-                if (maybeClick.has_value()) {
-                    tabClient = maybeClick.value().tabClient_;
+            ResizeAction resize = {};
+            bool decorationClicked = be->window == client->decorationWindow();
+            if (decorationClicked) {
+                resize = client->dec->positionTriggersResize({be->x, be->y});
+                if (resize) {
+                    resize = resize * client->possibleResizeActions();
                 }
             }
-            bool raise = root_->settings->raise_on_click();
-            if (tabClient) {
-                focus_client(tabClient, false, true, raise);
+            if (resize) {
+                mm->mouse_initiate_resize(client, resize);
             } else {
-                focus_client(client, false, true, raise);
-                if (be->window == client->decorationWindow()) {
-                    ResizeAction resize = client->dec->positionTriggersResize({be->x, be->y});
-                    if (resize) {
-                        mm->mouse_initiate_resize(client, resize);
-                    } else {
+                // if no resize action is triggered, check whether
+                // a tab was clicked:
+                Client* tabClient = {};
+                if (be->window == client->dec->decorationWindow()
+                    && be->button == Button1)
+                {
+                    auto maybeClick = client->dec->positionHasButton({be->x, be->y});
+                    if (maybeClick.has_value()) {
+                        tabClient = maybeClick.value().tabClient_;
+                    }
+                }
+                bool raise = root_->settings->raise_on_click();
+                if (tabClient) {
+                    focus_client(tabClient, false, true, raise);
+                } else {
+                    focus_client(client, false, true, raise);
+                    if (decorationClicked) {
                         mm->mouse_initiate_move(client, {});
                     }
                 }
@@ -473,6 +484,10 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
         && (event->detail == NotifyNonlinear
             || event->detail == NotifyNonlinearVirtual))
     {
+        Client* target = root_->clients->client(event->window);
+        if (!target) {
+            return;
+        }
         // an event if an application steals input focus
         // directly via XSetInputFocus, e.g. via `xdotool windowfocus`.
         // also other applications do this, e.g. `emacsclient -n FILENAME`
@@ -487,7 +502,6 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
         }
         if (event->window != currentFocus) {
             HSDebug("Window 0x%lx steals the focus\n", event->window);
-            Client* target = root_->clients->client(event->window);
             // Warning: focus_client() itself calls XSetInputFocus() which might
             // cause an endless loop if we didn't correctly cleared the
             // event queue with XCheckMaskEvent() above!
@@ -661,6 +675,36 @@ void XMainLoop::unmapnotify(XUnmapEvent* event) {
     while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev)) {
         ;
     }
+}
+
+/**
+ * @brief This function is called whenever clients.focus changes
+ * @param newFocus
+ */
+void XMainLoop::focusedClientChanges(Client* newFocus)
+{
+    if (lastFocus_) {
+        root_->mouse->grab_client_buttons(lastFocus_, false);
+    }
+    if (newFocus) { // if another client is focused
+        if (!newFocus->neverfocus_) {
+            XSetInputFocus(X_.display(), newFocus->window_, RevertToPointerRoot, CurrentTime);
+        } else {
+            root_->ewmh_.sendEvent(newFocus->window_, Ewmh::WM::TakeFocus, True);
+        }
+        root_->ewmh_.updateActiveWindow(newFocus->window_);
+        root_->mouse->grab_client_buttons(newFocus, true);
+        root_->keys()->ensureKeyMask(newFocus);
+    } else { // if no client is focused
+        Ewmh::get().clearInputFocus();
+        if (lastFocus_) {
+            root_->ewmh_.updateActiveWindow(None);
+
+            // Enable all keys in the root window
+            root_->keys()->clearActiveKeyMask();
+        }
+    }
+    lastFocus_ = newFocus;
 }
 
 IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
