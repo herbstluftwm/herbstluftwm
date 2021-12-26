@@ -226,9 +226,19 @@ def test_attribute_doc_in_json(hlwm, clsname, object_path, json_doc):
     for _, attribute in json_doc['objects'][clsname]['attributes'].items():
         name = attribute['name']
         help_txt = hlwm.call(['help', f'{path}.{name}'.lstrip('.')]).stdout
-        # the doc is the last line of the help text
-        doc_in_help = help_txt.strip().splitlines()[-1]
+        help_lines = help_txt.rstrip().split('\n')
+        doc_in_help = ''
+        # the doc is everything after 'Current value: ..'
+        for line_idx in range(0, len(help_lines) - 1):
+            # a line starting with 'Current value: '
+            found = help_lines[line_idx].startswith('Current value: ')
+            # and the next line is empty:
+            found = found and help_lines[line_idx + 1] == ''
+            if found:
+                # the doc is everything after the empty line:
+                doc_in_help = '\n'.join(help_lines[line_idx + 2:])
+                break
         if not doc_in_help.startswith('Current value:'):
             # if there is a doc printed by 'help', then it
             # should also be present in the json:
-            assert doc_in_help == attribute['doc']
+            assert doc_in_help == attribute.get('doc', '').rstrip()
