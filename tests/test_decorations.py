@@ -293,14 +293,21 @@ def test_frame_holes_for_pseudotiled_client(hlwm, x11, frame_bg_transparent):
     img.pixel(w // 2, h // 2) == black
 
 
+@pytest.mark.parametrize("method", ['tab_*-attributes', 'other scheme'])
 @pytest.mark.parametrize("running_clients_num", [3])
-def test_decoration_tab_colors(hlwm, x11, running_clients, running_clients_num):
+def test_decoration_tab_colors(hlwm, x11, method, running_clients, running_clients_num):
     active_color = (200, 23, 0)  # something unique
     normal_color = (23, 200, 0)  # something unique
     hlwm.attr.theme.active.color = RawImage.rgb2string(active_color)
     hlwm.attr.theme.active.title_color = RawImage.rgb2string(active_color)
-    hlwm.attr.theme.normal.color = RawImage.rgb2string(normal_color)
-    hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
+    if method == 'tab_*-attributes':
+        hlwm.attr.theme.active.tab_color = RawImage.rgb2string(normal_color)
+        hlwm.attr.theme.active.tab_title_color = RawImage.rgb2string(normal_color)
+        hlwm.attr.theme.active.tab_outer_color = RawImage.rgb2string(normal_color)
+        hlwm.attr.theme.active.tab_outer_width = 1
+    if method == 'other scheme':
+        hlwm.attr.theme.normal.color = RawImage.rgb2string(normal_color)
+        hlwm.attr.theme.normal.title_color = RawImage.rgb2string(normal_color)
 
     hlwm.attr.theme.title_height = 20
     hlwm.call(['set_layout', 'max'])

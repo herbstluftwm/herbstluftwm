@@ -132,6 +132,10 @@ hc attr theme.active.color '#345F0Cef'
 hc attr theme.title_color '#ffffff'
 hc attr theme.normal.color '#323232dd'
 hc attr theme.urgent.color '#7811A1dd'
+hc attr theme.tab_color '#1F1F1Fdd'
+hc attr theme.active.tab_color '#2B4F0Add'
+hc attr theme.active.tab_outer_color '#6C8257dd'
+hc attr theme.active.tab_title_color '#ababab'
 hc attr theme.normal.title_color '#898989'
 hc attr theme.inner_width 1
 hc attr theme.inner_color black
