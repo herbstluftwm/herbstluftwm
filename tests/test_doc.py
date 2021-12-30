@@ -117,8 +117,8 @@ def types_and_shorthands():
         'font': 'f',
         'Rectangle': 'R',
         'WindowID': 'w',
-        'MaybeColor': 'c',
-        'MaybeULong': 'u',
+        'MaybeColor': 's',
+        'MaybeULong': 's',
     }
 
 
