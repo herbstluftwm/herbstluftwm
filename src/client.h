@@ -11,7 +11,6 @@
 #include "object.h"
 #include "rectangle.h"
 #include "regexstr.h"
-#include "theme.h"
 #include "x11-types.h"
 
 class Decoration;
@@ -24,7 +23,10 @@ class HSTag;
 class Monitor;
 class Settings;
 class ClientManager;
+class Theme;
+class DecorationScheme;
 class XConnection;
+enum class ThemeType;
 
 class Client : public Object {
 public:
@@ -151,7 +153,7 @@ private:
     std::string tagName();
     const DecTriple& getDecTriple();
     const DecorationScheme& getDecorationScheme(bool focused);
-    Theme::Type mostRecentThemeType;
+    ThemeType mostRecentThemeType;
 };
 
 
