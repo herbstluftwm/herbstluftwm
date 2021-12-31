@@ -67,7 +67,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
     , X_(*cm.X_)
-    , mostRecentThemeType(Theme::Type::Tiling)
+    , mostRecentThemeType(ThemeType::Tiling)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
@@ -289,8 +289,8 @@ void Client::redrawRelevantTabBars()
 }
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
-    dec->resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()), {});
-    mostRecentThemeType = Theme::Type::Fullscreen;
+    dec->resize_outline(monitor_rect, theme[ThemeType::Fullscreen](isFocused,urgent_()), {});
+    mostRecentThemeType = ThemeType::Fullscreen;
 }
 
 void Client::raise() {
@@ -312,7 +312,7 @@ void Client::lower()
 void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, vector<Client*> tabs) {
     // only apply minimal decoration if the window is not pseudotiled
     auto themetype = (minimalDecoration && !pseudotile_())
-            ? Theme::Type::Minimal : Theme::Type::Tiling;
+            ? ThemeType::Minimal : ThemeType::Tiling;
     mostRecentThemeType = themetype;
     auto& scheme = theme[themetype](isFocused, urgent_());
     if (this->pseudotile_) {
@@ -528,8 +528,8 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
         CLAMP(rect.y,
               m->rect->y + m->pad_up() - rect.height + space,
               m->rect->y + m->rect->height - m->pad_up() - m->pad_down() - space);
-    dec->resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
-    mostRecentThemeType = Theme::Type::Floating;
+    dec->resize_inner(rect, theme[ThemeType::Floating](isFocused,urgent_()));
+    mostRecentThemeType = ThemeType::Floating;
 }
 
 Rectangle Client::outer_floating_rect() {
@@ -725,8 +725,8 @@ void Client::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_->x;
     int extreme_y = float_size_->y;
-    const auto& t = theme[Theme::Type::Floating];
-    mostRecentThemeType = Theme::Type::Floating;
+    const auto& t = theme[ThemeType::Floating];
+    mostRecentThemeType = ThemeType::Floating;
     size_t tabCount = 0;
     auto r = t.active.inner_rect_to_outline(float_size_, tabCount);
     extreme_x = std::min(extreme_x, r.x);

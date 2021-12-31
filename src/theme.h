@@ -152,15 +152,21 @@ public:
     }
 };
 
+/**
+ * @brief the members of the 'theme' object. It is a separate
+ * enum class (and not nested in Theme) because this makes
+ * forward declaration possible.
+ */
+enum class ThemeType {
+    Fullscreen,
+    Tiling,
+    Floating,
+    Minimal,
+};
+
 class Theme : public DecTriple {
 public:
-    enum class Type {
-        Fullscreen,
-        Tiling,
-        Floating,
-        Minimal,
-    };
-    const DecTriple& operator[](Type t) const {
+    const DecTriple& operator[](ThemeType t) const {
         return *decTriples[static_cast<int>(t)];
     };
     Theme();
