@@ -52,6 +52,28 @@ public:
     Either(const B& b)
         : data_(b), isA_(false)
     {}
+    bool operator==(const Either<A,B>& other) {
+        if (isA_ && other.isA_) {
+            return data_.a_ == other.data_.a_;
+        }
+        if (!isA_ && !other.isA_) {
+            return data_.b_ == other.data_.b_;
+        }
+        return false;
+    }
+    bool operator!=(const Either<A,B>& other) {
+        return !(*this == other);
+    }
+
+    // convert Either<A,B> to type 'B'
+    B rightOr(const B& onA) const {
+        if (isA_) {
+            return onA;
+        } else {
+            return data_.b_;
+        }
+    }
+
 private:
     Either() = delete;
     union UnionAB {

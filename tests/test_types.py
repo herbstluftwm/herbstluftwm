@@ -62,6 +62,20 @@ def test_color_names(hlwm):
         assert hlwm.attr.theme.color() == rgb
 
 
+def test_maybe_color(hlwm):
+    for value in ['#ff0000', '']:
+        hlwm.attr.theme.tab_color = value
+        assert hlwm.attr.theme.tab_color() == value
+    assert '' in hlwm.complete('set_attr theme.tab_outer_width', evaluate_escapes=True)
+
+
+def test_maybe_ulong(hlwm):
+    for value in ['5', '']:
+        hlwm.attr.theme.tab_outer_width = value
+        assert hlwm.attr.theme.tab_outer_width() == value
+    assert '' in hlwm.complete('set_attr theme.tab_outer_width', evaluate_escapes=True)
+
+
 def test_int_uint_unparsable_suffix(hlwm):
     for attrtype in ['int', 'uint']:
         attr = 'my_' + attrtype

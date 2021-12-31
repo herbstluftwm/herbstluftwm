@@ -5,6 +5,8 @@
 
 #include "attribute_.h"
 #include "child.h"
+#include "converter.h"
+#include "either.h"
 #include "finite.h"
 #include "font.h"
 #include "object.h"
@@ -26,6 +28,29 @@ struct is_finite<TitleWhen> : std::true_type {};
 template<> Finite<TitleWhen>::ValueList Finite<TitleWhen>::values;
 template<> inline Type Attribute_<TitleWhen>::staticType() { return Type::NAMES; }
 
+class Inherit {
+public:
+    bool operator==(const Inherit& other) { return true; }
+};
+
+template<>
+inline std::string Converter<Inherit>::str(Inherit payload) { return ""; }
+template<>
+inline Inherit Converter<Inherit>::parse(const std::string &payload) {
+    if (payload.empty()) {
+        return {};
+    }
+    throw std::invalid_argument("Use an empty string for inheriting the value.");
+}
+template<> void Converter<Inherit>::complete(Completion& complete, Inherit const* relativeTo);
+
+
+typedef Either<Inherit,Color> MaybeColor;
+typedef Either<Inherit,unsigned long> MaybeULong;
+template<>
+inline Type Attribute_<MaybeColor>::staticType() { return Type::STRING; }
+template<>
+inline Type Attribute_<MaybeULong>::staticType() { return Type::STRING; }
 
 /** The proxy interface
  */
@@ -114,6 +139,10 @@ public:
     AttributeProxy_<unsigned long>     padding_bottom = {"padding_bottom", 0}; // additional window border
     AttributeProxy_<unsigned long>     padding_left = {"padding_left", 0};   // additional window border
     AttributeProxy_<Color>   background_color = {"background_color", {"black"}}; // color behind client contents
+    AttributeProxy_<MaybeColor>   tab_color = {"tab_color", {Inherit()}};
+    AttributeProxy_<MaybeColor>   tab_outer_color = {"tab_outer_color", {Inherit()}};
+    AttributeProxy_<MaybeULong>   tab_outer_width = {"tab_outer_width", {Inherit()}};
+    AttributeProxy_<MaybeColor>   tab_title_color = {"tab_title_color", {Inherit()}};
 
     Signal scheme_changed_; //! whenever one of the attributes changes.
 

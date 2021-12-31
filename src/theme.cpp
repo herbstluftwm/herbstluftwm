@@ -1,5 +1,7 @@
 #include "theme.h"
 
+#include "completion.h"
+
 using std::vector;
 using std::string;
 
@@ -46,7 +48,11 @@ Theme::Theme()
           "\n"
           "Setting an attribute of the theme object just propagates the "
           "value to the respective attribute of the +tiling+ and the +floating+ "
-          "object."
+          "object.\n"
+          "If the title area is divided into tabs, then the not selected tabs "
+          "can be styled using the +tab_...+ attributes. If these attributes are "
+          "empty, then the colors are taken from the theme of the client to which "
+          "the tab refers to."
     );
     tiling.setChildDoc(
                 "configures the decoration of tiled clients, setting one of "
@@ -75,6 +81,10 @@ DecorationScheme::DecorationScheme()
         &inner_width,
         &outer_color,
         &outer_width,
+        &tab_color,
+        &tab_outer_color,
+        &tab_outer_width,
+        &tab_title_color,
         &padding_top,
         &padding_right,
         &padding_bottom,
@@ -108,6 +118,13 @@ DecorationScheme::DecorationScheme()
                       "if there are +multiple_tabs+ to be shown.");
     title_align.setDoc("the horizontal alignment of the title within the tab "
                        "or title bar. The value is one of: left, center, right");
+    tab_color.setDoc("if non-empty, the color of non-urgent and unfocused tabs");
+    tab_outer_color.setDoc(
+                "if non-empty, the outer border color of non-urgent and "
+                "unfocused tabs; if empty, the colors are taken from the tab's"
+                "client decoration settings.");
+    tab_outer_width.setDoc("if non-empty, the outer border width of non-urgent and unfocused tabs");
+    tab_title_color.setDoc("if non-empty, the title color of non-urgent and unfocused tabs");
     reset.setDoc("writing this resets all attributes to a default value");
 }
 
@@ -186,3 +203,8 @@ void DecorationScheme::makeProxyFor(vector<DecorationScheme*> decs) {
 }
 
 
+template<>
+void Converter<Inherit>::complete(Completion& complete, const Inherit* relativeTo)
+{
+    complete.full("");
+}

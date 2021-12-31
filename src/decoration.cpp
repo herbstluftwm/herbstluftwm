@@ -544,6 +544,18 @@ void Decoration::redrawPixmap() {
                 const DecorationScheme& tabScheme =
                         (tabClient == client_)
                         ? s : tabClient->getDecorationScheme(false);
+                Color tabColor = tabScheme.border_color();
+                Color tabBorderColor = tabScheme.outer_color();
+                unsigned long tabBorderWidth = tabScheme.outer_width();
+                Color tabTitleColor = tabScheme.title_color();
+                if (tabClient != client_ && !tabClient->urgent_()) {
+                    // for tabs referring to non-urgent clients, try
+                    // to use the tab_* attributes of the DecorationScheme s:
+                    tabColor = s.tab_color->rightOr(tabScheme.border_color());
+                    tabBorderColor = s.tab_outer_color->rightOr(tabScheme.outer_color());
+                    tabBorderWidth = s.tab_outer_width->rightOr(tabScheme.outer_width());
+                    tabTitleColor = s.tab_title_color->rightOr(tabScheme.title_color());
+                }
                 Rectangle tabGeo {
                     tabIndex * tabWidth,
                     0,
@@ -566,24 +578,24 @@ void Decoration::redrawPixmap() {
                     { (short)tabGeo.x, (short)tabGeo.y,
                       (unsigned short)tabGeo.width, (unsigned short)tabGeo.height },
                 };
-                XSetForeground(display, gc, get_client_color(tabScheme.border_color));
+                XSetForeground(display, gc, get_client_color(tabColor));
                 XFillRectangles(display, pix, gc, &fillRects.front(), fillRects.size());
                 vector<XRectangle> borderRects = {
                     // top edge
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabGeo.width, (unsigned short)tabScheme.outer_width },
+                      (unsigned short)tabGeo.width, (unsigned short)tabBorderWidth },
                 };
                 if (isFirst) {
                     // edge on the left
                     borderRects.push_back(
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabScheme.outer_width, (unsigned short)tabGeo.height }
+                      (unsigned short)tabBorderWidth, (unsigned short)tabGeo.height }
                     );
                 } else if (client_ == tabClient) {
                     // shorter edge on the left
                     borderRects.push_back(
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)tabBorderWidth,
                       (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
                 }
@@ -591,20 +603,20 @@ void Decoration::redrawPixmap() {
                     // edge on the right
                     borderRects.push_back(
                     { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)tabBorderWidth,
                       (unsigned short)tabGeo.height }
                     );
                 } else if (client_ == tabClient) {
                     // shorter edge on the right
                     borderRects.push_back(
                     { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      (unsigned short)tabScheme.outer_width,
+                      (unsigned short)tabBorderWidth,
                       (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
                 }
-                XSetForeground(display, gc, get_client_color(tabScheme.outer_color));
+                XSetForeground(display, gc, get_client_color(tabBorderColor));
                 XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
-                drawText(pix, gc, tabScheme.title_font->data(), tabScheme.title_color(),
+                drawText(pix, gc, tabScheme.title_font->data(), tabTitleColor,
                          tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
                          tabClient->title_(), titleWidth - 2 * tabPadLeft, s.title_align);
                 if (client_ != tabClient) {
