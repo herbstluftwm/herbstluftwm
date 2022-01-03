@@ -1,5 +1,6 @@
 import pytest
 import test_stack
+import Xlib
 
 
 @pytest.mark.parametrize("single_floating", [True, False])
@@ -143,3 +144,31 @@ def test_enternotify_do_not_drop_events(hlwm, mouse, client_count):
 
     # finally, all enter notify events must survive
     assert hlwm.get_attr('clients.focus.winid') == winid[client_count - 1]
+
+
+def test_no_map_of_visible_unmanaged_windows(hlwm, hc_idle, x11):
+    hlwm.call(['rule', 'hook=tempmanage'])
+    x11.pop_pending_events()  # clear event queue
+
+    def pre_map(winhandle):
+        # get MapNotify events
+        winhandle.change_attributes(event_mask=Xlib.X.StructureNotifyMask)
+        x11.display.grab_server()
+
+    def pre_sync(winhandle):
+        # right after mapping, unmap the window again.
+        # Hence, we will be noticed if hlwm maps the window without permission
+        winhandle.unmap()
+        x11.display.ungrab_server()
+
+    handle, winid = x11.create_client(force_unmanage=True, pre_map=pre_map, pre_sync=pre_sync)
+    map_notify_events = []
+    events = x11.pop_pending_events()
+    for e in events:
+        if e.type == Xlib.X.MapNotify:
+            map_notify_events.append(e)
+
+    # the rules are evaluated correctly:
+    assert ['rule', 'tempmanage', winid] in hc_idle.hooks()
+    # and hlwm didn't try to call XMapWindow:
+    assert len(map_notify_events) == 1
