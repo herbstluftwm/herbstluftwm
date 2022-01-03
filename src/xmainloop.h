@@ -54,8 +54,10 @@ private:
 
     void focusedClientChanges(Client* newFocus);
     Client* lastFocus_ = {}; // the old value of clients.focus
+    void setInputFocus(Client* newFocus);
 
     bool duringEnterNotify_ = false; //! whether we are in enternotify()
+    bool duringFocusIn_ = false; //! whether we are in focusin()
 
     static IpcServer::CallResult callCommand(const std::vector<std::string>& call);
 
