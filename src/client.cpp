@@ -205,7 +205,7 @@ void Client::make_full_client() {
         // XReparentWindow does not trigger an event for the window.
         visible_ = false;
         // we also unmap the window such that the decoration window is
-        // in 'mapped' state f and only if the window itself is so.
+        // in 'mapped' state if and only if the window itself is so.
         XUnmapWindow(X_.display(), window_);
     }
     // get events from window
