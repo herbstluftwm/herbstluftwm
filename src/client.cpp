@@ -204,6 +204,9 @@ void Client::make_full_client() {
         // point, we did not call XSelectInput() yet, so the above
         // XReparentWindow does not trigger an event for the window.
         visible_ = false;
+        // we also unmap the window such that the decoration window is
+        // in 'mapped' state if and only if the window itself is so.
+        XUnmapWindow(X_.display(), window_);
     }
     // get events from window
     XSelectInput(X_.display(), dec->decorationWindow(), (EnterWindowMask | LeaveWindowMask |
