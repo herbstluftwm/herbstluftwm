@@ -170,5 +170,5 @@ def test_no_map_of_visible_unmanaged_windows(hlwm, hc_idle, x11):
 
     # the rules are evaluated correctly:
     assert ['rule', 'tempmanage', winid] in hc_idle.hooks()
-    # and thlwm didn't try to call XMapWindow:
+    # and hlwm didn't try to call XMapWindow:
     assert len(map_notify_events) == 1
