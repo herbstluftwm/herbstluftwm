@@ -767,6 +767,7 @@ class X11:
                       window_type=None,
                       transient_for=None,
                       pre_map=lambda wh: None,  # called before the window is mapped
+                      pre_sync=lambda wh: None,  # called before the display is synced
                       ):
         w = self.root.create_window(
             geometry[0],
@@ -807,6 +808,7 @@ class X11:
 
         pre_map(w)
         w.map()
+        pre_sync(w)
         self.display.sync()
         if sync_hlwm:
             # wait for hlwm to fully recognize it as a client
@@ -939,6 +941,18 @@ class X11:
             window.unmap()
             window.destroy()
         self.display.sync()
+
+    def pop_pending_events(self):
+        """extract all pending events from the event queue"""
+        events = []
+        while True:
+            self.display.sync()
+            count = self.display.pending_events()
+            if count <= 0:
+                break
+            for i in range(0, count):
+                events.append(self.display.next_event())
+        return events
 
 
 @pytest.fixture()
