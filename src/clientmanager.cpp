@@ -209,7 +209,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     changes = Root::get()->rules()->evaluateRules(client, stdio, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
-        XMapWindow(X_->display(), win);
+        if (!visible_already) {
+            XMapWindow(X_->display(), win);
+        }
         delete client;
         return {};
     }
