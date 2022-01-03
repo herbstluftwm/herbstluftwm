@@ -152,6 +152,7 @@ def test_tags_restored_after_wmexec(hlwm, hlwm_process):
     (2, [0, 1]),
     (2, [None, 1]),  # client without index set
     (2, [2, 1, 8, 0]),  # clients exceeding the index range
+    (3, [1, 2]),  # no client on the focused tag
     (5, [1, 1, 0, 4, 4, 4]),
 ])
 def test_client_initially_on_desktop(hlwm_spawner, x11, desktops, client2desktop):
@@ -176,6 +177,18 @@ def test_client_initially_on_desktop(hlwm_spawner, x11, desktops, client2desktop
         else:
             assert hlwm.get_attr(f'clients.{winid}.tag') \
                 == desktop_names[0]
+
+    # check that clients.focus matches the X11 input focus on all tags:
+    for i in range(0, desktops):
+        assert i == hlwm.attr.tags.focus.index()
+        input_focus = x11.display.get_input_focus().focus
+        if 'focus' in hlwm.list_children('clients'):
+            # if a client is focused according to hlwm, it has the input focus:
+            assert x11.winid_str(input_focus) == hlwm.attr.clients.focus.winid()
+        else:
+            # otherwise, the invisible hlwm dummy window is focused:
+            assert input_focus.id == x11.get_property('_NET_SUPPORTING_WM_CHECK')[0]
+        hlwm.call('use_index +1')
 
     hlwm_proc.shutdown()
 
