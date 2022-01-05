@@ -477,6 +477,7 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
     while (XCheckMaskEvent(X_.display(), FocusChangeMask, (XEvent *)event)) {
         ;
     }
+    duringFocusIn_ = true;
     HSDebug("FocusIn for 0x%lx (%s)\n",
             event->window,
             XConnection::focusChangedDetailToString(event->detail));
@@ -502,12 +503,12 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
         }
         if (event->window != currentFocus) {
             HSDebug("Window 0x%lx steals the focus\n", event->window);
-            // Warning: focus_client() itself calls XSetInputFocus() which might
-            // cause an endless loop if we didn't correctly cleared the
-            // event queue with XCheckMaskEvent() above!
+            // focus_client() does not call setInputFocus()  because
+            // duringFocusIn_ is set!
             focus_client(target, false, true, false);
         }
     }
+    duringFocusIn_ = false;
 }
 
 void XMainLoop::keypress(XKeyEvent* event) {
@@ -540,7 +541,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
         if (c == root_->clients->focus()) {
-            XSetInputFocus(X_.display(), c->window_, RevertToPointerRoot, CurrentTime);
+            setInputFocus(c);
         }
         // also update the window title - just to be sure
         c->update_title();
@@ -687,10 +688,11 @@ void XMainLoop::focusedClientChanges(Client* newFocus)
         root_->mouse->grab_client_buttons(lastFocus_, false);
     }
     if (newFocus) { // if another client is focused
-        if (!newFocus->neverfocus_) {
-            XSetInputFocus(X_.display(), newFocus->window_, RevertToPointerRoot, CurrentTime);
-        } else {
-            root_->ewmh_.sendEvent(newFocus->window_, Ewmh::WM::TakeFocus, True);
+        if (!duringFocusIn_) {
+            // if the focus changes due to a FocusIn event,
+            // we do not set the input focus, because it already
+            // changed.
+            setInputFocus(newFocus);
         }
         root_->ewmh_.updateActiveWindow(newFocus->window_);
         root_->mouse->grab_client_buttons(newFocus, true);
@@ -705,6 +707,19 @@ void XMainLoop::focusedClientChanges(Client* newFocus)
         }
     }
     lastFocus_ = newFocus;
+}
+
+/**
+ * @brief Either call XSetInputFocus directly or send WM_TAKE_FOCUS
+ * @param newFocus the client to focus
+ */
+void XMainLoop::setInputFocus(Client* newFocus)
+{
+    if (!newFocus->neverfocus_) {
+        XSetInputFocus(X_.display(), newFocus->window_, RevertToPointerRoot, CurrentTime);
+    } else {
+        root_->ewmh_.sendEvent(newFocus->window_, Ewmh::WM::TakeFocus, True);
+    }
 }
 
 IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
