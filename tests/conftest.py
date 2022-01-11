@@ -14,9 +14,11 @@ import sys
 import textwrap
 import time
 import types
-import herbstluftwm
 
 import pytest
+
+pytest.register_assert_rewrite("herbstluftwm")
+import herbstluftwm  # noqa: E402
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
