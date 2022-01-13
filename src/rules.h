@@ -15,6 +15,7 @@ enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,
     CONDITION_VALUE_TYPE_INTEGER,
+    CONDITION_VALUE_TYPE_NO_ARG,
 };
 
 enum {
@@ -36,6 +37,7 @@ public:
     int value_integer = 0;
     std::regex value_reg_exp;
     std::string value_reg_str;
+    Matcher match_;
 
     /*! Timestamp of when this condition (i.e. rule) was created, which is
      * needed for the maxage matcher.
@@ -46,6 +48,7 @@ public:
      */
     time_t conditionCreationTime = 0;
 
+    bool matchesFixedSize(const Client* client) const;
 private:
     bool matchesClass(const Client* client) const;
     bool matchesInstance(const Client* client) const;

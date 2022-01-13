@@ -131,6 +131,7 @@ bool Rule::addCondition(const Condition::Matchers::const_iterator& it, char op, 
     }
 
     cond.name = name;
+    cond.match_ = it->second;
 
     conditions.push_back(cond);
     return true;
@@ -197,7 +198,7 @@ bool Rule::evaluate(Client* client, ClientChanges& changes, Output output)
             continue;
         }
 
-        bool matches = Condition::matchers.at(cond.name)(&cond, client);
+        bool matches = cond.match_(&cond, client);
 
         if (!matches && !cond.negated && cond.name == "maxage")
         {
@@ -347,6 +348,14 @@ bool Condition::matchesWindowrole(const Client* client) const {
     }
 
     return matches(role.value());
+}
+
+bool Condition::matchesFixedSize(const Client* client) const
+{
+    return client->maxw_ != 0
+            && client->maxh_ != 0
+            && client->minh_ == client->maxh_
+            && client->minw_ == client->maxw_;
 }
 
 /// CONSEQUENCES ///

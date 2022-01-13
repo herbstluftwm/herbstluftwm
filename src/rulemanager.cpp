@@ -55,6 +55,14 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
             arg = *(++argIter);
         }
 
+        if (arg == "fixedsize") {
+            Condition cond;
+            cond.name = arg;
+            cond.value_type = CONDITION_VALUE_TYPE_NO_ARG;
+            cond.match_ = &Condition::matchesFixedSize;
+            rule.conditions.push_back(cond);
+        }
+
         // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
         string lhs, rhs;
@@ -218,7 +226,7 @@ void RuleManager::unruleCompletion(Completion& complete) {
 }
 
 void RuleManager::addRuleCompletion(Completion& complete) {
-    complete.full({ "not", "!", "prepend", "once", "printlabel" });
+    complete.full({ "fixedsize", "not", "!", "prepend", "once", "printlabel" });
     complete.partial("label=");
     for (auto&& matcher : Condition::matchers) {
         auto condName = matcher.first;
