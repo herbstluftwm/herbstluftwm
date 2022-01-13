@@ -60,7 +60,9 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
             cond.name = arg;
             cond.value_type = CONDITION_VALUE_TYPE_NO_ARG;
             cond.match_ = &Condition::matchesFixedSize;
+            cond.negated = negated;
             rule.conditions.push_back(cond);
+            continue;
         }
 
         // Tokenize arg, expect something like foo=bar or foo~bar:

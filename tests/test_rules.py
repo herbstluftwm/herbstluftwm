@@ -1,4 +1,5 @@
 import pytest
+from Xlib import Xutil
 from herbstluftwm.types import Rectangle
 
 
@@ -204,7 +205,7 @@ def test_complete_unrule_offers_all_rules(hlwm, rules_count):
 
 def test_complete_rule(hlwm):
     assert hlwm.complete('rule', partial=True) == sorted(
-        [i + ' ' for i in '! not prepend once printlabel'.split(' ')]
+        [i + ' ' for i in '! not prepend fixedsize once printlabel'.split(' ')]
         + [i + '=' for i in string_props + numeric_props]
         + [i + '~' for i in string_props + numeric_props]
         + [i + '=' for i in consequences + ['label']]
@@ -1025,3 +1026,37 @@ def test_floating_geometry_and_placement(hlwm, x11, place_center):
         assert client_geo.center() == monitor_geo.center()
     else:
         assert client_geo.topleft() == rule_geo.topleft()
+
+
+def test_fixedsize_takes_no_operator(hlwm):
+    hlwm.call_xfail('rule fixedsize=on') \
+        .expect_stderr('Unknown argument "fixedsize=on"')
+
+
+def test_fixedsize(hlwm, hc_idle, x11):
+    hlwm.call('rule fixedsize hook=fixedsize floating=on')
+    hlwm.call('rule not fixedsize hook=nofixedsize floating=off')
+    hc_idle.hooks()  # clear hooks
+
+    def make_fixedsize(w):
+        hints = {
+            'min_width': 400,
+            'min_height': 300,
+            'max_width': 400,
+            'max_height': 300,
+            'flags': Xutil.PMinSize | Xutil.PMaxSize,
+        }
+        w.set_wm_normal_hints(**hints)
+        pass
+
+    _, win_fixed = x11.create_client(pre_map=make_fixedsize)
+    _, win_nofixed = x11.create_client()
+
+    assert hlwm.attr.clients[win_fixed].floating() is True
+    assert hlwm.attr.clients[win_nofixed].floating() is False
+
+    hooks = hc_idle.hooks()
+    assert ['rule', 'fixedsize', win_fixed] in hooks
+    assert ['rule', 'nofixedsize', win_fixed] not in hooks
+    assert ['rule', 'nofixedsize', win_nofixed] in hooks
+    assert ['rule', 'fixedsize', win_nofixed] not in hooks

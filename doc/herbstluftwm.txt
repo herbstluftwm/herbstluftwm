@@ -1078,6 +1078,16 @@ Valid 'properties' are:
 +windowrole+::
     matches the WM_WINDOW_ROLE property of a window if it is set by the window.
 
+
++fixedsize+ (no parameter)::
+    matches if the window does not allow being resized (i.e. if the minimum size
+    matches the maximum size). This condition does *not* take a parameter.
+    Example: +
++
+------
+hc rule fixedsize floating=on
+------
+
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +tag+::

@@ -20,6 +20,7 @@ Current git version
   * New 'foreach' command line flags: '--filter-name=', '--recursive', '--unique'
   * The 'spawn' command now prints an error message on exec failure
   * New read-only client attribute 'decoration_geometry'.
+  * New rule condition 'fixedsize'
   * New attribute 'decorated' to disable window decorations
   * The cursor shape now indicates resize options.
   * New setting 'ellipsis'
