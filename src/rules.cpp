@@ -350,8 +350,7 @@ bool Condition::matchesWindowrole(const Client* client) const {
     return matches(role.value());
 }
 
-bool Condition::matchesFixedSize(const Client* client) const
-{
+bool Condition::matchesFixedSize(const Client* client) const {
     return client->maxw_ != 0
             && client->maxh_ != 0
             && client->minh_ == client->maxh_

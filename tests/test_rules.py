@@ -1047,7 +1047,6 @@ def test_fixedsize(hlwm, hc_idle, x11):
             'flags': Xutil.PMinSize | Xutil.PMaxSize,
         }
         w.set_wm_normal_hints(**hints)
-        pass
 
     _, win_fixed = x11.create_client(pre_map=make_fixedsize)
     _, win_nofixed = x11.create_client()
