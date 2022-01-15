@@ -49,7 +49,7 @@ public:
                                 // notify event
     //! the last time when minimized_ was changed (with discrete time ticks).
     long long int minimizedLastChange_ = 0;
-    // for size hints
+    // for size hints; 0 means 'unset'
     float mina_ = 0;
     float maxa_ = 0;
     int basew_ = 0;
