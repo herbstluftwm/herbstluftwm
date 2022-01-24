@@ -5,6 +5,12 @@ quote() {
 	printf '%s' "${q% }"
 }
 
+if [[ -f /usr/lib/bash/sleep ]]; then
+    # load and enable 'sleep' builtin (does not support unit suffixes: h, m, s!)
+    # requires pkg 'bash-builtins' on debian; included in 'bash' on arch.
+    enable -f /usr/lib/bash/sleep sleep
+fi
+
 hc_quoted="$(quote "${herbstclient_command[@]:-herbstclient}")"
 hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 monitor=${1:-0}
