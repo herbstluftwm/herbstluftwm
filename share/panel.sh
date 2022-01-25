@@ -5,6 +5,12 @@ quote() {
 	printf '%s' "${q% }"
 }
 
+if [[ -f /usr/lib/bash/sleep ]]; then
+    # load and enable 'sleep' builtin (does not support unit suffixes: h, m, s!)
+    # requires pkg 'bash-builtins' on debian; included in 'bash' on arch.
+    enable -f /usr/lib/bash/sleep sleep
+fi
+
 hc_quoted="$(quote "${herbstclient_command[@]:-herbstclient}")"
 hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 monitor=${1:-0}
@@ -72,9 +78,9 @@ hc pad $monitor $panel_height
 
     #mpc idleloop player &
     while true ; do
-        # "date" output is checked once a second, but an event is only
+        # output is checked once a second, but a "date" event is only
         # generated if the output changed compared to the previous run.
-        date +$'date\t^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
+        printf 'date\t^fg(#efefef)%(%H:%M)T^fg(#909090), %(%Y-%m)T-^fg(#efefef)%(%d)T\n'
         sleep 1 || break
     done > >(uniq_linebuffered) &
     childpid=$!
