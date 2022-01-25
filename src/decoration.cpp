@@ -480,13 +480,23 @@ void Decoration::redrawPixmap() {
     auto inner = last_inner_rect;
     inner.x -= last_outer_rect.x;
     inner.y -= last_outer_rect.y;
+    // convert signed and possibly negative integers to
+    // unsigned short, which is used by XRectangle.
+    auto toUnsigned =
+            [](int length) -> unsigned short {
+        if (length < 0) {
+            return 0;
+        } else {
+            return static_cast<unsigned short>(length);
+        }
+    };
     if (iw > 0) {
         /* fill rectangles because drawing does not work */
         vector<XRectangle> rects{
-            { (short)(inner.x - iw), (short)(inner.y - iw), (unsigned short)(inner.width + 2*iw), iw }, /* top */
-            { (short)(inner.x - iw), (short)(inner.y), iw, (unsigned short)(inner.height) },  /* left */
-            { (short)(inner.x + inner.width), (short)(inner.y), iw, (unsigned short)(inner.height) }, /* right */
-            { (short)(inner.x - iw), (short)(inner.y + inner.height), (unsigned short)(inner.width + 2*iw), iw }, /* bottom */
+            { (short)(inner.x - iw), (short)(inner.y - iw), toUnsigned(inner.width + 2*iw), toUnsigned(iw) }, /* top */
+            { (short)(inner.x - iw), (short)(inner.y), toUnsigned(iw), toUnsigned(inner.height) },  /* left */
+            { (short)(inner.x + inner.width), (short)(inner.y), toUnsigned(iw), toUnsigned(inner.height) }, /* right */
+            { (short)(inner.x - iw), (short)(inner.y + inner.height), toUnsigned(inner.width + 2*iw), toUnsigned(iw) }, /* bottom */
         };
         XSetForeground(display, gc, get_client_color(s.inner_color()));
         XFillRectangles(display, pix, gc, &rects.front(), rects.size());
@@ -499,10 +509,10 @@ void Decoration::redrawPixmap() {
     if (ow > 0) {
         ow = std::min((int)ow, (outer.height+1) / 2);
         vector<XRectangle> rects{
-            { 0, 0, (unsigned short)(outer.width), ow }, /* top */
-            { 0, (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* left */
-            { (short)(outer.width - ow), (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* right */
-            { 0, (short)(outer.height - ow), (unsigned short)(outer.width), ow }, /* bottom */
+            { 0, 0, toUnsigned(outer.width), toUnsigned(ow) }, /* top */
+            { 0, (short)ow, toUnsigned(ow), toUnsigned(outer.height - 2*ow) }, /* left */
+            { (short)(outer.width - ow), (short)ow, toUnsigned(ow), toUnsigned(outer.height - 2*ow) }, /* right */
+            { 0, (short)(outer.height - ow), toUnsigned(outer.width), toUnsigned(ow) }, /* bottom */
         };
         XSetForeground(display, gc, get_client_color(s.outer_color));
         XFillRectangles(display, pix, gc, &rects.front(), rects.size());
@@ -576,42 +586,42 @@ void Decoration::redrawPixmap() {
                 // tab background
                 vector<XRectangle> fillRects = {
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabGeo.width, (unsigned short)tabGeo.height },
+                      toUnsigned(tabGeo.width), toUnsigned(tabGeo.height) },
                 };
                 XSetForeground(display, gc, get_client_color(tabColor));
                 XFillRectangles(display, pix, gc, &fillRects.front(), fillRects.size());
                 vector<XRectangle> borderRects = {
                     // top edge
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabGeo.width, (unsigned short)tabBorderWidth },
+                      toUnsigned(tabGeo.width), toUnsigned(tabBorderWidth) },
                 };
                 if (isFirst) {
                     // edge on the left
                     borderRects.push_back(
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabBorderWidth, (unsigned short)tabGeo.height }
+                      toUnsigned(tabBorderWidth), toUnsigned(tabGeo.height) }
                     );
                 } else if (client_ == tabClient) {
                     // shorter edge on the left
                     borderRects.push_back(
                     { (short)tabGeo.x, (short)tabGeo.y,
-                      (unsigned short)tabBorderWidth,
-                      (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
+                      toUnsigned(tabBorderWidth),
+                      toUnsigned(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
                 }
                 if (isLast) {
                     // edge on the right
                     borderRects.push_back(
                     { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      (unsigned short)tabBorderWidth,
-                      (unsigned short)tabGeo.height }
+                      toUnsigned(tabBorderWidth),
+                      toUnsigned(tabGeo.height) }
                     );
                 } else if (client_ == tabClient) {
                     // shorter edge on the right
                     borderRects.push_back(
                     { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      (unsigned short)tabBorderWidth,
-                      (unsigned short)(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
+                      toUnsigned(tabBorderWidth),
+                      toUnsigned(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
                     );
                 }
                 XSetForeground(display, gc, get_client_color(tabBorderColor));
@@ -625,7 +635,7 @@ void Decoration::redrawPixmap() {
                     XSetForeground(display, gc, get_client_color(s.outer_color));
                     XFillRectangle(display, pix, gc,
                                    westEnd.x, westEnd.y,
-                                   tabGeo.width, s.outer_width()
+                                   toUnsigned(tabGeo.width), toUnsigned(s.outer_width())
                                    );
                     // horizontal border connecting the focused tab content with the outer border
                     int remainingBorderColorHeight = s.border_width() - s.inner_width() - s.outer_width();
@@ -640,7 +650,7 @@ void Decoration::redrawPixmap() {
                     XFillRectangle(display, pix, gc,
                                    westEnd.x,
                                    westEnd.y + s.outer_width(),
-                                   fillWidth, remainingBorderColorHeight
+                                   toUnsigned(fillWidth), toUnsigned(remainingBorderColorHeight)
                                    );
                 }
                 tabIndex++;
