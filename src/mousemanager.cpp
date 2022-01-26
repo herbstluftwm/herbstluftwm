@@ -34,6 +34,7 @@ MouseManager::MouseManager()
     : dragHandler_({})
     , clients_(nullptr)
     , monitors_(nullptr)
+    , tags_(nullptr)
 {
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
@@ -51,10 +52,11 @@ MouseManager::~MouseManager() {
     XFreeCursor(g_display, cursor);
 }
 
-void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* monitors)
+void MouseManager::injectDependencies(ClientManager* clients, TagManager* tags, MonitorManager* monitors)
 {
     clients_ = clients;
     monitors_ = monitors;
+    tags_ = tags;
 }
 
 int MouseManager::addMouseBindCommand(Input input, Output output) {
@@ -207,8 +209,8 @@ string MouseManager::mouse_initiate_resize(Client* client, const ResizeAction& r
 {
     MouseDragHandler::Constructor constructor;
     if (client->is_client_floated()) {
-        constructor = [resize](MonitorManager* monitors, Client* clientInner) -> shared_ptr<MouseDragHandler> {
-            auto mdh = make_shared<MouseDragHandlerFloating>(monitors, clientInner, &MouseDragHandlerFloating::mouse_function_resize);
+        constructor = [resize](MonitorManager* monitors, TagManager* tags, Client* clientInner) -> shared_ptr<MouseDragHandler> {
+            auto mdh = make_shared<MouseDragHandlerFloating>(monitors, tags, clientInner, &MouseDragHandlerFloating::mouse_function_resize);
             mdh->lockWidth = !resize.left && !resize.right;
             mdh->lockHeight = !resize.top && !resize.bottom;
             return mdh;
@@ -254,7 +256,7 @@ ResizeAction MouseManager::resizeAction()
 string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler, ResizeAction resize)
 {
     try {
-        dragHandler_ = createHandler(monitors_, client);
+        dragHandler_ = createHandler(monitors_, tags_, client);
         dragHandler_->resizeAction_ = resize * client->possibleResizeActions();
         // only grab pointer if dragHandler_ could be started
         clients_->setDragged(client);

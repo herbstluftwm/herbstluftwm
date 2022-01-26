@@ -30,6 +30,8 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
+static int g_monitor_float_treshold = 24;
+
 extern MonitorManager* g_monitors;
 
 Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
@@ -526,6 +528,33 @@ int Monitor::relativeX(int x_root) {
 
 int Monitor::relativeY(int y_root) {
     return y_root - rect->y - pad_up;
+}
+
+/**
+ * @brief Adjust the given geometry (relative to monitor contents)
+ * such that it is visible within the monitor.
+ * @param relativeGeo geometry relative to the interior area of the monitor
+ * @return the adjusted relative geometry
+ */
+Rectangle Monitor::clampRelativeGeometry(Rectangle relativeGeo) const
+{
+    // make sure, this many pixels are still visible:
+    int space = g_monitor_float_treshold;
+    // since coordinates are relative to the monitor, we ensure that
+    // relativeGeo intersects with the rectangle
+    // (0,0,monitorInteriorWidth,monitorInteriorHeight)
+    // by at least 'space' many pixels
+    int monitorInteriorWidth = rect->width - pad_left() - pad_right();
+    int monitorInteriorHeight = rect->height - pad_up() - pad_down();
+    relativeGeo.x =
+        CLAMP(relativeGeo.x,
+              space - relativeGeo.width,
+              monitorInteriorWidth - space);
+    relativeGeo.y =
+        CLAMP(relativeGeo.y,
+              space - relativeGeo.height,
+              monitorInteriorHeight - space);
+    return relativeGeo;
 }
 
 void Monitor::restack() {

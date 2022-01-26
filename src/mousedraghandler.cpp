@@ -6,14 +6,17 @@
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
+#include "tag.h"
+#include "tagmanager.h"
 #include "x11-utils.h"
 
 using std::make_shared;
 using std::shared_ptr;
 using std::weak_ptr;
 
-MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Client* dragClient, DragFunction function)
+MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, TagManager* tags, Client* dragClient, DragFunction function)
   : monitors_(monitors)
+  , tags_(tags)
   , winDragClient_(dragClient)
   , dragFunction_(function)
 {
@@ -22,6 +25,8 @@ MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Cli
     dragMonitor_ = monitors_->byTag(winDragClient_->tag());
     if (dragMonitor_) {
         dragMonitorIndex_ = dragMonitor_->index();
+        // always start with the effective floating geometry
+        winDragStart_ = dragMonitor_->clampRelativeGeometry(winDragStart_);
     }
     assertDraggingStillSafe();
 }
@@ -34,8 +39,9 @@ void MouseDragHandlerFloating::handle_motion_event(Point2D newCursorPos)
 
 MouseDragHandler::Constructor MouseDragHandlerFloating::construct(DragFunction dragFunction)
 {
-    return [dragFunction](MonitorManager* monitors, Client* client) -> shared_ptr<MouseDragHandler> {
-        return make_shared<MouseDragHandlerFloating>(monitors, client, dragFunction);
+    return [dragFunction](MonitorManager* monitors, TagManager* tags, Client* client)
+            -> shared_ptr<MouseDragHandler> {
+        return make_shared<MouseDragHandlerFloating>(monitors, tags, client, dragFunction);
     };
 }
 
@@ -60,6 +66,33 @@ void MouseDragHandlerFloating::finalize() {
 }
 
 void MouseDragHandlerFloating::mouse_function_move(Point2D newCursorPos) {
+    bool unlockMonitorAgain = false;
+    if (!dragMonitor_->rect->contains(newCursorPos)) {
+        // if the cursor leaves the monitor, then consider moving
+        // the client to another monitor.
+        Monitor* newMonitor = monitors_->byCoordinate(newCursorPos);
+        if (newMonitor) {
+            // transfer everything to newMonitor:
+            buttonDragStart_ =
+                    buttonDragStart_
+                    - dragMonitor_->getFloatingArea().tl()
+                    + newMonitor->getFloatingArea().tl();
+            if (!newMonitor->tag->floating()) {
+                // if the tag on the new monitor is in tiling mode
+                // then ensure that the dragged client is floating
+                winDragClient_->floating_ = true;
+            }
+            bool focus = monitors_->focus()->tag->focusedClient() == winDragClient_;
+            monitors_->lock();
+            unlockMonitorAgain = true;
+            tags_->moveClient(winDragClient_, newMonitor->tag, {}, focus);
+            dragMonitor_ = newMonitor;
+            dragMonitorIndex_ = newMonitor->index();
+            if (focus) {
+                monitor_focus_by_index(dragMonitorIndex_);
+            }
+        }
+    }
     int x_diff = newCursorPos.x - buttonDragStart_.x;
     int y_diff = newCursorPos.y - buttonDragStart_.y;
     // we need to assign it such that the border snapping works
@@ -70,6 +103,9 @@ void MouseDragHandlerFloating::mouse_function_move(Point2D newCursorPos) {
                        SNAP_EDGE_ALL, &dx, &dy);
     winDragClient_->float_size_ = winDragClient_->float_size_->shifted({dx, dy});
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
+    if (unlockMonitorAgain) {
+        monitors_->unlock();
+    }
 }
 
 void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
@@ -295,7 +331,7 @@ MouseDragHandler::Constructor MouseResizeFrame::construct(shared_ptr<FrameLeaf> 
     if (resize.bottom) {
         verticalSplit = splitInDirection(frame, Direction::Down);
     }
-    return [frame, horizontalSplit, verticalSplit](MonitorManager* monitors, Client*) {
+    return [frame, horizontalSplit, verticalSplit](MonitorManager* monitors, TagManager*, Client*) {
         return make_shared<MouseResizeFrame>(monitors, frame, horizontalSplit, verticalSplit);
     };
 }

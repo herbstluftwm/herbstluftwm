@@ -43,6 +43,7 @@ public:
     Attribute_<Rectangle>   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
     Signal monitorMoved;
+    Rectangle clampRelativeGeometry(Rectangle relativeGeo) const;
     void setIndexAttribute(unsigned long index) override;
     int lock_tag_cmd(Input argv, Output output);
     int unlock_tag_cmd(Input argv, Output output);

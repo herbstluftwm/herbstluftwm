@@ -1,6 +1,6 @@
 import pytest
 import math
-from herbstluftwm.types import Point
+from herbstluftwm.types import Point, Rectangle
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
 # in Xvfb when running tests in the CI. Therefore, we maintain two lists of
@@ -403,7 +403,7 @@ def test_resize_unfocused_client(hlwm, mouse, floating):
 
 
 @pytest.mark.parametrize('resize_possible', [True, False])
-def test_border_click_either_focuses_or_resizez(hlwm, mouse, resize_possible):
+def test_border_click_either_focuses_or_resizes(hlwm, mouse, resize_possible):
     """
     when clicking on the outer decoration of a window, then this should either
     trigger the resize or focus the client (if resizing is not possible).
@@ -461,3 +461,96 @@ def test_resize_client_via_decoration(hlwm, x11, mouse, repeat):
     assert expected_size == (size_after.width, size_after.height)
     # and also the location
     assert expected_position == x11.get_absolute_top_left(client)
+
+
+def test_can_move_client_at_monitor_edge(hlwm, mouse):
+    hlwm.attr.tags.focus.floating = True
+    winid, _ = hlwm.create_client()
+    hlwm.call('move_monitor 0 600x400+0+0')
+    # move floating coordinates clearly off screen:
+    floating_geo = Rectangle(x=2000, y=4000, width=300, height=200)
+    hlwm.attr.clients[winid].sizehints_floating = False
+    hlwm.attr.clients[winid].floating_geometry = floating_geo
+    # still, the window overlaps with the monitor by a few pixels
+    content_geo = hlwm.attr.clients[winid].content_geometry()
+    assert content_geo.x + 20 < 600
+    assert content_geo.y + 20 < 400
+    assert hlwm.attr.clients[winid].floating_geometry() == floating_geo
+    # so, despite the floating geo is far off,
+    # the window is shown on the monitor
+
+    # now drag the window by a few pixels back into the monitor:
+    mouse.move_into(winid)
+    hlwm.attr.settings.update_dragged_clients = True
+    hlwm.call(['drag', winid, 'move'])
+    delta = Point(-72, -93)
+    assert hlwm.get_attr('clients.dragged.winid') == winid
+    mouse.move_relative(delta.x, delta.y)
+
+    # then, we expect that the window actually moves back
+    # by precisely this distance:
+    # (in old hlwm versions, the window was glueing in the bottom right corner)
+    assert hlwm.attr.clients[winid].content_geometry() == content_geo.adjusted(dx=delta.x, dy=delta.y)
+    # but of course the floating geo changed a lot (e.g. more than 500),
+    # because the window is now within the screen again:
+    new_floating_geo = hlwm.attr.clients[winid].floating_geometry()
+    assert abs(new_floating_geo.x - floating_geo.x) > 500
+    assert abs(new_floating_geo.y - floating_geo.y) > 500
+
+
+@pytest.mark.parametrize('source_floating,client_floating', [(True, True), (True, False), (False, True)])
+@pytest.mark.parametrize('target_floating', [True, False])
+@pytest.mark.parametrize('client_focused', [True, False])
+def test_drag_floating_to_other_monitor(hlwm, mouse, source_floating, client_floating, target_floating, client_focused):
+    total_width = hlwm.attr.monitors.focus.geometry().width
+    total_height = hlwm.attr.monitors.focus.geometry().height
+    # create two monitors side by side with small gaps, pads, and some odd coordinates
+    hlwm.call('add othertag')
+    geo1 = Rectangle(x=10, y=20, width=total_width / 2 - 30, height=total_height)
+    geo2 = Rectangle(x=total_width / 2, y=15, width=total_width / 2, height=total_height)
+    hlwm.call(['set_monitors', geo1.to_user_str(), geo2.to_user_str()])
+    hlwm.call(['pad', '0', '11', '12', '13', '14'])
+    hlwm.call(['pad', '1', '15', '16', '17', '18'])
+    hlwm.attr.settings.update_dragged_clients = True
+
+    hlwm.attr.tags[0].floating = source_floating
+    hlwm.attr.tags[1].floating = target_floating
+    # another dummy client
+    otherclient, _ = hlwm.create_client()
+
+    # put client in the middle of tag 0
+    hlwm.call('rule floatplacement=center')
+    winid, _ = hlwm.create_client()
+    if client_focused:
+        focused_winid = winid
+    else:
+        focused_winid = otherclient
+    hlwm.call(['jumpto', focused_winid])
+    hlwm.attr.clients[winid].floating = client_floating
+    assert hlwm.attr.clients[winid].tag() == hlwm.attr.tags[0].name()
+    assert hlwm.attr.clients.focus.winid() == focused_winid
+
+    # start dragging
+    content_geo_before = hlwm.attr.clients[winid].content_geometry()
+    start = content_geo_before.center()
+    mouse.move_to(start.x, start.y)
+    hlwm.call(['drag', winid, 'move'])
+    end = hlwm.attr.monitors[1].geometry().center()
+    mouse.move_to(end.x, end.y)
+    content_geo_after = hlwm.attr.clients[winid].content_geometry()
+    assert end == content_geo_after.center()
+    assert hlwm.attr.clients[winid].tag() == hlwm.attr.tags[1].name()
+    assert hlwm.attr.clients[winid].floating_effectively() is True
+    # check that the focused client does not change:
+    assert hlwm.attr.clients.focus.winid() == focused_winid
+    # check that the correct monitor is focused
+    assert hlwm.attr.monitors.focus.tag() == hlwm.attr.clients.focus.tag()
+    assert hlwm.attr.monitors.focus.index() == (1 if client_focused else 0)
+    if not target_floating:
+        # if the target tag is not floating, the client must have been
+        # set to single-window floating
+        assert hlwm.attr.clients[winid].floating() is True
+    else:
+        # if the target tag is floating, then the client's floating
+        # state is unchanged
+        assert hlwm.attr.clients[winid].floating() == client_floating
