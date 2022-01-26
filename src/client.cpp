@@ -31,9 +31,6 @@ using std::shared_ptr;
 using std::string;
 using std::stringstream;
 
-static int g_monitor_float_treshold = 24;
-
-
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
@@ -516,21 +513,11 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     if (!m) {
         return;
     }
-    Rectangle rect = this->float_size_;
+    Rectangle rect = m->clampRelativeGeometry(float_size_);
     rect.x += m->rect->x;
     rect.y += m->rect->y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
-    // ensure position is on monitor
-    int space = g_monitor_float_treshold;
-    rect.x =
-        CLAMP(rect.x,
-              m->rect->x + m->pad_left() - rect.width + space,
-              m->rect->x + m->rect->width - m->pad_left() - m->pad_right() - space);
-    rect.y =
-        CLAMP(rect.y,
-              m->rect->y + m->pad_up() - rect.height + space,
-              m->rect->y + m->rect->height - m->pad_up() - m->pad_down() - space);
     dec->resize_inner(rect, theme[ThemeType::Floating](isFocused,urgent_()));
     mostRecentThemeType = ThemeType::Floating;
 }

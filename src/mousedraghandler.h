@@ -13,6 +13,7 @@ class FrameSplit;
 class HSTag;
 class Monitor;
 class MonitorManager;
+class TagManager;
 class ResizeAction;
 
 /**
@@ -41,7 +42,7 @@ public:
 
     //! a MouseDragHandler::Constructor creates a MouseDragHandler object, given the
     //! MonitorManager (as a dependency) and the actual client to drag.
-    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> Constructor;
+    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, TagManager*, Client*)> Constructor;
 
     //! the way in which the current drag handler affects the window dimensions
     ResizeAction resizeAction_;
@@ -57,7 +58,7 @@ class MouseDragHandlerFloating : public MouseDragHandler {
 public:
     typedef void (MouseDragHandlerFloating::*DragFunction)(Point2D);
 
-    MouseDragHandlerFloating(MonitorManager* monitors_, Client* dragClient, DragFunction function);
+    MouseDragHandlerFloating(MonitorManager* monitors_, TagManager* tags, Client* dragClient, DragFunction function);
     virtual ~MouseDragHandlerFloating() {};
     virtual void finalize();
     virtual void handle_motion_event(Point2D newCursorPos);
@@ -72,6 +73,7 @@ private:
     void assertDraggingStillSafe();
 
     MonitorManager*  monitors_;
+    TagManager*  tags_;
     Point2D          buttonDragStart_ = {};
     Rectangle        winDragStart_;
     Client*        winDragClient_ = nullptr;

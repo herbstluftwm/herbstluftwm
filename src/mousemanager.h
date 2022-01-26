@@ -14,6 +14,7 @@ class ClientManager;
 class MonitorManager;
 class MouseDragHandler;
 class ResizeAction;
+class TagManager;
 struct Point2D;
 
 class MouseManager : public Object {
@@ -21,7 +22,7 @@ public:
     MouseManager();
     ~MouseManager();
 
-    void injectDependencies(ClientManager* clients, MonitorManager* monitors);
+    void injectDependencies(ClientManager* clients, TagManager* tags, MonitorManager* monitors);
 
     int addMouseBindCommand(Input input, Output output);
 
@@ -66,7 +67,7 @@ private:
     MouseFunction string2mousefunction(const std::string& name);
 
     //! manually (forward-)declare MouseDragHandler::Constructor as MDC here:
-    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> MDC;
+    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, TagManager*, Client*)> MDC;
     //! start a the drag, and if it does not work out, return an error message
     std::string mouse_initiate_drag(Client* client, const MDC& createHandler, ResizeAction resize);
 
@@ -75,4 +76,5 @@ private:
     Cursor cursor;
     ClientManager*  clients_;
     MonitorManager*  monitors_;
+    TagManager*  tags_;
 };
