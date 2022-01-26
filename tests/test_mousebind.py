@@ -467,7 +467,7 @@ def test_can_move_client_at_monitor_edge(hlwm, mouse):
     hlwm.attr.tags.focus.floating = True
     winid, _ = hlwm.create_client()
     hlwm.call('move_monitor 0 600x400+0+0')
-    # move floating coordinates clearly off scrreen:
+    # move floating coordinates clearly off screen:
     floating_geo = Rectangle(x=2000, y=4000, width=300, height=200)
     hlwm.attr.clients[winid].sizehints_floating = False
     hlwm.attr.clients[winid].floating_geometry = floating_geo
@@ -504,7 +504,7 @@ def test_can_move_client_at_monitor_edge(hlwm, mouse):
 def test_drag_floating_to_other_monitor(hlwm, mouse, source_floating, client_floating, target_floating, client_focused):
     total_width = hlwm.attr.monitors.focus.geometry().width
     total_height = hlwm.attr.monitors.focus.geometry().height
-    # create two monitors side by side with small gaps, pads, and some odds coordinates
+    # create two monitors side by side with small gaps, pads, and some odd coordinates
     hlwm.call('add othertag')
     geo1 = Rectangle(x=10, y=20, width=total_width / 2 - 30, height=total_height)
     geo2 = Rectangle(x=total_width / 2, y=15, width=total_width / 2, height=total_height)
