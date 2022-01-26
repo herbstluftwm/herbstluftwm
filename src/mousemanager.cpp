@@ -34,6 +34,7 @@ MouseManager::MouseManager()
     : dragHandler_({})
     , clients_(nullptr)
     , monitors_(nullptr)
+    , tags_(nullptr)
 {
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
