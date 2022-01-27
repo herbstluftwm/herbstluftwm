@@ -78,7 +78,7 @@ function(gen_manpage sourcefile man_nr)
         # our script patching the man page xml instead of running xmllint
         set(custom_asciidoc_cfg "${CMAKE_CURRENT_BINARY_DIR}/a2x-patched-dont-install.conf")
         file(WRITE ${custom_asciidoc_cfg}
-        "XMLLINT = \'${CMAKE_CURRENT_SOURCE_DIR}/patch-manpage-xml.py\'")
+        "XMLLINT = '${CMAKE_CURRENT_SOURCE_DIR}/patch-manpage-xml.py'")
         add_custom_command(
             OUTPUT ${dst}
             COMMAND ${ASCIIDOC_A2X}
