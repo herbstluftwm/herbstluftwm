@@ -744,10 +744,14 @@ int MonitorManager::detectMonitorsCommand(Input input, Output output)
     RectangleVec monitor_rects = {};
     for (const auto& detector : MonitorDetection::detectors()) {
         if (detector.detect_) {
-            auto rects = detector.detect_(root->X);
+            auto rectsWithDuplicates = detector.detect_(root->X);
             // remove duplicates
-            std::sort(rects.begin(), rects.end());
-            rects.erase(std::unique(rects.begin(), rects.end()), rects.end());
+            RectangleVec rects = {};
+            for (const auto& r : rectsWithDuplicates) {
+                if (std::find(rects.begin(), rects.end(), r) == rects.end()) {
+                    rects.push_back(r);
+                }
+            }
             // check if this has more outputs than we know already
             if (rects.size() > monitor_rects.size()) {
                 monitor_rects = rects;
