@@ -17,6 +17,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libfreetype-dev \
     libxinerama-dev \
     libxrandr-dev \
+    libxfixes-dev \
     ninja-build \
     pkg-config \
     python3.8 \

@@ -16,6 +16,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libxinerama-dev:i386 \
     libxml2-utils \
     libxrandr-dev:i386 \
+    libxfixes-dev:i386 \
     ninja-build \
     pkg-config:i386 \
     xterm \
