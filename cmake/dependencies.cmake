@@ -6,6 +6,7 @@ pkg_check_modules(X11 REQUIRED x11)
 pkg_check_modules(XRANDR REQUIRED xrandr)
 pkg_check_modules(XINERAMA xinerama)
 pkg_check_modules(XEXT REQUIRED xext)
+pkg_check_modules(XFIXES REQUIRED xfixes)
 
 # for transparency support
 pkg_check_modules(XRENDER REQUIRED xrender)

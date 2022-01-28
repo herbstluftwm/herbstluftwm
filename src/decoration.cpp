@@ -432,21 +432,6 @@ void Decoration::redraw()
     }
 }
 
-unsigned long Decoration::get_client_color(Color color) {
-    XConnection& xcon = xconnection();
-    XColor xcol = color.toXColor();
-    if (colormap) {
-        /* get pixel value back appropriate for client */
-        XAllocColor(xcon.display(), colormap, &xcol);
-        // explicitly set the alpha-byte to the one from the color
-        return Color::x11PixelPlusAlpha(xcol.pixel, color.alpha_);
-    } else {
-        // the pixel value reported by Color already includes the
-        // alpha value
-        return color.toX11Pixel();
-    }
-}
-
 // draw a decoration to the client->dec.pixmap
 void Decoration::redrawPixmap() {
     if (!last_scheme) {
@@ -467,6 +452,9 @@ void Decoration::redrawPixmap() {
         }
         dec->pixmap = XCreatePixmap(display, decwin, outer.width, outer.height, depth);
     }
+    auto get_client_color = [&](const Color& color) -> unsigned long {
+        return xcon.allocColor(colormap, color);
+    };
     buttons_.clear();
     Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(display, pix, 0, nullptr);
@@ -735,11 +723,11 @@ void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const C
         XftDrawDestroy(xftd);
         XftColorFree(display, xftvisual, xftcmap, &xftcol);
     } else if (fontData.xFontSet_) {
-        XSetForeground(display, gc, get_client_color(color));
+        XSetForeground(display, gc, xcon.allocColor(colormap, color));
         XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
                 final_c_str, textLen);
     } else if (fontData.xFontStruct_) {
-        XSetForeground(display, gc, get_client_color(color));
+        XSetForeground(display, gc, xcon.allocColor(colormap, color));
         XFontStruct* font = fontData.xFontStruct_;
         XSetFont(display, gc, font->fid);
         XDrawString(display, pix, gc, position.x, position.y,

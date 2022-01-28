@@ -2,6 +2,7 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/Xfixes.h>
 #include <unistd.h> // for pid_t
 
 #include "ipc-server.h"
@@ -30,6 +31,8 @@ private:
     Root* root_;
     bool aboutToQuit_;
     EventHandler handlerTable_[LASTEvent];
+    int xfixesEventBase_ = LASTEvent;
+    int xfixesErrorBase_ = 0;
 
     void collectZombies();
     // event handlers
@@ -49,6 +52,7 @@ private:
     void mapnotify(XMapEvent* event);
     void maprequest(XMapRequestEvent* mapreq);
     void selectionclear(XSelectionClearEvent* event);
+    void selectionnotify(XFixesSelectionNotifyEvent* event);
     void propertynotify(XPropertyEvent* event);
     void unmapnotify(XUnmapEvent* event);
 

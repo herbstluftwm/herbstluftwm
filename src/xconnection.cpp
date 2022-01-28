@@ -63,6 +63,47 @@ XConnection* XConnection::connect(string display_name) {
     return s_connection;
 }
 
+/**
+ * @brief convert the given color via the given color map
+ * or via the default colormap is none is given
+ * @param maybeColormap is a colormap or 0
+ * @param color
+ * @return
+ */
+unsigned long XConnection::allocColor(Colormap maybeColormap, const Color& color)
+{
+    XColor xcol = color.toXColor();
+    if (maybeColormap) {
+        /* get pixel value back appropriate for client */
+        /* this possibly adjusts xcol */
+        XAllocColor(display(), maybeColormap, &xcol);
+    }
+    // explicitly set the alpha-byte to the one from the color
+    if (usesTransparency() && compositorRunning_ && color.alpha_ != 0xffu) {
+        auto scaleValueByAlpha =
+                [](unsigned short colorValue, unsigned short alpha) -> unsigned long  {
+            // color value is between 0 and 0xffff
+            // alpha value is between 0 and 0xff
+            // return the multiplied color value between 0 and 0xff
+            return (static_cast<unsigned long>(colorValue)
+                    * static_cast<unsigned long>(alpha))
+                    / 0xffffu;
+        };
+        unsigned long pixelPremultiplied = 0;
+        pixelPremultiplied = color.alpha_;
+        pixelPremultiplied <<= 8;
+        pixelPremultiplied |= scaleValueByAlpha(xcol.red, color.alpha_);
+        pixelPremultiplied <<= 8;
+        pixelPremultiplied |= scaleValueByAlpha(xcol.green, color.alpha_);
+        pixelPremultiplied <<= 8;
+        pixelPremultiplied |= scaleValueByAlpha(xcol.blue, color.alpha_);
+        return pixelPremultiplied;
+    } else {
+        // set alpha-channel to non-opaque
+        return xcol.pixel | (0xffu << 24);
+    }
+}
+
 static bool g_other_wm_running = false;
 
 // from dwm.c
@@ -174,6 +215,17 @@ void XConnection::tryInitTransparency()
     }
 
     XFree(infos);
+}
+
+/**
+ * @brief tell xconnection whether a compositor (aka compositing manager)
+ * is running at the momenet. this affects the color computation.
+ * @param running
+ */
+void XConnection::setCompositorRunning(bool running)
+{
+    HSDebug("compositing manager = %d\n", running);
+    compositorRunning_ = running;
 }
 
 Rectangle XConnection::windowSize(Window window) {

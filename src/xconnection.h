@@ -8,6 +8,8 @@
 #include "optional.h"
 #include "rectangle.h"
 
+class Color;
+
 class XConnection {
 private:
     XConnection(Display* disp);
@@ -26,9 +28,12 @@ public:
     int depth() { return depth_; }
     Visual* visual() { return visual_; }
 
+    unsigned long allocColor(Colormap maybeColormap, const Color& color);
+
     bool otherWmListensRoot(); // return whether another WM is running
     void tryInitTransparency();
     bool usesTransparency() { return usesTransparency_; }
+    void setCompositorRunning(bool running);
 
     // utility functions
     static const char* requestCodeToString(int requestCode);
@@ -71,6 +76,7 @@ private:
     Visual* visual_;
     Colormap colormap_;
     bool usesTransparency_ = false;
+    bool compositorRunning_ = false;
     static bool     exitOnError_; //! exit on any xlib error
     static XConnection* s_connection;
 };

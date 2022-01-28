@@ -103,6 +103,7 @@ target_include_directories(herbstluftwm SYSTEM PUBLIC
     ${XINERAMA_INCLUDE_DIRS}
     ${XRANDR_INCLUDE_DIRS}
     ${XRENDER_INCLUDE_DIRS}
+    ${XFIXES_INCLUDE_DIRS}
     )
 target_link_libraries(herbstluftwm PUBLIC
     ${FREETYPE_LIBRARIES}
@@ -112,6 +113,7 @@ target_link_libraries(herbstluftwm PUBLIC
     ${XINERAMA_LIBRARIES}
     ${XRANDR_LIBRARIES}
     ${XRENDER_LIBRARIES}
+    ${XFIXES_LIBRARIES}
     )
 
 ## export variables to the code
