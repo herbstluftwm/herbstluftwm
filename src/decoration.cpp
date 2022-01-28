@@ -101,7 +101,7 @@ void Decoration::createWindow() {
     dec->bgwin = XCreateWindow(display, dec->decwin, 0,0, 30, 30, 0,
                         dec->depth,
                         InputOutput,
-                        xcon.visual(),
+                        visual ? visual : xcon.visual(),
                         mask, &at);
     XMapWindow(display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
@@ -123,7 +123,7 @@ void Decoration::createWindow() {
     for (size_t i = 0; i < resizeAreaSize; i++) {
         Window& win = resizeArea[i];
         win = XCreateWindow(display, dec->decwin, 0, 0, 30, 30, 0,
-                            0, InputOnly, xcon.visual(),
+                            0, InputOnly, visual ? visual : xcon.visual(),
                             CWEventMask, &resizeAttr);
         XMapWindow(display, win);
     }
