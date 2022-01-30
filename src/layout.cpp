@@ -320,10 +320,14 @@ TilingResult FrameLeaf::layoutGrid(Rectangle rect) {
 
 TilingResult FrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
-    if (!settings_->smart_frame_surroundings() || parent_.lock()) {
+    if (settings_->smart_frame_surroundings() == SmartFrameSurroundings::off
+        || parent_.lock()) {
         // apply frame gap
         rect.height -= settings_->frame_gap();
         rect.width -= settings_->frame_gap();
+    }
+    if (!(settings_->smart_frame_surroundings() == SmartFrameSurroundings::hide_all)
+        || parent_.lock()) {
         // apply frame border
         rect.x += settings_->frame_border_width();
         rect.y += settings_->frame_border_width();

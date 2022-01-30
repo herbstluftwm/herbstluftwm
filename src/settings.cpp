@@ -16,6 +16,18 @@ using std::function;
 using std::string;
 using std::to_string;
 
+template<>
+Finite<SmartFrameSurroundings>::ValueList Finite<SmartFrameSurroundings>::values = ValueListPlain {
+    { SmartFrameSurroundings::hide_all, "hide_all" },
+    { SmartFrameSurroundings::hide_all, "on" },
+    { SmartFrameSurroundings::hide_all, "true" },
+    { SmartFrameSurroundings::hide_all, "1" },
+    { SmartFrameSurroundings::hide_gaps, "hide_gaps" },
+    { SmartFrameSurroundings::off, "off" },
+    { SmartFrameSurroundings::off, "false" },
+    { SmartFrameSurroundings::off, "0" },
+};
+
 Settings* g_settings = nullptr; // the global settings object
 
 Settings::Settings()
@@ -115,11 +127,11 @@ Settings::Settings()
     for (auto i : {&always_show_frame,
          &gapless_grid,
          &tabbed_max,
-         &smart_frame_surroundings,
          &smart_window_surroundings,
          &raise_on_focus_temporarily}) {
         i->changed().connect(&all_monitors_apply_layout);
     }
+    smart_frame_surroundings.changed().connect(&all_monitors_apply_layout);
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
 
     tree_style.setValidator([] (string new_value) {
@@ -278,8 +290,11 @@ Settings::Settings()
                 "in the max layout.");
 
     smart_frame_surroundings.setDoc(
-                "If set, frame borders and gaps will be removed when there\'s "
-                "no ambiguity regarding the focused frame.");
+                "If set to hide_all, frame borders and gaps will be removed "
+                "when there\'s no ambiguity regarding the focused frame. "
+                "If set to hide_gaps, only frame gaps will be removed when "
+                "there\'s no ambiguity regarding the focused frame. "
+                "Trun off to always show frame borders and gaps.");
 
     smart_window_surroundings.setDoc(
                 "If set, window borders and gaps will be removed and minimal "
@@ -543,6 +558,3 @@ void Settings::get_complete(Completion& complete) {
         complete.none();
     }
 }
-
-
-

@@ -5,6 +5,13 @@ This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 See the link:NEWS[] file for a list of all changes and new features.
 
+0.9.3 to current git version
+----------------------------
+The command 'smart_frame_surroundings' is no longer a boolean, and as such it is
+now incompatible with the 'toggle' command. Use 'cycle_values' instead:
+
+    hc cycle_value settings.smart_frame_surroundings off hide_gaps hide_all
+
 0.9.2 to 0.9.3
 --------------
 The command 'cycle_value' now expects an attribute path instead of a settings
