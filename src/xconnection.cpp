@@ -65,7 +65,7 @@ XConnection* XConnection::connect(string display_name) {
 
 /**
  * @brief convert the given color via the given color map
- * or via the default colormap is none is given
+ * or via the default colormap if none is given
  * @param maybeColormap is a colormap or 0
  * @param color
  * @return
@@ -219,7 +219,7 @@ void XConnection::tryInitTransparency()
 
 /**
  * @brief tell xconnection whether a compositor (aka compositing manager)
- * is running at the momenet. this affects the color computation.
+ * is running at the moment. this affects the color computation.
  * @param running
  */
 void XConnection::setCompositorRunning(bool running)
