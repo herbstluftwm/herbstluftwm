@@ -28,7 +28,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     xterm \
     xvfb \
     xserver-xephyr \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb
 
 # Doc deps would be:
 # (not installed for now because they're huge):
