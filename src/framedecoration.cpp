@@ -79,18 +79,25 @@ FrameDecoration::~FrameDecoration() {
 }
 
 void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
-    unsigned long border_color = settings->frame_border_normal_color->toX11Pixel();
-    unsigned long bg_color = settings->frame_bg_normal_color->toX11Pixel();
-    int bw = settings->frame_border_width();
+    XConnection& xcon = XConnection::get();
+    auto clientColor = [&](const Color& color) -> unsigned long {
+        return xcon.allocColor(0, color);
+    };
+    unsigned long border_color;
+    unsigned long bg_color;
     if (isFocused) {
-        border_color = settings->frame_border_active_color->toX11Pixel();
-        bg_color = settings->frame_bg_active_color->toX11Pixel();
+        border_color = clientColor(settings->frame_border_active_color());
+        bg_color = clientColor(settings->frame_bg_active_color);
+    } else {
+        border_color = clientColor(settings->frame_border_normal_color);
+        bg_color = clientColor(settings->frame_bg_normal_color);
     }
+    int bw = settings->frame_border_width();
+
     if (settings->smart_frame_surroundings() && !data.hasParent) {
         bw = 0;
     }
     Rectangle rect = data.geometry;
-    XConnection& xcon = XConnection::get();
     XSetWindowBorderWidth(xcon.display(), window, bw);
     XMoveResizeWindow(xcon.display(), window,
                       rect.x - bw,
@@ -101,7 +108,7 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
         && settings->frame_border_inner_width() < settings->frame_border_width()) {
         set_window_double_border(xcon.display(), window,
                 settings->frame_border_inner_width(),
-                settings->frame_border_inner_color->toX11Pixel(),
+                clientColor(settings->frame_border_inner_color),
                 border_color);
     } else {
         XSetWindowBorder(xcon.display(), window, border_color);

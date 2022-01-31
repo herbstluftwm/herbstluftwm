@@ -85,6 +85,21 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
             .connect(this, &XMainLoop::draggedClientChanges);
     root_->clients->focus.changed()
             .connect(this, &XMainLoop::focusedClientChanges);
+
+    // detect compositor
+    X_.setCompositorRunning(root_->ewmh_.detectCompositingManager());
+    // get events if the compositor changes
+    if (XFixesQueryExtension (X_.display(), &xfixesEventBase_, &xfixesErrorBase_)) {
+        int mask =  XFixesSetSelectionOwnerNotifyMask
+                    | XFixesSelectionWindowDestroyNotifyMask
+                    | XFixesSelectionClientCloseNotifyMask;
+        XFixesSelectSelectionInput(X_.display(),
+                                   X_.root(),
+                                   root->ewmh_.compositingManagerSelection(),
+                                   mask);
+    } else {
+        HSDebug("XFixes extension missing, so I can not react to compositors coming or leaving\n");
+    }
 }
 
 //! scan for windows and add them to the list of managed clients
@@ -186,9 +201,15 @@ void XMainLoop::run() {
         XSync(X_.display(), False);
         while (XQLength(X_.display())) {
             XNextEvent(X_.display(), &event);
-            EventHandler handler = handlerTable_[event.type];
-            if (handler != nullptr) {
-                (this ->* handler)(&event);
+            if (event.type < LASTEvent) {
+                EventHandler handler = handlerTable_[event.type];
+                if (handler != nullptr) {
+                    (this ->* handler)(&event);
+                }
+            } else {
+                if (event.type == xfixesEventBase_ + XFixesSelectionNotify) {
+                    selectionnotify((XFixesSelectionNotifyEvent*)&event);
+                }
             }
             root_->watchers->scanForChanges();
             XSync(X_.display(), False);
@@ -605,6 +626,15 @@ void XMainLoop::selectionclear(XSelectionClearEvent* event)
     {
         HSDebug("Getting replaced by another window manager. exiting.");
         quit();
+    }
+}
+
+void XMainLoop::selectionnotify(XFixesSelectionNotifyEvent* event)
+{
+    if (event->selection == root_->ewmh_.compositingManagerSelection()) {
+        // check again, whether compositor is (still/again) running
+        X_.setCompositorRunning(root_->ewmh_.detectCompositingManager());
+        root_->monitors->relayoutAll();
     }
 }
 

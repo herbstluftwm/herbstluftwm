@@ -28,6 +28,9 @@ Current git version
   * Frames can be simultaneously resized in x and y direction with the mouse.
   * Bug fixes:
     - Update floating geometry if a client's size hints change
+    - Correct alpha value handling: if compositor is detected, premultiply
+      rgb values with the alpha value
+  * New dependency: xfixes
 
 Release 0.9.3 on 2021-05-15
 ---------------------------

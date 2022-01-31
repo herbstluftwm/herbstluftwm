@@ -73,7 +73,6 @@ private:
     static XConnection& xconnection();
     void redrawPixmap();
     void updateFrameExtends();
-    unsigned long get_client_color(Color color);
 
     void drawText(Pixmap& pix, GC& gc, const FontData& fontData,
                   const Color& color, Point2D position, const std::string& text,

@@ -28,7 +28,7 @@ Color::Color()
 
 Color::Color(XColor xcol, unsigned short alpha)
     : red_(xcol.red), green_(xcol.green), blue_(xcol.blue), alpha_(alpha),
-      x11pixelValue_(x11PixelPlusAlpha(xcol.pixel, alpha))
+      x11pixelValue_(xcol.pixel | (0xffu << 24))  // alpha channel set to non-transparent
 {
     // TODO: special interpretation of red, green, blue when
     // xcol.flags lacks one of DoRed, DoGreen, DoBlue?

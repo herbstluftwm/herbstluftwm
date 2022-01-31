@@ -125,6 +125,8 @@ public:
      */
     bool acquireScreenSelection(bool replaceExistingWm);
     Atom windowManagerSelection();
+    Atom compositingManagerSelection();
+    bool detectCompositingManager();
     Window windowManagerWindow() { return windowManagerWindow_; }
     enum class WM { Name, Protocols, Delete, State, ChangeState, TakeFocus, Last };
 

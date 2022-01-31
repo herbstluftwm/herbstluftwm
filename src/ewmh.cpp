@@ -211,6 +211,18 @@ Atom Ewmh::windowManagerSelection()
     return XInternAtom(X_.display(), atomName.c_str(), False);
 }
 
+Atom Ewmh::compositingManagerSelection()
+{
+    // see https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45381391209264
+    string atomName = "_NET_WM_CM_S" + to_string(X_.screen());
+    return XInternAtom(X_.display(), atomName.c_str(), False);
+}
+
+bool Ewmh::detectCompositingManager()
+{
+    return XGetSelectionOwner(X_.display(), compositingManagerSelection()) != None;
+}
+
 void Ewmh::InitialState::print(FILE *file)
 {
     fprintf(file, "EWMH: %zu desktops:", numberOfDesktops);
