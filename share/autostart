@@ -72,8 +72,8 @@ while read name key ; do
         [ -n "$name" ] && hc add "$name"
     fi
     if [ -n "$key" ] ; then
-        hc keybind "$Mod-$key" use_index "$i"
-        hc keybind "$Mod-Shift-$key" move_index "$i"
+        hc keybind "$Mod-$key" use "$name"
+        hc keybind "$Mod-Shift-$key" move "$name"
     fi
     i=$((i+1))
 done <<END
