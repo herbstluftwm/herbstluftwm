@@ -672,6 +672,11 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, int startIndex) {
                 index = startIndex - 1;
             }
             break;
+        case LayoutAlgorithm::max:
+            if (! settings_->tabbed_max()) {
+                break;
+            }
+            // FALLTHROUGH
         case LayoutAlgorithm::horizontal:
             if (direction == Direction::Right) {
                 index = startIndex + 1;
@@ -679,8 +684,6 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, int startIndex) {
             if (direction == Direction::Left) {
                 index = startIndex - 1;
             }
-            break;
-        case LayoutAlgorithm::max:
             break;
         case LayoutAlgorithm::grid: {
             int rows, cols;
