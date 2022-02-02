@@ -63,18 +63,31 @@ hc keybind $Mod-Control-Up      resize up +$resizestep
 hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
-tag_names=( {1..9} )
-tag_keys=( {1..9} 0 )
-
-hc rename default "${tag_names[0]}" || true
-for i in "${!tag_names[@]}" ; do
-    hc add "${tag_names[$i]}"
-    key="${tag_keys[$i]}"
+i=0
+while read name key ; do
+    [ -n "$name" ] || continue
+    if [ $i -eq 0 ] ; then
+        [ -n "$name" ] && hc rename default "$name"
+    else
+        [ -n "$name" ] && hc add "$name"
+    fi
     if [ -n "$key" ] ; then
         hc keybind "$Mod-$key" use_index "$i"
         hc keybind "$Mod-Shift-$key" move_index "$i"
     fi
-done
+    i=$((i+1))
+done <<END
+1              1
+2              2
+3              3
+4              4
+5              5
+6              6
+7              7
+8              8
+9              9
+10             0
+END
 
 # cycle through tags
 hc keybind $Mod-period use_index +1 --skip-visible
