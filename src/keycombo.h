@@ -15,6 +15,8 @@
  * Handles the parsing and creation of string representations of itself.
  */
 
+#define ReleaseMask		((unsigned int)1<<31)
+
 class ModifierCombo {
 public:
     unsigned int modifiers_ = 0;

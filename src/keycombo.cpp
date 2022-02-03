@@ -24,6 +24,7 @@ const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
     { "Shift",      ShiftMask },
     { "Control",    ControlMask },
     { "Ctrl",       ControlMask },
+    { "Release",    ReleaseMask },
 };
 
 ModifiersWithString::ModifiersWithString()
