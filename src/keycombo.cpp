@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "xkeygrabber.h"
 
+using std::make_pair;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -24,6 +25,7 @@ const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
     { "Shift",      ShiftMask },
     { "Control",    ControlMask },
     { "Ctrl",       ControlMask },
+    { "Release",    HlwmReleaseMask },
 };
 
 ModifiersWithString::ModifiersWithString()
@@ -155,6 +157,12 @@ bool KeyCombo::operator==(const KeyCombo& other) const {
     return sameMods && sameKeySym;
 }
 
+bool KeyCombo::operator<(const KeyCombo& other) const
+{
+    return make_pair(modifiers_, keysym)
+            < make_pair(other.modifiers_, other.keysym);
+}
+
 //! Splits a given key combo string into a list of tokens
 vector<string> ModifierCombo::tokensFromString(string keySpec)
 {
@@ -207,4 +215,12 @@ void KeyCombo::complete(Completion& complete) {
             compWrapped.full(prefix + keySym);
         }
     });
+}
+
+KeyCombo KeyCombo::withoutEventModifiers() const
+{
+    KeyCombo combo;
+    combo.modifiers_ = modifiers_ & ~HlwmReleaseMask;
+    combo.keysym = keysym;
+    return combo;
 }

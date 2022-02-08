@@ -40,7 +40,7 @@ void XKeyGrabber::updateNumlockMask() {
 KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
     KeyCombo combo = {};
     combo.keysym = XkbKeycodeToKeysym(g_display, ev->keycode, 0, 0);
-    combo.modifiers_ = ev->state;
+    combo.modifiers_ = ev->state | ((ev->type == KeyRelease) ? HlwmReleaseMask : 0);
 
     // Normalize
     combo.modifiers_ &= ~(numlockMask_ | LockMask);
@@ -50,17 +50,28 @@ KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
 
 //! Grabs the given key combo
 void XKeyGrabber::grabKeyCombo(const KeyCombo& keyCombo) {
-    changeGrabbedState(keyCombo, true);
+    auto x11KeyCombo = keyCombo.withoutEventModifiers();
+    int oldCount = keyComboCount(x11KeyCombo);
+    setKeyComboCount(x11KeyCombo, oldCount + 1);
+    if (oldCount <= 0) {
+        changeGrabbedState(x11KeyCombo, true);
+    }
 }
 
 //! Ungrabs the given key combo
 void XKeyGrabber::ungrabKeyCombo(const KeyCombo& keyCombo) {
-    changeGrabbedState(keyCombo, false);
+    auto x11KeyCombo = keyCombo.withoutEventModifiers();
+    int oldCount = keyComboCount(x11KeyCombo);
+    setKeyComboCount(x11KeyCombo, oldCount - 1);
+    if (oldCount > 0 && oldCount - 1 <= 0) {
+        changeGrabbedState(x11KeyCombo, false);
+    }
 }
 
 //! Removes all grabbed keys (without knowing them)
 void XKeyGrabber::ungrabAll() {
     XUngrabKey(g_display, AnyKey, AnyModifier, g_root);
+    keycombo2bindCount_.clear();
 }
 
 //! Grabs/ungrabs a given key combo
@@ -74,6 +85,7 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
         return;
     }
 
+    HSDebug("setting grabbed state of %s to %d\n", keyCombo.str().c_str(), grabbed);
     // Grab/ungrab key for each modifier that is ignored (capslock, numlock)
     for (auto& ignModifier : ignModifiers) {
         if (grabbed) {
@@ -84,6 +96,26 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
         }
     }
 }
+
+int XKeyGrabber::keyComboCount(const KeyCombo& x11KeyCombo)
+{
+    auto it = keycombo2bindCount_.find(x11KeyCombo);
+    if (it != keycombo2bindCount_.end()) {
+        return it->second;
+    }
+    return 0;
+}
+
+void XKeyGrabber::setKeyComboCount(const KeyCombo& x11KeyCombo, int newCount)
+{
+    HSDebug("count[%s] = %d\n", x11KeyCombo.str().c_str(), newCount);
+    if (newCount <= 0) {
+        keycombo2bindCount_.erase(x11KeyCombo);
+    } else {
+        keycombo2bindCount_[x11KeyCombo] = newCount;
+    }
+}
+
 
 vector<string> XKeyGrabber::getPossibleKeySyms() {
     vector<string> ret;

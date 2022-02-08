@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    bool removeKeyBinding(const KeyCombo& comboToRemove);
+    bool removeKeyBinding(const KeyCombo& comboToRemove, bool* wasActive = nullptr);
 
     //! Currently defined keybindings
     std::vector<std::unique_ptr<KeyBinding>> binds;

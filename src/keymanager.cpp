@@ -51,14 +51,17 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     }
 
     // Make sure there is no existing binding with same keysym/modifiers
-    removeKeyBinding(newBinding->keyCombo);
+    bool alreadyActive = false;
+    removeKeyBinding(newBinding->keyCombo, &alreadyActive);
 
     if (currentKeyMask_.allowsBinding(newBinding->keyCombo)
         && currentKeysInactive_.allowsBinding(newBinding->keyCombo))
     {
         // Grab for events on this keycode
-        xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
+        if (!alreadyActive) {
+            xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
+        }
     }
 
     // Add keybinding to list
@@ -197,9 +200,9 @@ void KeyManager::ensureKeyMask(const Client* client) {
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
 void KeyManager::setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive) {
     for (auto& binding : binds) {
-        auto name = binding->keyCombo.str();
-        bool isAllowed = keysInactive.allowsBinding(binding->keyCombo)
-                         && keyMask.allowsBinding(binding->keyCombo);
+        KeyCombo keyComboWithoutEvent = binding->keyCombo.withoutEventModifiers();
+        bool isAllowed = keysInactive.allowsBinding(keyComboWithoutEvent)
+                         && keyMask.allowsBinding(keyComboWithoutEvent);
         if (isAllowed && !binding->grabbed) {
             xKeyGrabber_.grabKeyCombo(binding->keyCombo);
             binding->grabbed = true;
@@ -219,11 +222,11 @@ void KeyManager::clearActiveKeyMask() {
 
 /*!
  * Removes a given key combo from the list of bindings (no ungrabbing)
- *
- * \return True if a matching binding was found and removed
+ * \param wasActive is set to the value whether the removed keybinding was active.
+ * \return True if a matching binding was found and was removed
  * \return False if no matching binding was found
  */
-bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
+bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove, bool* wasActive) {
     // Find binding to remove
     auto removeIter = binds.begin();
     for (; removeIter != binds.end(); removeIter++) {
@@ -233,10 +236,16 @@ bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
     }
 
     if (removeIter == binds.end()) {
+        if (wasActive) {
+            *wasActive = false;
+        }
         return False; // no matching binding found
     }
 
     // Remove binding
+    if (wasActive) {
+        *wasActive = (*removeIter)->grabbed;
+    }
     binds.erase(removeIter);
     return True;
 }

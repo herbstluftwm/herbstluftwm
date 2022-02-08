@@ -1,6 +1,7 @@
 #pragma once
 
 #include <X11/Xlib.h>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,11 @@ public:
 private:
     void changeGrabbedState(const KeyCombo& keyCombo, bool grabbed);
     unsigned int numlockMask_ = 0;
-
+    // for each (X11-)keycombo, we count in how many keybinds it is used.
+    // it might be used in multiple because there are binds for both key press
+    // and key release:
+    std::map<KeyCombo,int> keycombo2bindCount_;
+    int keyComboCount(const KeyCombo& x11KeyCombo);
+    void setKeyComboCount(const KeyCombo& x11KeyCombo, int newCount);
 };
 

@@ -7,6 +7,7 @@
 
 #include "converter.h"
 
+#define HlwmReleaseMask		(((unsigned int)1)<<31)
 /*!
  * Represents the press of a combination of modifiers keys.
  * The modifiers_ mask is expected to be normalized, i.e. modifiers_ must
@@ -68,10 +69,12 @@ public:
 
     std::string str() const;
     bool operator==(const KeyCombo& other) const;
+    bool operator<(const KeyCombo& other) const;
     static KeySym keySymFromString(const std::string& str);
     static KeyCombo fromString(const std::string& str);
     static std::vector<std::string> getPossibleKeySyms();
     static void complete(Completion& complete);
+    KeyCombo withoutEventModifiers() const;
 
     KeySym keysym = {};
 };

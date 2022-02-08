@@ -1043,6 +1043,7 @@ def keyboard():
     class KeyBoard:
         def press(self, key_spec):
             subprocess.check_call(['xdotool', 'key', key_spec])
+            print(f"sended key press {key_spec}", file=sys.stderr)
 
         def down(self, key_spec):
             subprocess.check_call(['xdotool', 'keydown', key_spec])
