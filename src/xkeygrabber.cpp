@@ -70,7 +70,8 @@ void XKeyGrabber::ungrabAll() {
 void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
     // List of ignored modifiers (key combo will be grabbed for each of them):
     const unsigned int ignModifiers[] = { 0, LockMask, numlockMask_, numlockMask_ | LockMask };
-    const unsigned int modifiers = keyCombo.modifiers_ & ~ReleaseMask;
+
+    if (keyCombo.modifiers_ & ReleaseMask) return;
 
     KeyCode keycode = XKeysymToKeycode(g_display, keyCombo.keysym);
     if (!keycode) {
@@ -81,10 +82,10 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
     // Grab/ungrab key for each modifier that is ignored (capslock, numlock)
     for (auto& ignModifier : ignModifiers) {
         if (grabbed) {
-            XGrabKey(g_display, keycode, ignModifier | modifiers, g_root,
+            XGrabKey(g_display, keycode, ignModifier | keyCombo.modifiers_, g_root,
                     True, GrabModeAsync, GrabModeAsync);
         } else {
-            XUngrabKey(g_display, keycode, ignModifier | modifiers, g_root);
+            XUngrabKey(g_display, keycode, ignModifier | keyCombo.modifiers_, g_root);
         }
     }
 }
