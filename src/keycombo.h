@@ -69,6 +69,7 @@ public:
     KeyCombo() = default;
 
     std::string str() const;
+    bool match(const KeyCombo& other) const;
     bool operator==(const KeyCombo& other) const;
     static KeySym keySymFromString(const std::string& str);
     static KeyCombo fromString(const std::string& str);

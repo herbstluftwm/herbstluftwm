@@ -150,6 +150,12 @@ KeyCombo KeyCombo::fromString(const string& str) {
     return combo;
 }
 
+bool KeyCombo::match(const KeyCombo& other) const {
+    bool sameMods = modifiers_ & ReleaseMask || modifiers_ == other.modifiers_;
+    bool sameKeySym = keysym == other.keysym;
+    return sameMods && sameKeySym;
+}
+
 bool KeyCombo::operator==(const KeyCombo& other) const {
     bool sameMods = modifiers_ == other.modifiers_;
     bool sameKeySym = keysym == other.keysym;

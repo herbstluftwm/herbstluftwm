@@ -133,7 +133,7 @@ void KeyManager::handleKeyPress(XKeyEvent* ev) const {
 
     auto found = std::find_if(binds.begin(), binds.end(),
             [=](const unique_ptr<KeyBinding> &other) {
-                return pressed == other->keyCombo;
+                return other->keyCombo.match(pressed);
             });
     if (found != binds.end()) {
         // execute the bound command
