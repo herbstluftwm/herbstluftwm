@@ -85,7 +85,6 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
         return;
     }
 
-    HSDebug("setting grabbed state of %s to %d\n", keyCombo.str().c_str(), grabbed);
     // Grab/ungrab key for each modifier that is ignored (capslock, numlock)
     for (auto& ignModifier : ignModifiers) {
         if (grabbed) {
@@ -108,7 +107,6 @@ int XKeyGrabber::keyComboCount(const KeyCombo& x11KeyCombo)
 
 void XKeyGrabber::setKeyComboCount(const KeyCombo& x11KeyCombo, int newCount)
 {
-    HSDebug("count[%s] = %d\n", x11KeyCombo.str().c_str(), newCount);
     if (newCount <= 0) {
         keycombo2bindCount_.erase(x11KeyCombo);
     } else {
