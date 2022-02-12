@@ -74,7 +74,7 @@ public:
     void addKeybindCompletion(Completion &complete);
     void removeKeybindCompletion(Completion &complete);
 
-    void handleKeyPress(XKeyEvent* ev) const;
+    void handleKeyPress(XKeyEvent* ev);
 
     void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);

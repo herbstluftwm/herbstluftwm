@@ -20,7 +20,7 @@ public:
 
     void updateNumlockMask();
 
-    KeyCombo xEventToKeyCombo(XKeyEvent *ev) const;
+    KeyCombo xEventToKeyCombo(XKeyEvent *ev);
 
     void grabKeyCombo(const KeyCombo& keyCombo);
     void ungrabKeyCombo(const KeyCombo& keyCombo);
@@ -41,6 +41,9 @@ private:
     // it might be used in multiple because there are binds for both key press
     // and key release:
     std::map<KeyCombo,int> keycombo2bindCount_;
+    // for each key code, whenever we see a key down event, remember
+    // the modifier mask, such that we can re-use it for the key up event.
+    std::map<unsigned int, unsigned int> keycode2modifierMask_;
     int keyComboCount(const KeyCombo& x11KeyCombo);
     void setKeyComboCount(const KeyCombo& x11KeyCombo, int newCount);
 };

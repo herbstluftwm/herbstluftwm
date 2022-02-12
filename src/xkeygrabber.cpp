@@ -36,14 +36,32 @@ void XKeyGrabber::updateNumlockMask() {
  *
  * Normalization means stripping any ignored modifiers from the modifier mask
  * (including the runtime-defined Numlock mask).
+ *
+ * Also, for release-events, we look up the modifier state that was active during
+ * the key press.
  */
-KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
+KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) {
     KeyCombo combo = {};
     combo.keysym = XkbKeycodeToKeysym(g_display, ev->keycode, 0, 0);
-    combo.modifiers_ = ev->state | ((ev->type == KeyRelease) ? HlwmReleaseMask : 0);
-
-    // Normalize
-    combo.modifiers_ &= ~(numlockMask_ | LockMask);
+    combo.modifiers_ =  ev->state & ~(numlockMask_ | LockMask);
+    if (ev->type == KeyRelease) {
+        // on key release: extract the modifier state from when
+        // the corresponding key press happened
+        auto it = keycode2modifierMask_.find(ev->keycode);
+        if (it != keycode2modifierMask_.end()) {
+            combo.modifiers_ = it->second;
+            combo.modifiers_ &= ~(numlockMask_ | LockMask);
+            // since we see the release event,
+            // the modifier mask is not needed anymore:
+            keycode2modifierMask_.erase(it);
+        }
+        combo.modifiers_ |= HlwmReleaseMask;
+    } else {
+        // on key press:
+        // - keep the modifiers as extracted from ev->state.
+        // - but remember them for the corresponding release event
+        keycode2modifierMask_[ev->keycode] = combo.modifiers_;
+    }
 
     return combo;
 }
