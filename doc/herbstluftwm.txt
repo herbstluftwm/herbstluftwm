@@ -239,8 +239,8 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
     (see keysymdef.h for a list of keys). Modifiers and the key are concatenated
     with '-' or '+' as separator. The 'Release' modifier is only active during
     the corresponding key release event: that is, in order to run the key binding
-    for +Release-Mod1-Shift-p+ one needs to first press +Mod1-Shift-p+ and then
-    release +p+.  Examples:
+    for 'Release-Mod1-Shift-p' one needs to first press 'Mod1-Shift-p' and then
+    release 'p'.  Examples:
 
         * keybind Mod4+Ctrl+q quit
         * keybind Mod1-i toggle always_show_frame
