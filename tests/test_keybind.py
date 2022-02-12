@@ -397,8 +397,43 @@ def test_key_release_after_unbinding_press(hlwm, keyboard):
     keyboard.down('alt+x')
     assert hlwm.attr.my_test() == 'initial'  # because we had removed the binding
 
-    # the modifier 'alt' still needs to be pressed during the following event:
     keyboard.up('x')
+    assert hlwm.attr.my_test() == 'release'
+
+
+def test_key_release_reuses_mod_mask(hlwm, keyboard):
+    """
+    This verifies that in the key release event, we use the modifier mask
+    that was once active back then when the key press happend.
+    """
+    hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
+    hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
+    assert hlwm.attr.my_test() == 'initial'
+
+    keyboard.down('alt')
+    keyboard.down('x')
+    assert hlwm.attr.my_test() == 'press'
+
+    keyboard.up('alt')
+    keyboard.down('control')
+    assert hlwm.attr.my_test() == 'press'
+
+    # this triggers the 'release' binding:
+    keyboard.up('x')
+    assert hlwm.attr.my_test() == 'release'
+    keyboard.up('control')
+    assert hlwm.attr.my_test() == 'release'
+
+
+def test_key_release_of_modifier(hlwm, keyboard):
+    hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
+    hlwm.call(['keybind', 'Super_L', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', 'Release-Super_L', 'set_attr', 'my_test', 'release'])
+    assert hlwm.attr.my_test() == 'initial'
+    keyboard.down('Super_L')
+    assert hlwm.attr.my_test() == 'press'
+    keyboard.up('Super_L')
     assert hlwm.attr.my_test() == 'release'
 
 
