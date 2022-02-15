@@ -436,10 +436,13 @@ focus ['-i'|'-e'] 'DIRECTION'::
 
 // small hack to fix indentation of "If ..."
  ::
+    If there is no client within this frame or '-e' (external) is given, then
+    the next frame in specified 'DIRECTION' will be focused.
     If '-i' (internal) is given or default_direction_external_only is unset,
-    then the next client in 'DIRECTION' can also be within the same frame. If
-    there is no client within this frame or '-e' (external) is given, then the
-    next frame in specified 'DIRECTION' will be focused. +
+    then the next client in 'DIRECTION' can also be within the same frame, but
+    has to be visible. For '-ii' the next client may be hidden in a tabbed_max
+    layout. With '-iii' any client within a max layout maybe selected before
+    focusing the next frame. +
     +
     The direction between frames is defined as follows: The focus is in a leaf
     of the binary tree.  Each inner node in the tree remembers the last focus
