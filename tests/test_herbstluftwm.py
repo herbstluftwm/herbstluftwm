@@ -137,7 +137,7 @@ def test_herbstluftwm_unrecognized_option():
                           stderr=subprocess.PIPE,
                           universal_newlines=True)
     assert proc.returncode != 0
-    assert re.search('unrecognized option \'--foobar\'', proc.stderr)
+    assert re.search('un(recognized|known).*foobar', proc.stderr)
 
 
 def test_herbstluftwm_version_flags():
