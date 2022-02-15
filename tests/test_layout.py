@@ -238,6 +238,35 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
     assert hlwm.get_attr('clients.focus.winid') == expected_new_focus
 
 
+@pytest.mark.parametrize("tabbed_max", [True, False])
+@pytest.mark.parametrize("flag", ['-e', '-i', '-ii', '-iii'])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_flag(hlwm, tabbed_max, flag, running_clients):
+    hlwm.call(f'set tabbed_max {hlwm.bool(tabbed_max)}')
+    layout = f"""
+    (split horizontal:0.5:0
+        (clients max:0 {running_clients[0]} {running_clients[1]})
+        (clients horizontal:0 {running_clients[2]}))
+    """.replace('\n', ' ').strip()
+    hlwm.call(['load', layout])
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[0]
+
+    # we will now run 'focus' 'right' with -e, -i, -ii or -iii
+    cmd = ['focus']
+    cmd.append(flag)
+    cmd += ['right']
+    hlwm.call(cmd)
+
+    expected_new_focus = {
+        '-e':   2,
+        '-i':   2,
+        '-ii':  1 if tabbed_max else 2,
+        '-iii': 1,
+    }
+
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[expected_new_focus[flag]]
+
+
 def test_argparse_invalid_flag(hlwm):
     # here, '-v' is not a valid flag, so it is assumed
     # to be the first positional argument
