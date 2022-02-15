@@ -315,28 +315,33 @@ void HSTag::removeClientSlice(Client* client)
 //! directional focus command
 void HSTag::focusInDirCommand(CallOrComplete invoc)
 {
-    bool external_only = settings_->default_direction_external_only();
+    DirectionDepth depth =
+        settings_->default_direction_external_only()
+        ? DirectionDepth::Frame
+        : DirectionDepth::Visible;
     Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
     ap.flags({
-        {"-i", [&external_only] () { external_only = false; }},
-        {"-e", [&external_only] () { external_only = true; }},
+        {"-iii", [&depth] () { depth = DirectionDepth::All; }},
+        {"-ii", [&depth] () { depth = DirectionDepth::Tabs; }},
+        {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
+        {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
     });
     ap.mandatory(direction);
     ap.command(invoc,
                [&] (Output output) {
-                    return focusInDir(direction, external_only, output);
+                    return focusInDir(direction, depth, output);
                });
 }
 
-int HSTag::focusInDir(Direction direction, bool external_only, Output output)
+int HSTag::focusInDir(Direction direction, DirectionDepth depth, Output output)
 {
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
         neighbour_found = Floating::focusDirection(direction);
     } else {
-        neighbour_found = frame->focusInDirection(direction, external_only);
+        neighbour_found = frame->focusInDirection(direction, depth);
         if (neighbour_found) {
             needsRelayout_.emit();
         }
@@ -358,21 +363,26 @@ int HSTag::focusInDir(Direction direction, bool external_only, Output output)
 
 void HSTag::shiftInDirCommand(CallOrComplete invoc)
 {
-    bool external_only = settings_->default_direction_external_only();
+    DirectionDepth depth =
+        settings_->default_direction_external_only()
+        ? DirectionDepth::Frame
+        : DirectionDepth::Visible;
     Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
     ap.flags({
-        {"-i", [&external_only] () { external_only = false; }},
-        {"-e", [&external_only] () { external_only = true; }},
+        {"-iii", [&depth] () { depth = DirectionDepth::All; }},
+        {"-ii", [&depth] () { depth = DirectionDepth::Tabs; }},
+        {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
+        {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
     });
     ap.mandatory(direction);
     ap.command(invoc,
                [&] (Output output) {
-                    return shiftInDir(direction, external_only, output);
+                    return shiftInDir(direction, depth, output);
                });
 }
 
-int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
+int HSTag::shiftInDir(Direction direction, DirectionDepth depth, Output output)
 {
     Client* currentClient = focusedClient();
     if (!currentClient) {
@@ -384,7 +394,7 @@ int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
         // try to move the floating window
         success = Floating::shiftDirection(direction);
     } else {
-        success = frame->shiftInDirection(direction, external_only);
+        success = frame->shiftInDirection(direction, depth);
         if (success) {
             needsRelayout_.emit();
         }

@@ -473,18 +473,15 @@ void FrameTree::focusFrame(shared_ptr<Frame> frame) {
     }
 }
 
-//! focus a client/frame in the given direction. if externalOnly=true,
-//! focus the frame in the specified direction; otherwise, focus the frame or client
-//! in the specified direction. Return whether the focus changed
-bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
+//! focus a client/frame in the given direction.
+//! Return whether the focus changed
+bool FrameTree::focusInDirection(Direction direction, DirectionDepth depth)
 {
     auto curframe = focusedFrame();
-    if (!externalOnly) {
-        int index = curframe->getInnerNeighbourIndex(direction);
-        if (index >= 0) {
-            curframe->setSelection(index);
-            return true;
-        }
+    int index = curframe->getInnerNeighbourIndex(direction, depth);
+    if (index >= 0) {
+        curframe->setSelection(index);
+        return true;
     }
     // if this didn't succeed, find a frame:
     shared_ptr<Frame> neighbour = curframe->neighbour(direction);
@@ -499,14 +496,14 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
     return false;
 }
 
-bool FrameTree::shiftInDirection(Direction direction, bool externalOnly) {
+bool FrameTree::shiftInDirection(Direction direction, DirectionDepth depth) {
     shared_ptr<FrameLeaf> sourceFrame = this->focusedFrame();
     Client* client = sourceFrame->focusedClient();
     if (!client) {
         return false;
     }
     // don't look for neighbours within the frame if 'external_only' is set
-    int indexInFrame = externalOnly ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
+    int indexInFrame = sourceFrame->getInnerNeighbourIndex(direction, depth);
     if (indexInFrame >= 0) {
         sourceFrame->moveClient(indexInFrame);
         return true;

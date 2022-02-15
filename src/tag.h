@@ -17,6 +17,8 @@ enum {
     TAG_FLAG_USED   = 0x02, // the opposite of empty
 };
 
+enum class DirectionDepth { Frame = 0, Visible = 1, Tabs = 2, All = 3 };
+
 class Client;
 class Completion;
 class FrameLeaf;
@@ -68,9 +70,9 @@ public:
     void removeClientSlice(Client* client);
 
     void focusInDirCommand(CallOrComplete invoc);
-    int focusInDir(Direction direction, bool external_only, Output output);
+    int focusInDir(Direction direction, DirectionDepth depth, Output output);
     void shiftInDirCommand(CallOrComplete invoc);
-    int shiftInDir(Direction direction, bool external_only, Output output);
+    int shiftInDir(Direction direction, DirectionDepth depth, Output output);
 
     void cycleAllCommand(CallOrComplete invoc);
     void cycleAll(bool forward, bool skip_invisible);

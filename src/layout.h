@@ -13,6 +13,7 @@
 #include "object.h"
 #include "tilingresult.h"
 #include "x11-types.h"
+#include "tag.h"
 
 // execute an action on an client
 // returns Success or failure.
@@ -131,7 +132,7 @@ public:
 
     friend class Frame;
     void setVisible(bool visible);
-    int getInnerNeighbourIndex(Direction direction, int startIndex = -1);
+    int getInnerNeighbourIndex(Direction direction, DirectionDepth depth, int startIndex = -1);
     DynAttribute_<int> client_count_;
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
