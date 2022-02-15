@@ -136,11 +136,11 @@ def test_autostart_last_status(hlwm, tmpdir):
 
 
 def process_status(pid):
-    ps_cmd = ['ps', '-q', str(pid), '-o', 'state', '--no-headers']
+    ps_cmd = ['ps', '-p', str(pid), '-o', 'state']
     proc = subprocess.run(ps_cmd,
                           stdout=subprocess.PIPE,
                           universal_newlines=True)
-    return proc.stdout.strip()
+    return proc.stdout.splitlines()[1].strip()
 
 
 def test_autostart_sigstop(hlwm, tmpdir):
