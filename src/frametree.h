@@ -57,8 +57,8 @@ public:
     bool focusClient(Client* client);
     //! focus a frame within its tree
     static void focusFrame(std::shared_ptr<Frame> frame);
-    bool focusInDirection(Direction dir, DirectionDepth Depth);
-    bool shiftInDirection(Direction direction, DirectionDepth Depth);
+    bool focusInDirection(Direction dir, DirectionLevel Depth);
+    bool shiftInDirection(Direction direction, DirectionLevel Depth);
     //! return a frame in the tree that holds the client
     std::shared_ptr<FrameLeaf> findFrameWithClient(Client* client);
 

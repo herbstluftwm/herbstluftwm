@@ -657,8 +657,8 @@ shared_ptr<Frame> FrameLeaf::neighbour(Direction direction) {
  * @param startIndex the window whose neighbour shall be found or -1 for the selected window
  * @return the index of the neighbour window or -1 if there is no neighbour inside the frame.
  */
-int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionDepth depth, int startIndex) {
-    if (depth == DirectionDepth::Frame) {
+int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionLevel depth, int startIndex) {
+    if (depth == DirectionLevel::Frame) {
         return -1;
     }
     if (startIndex < 0) {
@@ -676,7 +676,7 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionDepth depth,
             }
             break;
         case LayoutAlgorithm::max:
-            if (! settings_->tabbed_max() && depth == DirectionDepth::All ) {
+            if (! settings_->tabbed_max() && depth == DirectionLevel::All ) {
                 switch (direction) {
                     case Direction::Right:
                     case Direction::Down:
@@ -689,7 +689,7 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionDepth depth,
                 }
                 break;
             }
-            else if (! settings_->tabbed_max() || depth < DirectionDepth::Tabs) {
+            else if (! settings_->tabbed_max() || depth < DirectionLevel::Tabs) {
                 break;
             }
             else ; // FALLTHROUGH

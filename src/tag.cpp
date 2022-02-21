@@ -316,14 +316,14 @@ void HSTag::removeClientSlice(Client* client)
 void HSTag::focusInDirCommand(CallOrComplete invoc)
 {
     Direction direction = Direction::Left; // some default to satisfy the linter
-    DirectionDepth depth =
+    DirectionLevel depth =
         settings_->default_direction_external_only()
-        ? DirectionDepth::Frame
-        : DirectionDepth::Visible;
+        ? DirectionLevel::Frame
+        : DirectionLevel::Visible;
     ArgParse ap;
     ap.flags({
-        {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
-        {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
+        {"-i", [&depth] () { depth = DirectionLevel::Visible; }},
+        {"-e", [&depth] () { depth = DirectionLevel::Frame; }},
     });
     ap.flags({
         {"--level=", depth},
@@ -335,7 +335,7 @@ void HSTag::focusInDirCommand(CallOrComplete invoc)
                });
 }
 
-int HSTag::focusInDir(Direction direction, DirectionDepth depth, Output output)
+int HSTag::focusInDir(Direction direction, DirectionLevel depth, Output output)
 {
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
@@ -365,14 +365,14 @@ int HSTag::focusInDir(Direction direction, DirectionDepth depth, Output output)
 void HSTag::shiftInDirCommand(CallOrComplete invoc)
 {
     Direction direction = Direction::Left; // some default to satisfy the linter
-    DirectionDepth depth =
+    DirectionLevel depth =
         settings_->default_direction_external_only()
-        ? DirectionDepth::Frame
-        : DirectionDepth::Visible;
+        ? DirectionLevel::Frame
+        : DirectionLevel::Visible;
     ArgParse ap;
     ap.flags({
-        {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
-        {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
+        {"-i", [&depth] () { depth = DirectionLevel::Visible; }},
+        {"-e", [&depth] () { depth = DirectionLevel::Frame; }},
     });
     ap.flags({
         {"--level=", depth},
@@ -384,7 +384,7 @@ void HSTag::shiftInDirCommand(CallOrComplete invoc)
                });
 }
 
-int HSTag::shiftInDir(Direction direction, DirectionDepth depth, Output output)
+int HSTag::shiftInDir(Direction direction, DirectionLevel depth, Output output)
 {
     Client* currentClient = focusedClient();
     if (!currentClient) {

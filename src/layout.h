@@ -132,7 +132,7 @@ public:
 
     friend class Frame;
     void setVisible(bool visible);
-    int getInnerNeighbourIndex(Direction direction, DirectionDepth depth, int startIndex = -1);
+    int getInnerNeighbourIndex(Direction direction, DirectionLevel depth, int startIndex = -1);
     DynAttribute_<int> client_count_;
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;

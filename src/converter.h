@@ -161,12 +161,12 @@ inline Direction Converter<Direction>::parse(const std::string &payload) {
 
 template<> void Converter<Direction>::complete(Completion& complete, Direction const* relativeTo);
 
-enum class DirectionDepth { Frame, Visible, Tabs, All };
+enum class DirectionLevel { Frame = 0, Visible = 1, Tabs = 2, All = 3 };
 
 template<>
-DirectionDepth Converter<DirectionDepth>::parse(const std::string &payload);
+DirectionLevel Converter<DirectionLevel>::parse(const std::string &payload);
 
 template<>
-std::string Converter<DirectionDepth>::str(const DirectionDepth d);
+std::string Converter<DirectionLevel>::str(const DirectionLevel d);
 
 // Note: include x11-types.h for colors

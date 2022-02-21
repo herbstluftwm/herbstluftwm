@@ -68,9 +68,9 @@ public:
     void removeClientSlice(Client* client);
 
     void focusInDirCommand(CallOrComplete invoc);
-    int focusInDir(Direction direction, DirectionDepth depth, Output output);
+    int focusInDir(Direction direction, DirectionLevel depth, Output output);
     void shiftInDirCommand(CallOrComplete invoc);
-    int shiftInDir(Direction direction, DirectionDepth depth, Output output);
+    int shiftInDir(Direction direction, DirectionLevel depth, Output output);
 
     void cycleAllCommand(CallOrComplete invoc);
     void cycleAll(bool forward, bool skip_invisible);

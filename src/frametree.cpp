@@ -475,7 +475,7 @@ void FrameTree::focusFrame(shared_ptr<Frame> frame) {
 
 //! focus a client/frame in the given direction.
 //! Return whether the focus changed
-bool FrameTree::focusInDirection(Direction direction, DirectionDepth depth)
+bool FrameTree::focusInDirection(Direction direction, DirectionLevel depth)
 {
     auto curframe = focusedFrame();
     int index = curframe->getInnerNeighbourIndex(direction, depth);
@@ -496,7 +496,7 @@ bool FrameTree::focusInDirection(Direction direction, DirectionDepth depth)
     return false;
 }
 
-bool FrameTree::shiftInDirection(Direction direction, DirectionDepth depth) {
+bool FrameTree::shiftInDirection(Direction direction, DirectionLevel depth) {
     shared_ptr<FrameLeaf> sourceFrame = this->focusedFrame();
     Client* client = sourceFrame->focusedClient();
     if (!client) {
