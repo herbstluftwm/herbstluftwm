@@ -239,9 +239,9 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
 
 
 @pytest.mark.parametrize("tabbed_max", [True, False])
-@pytest.mark.parametrize("flag", ['-e', '-i', '-ii', '-iii'])
+@pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
 @pytest.mark.parametrize("running_clients_num", [3])
-def test_focus_flag(hlwm, tabbed_max, flag, running_clients):
+def test_focus_flag(hlwm, tabbed_max, level, running_clients):
     hlwm.call(f'set tabbed_max {hlwm.bool(tabbed_max)}')
     layout = f"""
     (split horizontal:0.5:0
@@ -253,18 +253,18 @@ def test_focus_flag(hlwm, tabbed_max, flag, running_clients):
 
     # we will now run 'focus' 'right' with -e, -i, -ii or -iii
     cmd = ['focus']
-    cmd.append(flag)
+    cmd.append("--level=" + level)
     cmd += ['right']
     hlwm.call(cmd)
 
     expected_new_focus = {
-        '-e':   2,
-        '-i':   2,
-        '-ii':  1 if tabbed_max else 2,
-        '-iii': 1,
+        'frame': 2,
+        'visible': 2,
+        'tabs': 1 if tabbed_max else 2,
+        'all': 1,
     }
 
-    assert hlwm.get_attr('clients.focus.winid') == running_clients[expected_new_focus[flag]]
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[expected_new_focus[level]]
 
 
 def test_argparse_invalid_flag(hlwm):
