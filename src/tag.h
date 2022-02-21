@@ -17,8 +17,6 @@ enum {
     TAG_FLAG_USED   = 0x02, // the opposite of empty
 };
 
-enum class DirectionDepth { Frame = 0, Visible = 1, Tabs = 2, All = 3 };
-
 class Client;
 class Completion;
 class FrameLeaf;

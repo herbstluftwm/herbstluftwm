@@ -315,17 +315,18 @@ void HSTag::removeClientSlice(Client* client)
 //! directional focus command
 void HSTag::focusInDirCommand(CallOrComplete invoc)
 {
+    Direction direction = Direction::Left; // some default to satisfy the linter
     DirectionDepth depth =
         settings_->default_direction_external_only()
         ? DirectionDepth::Frame
         : DirectionDepth::Visible;
-    Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
     ap.flags({
-        {"-iii", [&depth] () { depth = DirectionDepth::All; }},
-        {"-ii", [&depth] () { depth = DirectionDepth::Tabs; }},
         {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
         {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
+    });
+    ap.flags({
+        {"--level=", depth},
     });
     ap.mandatory(direction);
     ap.command(invoc,
@@ -363,17 +364,18 @@ int HSTag::focusInDir(Direction direction, DirectionDepth depth, Output output)
 
 void HSTag::shiftInDirCommand(CallOrComplete invoc)
 {
+    Direction direction = Direction::Left; // some default to satisfy the linter
     DirectionDepth depth =
         settings_->default_direction_external_only()
         ? DirectionDepth::Frame
         : DirectionDepth::Visible;
-    Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
     ap.flags({
-        {"-iii", [&depth] () { depth = DirectionDepth::All; }},
-        {"-ii", [&depth] () { depth = DirectionDepth::Tabs; }},
         {"-i", [&depth] () { depth = DirectionDepth::Visible; }},
         {"-e", [&depth] () { depth = DirectionDepth::Frame; }},
+    });
+    ap.flags({
+        {"--level=", depth},
     });
     ap.mandatory(direction);
     ap.command(invoc,
