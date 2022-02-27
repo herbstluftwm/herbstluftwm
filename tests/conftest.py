@@ -144,6 +144,9 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         if position is not None:
             x, y = position
             geometry[1] = '50x2%+d%+d' % (x, y)
+        # shutil.which is necessary, because we reset the environment and
+        # therefore PATH.
+        # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
         command = [shutil.which('xterm')] + title + geometry
         command += ['-class', wmclass, '-e', shutil.which('bash'), '-c', term_command]
 
