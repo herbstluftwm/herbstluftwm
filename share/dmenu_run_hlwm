@@ -16,7 +16,7 @@ tag=$(herbstclient attr tags.focus.name)
 
 # Redirect to dmenu_path if available
 if command -v dmenu_path > /dev/null 2>/dev/null ; then
-        selectedPath=$(dmenu_path | dmenu ${FLAGS[@]} "$@")
+        selectedPath=$(dmenu_path | dmenu "${FLAGS[@]}" "$@")
 
 # If at least stest is present use the code from latest dmenu_path directly
 elif command -v stest > /dev/null 2>/dev/null ; then
@@ -28,9 +28,9 @@ elif command -v stest > /dev/null 2>/dev/null ; then
 	fi
 	IFS=:
 	if stest -dqr -n "$cache" $PATH; then
-		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu ${FLAGS[@]} "$@")
+		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu "${FLAGS[@]}" "$@")
 	else
-		selectedPath=$(dmenu ${FLAGS[@]} "$@" < "$cache")
+		selectedPath=$(dmenu "${FLAGS[@]}" "$@" < "$cache")
 	fi
 
 # Both not found -> unable to continue
