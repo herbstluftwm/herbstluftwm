@@ -163,6 +163,8 @@ Client* Decoration::toClient(Window decoration_window)
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
+    // we need to update (i.e. clear) tabs before inner_rect_to_outline()
+    tabs_.clear();
     // if the client is undecorated, the outline is identical to the inner geometry
     // otherwise, we convert the geometry using the theme
     auto outline = (client_->decorated_())

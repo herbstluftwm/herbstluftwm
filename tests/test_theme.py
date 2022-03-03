@@ -212,3 +212,32 @@ def test_title_when_for_absence_of_tabs(hlwm, floating):
                 assert title_size == expected_title_size
             else:
                 assert title_size == 0
+
+
+def test_tabs_cleared_in_floating(hlwm, x11):
+    """
+    Tests https://github.com/herbstluftwm/herbstluftwm/issues/1435
+    """
+    hlwm.call('rule floatplacement=none focus=on')
+    hlwm.attr.theme.title_when = 'multiple_tabs'
+    hlwm.attr.theme.title_height = 10
+    hlwm.call('set_layout max')
+
+    # it is important here, that the client does not trigger multiple
+    # resize events, so xterm is not suitable here.
+    c1, w1 = x11.create_client()
+    c2, w2 = x11.create_client()  # it is important that this is not an xterm!
+    # w1, _ = hlwm.create_client()
+    # w2, _ = hlwm.create_client()
+    for w in [w1, w2]:
+        hlwm.attr.clients[w].sizehints_tiling = False
+        hlwm.attr.clients[w].sizehints_floating = False
+        hlwm.attr.clients[w].ewmhrequests = False
+
+    hlwm.attr.tags.focus.floating = True
+
+    assert hlwm.attr.clients[w1].floating_geometry() \
+        == hlwm.attr.clients[w1].content_geometry()
+
+    assert hlwm.attr.clients[w2].floating_geometry() \
+        == hlwm.attr.clients[w2].content_geometry()
