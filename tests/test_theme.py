@@ -227,12 +227,6 @@ def test_tabs_cleared_in_floating(hlwm, x11):
     # resize events, so xterm is not suitable here.
     c1, w1 = x11.create_client()
     c2, w2 = x11.create_client()  # it is important that this is not an xterm!
-    # w1, _ = hlwm.create_client()
-    # w2, _ = hlwm.create_client()
-    for w in [w1, w2]:
-        hlwm.attr.clients[w].sizehints_tiling = False
-        hlwm.attr.clients[w].sizehints_floating = False
-        hlwm.attr.clients[w].ewmhrequests = False
 
     hlwm.attr.tags.focus.floating = True
 
