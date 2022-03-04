@@ -216,6 +216,14 @@ def test_title_when_for_absence_of_tabs(hlwm, floating):
 
 def test_tabs_cleared_in_floating(hlwm, x11):
     """
+    If a client switches from tiling to floating, then its
+    tab list must be cleared early enough such that title_when
+    evaluates correctly.
+
+    Unfortunately, this bug could not be reproduced with xterm because for some
+    reason, xterm triggers multiple redraws and then 'title_when' converges
+    quickly enough.
+
     Tests https://github.com/herbstluftwm/herbstluftwm/issues/1435
     """
     hlwm.call('rule floatplacement=none focus=on')
@@ -226,7 +234,7 @@ def test_tabs_cleared_in_floating(hlwm, x11):
     # it is important here, that the client does not trigger multiple
     # resize events, so xterm is not suitable here.
     c1, w1 = x11.create_client()
-    c2, w2 = x11.create_client()  # it is important that this is not an xterm!
+    c2, w2 = x11.create_client()
 
     hlwm.attr.tags.focus.floating = True
 
