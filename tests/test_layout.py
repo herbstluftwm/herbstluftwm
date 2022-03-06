@@ -247,7 +247,7 @@ def test_focus_level(hlwm, tabbed_max, level, running_clients):
     (split horizontal:0.5:0
         (clients max:0 {running_clients[0]} {running_clients[1]})
         (clients horizontal:0 {running_clients[2]}))
-    """.replace('\n', ' ').strip()
+    """
     hlwm.call(['load', layout])
     assert hlwm.attr.clients.focus.winid() == running_clients[0]
 
@@ -261,6 +261,34 @@ def test_focus_level(hlwm, tabbed_max, level, running_clients):
     }
 
     assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[level]]
+
+
+@pytest.mark.parametrize("tabbed_max", [True, False])
+@pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_shift_level(hlwm, tabbed_max, level, running_clients):
+    hlwm.attr.settings.tabbed_max = tabbed_max
+    layout = f"""
+    (split horizontal:0.5:0
+        (clients max:0 {running_clients[0]} {running_clients[1]})
+        (clients horizontal:0 {running_clients[2]}))
+    """
+    hlwm.call(['load', layout])
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+    hlwm.call(['shift', f'--level={level}', 'right'])
+
+    expected_frame_idx_and_selection = {
+        'frame': ('1', 1),
+        'visible': ('1', 1),
+        'tabs': ('0', 1) if tabbed_max else ('1', 1),
+        'all': ('0', 1),
+    }
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
+    assert hlwm.attr.clients.focus.parent_frame.index() \
+        == expected_frame_idx_and_selection[level][0]
+    assert hlwm.attr.clients.focus.parent_frame.selection() \
+        == expected_frame_idx_and_selection[level][1]
 
 
 @pytest.mark.parametrize("running_clients_num", [4])
@@ -299,9 +327,9 @@ def test_focus_level_invalid_arg(hlwm):
 
 
 def test_focus_level_completion(hlwm):
-    res = hlwm.complete(['focus', '--level='], position=1, partial=True)
-    assert '--level=all ' in res
-    assert '--level=tabs ' in res
+    res = hlwm.complete(['focus', '--level='], position=1)
+    assert '--level=all' in res
+    assert '--level=tabs' in res
     assert '--level=visible' in hlwm.complete(['focus', '--level=v'], position=1)
 
 
@@ -1693,11 +1721,11 @@ def test_shift_no_monitor_in_direction(hlwm):
 def test_focus_shift_completion(hlwm):
     for cmd in ['shift', 'focus', 'shift_edge', 'focus_edge']:
         directions = ['down', 'up', 'left', 'right']
-        flags = ['-i', '-e']
         level = [f'--level={v}' for v in ['frame', 'visible', 'tabs', 'all']]
-        assert sorted(directions + flags + level) == hlwm.complete([cmd])
+        flags = ['-i', '-e'] + level
+        assert sorted(directions + flags) == hlwm.complete([cmd])
 
-        assert sorted(flags + level) == hlwm.complete([cmd, 'down'])
+        assert sorted(flags) == hlwm.complete([cmd, 'down'])
 
         assert sorted(directions + ['-i'] + level) == hlwm.complete([cmd, '-e'])
 
