@@ -9,6 +9,11 @@ def test_basic_css_normalize(hlwm):
             border-width: 4px 2px;
         }
         """,
+        "x { border-width: 1px 1px 1px 1px}": """\
+        x {
+            border-width: 1px 1px 1px 1px;
+        }
+        """,
         "* { }": """\
         * {
         }
