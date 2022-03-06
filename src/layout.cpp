@@ -692,7 +692,8 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionLevel depth,
             else if (! settings_->tabbed_max() || depth < DirectionLevel::Tabs) {
                 break;
             }
-            else ; // FALLTHROUGH
+            else {
+            } // FALLTHROUGH
         case LayoutAlgorithm::horizontal:
             if (direction == Direction::Right) {
                 index = startIndex + 1;
