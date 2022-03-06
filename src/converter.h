@@ -161,5 +161,4 @@ inline Direction Converter<Direction>::parse(const std::string &payload) {
 
 template<> void Converter<Direction>::complete(Completion& complete, Direction const* relativeTo);
 
-
 // Note: include x11-types.h for colors
