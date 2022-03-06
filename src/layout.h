@@ -11,9 +11,9 @@
 #include "framedata.h"
 #include "link.h"
 #include "object.h"
+#include "tag.h"
 #include "tilingresult.h"
 #include "x11-types.h"
-#include "tag.h"
 
 // execute an action on an client
 // returns Success or failure.

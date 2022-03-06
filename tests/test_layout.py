@@ -1694,15 +1694,16 @@ def test_focus_shift_completion(hlwm):
     for cmd in ['shift', 'focus', 'shift_edge', 'focus_edge']:
         directions = ['down', 'up', 'left', 'right']
         flags = ['-i', '-e']
-        assert sorted(directions + flags) == hlwm.complete([cmd])
+        level = [f'--level={v}' for v in ['frame', 'visible', 'tabs', 'all']]
+        assert sorted(directions + flags + level) == hlwm.complete([cmd])
 
-        assert sorted(flags) == hlwm.complete([cmd, 'down'])
+        assert sorted(flags + level) == hlwm.complete([cmd, 'down'])
 
-        assert sorted(directions + ['-i']) == hlwm.complete([cmd, '-e'])
+        assert sorted(directions + ['-i'] + level) == hlwm.complete([cmd, '-e'])
 
         # actually, passing both -i and -e makes no sense,
         # but ArgParse does not know that the flags exclude each other
-        hlwm.command_has_all_args([cmd, 'down', '-i', '-e'])
+        hlwm.command_has_all_args([cmd, 'down', '-i', '-e', '--level=tabs'])
 
 
 def test_frame_leaf_selection_change(hlwm):

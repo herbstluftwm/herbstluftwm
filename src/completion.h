@@ -81,6 +81,11 @@ public:
 
     void completeCommands(size_t offset);
     void withPrefix(const std::string& prependPrefix, std::function<void(Completion&)> callback);
+    /**
+     * @brief the number of completion entries so far
+     * @return
+     */
+    size_t entryCount() const;
 private:
     /** The intended use is to pass the completion state as the reference and
      * to return possible completions via this Completion object. This is why
@@ -98,6 +103,7 @@ private:
     size_t index_;
     std::string needle_;
     std::string prepend_; //! a string that is prepended to all completion results
+    size_t entryCount_ = 0;
     Output output_;
     bool   shellOutput_;
     bool   noParameterExpected_ = false;
