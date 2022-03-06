@@ -16,7 +16,7 @@ using std::stringstream;
 using std::vector;
 
 class SourceStream {
-public:
+private:
     string buf;
     size_t pos;
 
