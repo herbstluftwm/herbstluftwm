@@ -242,7 +242,7 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
 @pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
 @pytest.mark.parametrize("running_clients_num", [3])
 def test_focus_level(hlwm, tabbed_max, level, running_clients):
-    hlwm.call(f'set tabbed_max {hlwm.bool(tabbed_max)}')
+    hlwm.attr.settings.tabbed_max = tabbed_max
     layout = f"""
     (split horizontal:0.5:0
         (clients max:0 {running_clients[0]} {running_clients[1]})
@@ -261,6 +261,33 @@ def test_focus_level(hlwm, tabbed_max, level, running_clients):
     }
 
     assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[level]]
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+def test_focus_level_all(hlwm, running_clients):
+    hlwm.attr.settings.tabbed_max = False
+    layout = f"""
+    (split vertical:0.5:0
+        (split horizontal:0.5:0
+            (clients max:1 {running_clients[1]} {running_clients[0]})
+            (clients horizontal:0 {running_clients[2]}))
+        (clients horizontal:0 {running_clients[3]}))
+    """.replace('\n', ' ').strip()
+    hlwm.call(['load', layout])
+
+    for direction in ['left', 'right', 'up', 'down']:
+        hlwm.call(['jumpto', running_clients[0]])
+        assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+        hlwm.call(['focus', '--level=all', direction])
+
+        expected_new_focus = {
+            'left': 1,
+            'right': 2,
+            'up': 1,
+            'down': 3,
+        }
+        assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[direction]]
 
 
 def test_focus_level_invalid_arg(hlwm):
