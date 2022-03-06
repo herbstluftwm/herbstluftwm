@@ -675,31 +675,38 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionLevel depth,
                 index = startIndex - 1;
             }
             break;
-        case LayoutAlgorithm::max:
-            if (! settings_->tabbed_max() && depth == DirectionLevel::All ) {
-                switch (direction) {
-                    case Direction::Right:
-                    case Direction::Down:
-                        index = startIndex + 1;
-                        break;
-                    case Direction::Left:
-                    case Direction::Up:
-                        index = startIndex - 1;
-                        break;
-                }
-                break;
-            }
-            else if (! settings_->tabbed_max() || depth < DirectionLevel::Tabs) {
-                break;
-            }
-            else {
-            } // FALLTHROUGH
         case LayoutAlgorithm::horizontal:
             if (direction == Direction::Right) {
                 index = startIndex + 1;
             }
             if (direction == Direction::Left) {
                 index = startIndex - 1;
+            }
+            break;
+        case LayoutAlgorithm::max:
+            if (settings_->tabbed_max()) {
+                if (depth >= DirectionLevel::Tabs) {
+                    if (direction == Direction::Right) {
+                        index = startIndex + 1;
+                    }
+                    if (direction == Direction::Left) {
+                        index = startIndex - 1;
+                    }
+                }
+            } else {
+                // ordinary max layout without tabs:
+                if (depth == DirectionLevel::All) {
+                    switch (direction) {
+                        case Direction::Right:
+                        case Direction::Down:
+                            index = startIndex + 1;
+                            break;
+                        case Direction::Left:
+                        case Direction::Up:
+                            index = startIndex - 1;
+                            break;
+                    }
+                }
             }
             break;
         case LayoutAlgorithm::grid: {
