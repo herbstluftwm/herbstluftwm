@@ -1,5 +1,6 @@
 import textwrap
 
+
 def test_basic_css_normalize(hlwm):
     input2normalize = {
         "foo .p, bar.c,* +c { border-width: 4px 2px; }": """\
