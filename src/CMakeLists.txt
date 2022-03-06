@@ -13,6 +13,7 @@ target_sources(herbstluftwm PRIVATE
     child.h
     client.cpp client.h
     clientmanager.cpp clientmanager.h
+    css.h css.cpp
     command.cpp command.h
     commandio.cpp commandio.h
     completion.h
