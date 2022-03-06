@@ -133,7 +133,7 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='while true; do sleep 3600; done', position=None, title=None, keep_running=False):
+    def create_client(self, term_command='while sleep 3600; do true; done', position=None, title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
@@ -144,6 +144,9 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         if position is not None:
             x, y = position
             geometry[1] = '50x2%+d%+d' % (x, y)
+        # shutil.which is necessary, because we reset the environment and
+        # therefore PATH.
+        # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
         command = [shutil.which('xterm')] + title + geometry
         command += ['-class', wmclass, '-e', shutil.which('bash'), '-c', term_command]
 

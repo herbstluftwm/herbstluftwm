@@ -6,7 +6,7 @@ import pytest
 
 font_pool = [
     '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*',
-    'Dejavu Sans:pixelsize=12:bold'
+    'Dejavu Sans:pixelsize=14:bold'
 ]
 
 
