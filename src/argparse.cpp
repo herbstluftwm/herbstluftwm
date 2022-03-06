@@ -354,9 +354,7 @@ void ArgParse::Flag::complete(Completion& completion)
     if (!name_.empty() && *name_.rbegin() == '=') {
         // use completion
         size_t entriesBefore = completion.entryCount();
-        HSDebug("before: %ld\n", entriesBefore);
         completion.withPrefix(name_, parameterTypeCompletion_);
-        HSDebug("after: %ld\n", completion.entryCount());
         if (entriesBefore == completion.entryCount()) {
             // if the parameter type completion did not yield
             // any results, then  complete partially with argument,
