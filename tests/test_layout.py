@@ -263,6 +263,27 @@ def test_focus_level(hlwm, tabbed_max, level, running_clients):
     assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[level]]
 
 
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_left_level_tabs(hlwm, running_clients):
+    hlwm.attr.settings.tabbed_max = True
+    for direction in ['left', 'right']:
+        layout = f"""
+        (split horizontal:0.5:0
+            (clients max:1 {running_clients[1]} {running_clients[0]})
+            (clients horizontal:0 {running_clients[2]}))
+        """
+        hlwm.call(['load', layout])
+        assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+        hlwm.call(['focus', '--level=tabs', direction])
+
+        expected_focus = {
+            'left': 1,
+            'right': 2,
+        }
+        assert hlwm.attr.clients.focus.winid() == running_clients[expected_focus[direction]]
+
+
 @pytest.mark.parametrize("tabbed_max", [True, False])
 @pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
 @pytest.mark.parametrize("running_clients_num", [3])
