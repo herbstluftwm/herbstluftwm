@@ -241,7 +241,7 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
 @pytest.mark.parametrize("tabbed_max", [True, False])
 @pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
 @pytest.mark.parametrize("running_clients_num", [3])
-def test_focus_flag(hlwm, tabbed_max, level, running_clients):
+def test_focus_level(hlwm, tabbed_max, level, running_clients):
     hlwm.call(f'set tabbed_max {hlwm.bool(tabbed_max)}')
     layout = f"""
     (split horizontal:0.5:0
@@ -249,13 +249,9 @@ def test_focus_flag(hlwm, tabbed_max, level, running_clients):
         (clients horizontal:0 {running_clients[2]}))
     """.replace('\n', ' ').strip()
     hlwm.call(['load', layout])
-    assert hlwm.get_attr('clients.focus.winid') == running_clients[0]
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
 
-    # we will now run 'focus' 'right' with -e, -i, -ii or -iii
-    cmd = ['focus']
-    cmd.append("--level=" + level)
-    cmd += ['right']
-    hlwm.call(cmd)
+    hlwm.call(['focus', f'--level={level}', 'right'])
 
     expected_new_focus = {
         'frame': 2,
@@ -264,7 +260,22 @@ def test_focus_flag(hlwm, tabbed_max, level, running_clients):
         'all': 1,
     }
 
-    assert hlwm.get_attr('clients.focus.winid') == running_clients[expected_new_focus[level]]
+    assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[level]]
+
+
+def test_focus_level_invalid_arg(hlwm):
+    hlwm.call_xfail('focus --level= right') \
+        .expect_stderr('Cannot parse flag')
+
+    hlwm.call_xfail('focus --level=unknown right') \
+        .expect_stderr('Cannot parse flag')
+
+
+def test_focus_level_completion(hlwm):
+    res = hlwm.complete(['focus', '--level='], position=1, partial=True)
+    assert '--level=all ' in res
+    assert '--level=tabs ' in res
+    assert '--level=visible' in hlwm.complete(['focus', '--level=v'], position=1)
 
 
 def test_argparse_invalid_flag(hlwm):
