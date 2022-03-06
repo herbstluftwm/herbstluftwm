@@ -8,6 +8,7 @@
 #include "argparse.h"
 #include "globals.h"
 
+using std::function;
 using std::make_pair;
 using std::pair;
 using std::string;
@@ -177,7 +178,7 @@ constexpr char SourceStream::special[];
 template<typename Result>
 class Parser {
 public:
-    Parser(std::function<Result(SourceStream& source)> r) : run_(r) {};
+    Parser(function<Result(SourceStream& source)> r) : run_(r) {};
     bool isApplicable(SourceStream& source) const {
         if (source.isEOF()) {
             return false;
@@ -255,9 +256,9 @@ public:
 
 private:
     //! the actual parser:
-    std::function<Result(SourceStream& source)> run_;
+    function<Result(SourceStream& source)> run_;
     //! a function that checks whether we are allowed to run the parser
-    std::function<bool(SourceStream& source)> isApplicable_ = {};
+    function<bool(SourceStream& source)> isApplicable_ = {};
 };
 
 
