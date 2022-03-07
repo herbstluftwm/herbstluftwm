@@ -352,10 +352,15 @@ ArgParse::Flag* ArgParse::findFlag(const string& inputToken)
 void ArgParse::Flag::complete(Completion& completion)
 {
     if (!name_.empty() && *name_.rbegin() == '=') {
-        // complete partially with argument
-        completion.partial(name_);
         // use completion
+        size_t entriesBefore = completion.entryCount();
         completion.withPrefix(name_, parameterTypeCompletion_);
+        if (entriesBefore == completion.entryCount()) {
+            // if the parameter type completion did not yield
+            // any results, then  complete partially with argument,
+            // i.e. something of the form --parameter=
+            completion.partial(name_);
+        }
     } else {
         // ordinary flag that is either present or absent:
         completion.full(name_);

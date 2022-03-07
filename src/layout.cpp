@@ -655,9 +655,12 @@ shared_ptr<Frame> FrameLeaf::neighbour(Direction direction) {
  * @brief finds the neighbour of the selected client in the specified direction within the frame
  * @param direction the direction
  * @param startIndex the window whose neighbour shall be found or -1 for the selected window
- * @return the index of the neighbour window or -1 if there is no neighbour
+ * @return the index of the neighbour window or -1 if there is no neighbour inside the frame.
  */
-int FrameLeaf::getInnerNeighbourIndex(Direction direction, int startIndex) {
+int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionLevel depth, int startIndex) {
+    if (depth == DirectionLevel::Frame) {
+        return -1;
+    }
     if (startIndex < 0) {
         startIndex = selection;
     }
@@ -681,6 +684,30 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, int startIndex) {
             }
             break;
         case LayoutAlgorithm::max:
+            if (settings_->tabbed_max()) {
+                if (depth >= DirectionLevel::Tabs) {
+                    if (direction == Direction::Right) {
+                        index = startIndex + 1;
+                    }
+                    if (direction == Direction::Left) {
+                        index = startIndex - 1;
+                    }
+                }
+            } else {
+                // ordinary max layout without tabs:
+                if (depth == DirectionLevel::All) {
+                    switch (direction) {
+                        case Direction::Right:
+                        case Direction::Down:
+                            index = startIndex + 1;
+                            break;
+                        case Direction::Left:
+                        case Direction::Up:
+                            index = startIndex - 1;
+                            break;
+                    }
+                }
+            }
             break;
         case LayoutAlgorithm::grid: {
             int rows, cols;
