@@ -169,7 +169,7 @@ public:
             pos++;
         }
         string token = buf.substr(token_pos, pos - token_pos);
-        if (token.size() == 0) {
+        if (token.empty()) {
             expectedButGot("any kind of token");
         }
         return token;
