@@ -18,7 +18,7 @@ using std::vector;
 class SourceStream {
 private:
     string buf;
-    size_t pos;
+    size_t pos = 0;
 
 public:
     static
@@ -30,8 +30,8 @@ public:
     };
     class Error : std::exception {
     public:
-        size_t line_;
-        size_t column_;
+        size_t line_ = 0;
+        size_t column_ = 0;
         string message_;
     };
 
