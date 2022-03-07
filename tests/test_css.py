@@ -63,6 +63,8 @@ def test_basic_css_parse_error(hlwm):
         '/* unmatched': r'Expected \*/ but got EOF',
         '/* unmatched\n': r'Expected \*/ but got EOF',
         '/*\n': r'Expected \*/ but got EOF',
+        '* // { }': "but got EOF",
+        '* { // }': "Expected } but got EOF",
     }
     for source, error in input2error.items():
         assert hlwm.call_xfail(['debug-css', '--print', source]) \
