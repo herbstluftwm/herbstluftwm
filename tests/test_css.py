@@ -3,14 +3,14 @@ import textwrap
 
 def test_basic_css_normalize(hlwm):
     input2normalize = {
-        "foo .p, bar.c,* +c { border-width: 4px 2px; }": """\
+        "// comment\n foo .p, bar.c,* +c { border-width: 4px 2px; }": """\
         foo .p ,
         bar.c ,
         * +c {
             border-width: 4px 2px;
         }
         """,
-        "x { border-width: 1px 1px 1px 1px}": """\
+        "x { /*com\nment*/ border-width: 1px 1px 1px 1px}": """\
         x {
             border-width: 1px 1px 1px 1px;
         }
@@ -36,12 +36,15 @@ def test_basic_css_normalize(hlwm):
             border-width: 1px;
         }
         """,
-        "foo.class1     .class2    {border-left-width:4px;   border-right-width   : 2px  ;   }   ": """\
+        "foo.class1     .class2    {border-left-width:4px;   border-right-width   : 2px  ;   }   //": """\
         foo.class1 .class2 {
             border-left-width: 4px;
             border-right-width: 2px;
         }
         """,
+        "// foo": "",
+        "// foo\n": "",
+        "/* end */": "",
     }
 
     for source, normalized in input2normalize.items():
@@ -57,6 +60,9 @@ def test_basic_css_parse_error(hlwm):
         ', { border-width: 2px; }': "selector must not be empty",
         'p { border-width: 2px;': "Expected }",
         'p } border-width: 2px;': "Expected { but got \"}",
+        '/* unmatched': r'Expected \*/ but got EOF',
+        '/* unmatched\n': r'Expected \*/ but got EOF',
+        '/*\n': r'Expected \*/ but got EOF',
     }
     for source, error in input2error.items():
         assert hlwm.call_xfail(['debug-css', '--print', source]) \

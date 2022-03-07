@@ -86,9 +86,13 @@ public:
             } else if (tryConsume("/*")) {
                 while (!tryConsume("*/")) {
                     pos++;
+                    if (isEOF()) {
+                        // multiline comments may not be ended with EOF
+                        expectedButGot("*/");
+                    }
                 }
             } else if (tryConsume("//")) {
-                while (!tryConsume("\n")) {
+                while (!tryConsume("\n") && !isEOF()) {
                     pos++;
                 }
             } else {
