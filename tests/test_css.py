@@ -15,6 +15,15 @@ def test_basic_css_normalize(hlwm):
             border-width: 1px 1px 1px 1px;
         }
         """,
+        "a.b { border-width: 2px } c.d e{border-width: 5px}": """\
+        a.b {
+            border-width: 2px;
+        }
+
+        c.d e {
+            border-width: 5px;
+        }
+        """,
         "* { }": """\
         * {
         }

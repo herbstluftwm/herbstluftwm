@@ -328,6 +328,36 @@ Parser<CssFile> cssFileParser() {
     };
 }
 
+void CssFile::print(std::ostream& out) const
+{
+    int idx = 0;
+    for (const auto& ruleset : content_) {
+        if (idx++ > 0) {
+            out << "\n";
+        }
+        // print selector
+        int selectorIdx = 0;
+        for (const auto& selector : ruleset.selectors_) {
+            if (selectorIdx++ > 0) {
+                out << " ,\n";
+            }
+            for (const auto& s: selector.content_) {
+                out << s;
+            }
+        }
+        // print block
+        out << " {\n";
+        for (const auto& decl: ruleset.declarations_) {
+            out << "    " << decl.property_ << ":";
+            for (const auto& v : decl.values_) {
+                out << " " << v;
+            }
+            out << ";\n";
+        }
+        out << "}\n";
+    }
+}
+
 void debugCssCommand(CallOrComplete invoc)
 {
     string cssSource;
@@ -353,3 +383,4 @@ void debugCssCommand(CallOrComplete invoc)
             return 0;
     });
 }
+
