@@ -289,7 +289,7 @@ void Decoration::removeFromTabBar(Client* otherClientTab)
     tabs_.erase(std::remove_if(tabs_.begin(), tabs_.end(),
                                [=](Client* c) {
         return c == otherClientTab;
-    }));
+    }), tabs_.end());
 }
 
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
