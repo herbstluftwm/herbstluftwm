@@ -138,15 +138,17 @@ def test_monitors_locked_negative_value(hlwm):
     hlwm.call_xfail('set monitors_locked -1') \
         .expect_stderr('out of range')
 
+
 def test_smart_frame_surroundings_parsing(hlwm):
     assert sorted(SMART_FRAME_SURROUNDINGS) == sorted(hlwm.complete(['set', 'smart_frame_surroundings']))
 
     for k in SMART_FRAME_SURROUNDINGS:
         hlwm.attr.settings.smart_frame_surroundings = k
-        assert hlwm.attr.settings.smart_frame_surroundings () == SMART_FRAME_SURROUNDINGS[k]
+        assert hlwm.attr.settings.smart_frame_surroundings() == SMART_FRAME_SURROUNDINGS[k]
 
     hlwm.call_xfail('set smart_frame_surroundings foobar') \
         .expect_stderr('Expecting one of: hide_all.*')
+
 
 def test_smart_frame_surroundings(hlwm, x11):
     hlwm.call('set frame_border_width 5')
