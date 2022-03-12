@@ -16,7 +16,7 @@ def test_herbstluftwm_default_autostart(hlwm):
 
     assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
     # Test a random setting different from the default in settings.h:
-    assert hlwm.get_attr('settings.smart_frame_surroundings') == 'true'
+    assert hlwm.get_attr('settings.smart_frame_surroundings') == 'hide_all'
 
 
 @pytest.mark.parametrize("method", ['home', 'xdg', 'shortopt', 'longopt'])
