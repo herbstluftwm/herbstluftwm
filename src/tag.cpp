@@ -7,6 +7,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "completion.h"
+#include "decoration.h"
 #include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
@@ -180,6 +181,12 @@ void HSTag::setVisible(bool newVisible)
 }
 
 bool HSTag::removeClient(Client* client) {
+    // remove 'client' from the tab bars of all other clients
+    foreachClient([client](Client* remainingClient) {
+        if (remainingClient != client) {
+            remainingClient->dec->removeFromTabBar(client);
+        }
+    });
     if (frame->root_->removeClient(client)) {
         return true;
     }
