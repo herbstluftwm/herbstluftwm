@@ -34,3 +34,10 @@ LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align)
     }
     return LayoutAlgorithm::vertical;
 }
+
+template<> Finite<DirectionLevel>::ValueList Finite<DirectionLevel>::values = ValueListPlain {
+    { DirectionLevel::Frame, "frame" },
+    { DirectionLevel::Visible, "visible" },
+    { DirectionLevel::Tabs, "tabs" },
+    { DirectionLevel::All, "all" }
+};

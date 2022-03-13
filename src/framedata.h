@@ -74,3 +74,11 @@ protected:
      */
     FixPrecDec fraction_ = FixPrecDec::fromInteger(0);
 };
+
+enum class DirectionLevel { Frame = 0, Visible = 1, Tabs = 2, All = 3 };
+
+template <>
+struct is_finite<DirectionLevel> : std::true_type {};
+template<> Finite<DirectionLevel>::ValueList Finite<DirectionLevel>::values;
+
+

@@ -425,7 +425,7 @@ split 'ALIGN' ['FRACTION' ['FRAMEINDEX']]::
         * split h
         * split top 0.2 ''   (splits the root frame)
 
-focus ['-i'|'-e'] 'DIRECTION'::
+focus ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in
     'DIRECTION' which is in:
     +
@@ -436,10 +436,14 @@ focus ['-i'|'-e'] 'DIRECTION'::
 
 // small hack to fix indentation of "If ..."
  ::
-    If '-i' (internal) is given or default_direction_external_only is unset,
-    then the next client in 'DIRECTION' can also be within the same frame. If
-    there is no client within this frame or '-e' (external) is given, then the
-    next frame in specified 'DIRECTION' will be focused. +
+    If there is no client within this frame or 'LEVEL' is 'frame', then
+    the next frame in specified 'DIRECTION' will be focused.
+    If 'LEVEL' is 'visible' or default_direction_external_only is unset,
+    then the next client in 'DIRECTION' can also be within the same frame, but
+    has to be visible. For 'tabs' 'LEVEL', the next client may be hidden in a
+    tabbed_max layout. With 'all' any client within a max layout maybe selected
+    before focusing the next frame. The flag '-i' is an alias for
+    '--level=visible' and '-e' for '--level=frame'. +
     +
     The direction between frames is defined as follows: The focus is in a leaf
     of the binary tree.  Each inner node in the tree remembers the last focus

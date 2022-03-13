@@ -11,6 +11,7 @@
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
+#include "tag.h"
 
 class Client;
 class Completion;
@@ -56,8 +57,8 @@ public:
     bool focusClient(Client* client);
     //! focus a frame within its tree
     static void focusFrame(std::shared_ptr<Frame> frame);
-    bool focusInDirection(Direction dir, bool externalOnly);
-    bool shiftInDirection(Direction direction, bool externalOnly);
+    bool focusInDirection(Direction dir, DirectionLevel Depth);
+    bool shiftInDirection(Direction direction, DirectionLevel Depth);
     //! return a frame in the tree that holds the client
     std::shared_ptr<FrameLeaf> findFrameWithClient(Client* client);
 
