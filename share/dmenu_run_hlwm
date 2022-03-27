@@ -9,7 +9,15 @@ font=$(herbstclient attr theme.title_font)
 bgcolor=$(herbstclient get frame_border_normal_color |sed 's,^\(\#[0-9a-f]\{6\}\)[0-9a-f]\{2\}$,\1,')
 selbg=$(herbstclient get window_border_active_color  |sed 's,^\(\#[0-9a-f]\{6\}\)[0-9a-f]\{2\}$,\1,')
 selfg='#101010'
-FLAGS=( -fn "$font" -nb "$bgcolor" -sb "$selbg" -sf "$selfg" )
+FLAGS=( -nb "$bgcolor" -sb "$selbg" -sf "$selfg" )
+
+case "$font" in
+  -*-*-*-*-*-*-*-*-*-*-*-*-*-*)
+    ;;
+  *)
+    FLAGS+=( -fn "$font" )
+    ;;
+esac
 
 # Get the currently active tag
 tag=$(herbstclient attr tags.focus.name)
