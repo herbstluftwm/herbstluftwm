@@ -279,6 +279,19 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
     return ra;
 }
 
+/**
+ * @brief ensure that the other mentioned client is removed
+ * from the tab bar of 'this' client.
+ * @param otherClientTab
+ */
+void Decoration::removeFromTabBar(Client* otherClientTab)
+{
+    tabs_.erase(std::remove_if(tabs_.begin(), tabs_.end(),
+                               [=](Client* c) {
+        return c == otherClientTab;
+    }), tabs_.end());
+}
+
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
 {
     bool decorated = client_->decorated_();

@@ -275,6 +275,10 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         self.hc_idle.wait(PROCESS_SHUTDOWN_TIME)
         self.hc_idle.stdout.close()
 
+        # test that the client itself is still working:
+        assert self.call(['echo', 'ping before shutdown']).stdout \
+            == 'ping before shutdown\n'
+
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
         return "true" if python_bool_var else "false"
