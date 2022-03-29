@@ -4,6 +4,14 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * The Setting 'smart_frame_surroundings' has been changed to accept the
+    following new values: 'off', 'hide_all', and 'hide_gaps'. Setting it to
+    'hide_gaps' will only hide frame gaps when applicable, 'hide_all' and 'off'
+    mirror the old behaviour with regards to 'true' and 'false'.
+
 Release 0.9.4 on 2022-03-16
 ---------------------------
 
@@ -29,10 +37,6 @@ Release 0.9.4 on 2022-03-16
   * New setting 'ellipsis'
   * Floating clients can now be dragged between monitors via the mouse
   * Frames can be simultaneously resized in x and y direction with the mouse.
-  * The Setting 'smart_frame_surroundings' has been changed to accept the
-    following new values: 'off', 'hide_all', and 'hide_gaps'. Setting it to
-    'hide_gaps' will only hide frame gaps when applicable, 'hide_all' and 'off'
-    mirror the old behaviour with regards to 'true' and 'false'.
   * Bug fixes:
     - Update floating geometry if a client's size hints change
     - Correct alpha value handling: if compositor is detected, premultiply
