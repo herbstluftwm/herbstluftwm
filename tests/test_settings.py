@@ -151,20 +151,20 @@ def test_smart_frame_surroundings_parsing(hlwm):
 
 
 def test_smart_frame_surroundings(hlwm, x11):
-    hlwm.call('set frame_border_width 5')
-    hlwm.call('set frame_gap 7')
+    hlwm.attr.settings.frame_border_width = 5
+    hlwm.attr.settings.frame_gap = 7
 
-    hlwm.call('set smart_frame_surroundings hide_all')
+    hlwm.attr.settings.smart_frame_surroundings = 'hide_all'
     frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (800, 600)
 
-    hlwm.call('set smart_frame_surroundings hide_gaps')
+    hlwm.attr.settings.smart_frame_surroundings = 'hide_gaps'
     frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (790, 590)
 
-    hlwm.call('set smart_frame_surroundings off')
+    hlwm.attr.settings.smart_frame_surroundings = 'off'
     frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (776, 576)

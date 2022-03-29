@@ -290,11 +290,11 @@ Settings::Settings()
                 "in the max layout.");
 
     smart_frame_surroundings.setDoc(
-                "If set to hide_all, frame borders and gaps will be removed "
-                "when there\'s no ambiguity regarding the focused frame. "
-                "If set to hide_gaps, only frame gaps will be removed when "
-                "there\'s no ambiguity regarding the focused frame. "
-                "Trun off to always show frame borders and gaps.");
+                "If set to \'hide_all\', frame borders and gaps will be removed "
+                "when there is no ambiguity regarding the focused frame. "
+                "If set to \'hide_gaps\', only frame gaps will be removed when "
+                "there is no ambiguity regarding the focused frame. "
+                "Turn \'off\' to always show frame borders and gaps.");
 
     smart_window_surroundings.setDoc(
                 "If set, window borders and gaps will be removed and minimal "
