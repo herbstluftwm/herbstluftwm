@@ -212,3 +212,34 @@ def test_title_when_for_absence_of_tabs(hlwm, floating):
                 assert title_size == expected_title_size
             else:
                 assert title_size == 0
+
+
+def test_tabs_cleared_in_floating(hlwm, x11):
+    """
+    If a client switches from tiling to floating, then its
+    tab list must be cleared early enough such that title_when
+    evaluates correctly.
+
+    Unfortunately, this bug could not be reproduced with xterm because for some
+    reason, xterm triggers multiple redraws and then 'title_when' converges
+    quickly enough.
+
+    Tests https://github.com/herbstluftwm/herbstluftwm/issues/1435
+    """
+    hlwm.call('rule floatplacement=none focus=on')
+    hlwm.attr.theme.title_when = 'multiple_tabs'
+    hlwm.attr.theme.title_height = 10
+    hlwm.call('set_layout max')
+
+    # it is important here, that the client does not trigger multiple
+    # resize events, so xterm is not suitable here.
+    c1, w1 = x11.create_client()
+    c2, w2 = x11.create_client()
+
+    hlwm.attr.tags.focus.floating = True
+
+    assert hlwm.attr.clients[w1].floating_geometry() \
+        == hlwm.attr.clients[w1].content_geometry()
+
+    assert hlwm.attr.clients[w2].floating_geometry() \
+        == hlwm.attr.clients[w2].content_geometry()

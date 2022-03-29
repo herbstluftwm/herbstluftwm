@@ -40,6 +40,7 @@ void Completion::operator=(const Completion& other) {
 
 void Completion::full(const string& word) {
     if (prefixOf(needle_, prepend_ + word)) {
+        entryCount_++;
         output_ << escape(prepend_ + word) << (shellOutput_ ? " \n" : "\n");
         // std::cout << "add " << word << endl;
     } else {
@@ -83,6 +84,7 @@ void Completion::partial(const string& word) {
         // partial completions never end with a space, regardless of
         // shellOutput mode
         output_ << escape(prepend_ + word) << "\n";
+        entryCount_++;
     }
 }
 
@@ -131,6 +133,7 @@ void Completion::completeCommands(size_t offset) {
 
 void Completion::mergeResultsFrom(Completion& source)
 {
+    entryCount_ += source.entryCount();
     if (source.ifInvalidArguments()) {
         invalidArguments();
     }
@@ -149,6 +152,11 @@ void Completion::withPrefix(const string& prependPrefix, function<void (Completi
         output_);
     callback(withPrefix);
     mergeResultsFrom(withPrefix);
+}
+
+size_t Completion::entryCount() const
+{
+    return entryCount_;
 }
 
 void Completion::invalidArguments() {

@@ -4,11 +4,14 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
-Current git version
--------------------
+Release 0.9.4 on 2022-03-16
+---------------------------
 
   * Tabbed window titles in the 'max' layout algorithm (controllable via the
     'tabbed_max' setting)
+  * Directionally moving through a max layout is possible via focus / shift by
+    adding '--level=tabbed' (only for 'tabbed_max') or '--level=any' (any 'max'
+    layout).
   * New decoration setting 'title_when' to control, when window titles and tabs
     are shown.
   * New decoration settings 'title_depth' and 'title_align'.
