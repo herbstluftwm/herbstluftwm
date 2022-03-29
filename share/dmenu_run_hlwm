@@ -13,6 +13,7 @@ FLAGS=( -nb "$bgcolor" -sb "$selbg" -sf "$selfg" )
 
 case "$font" in
   -*-*-*-*-*-*-*-*-*-*-*-*-*-*)
+    # ignore XLFD fonts because the current dmenu only supports XFT.
     ;;
   *)
     FLAGS+=( -fn "$font" )
