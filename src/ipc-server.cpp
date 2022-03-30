@@ -83,7 +83,8 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
         // in from the same ipc client as soon as the old "args" property is deleted.
         return (pev->state == PropertyDelete) || pev->atom != captured->argsProperty;
     };
-    while (XCheckIfEvent(X.display(), &dummy, predicate, (XPointer)&context));
+    while (XCheckIfEvent(X.display(), &dummy, predicate, (XPointer)&context)) {
+    }
     return true;
 }
 
