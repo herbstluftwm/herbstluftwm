@@ -1058,6 +1058,24 @@ def keyboard():
         def up(self, key_spec):
             subprocess.check_call(['xdotool', 'keyup', key_spec])
 
+        def get_focus(self):
+            """return the window id (hex number as string) of the
+            window that receives the keyboard events"""
+            proc = subprocess.run(['xdotool', 'getwindowfocus'], stdout=subprocess.PIPE)
+            assert proc.returncode == 0
+            return hex(int(proc.stdout))
+
+        def wait_until_window_is_focused(self, winid):
+            """wait until the given winid obtains the input focus"""
+            timeout = 20
+            while timeout > 0:
+                if self.get_focus() == winid:
+                    return
+                timeout -= 1
+                time.sleep(0.1)
+            assert self.get_focus() == winid
+
+
     return KeyBoard()
 
 
