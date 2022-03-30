@@ -25,6 +25,7 @@ public:
     Signal_<std::pair<pid_t, int>> childExited;
 
     void dropEnterNotifyEvents();
+    int createNotifyCount = 0;
 private:
     // members
     XConnection& X_;

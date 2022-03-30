@@ -60,6 +60,7 @@ static vector<string> g_exec_args = {};
 static XMainLoop* g_main_loop = nullptr;
 
 int quit();
+int reset_count();
 int version(Output output);
 int spawn(Input input, Output output);
 int wmexec(Input input);
@@ -83,6 +84,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
+        {"reset-count",    { reset_count } },
         {"echo",           {meta_commands, &MetaCommands::echoCommand,
                                            &MetaCommands::echoCompletion }},
         {"true",           {[] { return 0; }}},
@@ -244,6 +246,13 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
 int quit() {
     if (g_main_loop) {
         g_main_loop->quit();
+    }
+    return 0;
+}
+
+int reset_count() {
+    if (g_main_loop) {
+        g_main_loop->createNotifyCount = 0;
     }
     return 0;
 }
@@ -446,17 +455,21 @@ int main(int argc, char* argv[]) {
     // main loop
     mainloop.run();
 
+    HSDebug("root->shutdown\n");
     // Shut everything down. Root::get() still works.
     root->shutdown();
     // clear the root to destroy the object.
     // Now Root::get() does not work anymore.
     root.reset();
     Root::setRoot(root);
+    HSDebug("clear fontdata\n");
     // and then close the x connection
     FontData::s_xconnection = nullptr;
     delete ipcServer;
+    HSDebug("del ewmh\n");
     delete ewmh;
     delete X;
+    HSDebug("check exec\n");
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
         if (!g_exec_args.empty()) {
@@ -471,6 +484,7 @@ int main(int argc, char* argv[]) {
         execvp(argv[0], argv);
         return EXIT_FAILURE;
     }
+    HSDebug("return\n");
     return EXIT_SUCCESS;
 }
 

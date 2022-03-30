@@ -200,6 +200,7 @@ void XMainLoop::run() {
         }
         XSync(X_.display(), False);
         while (XQLength(X_.display())) {
+            HSDebug("queue length: %d\n", XQLength(X_.display()));
             XNextEvent(X_.display(), &event);
             if (event.type < LASTEvent) {
                 EventHandler handler = handlerTable_[event.type];
@@ -314,7 +315,12 @@ void XMainLoop::buttonrelease(XButtonEvent*) {
 
 void XMainLoop::createnotify(XCreateWindowEvent* event) {
     // printf("name is: CreateNotify\n");
+    createNotifyCount++;
+    XWindowAttributes attr;
+    bool exists = XGetWindowAttributes(event->display, event->window, &attr) != 0;
+    HSDebug("CreateNotify for winid=0x%lx, eventcount=%d, exists=%d\n", event->window, createNotifyCount, exists);
     if (root_->ipcServer_.isConnectable(event->window)) {
+        HSDebug("hc winid=0x%lx\n", event->window);
         root_->ipcServer_.addConnection(event->window);
         root_->ipcServer_.handleConnection(event->window,
                                            XMainLoop::callCommand);
@@ -428,7 +434,7 @@ void XMainLoop::configurenotify(XConfigureEvent* event) {
 
 void XMainLoop::destroynotify(XUnmapEvent* event) {
     // try to unmanage it
-    //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
+    HSDebug("name is: DestroyNotify for %lx\n", event->window);
     auto cm = root_->clients();
     auto client = cm->client(event->window);
     if (client) {
@@ -639,7 +645,7 @@ void XMainLoop::selectionnotify(XFixesSelectionNotifyEvent* event)
 }
 
 void XMainLoop::propertynotify(XPropertyEvent* ev) {
-    // printf("name is: PropertyNotify\n");
+    HSDebug("name is: PropertyNotify, 0x%lx, \"%s\", del=%d\n", ev->window, X_.atomName(ev->atom).c_str(), ev->state == PropertyDelete);
     Client* client = root_->clients->client(ev->window);
     if (ev->state == PropertyNewValue) {
         if (root_->ipcServer_.isConnectable(ev->window)) {
@@ -758,6 +764,8 @@ IpcServer::CallResult XMainLoop::callCommand(const vector<string>& call)
     std::ostringstream output;
     std::ostringstream error;
     string commandName = (call.empty()) ? "" : call[0];
+    string arg1 = (call.size() >= 2) ? call[1] : "";
+    HSDebug("Calling >%s< >%s<\n", commandName.c_str(), arg1.c_str());
     auto input =
         (call.empty())
         ? Input("", call)

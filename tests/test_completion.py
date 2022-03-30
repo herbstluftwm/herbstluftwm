@@ -132,25 +132,12 @@ def generate_commands(hlwm, length, steps_per_argument=4, prefix=[]):
 generate_commands.commands_list = set([])
 
 
-def test_generate_completable_commands(hlwm, request):
-    # run pytest with --cache-clear to force renewal
-    if request.config.cache.get('all_completable_commands', None) is None:
-        cmds = generate_commands(hlwm, 4)
-        request.config.cache.set('all_completable_commands', cmds)
-
-
 @pytest.mark.exclude_from_coverage(
     reason='This test does not verify functionality but only whether the \
     commands can be called at all.')
-@pytest.mark.parametrize('run_destructives', [False, True])
-def test_completable_commands(hlwm, request, run_destructives):
-    # wait for test_generate_completable_commands to finish
-    # Note that for run_destructives=True, we need a fresh hlwm
-    # instance.
-    commands = None
-    while commands is None:
-        commands = request.config.cache.get('all_completable_commands', None)
-        sleep(0.5)
+@pytest.mark.parametrize('run_destructives', [False])
+def test_completable_commands(hlwm, run_destructives):
+    commands = generate_commands(hlwm, 3)
     allowed_returncodes = {
         'false': {1},
         'close': {3},
@@ -180,6 +167,10 @@ def test_completable_commands(hlwm, request, run_destructives):
     }
     for command in commands:
         if 'quit' in command:
+            continue
+        if 'wmexec' in command:
+            continue
+        if 'verbose' in str(command):
             continue
         # the command mentions a destructive command,
         # if and only if the sets are not disjoint

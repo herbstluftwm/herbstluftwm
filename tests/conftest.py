@@ -80,10 +80,12 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
             if log_output:
                 print(f'Client command {args} {outcome} with output:\n{allout}')
             else:
-                print(f'Client command {args} {outcome} with output', end='')
-                print(' (output suppressed).')
+                pass
+                # print(f'Client command {args} {outcome} with output', end='')
+                # print(' (output suppressed).')
         else:
-            print(f'Client command {args} {outcome} (no output)')
+            if log_output:
+                print(f'Client command {args} {outcome} (no output)')
 
         # Take this opportunity read and echo any hlwm output captured in the
         # meantime:
@@ -263,21 +265,33 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         return line[-1]
 
     def shutdown(self):
+        self.call(['echo', ':', str(len(self.client_procs))])
         # first send SIGTERM to all processes, so they
         # can shut down in parallel
-        for client_proc in self.client_procs:
-            client_proc.terminate()
+        # for client_proc in self.client_procs:
+        #     client_proc.terminate()
         self.hc_idle.terminate()
+        print("calling 'echo' once again", file=sys.stderr)
+        cmd = self._parse_command(['echo', 'p22'])
+        proc = subprocess.run(['/home/thorsten/git/winterbreeze/build/herbstclient', '-n', 'echo', 'final'],
+                              env=self.env,
+                              universal_newlines=True,
+                              # Kill hc when it hangs due to crashed server:
+                              timeout=2
+                              )
+
 
         # and then wait for each of them to finish:
         for client_proc in self.client_procs:
             client_proc.wait(PROCESS_SHUTDOWN_TIME)
+        # assert self.call(['echo', 'p3']).stdout \
+        #     == 'p3\n'
         self.hc_idle.wait(PROCESS_SHUTDOWN_TIME)
         self.hc_idle.stdout.close()
 
         # test that the client itself is still working:
-        assert self.call(['echo', 'ping before shutdown']).stdout \
-            == 'ping before shutdown\n'
+        # assert self.call(['echo', 'ping before shutdown']).stdout \
+        #     == 'ping before shutdown\n'
 
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
@@ -291,8 +305,11 @@ def hlwm(hlwm_process, xvfb):
     yield hlwm_bridge
 
     # Make sure that hlwm survived:
-    hlwm_bridge.call('version')
+    hlwm_bridge.call('reset-count')
+    hlwm_bridge.call(['spawn', 'echo', 'still alive'])
 
+    hlwm_bridge.call('set verbose on')
+    print('==> client shutdown', file=sys.stderr)
     hlwm_bridge.shutdown()
 
 
@@ -306,7 +323,7 @@ class HlwmProcess:
         """
         self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
-            [self.bin_path, '--exit-on-xerror', '--verbose'] + args, env=env,
+            [self.bin_path, '--exit-on-xerror'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -455,6 +472,7 @@ class HlwmProcess:
                             .format(str(reason), self.proc.returncode)) from None
 
     def shutdown(self):
+        print("==>    proc.terminate()", file=sys.stderr);
         self.proc.terminate()
 
         # Make sure to read and echo all remaining output (esp. ASAN messages):
@@ -619,6 +637,7 @@ def hlwm_process(hlwm_spawner, request, xvfb):
 
     yield hlwm_proc
 
+    print('==> server shutdown', file=sys.stderr)
     hlwm_proc.shutdown()
 
 
