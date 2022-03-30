@@ -1075,7 +1075,6 @@ def keyboard():
                 time.sleep(0.1)
             assert self.get_focus() == winid
 
-
     return KeyBoard()
 
 
