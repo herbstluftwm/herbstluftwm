@@ -59,7 +59,7 @@ hlwm@lists.herbstluftwm.org
 ----
 You can subscribe by sending a mail with the subject +subscribe+ to
 +hlwm-request@lists.herbstluftwm.org+ or by using the
-link:https://lists.schokokeks.org/mailman/listinfo.cgi/hlwm[Mailman
+link:https://listi.jpberlin.de/mailman/listinfo/hlwm[Mailman
 web interface].
 
 Screenshots
