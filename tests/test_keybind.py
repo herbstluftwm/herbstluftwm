@@ -89,7 +89,7 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
     if maskmethod == 'rule':
         hlwm.call('rule once keys_inactive=^x$')
 
-    _, client_proc = hlwm.create_client(term_command='read -n 1')
+    winid, client_proc = hlwm.create_client(term_command='read -n 1')
 
     if maskmethod == 'set_attr':
         hlwm.call('set_attr clients.focus.keys_inactive ^x$')
@@ -101,6 +101,8 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
         hlwm.call('cycle +1')
         hlwm.call('cycle -1')
 
+    # it may take a bit until the client acquires the input focus
+    keyboard.wait_until_window_is_focused(winid)
     keyboard.press('x')
 
     # we expect that the keybind command is not executed:
@@ -176,22 +178,19 @@ def test_complete_keybind_validates_all_tokens(hlwm):
 
 
 @pytest.mark.parametrize('via_rule', [False, True])
-@pytest.mark.parametrize('client_first', [True, False])
-def test_keymask_for_existing_binds(hlwm, keyboard, client_first, via_rule):
+def test_keymask_for_existing_binds(hlwm, keyboard, via_rule):
     hlwm.call('keybind x set_attr my_x_pressed pressed')
     hlwm.call('keybind y set_attr my_y_pressed pressed')
     if via_rule:
         hlwm.call('rule keymask=x')
-    if client_first:
-        hlwm.create_client()
-    if not client_first:
-        hlwm.create_client()
+    winid, _ = hlwm.create_client()
     if not via_rule:
         hlwm.call('set_attr clients.focus.keymask x')
     assert hlwm.get_attr('clients.focus.keymask') == 'x'
     hlwm.call('new_attr string my_x_pressed')
     hlwm.call('new_attr string my_y_pressed')
 
+    keyboard.wait_until_window_is_focused(winid)
     # y does not match the mask, thus is not allowed
     keyboard.press('x')
     keyboard.press('y')
@@ -203,7 +202,8 @@ def test_keymask_for_existing_binds(hlwm, keyboard, client_first, via_rule):
 def test_keymask_applied_to_new_binds(hlwm, keyboard):
     winid, _ = hlwm.create_client()
     hlwm.create_client()  # another client
-    assert hlwm.get_attr('clients.focus.winid') == winid
+    keyboard.wait_until_window_is_focused(winid)
+    assert hlwm.attr.clients.focus.winid() == winid
     hlwm.call('new_attr string my_x_pressed')
     hlwm.call('new_attr string my_y_pressed')
     hlwm.call('set_attr clients.focus.keymask y')
@@ -221,6 +221,7 @@ def test_keymask_applied_to_new_binds(hlwm, keyboard):
 def test_keymask_prefix(hlwm, keyboard):
     hlwm.call('keybind space set_attr clients.focus.my_space_pressed pressed')
     hlwm.create_client()
+    keyboard.wait_until_window_is_focused(hlwm.attr.clients.focus.winid())
     hlwm.call('set_attr clients.focus.keymask s')
     hlwm.call('new_attr string clients.focus.my_space_pressed')
 
@@ -238,6 +239,7 @@ def test_keys_inactive_on_other_client(hlwm, keyboard):
     hlwm.call(f'jumpto {c1}')
 
     hlwm.call(f'jumpto {c2}')
+    keyboard.wait_until_window_is_focused(c2)
     keyboard.press('x')
 
     assert hlwm.get_attr('clients.focus.pseudotile') == 'true'
