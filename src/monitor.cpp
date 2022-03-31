@@ -164,7 +164,8 @@ void Monitor::applyLayout() {
     cur_rect.width -= (pad_left() + pad_right());
     cur_rect.y += pad_up();
     cur_rect.height -= (pad_up() + pad_down());
-    if (!g_settings->smart_frame_surroundings() || tag->frame->root_->isSplit()) {
+    if (g_settings->smart_frame_surroundings() == SmartFrameSurroundings::off
+        || tag->frame->root_->isSplit()) {
         // apply frame gap
         cur_rect.x += settings->frame_gap();
         cur_rect.y += settings->frame_gap();

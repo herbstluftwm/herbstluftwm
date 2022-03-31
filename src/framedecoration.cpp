@@ -94,7 +94,8 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     }
     int bw = settings->frame_border_width();
 
-    if (settings->smart_frame_surroundings() && !data.hasParent) {
+    if (settings->smart_frame_surroundings() == SmartFrameSurroundings::hide_all
+        && !data.hasParent) {
         bw = 0;
     }
     Rectangle rect = data.geometry;

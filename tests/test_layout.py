@@ -887,6 +887,21 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     assert (frame_geom.width, frame_geom.height) == (800, 600)
 
 
+@pytest.mark.parametrize("align", ["horizontal", "vertical"])
+def test_split_and_remove_with_smart_frame_surroundings_hide_gaps(hlwm, x11, align):
+    # Split frame, then merge it again to one root frame
+    # Root frame should have no frame gaps in the end
+    hlwm.call('set frame_border_width 15')
+    hlwm.call('set smart_frame_surroundings hide_gaps')
+    hlwm.call(['split', align])
+    hlwm.call('remove')
+
+    # Search for all frames, there should only be one
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (770, 570)
+
+
 @pytest.mark.parametrize("client_focused", list(range(0, 4)))
 @pytest.mark.parametrize("direction", ['u', 'd', 'l', 'r'])
 def test_focus_directional_2x2grid(hlwm, client_focused, direction):
