@@ -1940,5 +1940,3 @@ def test_frame_content_geometry_attribute(hlwm):
 
         # split again:
         hlwm.call('split explode')
-
-
