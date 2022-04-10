@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <utility>
 
-#include "argparse.h"
 #include "arglist.h"
+#include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
