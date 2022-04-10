@@ -118,6 +118,9 @@ std::string join_strings(const InContainer& in, const std::string& delim) {
 }
 
 std::string trimRight(const std::string& source, const std::string& charsToRemove);
+inline bool stringStartsWith(const std::string& source, const std::string& prefix) {
+    return source.size() >= prefix.size() && source.compare(0, prefix.size(), prefix) == 0;
+}
 
 int execvp_helper(const std::vector<std::string>& command);
 std::string spawnProcess(const std::vector<std::string>& command, pid_t* retChildPid = nullptr);

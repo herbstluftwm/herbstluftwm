@@ -200,9 +200,8 @@ void KeyManager::ensureKeyMask(const Client* client) {
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
 void KeyManager::setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive) {
     for (auto& binding : binds) {
-        KeyCombo keyComboWithoutEvent = binding->keyCombo.withoutEventModifiers();
-        bool isAllowed = keysInactive.allowsBinding(keyComboWithoutEvent)
-                         && keyMask.allowsBinding(keyComboWithoutEvent);
+        bool isAllowed = keysInactive.allowsBinding(binding->keyCombo)
+                         && keyMask.allowsBinding(binding->keyCombo);
         if (isAllowed && !binding->grabbed) {
             xKeyGrabber_.grabKeyCombo(binding->keyCombo);
             binding->grabbed = true;
@@ -274,7 +273,9 @@ bool KeyManager::KeyMask::allowsBinding(const KeyCombo &combo) const
         // the 'negated_' flag
         return true;
     } else {
-        bool match = regex_.matches(combo.str());
+        KeyCombo withoutRelease = combo;
+        withoutRelease.onRelease_ = false;
+        bool match = regex_.matches(withoutRelease.str());
         if (negated_) {
             // only allow keybindings that don't match
             return !match;

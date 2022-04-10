@@ -144,9 +144,12 @@ def test_complete_keybind_offers_all_mods_and_syms(hlwm, prefix):
     complete = hlwm.complete(['keybind', prefix], partial=True, position=1)
 
     assert len(complete) > 200  # plausibility check
-    all_mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super', 'Release']
+    all_mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
     if prefix == 'Mod1+':
         all_mods = [m for m in all_mods if m not in ['Mod1', 'Alt']]
+    else:
+        # if the prefix is not 'M...', then the completion suggests 'Release..'
+        all_mods.append('Release')
     assert sorted([c[:-1] for c in complete if c.endswith('+')]) == \
         sorted([prefix + m for m in all_mods])
 
@@ -335,9 +338,26 @@ def test_empty_keysym(hlwm, command):
         .expect_stderr('Must not be empty')
 
 
+def test_keybind_triggers_only_once(hlwm, keyboard):
+    hlwm.call(['new_attr', 'int', 'my_test', '0'])
+    hlwm.call(['keybind', 'x', 'set_attr', 'my_test', '+=1'])
+
+    keyboard.down('x')
+    assert hlwm.attr.my_test() == 1
+
+    keyboard.up('x')
+    assert hlwm.attr.my_test() == 1
+
+    keyboard.down('x')
+    assert hlwm.attr.my_test() == 2
+
+    keyboard.up('x')
+    assert hlwm.attr.my_test() == 2
+
+
 def test_key_release_works_after_bind(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Release-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', 'Release+x', 'set_attr', 'my_test', 'release'])
 
     keyboard.down('x')
     assert hlwm.attr.my_test() == 'initial'
@@ -440,7 +460,7 @@ def test_key_release_of_modifier(hlwm, keyboard):
 def test_key_press_after_unbinding_release(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
     hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Mod1-Release-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
     hlwm.call(['keyunbind', 'Release-Mod1-x'])
     assert hlwm.attr.my_test() == 'initial'
 
@@ -466,7 +486,7 @@ def test_client_does_not_see_bound_key(hlwm, keyboard, bind_press, bind_release,
     if bind_press:
         hlwm.call(['keybind', 'z', 'set_attr', 'my_test', 'grabbed'])
     if bind_release:
-        hlwm.call(['keybind', 'Release-z', 'set_attr', 'my_test', 'grabbed'])
+        hlwm.call(['keybind', 'Release+z', 'set_attr', 'my_test', 'grabbed'])
 
     if client_spawn_position == 'pre_unbind':
         winid, proc = hlwm.create_client(term_command='read -n 1')

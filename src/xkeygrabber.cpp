@@ -55,7 +55,7 @@ KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) {
             // the modifier mask is not needed anymore:
             keycode2modifierMask_.erase(it);
         }
-        combo.modifiers_ |= HlwmReleaseMask;
+        combo.onRelease_ = true;
     } else {
         // on key press:
         // - keep the modifiers as extracted from ev->state.
@@ -68,7 +68,8 @@ KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) {
 
 //! Grabs the given key combo
 void XKeyGrabber::grabKeyCombo(const KeyCombo& keyCombo) {
-    auto x11KeyCombo = keyCombo.withoutEventModifiers();
+    auto x11KeyCombo = keyCombo;
+    x11KeyCombo.onRelease_ = false;
     int oldCount = keyComboCount(x11KeyCombo);
     setKeyComboCount(x11KeyCombo, oldCount + 1);
     if (oldCount <= 0) {
@@ -78,7 +79,8 @@ void XKeyGrabber::grabKeyCombo(const KeyCombo& keyCombo) {
 
 //! Ungrabs the given key combo
 void XKeyGrabber::ungrabKeyCombo(const KeyCombo& keyCombo) {
-    auto x11KeyCombo = keyCombo.withoutEventModifiers();
+    auto x11KeyCombo = keyCombo;
+    x11KeyCombo.onRelease_ = false;
     int oldCount = keyComboCount(x11KeyCombo);
     setKeyComboCount(x11KeyCombo, oldCount - 1);
     if (oldCount > 0 && oldCount - 1 <= 0) {
