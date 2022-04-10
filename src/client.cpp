@@ -465,7 +465,7 @@ ResizeAction Client::possibleResizeActions()
         int idx = frame->clientIndex(this);
         for (auto& it : directions) {
             Direction dir = it.first;
-            if (frame->getInnerNeighbourIndex(dir, idx) >= 0) {
+            if (frame->getInnerNeighbourIndex(dir, DirectionLevel::Visible, idx) >= 0) {
                 // if the client has a neighbour within this frame in the specified
                 // direction, then we can't resize.
                 *(it.second) = false;

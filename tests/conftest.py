@@ -9,6 +9,7 @@ import re
 import select
 import selectors
 import shlex
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -132,7 +133,7 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', position=None, title=None, keep_running=False):
+    def create_client(self, term_command='while sleep 3600; do true; done', position=None, title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
@@ -143,8 +144,11 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         if position is not None:
             x, y = position
             geometry[1] = '50x2%+d%+d' % (x, y)
-        command = ['xterm'] + title + geometry
-        command += ['-class', wmclass, '-e', 'bash', '-c', term_command]
+        # shutil.which is necessary, because we reset the environment and
+        # therefore PATH.
+        # https://docs.python.org/3/library/subprocess.html#subprocess.Popen
+        command = [shutil.which('xterm')] + title + geometry
+        command += ['-class', wmclass, '-e', shutil.which('bash'), '-c', term_command]
 
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class=' + wmclass, 'hook=here_is_' + wmclass])
@@ -270,6 +274,10 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
             client_proc.wait(PROCESS_SHUTDOWN_TIME)
         self.hc_idle.wait(PROCESS_SHUTDOWN_TIME)
         self.hc_idle.stdout.close()
+
+        # test that the client itself is still working:
+        assert self.call(['echo', 'ping before shutdown']).stdout \
+            == 'ping before shutdown\n'
 
     def bool(self, python_bool_var):
         """convert a boolean variable into hlwm's string representation"""
@@ -1050,6 +1058,23 @@ def keyboard():
 
         def up(self, key_spec):
             subprocess.check_call(['xdotool', 'keyup', key_spec])
+
+        def get_focus(self):
+            """return the window id (hex number as string) of the
+            window that receives the keyboard events"""
+            proc = subprocess.run(['xdotool', 'getwindowfocus'], stdout=subprocess.PIPE)
+            assert proc.returncode == 0
+            return hex(int(proc.stdout))
+
+        def wait_until_window_is_focused(self, winid):
+            """wait until the given winid obtains the input focus"""
+            timeout = 20
+            while timeout > 0:
+                if self.get_focus() == winid:
+                    return
+                timeout -= 1
+                time.sleep(0.1)
+            assert self.get_focus() == winid
 
     return KeyBoard()
 

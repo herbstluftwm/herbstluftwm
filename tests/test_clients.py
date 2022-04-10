@@ -639,3 +639,33 @@ def test_urgent_attribute_written_to_x11(hlwm, x11):
         hlwm.attr.clients[winid].urgent = value
 
         assert x11.is_window_urgent(handle) == value
+
+
+def test_unmanaged_client_is_removed_from_tab_bars(hlwm, x11):
+    hlwm.call(['add', 'othertag'])
+    hlwm.call('use_index 1')
+    hlwm.attr.theme.title_height = 14
+    hlwm.attr.theme.title_color = 'red'
+    hlwm.attr.settings.tabbed_max = True
+
+    # put two clients on 'othertag' in tabbed mode
+    # keep the tag visible such that the tab bar is filled.
+    winid_kill, proc_kill = hlwm.create_client()
+    tab_handle, tab_winid = x11.create_client()
+    assert winid_kill in hlwm.list_children('clients')
+    assert hlwm.attr.tags['1'].name() == 'othertag'
+    assert hlwm.attr.tags['1'].client_count() == 2
+    hlwm.attr.tags['1'].tiling.focused_frame.algorithm = 'max'
+    hlwm.attr.tags['1'].tiling.focused_frame.selection = 0
+    # make the tag invisible
+    hlwm.call('use_index 0')
+
+    # first, kill one of the clients
+    proc_kill.terminate()
+    proc_kill.wait()
+    # then, trigger a repaint of the tab bar of the remaining window:
+    x11.set_window_title(tab_handle, "some other title")
+    # (earlier, this crashed because 'proc_kill' was still mentioned in the tab
+    # bar of tab_handle/tab_winid)
+
+    assert tab_winid in hlwm.list_children('clients')

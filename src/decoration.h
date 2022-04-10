@@ -67,6 +67,7 @@ public:
     std::experimental::optional<ClickArea> positionHasButton(Point2D p);
     ResizeAction positionTriggersResize(Point2D p);
     ResizeAction resizeFromRoughCursorPosition(Point2D cursor);
+    void removeFromTabBar(Client* otherClientTab);
 
 private:
     static Visual* check_32bit_client(Client* c);

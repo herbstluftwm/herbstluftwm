@@ -238,6 +238,122 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
     assert hlwm.get_attr('clients.focus.winid') == expected_new_focus
 
 
+@pytest.mark.parametrize("tabbed_max", [True, False])
+@pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_level(hlwm, tabbed_max, level, running_clients):
+    hlwm.attr.settings.tabbed_max = tabbed_max
+    layout = f"""
+    (split horizontal:0.5:0
+        (clients max:0 {running_clients[0]} {running_clients[1]})
+        (clients horizontal:0 {running_clients[2]}))
+    """
+    hlwm.call(['load', layout])
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+    hlwm.call(['focus', f'--level={level}', 'right'])
+
+    expected_new_focus = {
+        'frame': 2,
+        'visible': 2,
+        'tabs': 1 if tabbed_max else 2,
+        'all': 1,
+    }
+
+    assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[level]]
+
+
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_left_level_tabs(hlwm, running_clients):
+    hlwm.attr.settings.tabbed_max = True
+    for direction in ['left', 'right']:
+        layout = f"""
+        (split horizontal:0.5:0
+            (clients max:1 {running_clients[1]} {running_clients[0]})
+            (clients horizontal:0 {running_clients[2]}))
+        """
+        hlwm.call(['load', layout])
+        assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+        hlwm.call(['focus', '--level=tabs', direction])
+
+        expected_focus = {
+            'left': 1,
+            'right': 2,
+        }
+        assert hlwm.attr.clients.focus.winid() == running_clients[expected_focus[direction]]
+
+
+@pytest.mark.parametrize("tabbed_max", [True, False])
+@pytest.mark.parametrize("level", ['frame', 'visible', 'tabs', 'all'])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_shift_level(hlwm, tabbed_max, level, running_clients):
+    hlwm.attr.settings.tabbed_max = tabbed_max
+    layout = f"""
+    (split horizontal:0.5:0
+        (clients max:0 {running_clients[0]} {running_clients[1]})
+        (clients horizontal:0 {running_clients[2]}))
+    """
+    hlwm.call(['load', layout])
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+    hlwm.call(['shift', f'--level={level}', 'right'])
+
+    expected_frame_idx_and_selection = {
+        'frame': ('1', 1),
+        'visible': ('1', 1),
+        'tabs': ('0', 1) if tabbed_max else ('1', 1),
+        'all': ('0', 1),
+    }
+    assert hlwm.attr.clients.focus.winid() == running_clients[0]
+    assert hlwm.attr.clients.focus.parent_frame.index() \
+        == expected_frame_idx_and_selection[level][0]
+    assert hlwm.attr.clients.focus.parent_frame.selection() \
+        == expected_frame_idx_and_selection[level][1]
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+def test_focus_level_all(hlwm, running_clients):
+    hlwm.attr.settings.tabbed_max = False
+    layout = f"""
+    (split vertical:0.5:0
+        (split horizontal:0.5:0
+            (clients max:1 {running_clients[1]} {running_clients[0]})
+            (clients horizontal:0 {running_clients[2]}))
+        (clients horizontal:0 {running_clients[3]}))
+    """.replace('\n', ' ').strip()
+    hlwm.call(['load', layout])
+
+    for direction in ['left', 'right', 'up', 'down']:
+        hlwm.call(['jumpto', running_clients[0]])
+        assert hlwm.attr.clients.focus.winid() == running_clients[0]
+
+        hlwm.call(['focus', '--level=all', direction])
+
+        expected_new_focus = {
+            'left': 1,
+            'right': 2,
+            'up': 1,
+            'down': 3,
+        }
+        assert hlwm.attr.clients.focus.winid() == running_clients[expected_new_focus[direction]]
+
+
+def test_focus_level_invalid_arg(hlwm):
+    hlwm.call_xfail('focus --level= right') \
+        .expect_stderr('Cannot parse flag')
+
+    hlwm.call_xfail('focus --level=unknown right') \
+        .expect_stderr('Cannot parse flag')
+
+
+def test_focus_level_completion(hlwm):
+    res = hlwm.complete(['focus', '--level='], position=1)
+    assert '--level=all' in res
+    assert '--level=tabs' in res
+    assert '--level=visible' in hlwm.complete(['focus', '--level=v'], position=1)
+
+
 def test_argparse_invalid_flag(hlwm):
     # here, '-v' is not a valid flag, so it is assumed
     # to be the first positional argument
@@ -769,6 +885,21 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (800, 600)
+
+
+@pytest.mark.parametrize("align", ["horizontal", "vertical"])
+def test_split_and_remove_with_smart_frame_surroundings_hide_gaps(hlwm, x11, align):
+    # Split frame, then merge it again to one root frame
+    # Root frame should have no frame gaps in the end
+    hlwm.call('set frame_border_width 15')
+    hlwm.call('set smart_frame_surroundings hide_gaps')
+    hlwm.call(['split', align])
+    hlwm.call('remove')
+
+    # Search for all frames, there should only be one
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (770, 570)
 
 
 @pytest.mark.parametrize("client_focused", list(range(0, 4)))
@@ -1626,16 +1757,17 @@ def test_shift_no_monitor_in_direction(hlwm):
 def test_focus_shift_completion(hlwm):
     for cmd in ['shift', 'focus', 'shift_edge', 'focus_edge']:
         directions = ['down', 'up', 'left', 'right']
-        flags = ['-i', '-e']
+        level = [f'--level={v}' for v in ['frame', 'visible', 'tabs', 'all']]
+        flags = ['-i', '-e'] + level
         assert sorted(directions + flags) == hlwm.complete([cmd])
 
         assert sorted(flags) == hlwm.complete([cmd, 'down'])
 
-        assert sorted(directions + ['-i']) == hlwm.complete([cmd, '-e'])
+        assert sorted(directions + ['-i'] + level) == hlwm.complete([cmd, '-e'])
 
         # actually, passing both -i and -e makes no sense,
         # but ArgParse does not know that the flags exclude each other
-        hlwm.command_has_all_args([cmd, 'down', '-i', '-e'])
+        hlwm.command_has_all_args([cmd, 'down', '-i', '-e', '--level=tabs'])
 
 
 def test_frame_leaf_selection_change(hlwm):

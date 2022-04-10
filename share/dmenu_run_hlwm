@@ -5,12 +5,27 @@ if ! command -v dmenu > /dev/null 2>/dev/null ; then
 	exit 1
 fi
 
+font=$(herbstclient attr theme.title_font)
+bgcolor=$(herbstclient get frame_border_normal_color |sed 's,^\(\#[0-9a-f]\{6\}\)[0-9a-f]\{2\}$,\1,')
+selbg=$(herbstclient get window_border_active_color  |sed 's,^\(\#[0-9a-f]\{6\}\)[0-9a-f]\{2\}$,\1,')
+selfg='#101010'
+FLAGS=( -nb "$bgcolor" -sb "$selbg" -sf "$selfg" )
+
+case "$font" in
+  -*-*-*-*-*-*-*-*-*-*-*-*-*-*)
+    # ignore XLFD fonts because the current dmenu only supports XFT.
+    ;;
+  *)
+    FLAGS+=( -fn "$font" )
+    ;;
+esac
+
 # Get the currently active tag
 tag=$(herbstclient attr tags.focus.name)
 
 # Redirect to dmenu_path if available
 if command -v dmenu_path > /dev/null 2>/dev/null ; then
-        selectedPath=$(dmenu_path | dmenu "$@")
+        selectedPath=$(dmenu_path | dmenu "${FLAGS[@]}" "$@")
 
 # If at least stest is present use the code from latest dmenu_path directly
 elif command -v stest > /dev/null 2>/dev/null ; then
@@ -22,9 +37,9 @@ elif command -v stest > /dev/null 2>/dev/null ; then
 	fi
 	IFS=:
 	if stest -dqr -n "$cache" $PATH; then
-		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@")
+		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu "${FLAGS[@]}" "$@")
 	else
-		selectedPath=$(dmenu "$@" < "$cache")
+		selectedPath=$(dmenu "${FLAGS[@]}" "$@" < "$cache")
 	fi
 
 # Both not found -> unable to continue

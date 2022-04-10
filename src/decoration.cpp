@@ -163,6 +163,8 @@ Client* Decoration::toClient(Window decoration_window)
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
+    // we need to update (i.e. clear) tabs before inner_rect_to_outline()
+    tabs_.clear();
     // if the client is undecorated, the outline is identical to the inner geometry
     // otherwise, we convert the geometry using the theme
     auto outline = (client_->decorated_())
@@ -275,6 +277,19 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
     ra.top = cursorRelativeToCenter.y < 0;
     ra.bottom = !ra.top;
     return ra;
+}
+
+/**
+ * @brief ensure that the other mentioned client is removed
+ * from the tab bar of 'this' client.
+ * @param otherClientTab
+ */
+void Decoration::removeFromTabBar(Client* otherClientTab)
+{
+    tabs_.erase(std::remove_if(tabs_.begin(), tabs_.end(),
+                               [=](Client* c) {
+        return c == otherClientTab;
+    }), tabs_.end());
 }
 
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)

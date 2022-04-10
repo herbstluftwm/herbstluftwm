@@ -235,12 +235,12 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
     Adds a key binding. If there is already a binding for this 'KEY',
     it will be overwritten. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers
-    (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control/Ctrl, Shift, Release) and one key
+    (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control/Ctrl, Shift) and one key
     (see keysymdef.h for a list of keys). Modifiers and the key are concatenated
-    with '-' or '+' as separator. The 'Release' modifier is only active during
-    the corresponding key release event: that is, in order to run the key binding
-    for 'Release-Mod1-Shift-p' one needs to first press 'Mod1-Shift-p' and then
-    release 'p'.  Examples:
+    with '-' or '+' as separator. If 'KEY' is prefixed with 'Release-' then the
+    keybinding is only active during the corresponding key release event: that
+    is, in order to run the key binding for 'Release-Mod1-Shift-p' one needs to
+    first press 'Mod1-Shift-p' and then release 'p'.  Examples:
 
         * keybind Mod4+Ctrl+q quit
         * keybind Mod1-i toggle always_show_frame
@@ -430,7 +430,7 @@ split 'ALIGN' ['FRACTION' ['FRAMEINDEX']]::
         * split h
         * split top 0.2 ''   (splits the root frame)
 
-focus ['-i'|'-e'] 'DIRECTION'::
+focus ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in
     'DIRECTION' which is in:
     +
@@ -441,10 +441,14 @@ focus ['-i'|'-e'] 'DIRECTION'::
 
 // small hack to fix indentation of "If ..."
  ::
-    If '-i' (internal) is given or default_direction_external_only is unset,
-    then the next client in 'DIRECTION' can also be within the same frame. If
-    there is no client within this frame or '-e' (external) is given, then the
-    next frame in specified 'DIRECTION' will be focused. +
+    If there is no client within this frame or 'LEVEL' is 'frame', then
+    the next frame in specified 'DIRECTION' will be focused.
+    If 'LEVEL' is 'visible' or default_direction_external_only is unset,
+    then the next client in 'DIRECTION' can also be within the same frame, but
+    has to be visible. For 'tabs' 'LEVEL', the next client may be hidden in a
+    tabbed_max layout. With 'all' any client within a max layout maybe selected
+    before focusing the next frame. The flag '-i' is an alias for
+    '--level=visible' and '-e' for '--level=frame'. +
     +
     The direction between frames is defined as follows: The focus is in a leaf
     of the binary tree.  Each inner node in the tree remembers the last focus

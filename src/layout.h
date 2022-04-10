@@ -11,6 +11,7 @@
 #include "framedata.h"
 #include "link.h"
 #include "object.h"
+#include "tag.h"
 #include "tilingresult.h"
 #include "x11-types.h"
 
@@ -131,7 +132,7 @@ public:
 
     friend class Frame;
     void setVisible(bool visible);
-    int getInnerNeighbourIndex(Direction direction, int startIndex = -1);
+    int getInnerNeighbourIndex(Direction direction, DirectionLevel depth, int startIndex = -1);
     DynAttribute_<int> client_count_;
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
