@@ -148,10 +148,12 @@ KeySym KeyCombo::keySymFromString(const string& str) {
  *
  * \throws meaningful exceptions on parsing errors
  */
-KeyCombo KeyCombo::fromString(string str) {
+
+template<> KeyCombo Converter<KeyCombo>::parse(const string& source) {
+    auto str = source; // copy to make it modifiable
     KeyCombo combo = {};
-    for (auto &sep : string(separators)) {
-        string prefix = releaseModifier;
+    for (auto &sep : string(KeyCombo::separators)) {
+        string prefix = KeyCombo::releaseModifier;
         prefix += sep;
         if (stringStartsWith(str, prefix)) {
             // strip "Release-" from the begin
@@ -162,7 +164,7 @@ KeyCombo KeyCombo::fromString(string str) {
     }
     auto mws = Converter<ModifiersWithString>::parse(str);
     combo.modifiers_ = mws.modifiers_;
-    combo.keysym = keySymFromString(mws.suffix_);
+    combo.keysym = KeyCombo::keySymFromString(mws.suffix_);
     return combo;
 }
 
@@ -222,8 +224,8 @@ vector<string> ModifierCombo::getNamesForModifierMask(unsigned int mask) {
     return names;
 }
 
-void KeyCombo::complete(Completion& complete) {
-    const string releasePrefix = string(releaseModifier) + ModifierCombo::defaultSeparator();
+template<> void Converter<KeyCombo>::complete(Completion& complete, KeyCombo const*) {
+    const string releasePrefix = string(KeyCombo::releaseModifier) + ModifierCombo::defaultSeparator();
     complete.partial(releasePrefix);
     ModifiersWithString::complete(complete, [&releasePrefix] (Completion& compWrapped, string prefix) {
         // Offer full completions for a final keysym:
@@ -233,4 +235,8 @@ void KeyCombo::complete(Completion& complete) {
             compWrapped.full(releasePrefix + prefix + keySym);
         }
     });
+}
+
+template<> string Converter<KeyCombo>::str(KeyCombo payload) {
+    return payload.str();
 }

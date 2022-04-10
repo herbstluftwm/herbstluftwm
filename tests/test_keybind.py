@@ -17,9 +17,9 @@ def test_list_keybinds(hlwm, sep):
 
 
 @pytest.mark.parametrize('combo,message', [
-    ('Moep1-x', 'keybind: Unknown modifier "Moep1"'),
-    ('Mod1-_', 'keybind: Unknown KeySym "_"'),
-    ('', 'keybind: Must not be empty'),
+    ('Moep1-x', 'keybind:.* Unknown modifier "Moep1"'),
+    ('Mod1-_', 'keybind:.* Unknown KeySym "_"'),
+    ('', 'keybind:.* Must not be empty'),
 ])
 def test_keybind_invalid_key_combo(hlwm, combo, message):
     call = hlwm.call_xfail(['keybind', combo, 'quit'])

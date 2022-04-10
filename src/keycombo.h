@@ -73,10 +73,11 @@ public:
     bool operator==(const KeyCombo& other) const;
     bool operator<(const KeyCombo& other) const;
     static KeySym keySymFromString(const std::string& str);
-    static KeyCombo fromString(std::string str);
     static std::vector<std::string> getPossibleKeySyms();
     static void complete(Completion& complete);
 
     KeySym keysym = {};
     bool onRelease_ = false;
 };
+
+ConverterInstance(KeyCombo)

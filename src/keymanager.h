@@ -67,11 +67,11 @@ public:
     KeyManager() = default;
     ~KeyManager();
 
-    int addKeybindCommand(Input input, Output output);
+    void keybindCommand(CallOrComplete invoc);
+    int addKeybind(KeyBinding newBinding, Output output);
     int listKeybindsCommand(Output output) const;
     int removeKeybindCommand(Input input, Output output);
 
-    void addKeybindCompletion(Completion &complete);
     void removeKeybindCompletion(Completion &complete);
 
     void handleKeyPress(XKeyEvent* ev);

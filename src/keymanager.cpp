@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "argparse.h"
 #include "arglist.h"
 #include "client.h"
 #include "clientmanager.h"
@@ -24,48 +25,50 @@ KeyManager::~KeyManager() {
     xKeyGrabber_.ungrabAll();
 }
 
-int KeyManager::addKeybindCommand(Input input, Output output) {
-    if (input.size() < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
+void KeyManager::keybindCommand(CallOrComplete invoc)
+{
+    KeyCombo key;
+    ArgParse ap;
+    ap.mandatory(key);
+    ap.command(invoc,
+               [&](Completion& complete) { complete.completeCommands(0); },
+               [&](ArgList command, Output output) -> int {
+        if (command.empty()) {
+            return  HERBST_NEED_MORE_ARGS;
+        }
+        KeyBinding keybind;
+        keybind.keyCombo = key;
+        keybind.cmd = { command.begin(), command.end() };
+        return addKeybind(keybind, output);
+    });
+}
 
-    auto newBinding = make_unique<KeyBinding>();
-
-    try {
-        newBinding->keyCombo = KeyCombo::fromString(input.front());
-    } catch (std::exception &error) {
-        output.perror() << error.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    input.shift();
-    // Store remaining input as the associated command
-    newBinding->cmd = {input.begin(), input.end()};
-
+int KeyManager::addKeybind(KeyBinding newBinding, Output output) {
     // newBinding->cmd is not empty because the size before the input.shift() was >= 2
-    if (!Commands::commandExists(newBinding->cmd[0])) {
+    if (!Commands::commandExists(newBinding.cmd[0])) {
         output.perror() << "the command \""
-               << newBinding->cmd[0] << "\" does not exist."
+               << newBinding.cmd[0] << "\" does not exist."
                << " Did you forget \"spawn\"?\n";
         return HERBST_COMMAND_NOT_FOUND;
     }
 
     // Make sure there is no existing binding with same keysym/modifiers
     bool alreadyActive = false;
-    removeKeyBinding(newBinding->keyCombo, &alreadyActive);
+    removeKeyBinding(newBinding.keyCombo, &alreadyActive);
 
-    if (currentKeyMask_.allowsBinding(newBinding->keyCombo)
-        && currentKeysInactive_.allowsBinding(newBinding->keyCombo))
+    if (currentKeyMask_.allowsBinding(newBinding.keyCombo)
+        && currentKeysInactive_.allowsBinding(newBinding.keyCombo))
     {
         // Grab for events on this keycode
-        newBinding->grabbed = true;
+        newBinding.grabbed = true;
         if (!alreadyActive) {
-            xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
+            xKeyGrabber_.grabKeyCombo(newBinding.keyCombo);
         }
     }
 
     // Add keybinding to list
-    binds.push_back(std::move(newBinding));
+    auto ptr = make_unique<KeyBinding>(newBinding);
+    binds.push_back(std::move(ptr));
 
     ensureKeyMask();
 
@@ -95,7 +98,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     } else {
         KeyCombo comboToRemove = {};
         try {
-            comboToRemove = KeyCombo::fromString(arg);
+            comboToRemove = Converter<KeyCombo>::parse(arg);
         } catch (std::exception &error) {
             output.perror() << arg << ": " << error.what() << "\n";
             return HERBST_INVALID_ARGUMENT;
@@ -111,14 +114,6 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     }
 
     return HERBST_EXIT_SUCCESS;
-}
-
-void KeyManager::addKeybindCompletion(Completion &complete) {
-    if (complete == 0) {
-        KeyCombo::complete(complete);
-    } else {
-        complete.completeCommands(1);
-    }
 }
 
 void KeyManager::removeKeybindCompletion(Completion &complete) {
