@@ -36,9 +36,9 @@ public:
     };
 
     //! whitespace characters
-    static constexpr char whitespace[] = " \n\t\r";
+    static constexpr auto whitespace = " \n\t\r";
     //! special characters that indicate a new token
-    static constexpr char special[] = "/*{}>~,;+:";
+    static constexpr auto special = "/*{}>~,;+:";
     inline static bool contains(char const* characterList, char member) {
         while (characterList[0]) {
             if (member == characterList[0]) {
@@ -175,9 +175,6 @@ public:
         return token;
     }
 };
-
-constexpr char SourceStream::whitespace[];
-constexpr char SourceStream::special[];
 
 template<typename Result>
 class Parser {
