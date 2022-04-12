@@ -48,10 +48,10 @@ def test_basic_css_normalize(hlwm):
     }
 
     for source, normalized in input2normalize.items():
-        output = hlwm.call(['debug-css', '--print', source]).stdout
+        output = hlwm.call(['debug-css', '--print-css', source]).stdout
         assert output == textwrap.dedent(normalized)
         # check that pretty printing is idempotent:
-        assert hlwm.call(['debug-css', '--print', output]).stdout == output
+        assert hlwm.call(['debug-css', '--print-css', output]).stdout == output
 
 
 def test_basic_css_parse_error(hlwm):
@@ -67,5 +67,30 @@ def test_basic_css_parse_error(hlwm):
         '* { // }': "Expected } but got EOF",
     }
     for source, error in input2error.items():
-        assert hlwm.call_xfail(['debug-css', '--print', source]) \
+        assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
+            .expect_stderr(error)
+
+
+def test_basic_dummy_tree(hlwm):
+    """testing the interface used for testing...."""
+    input2normalize = {
+        '()': '()',
+        '(win (c focused (e f)))': '(win\n  (c focused\n    (e f)))',
+        '(win (c (e f)focused))': '(win\n  (c focused\n    (e f)))',
+        '((c d (e f)))': '(\n  (c d\n    (e f)))',
+        '((() (e f)))': '(\n  (\n    ()\n    (e f)))',
+    }
+    for source, normalized in input2normalize.items():
+        output = hlwm.call(['debug-css', '--print-tree', '--tree=' + source, '']).stdout
+        assert output == normalized + '\n'
+        # check that pretty printing is idempotent:
+        assert hlwm.call(['debug-css', '--print-tree', '--tree=' + output, '']).stdout == output
+
+    input2error = {
+        '(': r'Expected \) but got EOF',
+        '( (a ())))': r'Expected EOF but got.*\)',
+        '() ()': r'Expected EOF but got.*\(',
+    }
+    for source, error in input2error.items():
+        hlwm.call_xfail(['debug-css', '--print-tree', '--tree=' + source, '']) \
             .expect_stderr(error)

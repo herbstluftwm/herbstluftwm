@@ -8,6 +8,7 @@
 #include "argparse.h"
 #include "globals.h"
 
+using std::endl;
 using std::function;
 using std::make_pair;
 using std::pair;
@@ -28,17 +29,22 @@ public:
         ss.pos = 0;
         return ss;
     };
-    class Error : std::exception {
+    class Error : public std::exception {
     public:
         size_t line_ = 0;
         size_t column_ = 0;
         string message_;
+        string str() const {
+            stringstream ss;
+            ss << "line " << (line_ + 1)
+               << " column " << (column_ + 1)
+               << ": " << message_;
+            return ss.str();
+        }
     };
 
     //! whitespace characters
     static constexpr auto whitespace = " \n\t\r";
-    //! special characters that indicate a new token
-    static constexpr auto special = "/*{}>~,;+:";
     inline static bool contains(char const* characterList, char member) {
         while (characterList[0]) {
             if (member == characterList[0]) {
@@ -152,7 +158,13 @@ public:
         return pos >= buf.size();
     }
 
-    string nextToken() {
+    /**
+     * @brief return the next token, which consists of either a single special character
+     * or a sequence of non-special characters
+     * @param special the special characters
+     * @return
+     */
+    string nextToken(const char* special) {
         size_t token_pos = pos;
         while (pos < buf.size()) {
             if (token_pos == pos && contains(special, buf[pos])) {
@@ -264,26 +276,29 @@ private:
 
 
 Parser<CssFile> cssFileParser() {
+    auto nextToken = [](SourceStream& source) -> string {
+        return source.nextToken("/*{}>~,;+:");
+    };
     Parser<CssDeclaration> parseDecl = {
-        [] (SourceStream& source) {
+        [nextToken] (SourceStream& source) {
             CssDeclaration decl;
-            decl.property_ = source.nextToken();
+            decl.property_ = nextToken(source);
             source.skipWhitespace();
             source.consumeOrException(":");
             source.skipWhitespace();
             while (!source.startswith(";") && !source.startswith("}")) {
-                decl.values_.push_back(source.nextToken());
+                decl.values_.push_back(nextToken(source));
                 source.skipWhitespace();
             }
             source.skipWhitespace();
             return decl;
     }};
     Parser<CssSelector> parseSelector = {
-        [] (SourceStream& source) {
+        [nextToken] (SourceStream& source) {
             source.skipWhitespace();
             CssSelector selector;
             while (!source.startswith("{") && !source.startswith("}") && !source.startswith(",")) {
-                string tok = source.nextToken();
+                string tok = nextToken(source);
                 selector.content_.push_back(tok);
                 if (source.skipWhitespace() > 0) {
                     selector.content_.push_back(" ");
@@ -329,6 +344,76 @@ Parser<CssFile> cssFileParser() {
     };
 }
 
+class DummyTree {
+public:
+    vector<string> classes_ = {};
+    vector<DummyTree> children_ = {};
+    static DummyTree parse(SourceStream& source) {
+        source.consumeOrException("(");
+        DummyTree tree;
+        source.skipWhitespace();
+        while (!source.isEOF() && !source.startswith(")")) {
+            if (source.startswith("(")) {
+                tree.children_.push_back(parse(source));
+            } else {
+                tree.classes_.push_back(source.nextToken("() "));
+            }
+            source.skipWhitespace();
+        }
+        source.consumeOrException(")");
+        return tree;
+    }
+    void print(std::ostream& output, int indent = 0) const {
+        for (int i = 0; i < indent ; i++) {
+            output << "  ";
+        }
+        output << "(";
+        bool first = true;
+        for (const auto& cls : classes_) {
+            if (!first) {
+                output << " ";
+            }
+            output << cls;
+            first = false;
+        }
+        for (const auto& child : children_) {
+            output << "\n";
+            child.print(output, indent + 1);
+        }
+        output << ")";
+    }
+};
+
+template<>
+DummyTree Converter<DummyTree>::parse(const string& source) {
+    try {
+        SourceStream stream = SourceStream::fromString(source);
+        stream.skipWhitespace();
+        DummyTree tree = DummyTree::parse(stream);
+        stream.skipWhitespace();
+        if (!stream.isEOF()) {
+            stream.expectedButGot("EOF");
+        }
+        return tree;
+    } catch (const SourceStream::Error& error) {
+        throw std::runtime_error(error.str());
+    }
+}
+
+template<>
+string Converter<DummyTree>::str(DummyTree payload) {
+    stringstream output;
+
+    payload.print(output);
+    return output.str();
+}
+
+template<>
+void Converter<DummyTree>::complete(Completion& complete, const DummyTree*) {
+}
+
+
+
 void CssFile::print(std::ostream& out) const
 {
     int idx = 0;
@@ -362,24 +447,31 @@ void CssFile::print(std::ostream& out) const
 void debugCssCommand(CallOrComplete invoc)
 {
     string cssSource;
-    bool print = false;
+    bool print = false, printTree = false;
+    DummyTree tree;
     ArgParse ap;
     ap.mandatory(cssSource);
     ap.flags({
-        {"--print", &print },
+        {"--print-css", &print },
+        {"--tree=", tree },
+        {"--print-tree", &printTree },
     });
     ap.command(invoc,
         [&] (Output output) {
             Parser<CssFile> parser = cssFileParser();
+            CssFile file;
             try {
                 auto stream = SourceStream::fromString(cssSource);
-                CssFile file = parser(stream);
-                file.print(output.output());
+                file = parser(stream);
             } catch (const SourceStream::Error& error) {
-                output.error() << "line " << (error.line_ + 1)
-                               << " column " << (error.column_ + 1)
-                               << ": " << error.message_;
+                output.error() << error.str();
                 return 1;
+            }
+            if (print) {
+                file.print(output.output());
+            }
+            if (printTree) {
+                output << Converter<DummyTree>::str(tree) << endl;
             }
             return 0;
     });
