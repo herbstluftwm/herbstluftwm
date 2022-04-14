@@ -35,6 +35,14 @@ public:
     std::vector<CssDeclaration> declarations_;
 };
 
+class CssTree {
+public:
+    virtual CssTree* parent() = 0;
+    virtual CssTree* nthChild(size_t idx) = 0;
+    /* virtual CssTree* leftSibling() = 0; */
+    virtual size_t childCount() = 0;
+};
+
 
 class CssFile {
 public:
