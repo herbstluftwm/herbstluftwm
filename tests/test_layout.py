@@ -1916,3 +1916,27 @@ def test_frame_leaf_algorithm_change(hlwm, x11):
     assert geom1_before.height < geom1_now.height
     assert geom1_now.width == geom2_now.width
     assert geom1_now.height == geom2_now.height
+
+
+def test_frame_content_geometry_attribute(hlwm):
+    hlwm.attr.settings.smart_frame_surroundings = 'off'
+    hlwm.attr.settings.frame_gap = 0
+    hlwm.attr.settings.frame_border_width = 1
+    bw = 1
+    winid, _ = hlwm.create_client()
+    mon_rect = hlwm.attr.monitors.focus.content_geometry()
+    mon_rect_minus_frame_border = mon_rect.adjusted(dx=bw, dy=bw, dw=bw * -2, dh=bw * -2)
+
+    for split_count in range(0, 4):
+        # the content of the root frame should match the monitor.
+        # the frame border is only applied if the root frame is a
+        # frame leaf (with decoration), i.e. if split_count == 0
+        assert hlwm.attr.tags.focus.tiling.root.content_geometry() \
+            == (mon_rect_minus_frame_border if split_count == 0 else mon_rect)
+
+        # the content of the leaf frame should match the decoration of the client:
+        assert hlwm.attr.clients[winid].decoration_geometry() \
+            == hlwm.attr.tags.focus.tiling.focused_frame.content_geometry()
+
+        # split again:
+        hlwm.call('split explode')
