@@ -23,6 +23,7 @@ public:
     }
 
     static constexpr auto separators = "+-";
+    static char defaultSeparator() { return '+'; }
 
     class ModifierNameAndMask {
     public:
@@ -66,12 +67,17 @@ class KeyCombo : public ModifierCombo {
 public:
     KeyCombo() = default;
 
+    static constexpr auto releaseModifier = "Release";
+
     std::string str() const;
     bool operator==(const KeyCombo& other) const;
+    bool operator<(const KeyCombo& other) const;
     static KeySym keySymFromString(const std::string& str);
-    static KeyCombo fromString(const std::string& str);
     static std::vector<std::string> getPossibleKeySyms();
     static void complete(Completion& complete);
 
     KeySym keysym = {};
+    bool onRelease_ = false;
 };
+
+ConverterInstance(KeyCombo)

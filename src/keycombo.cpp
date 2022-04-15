@@ -7,8 +7,10 @@
 
 #include "completion.h"
 #include "globals.h"
+#include "utils.h"
 #include "xkeygrabber.h"
 
+using std::make_pair;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -53,7 +55,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     char sep =
         !prefix.empty()
         ? prefix[prefix.size() - 1]
-        : ModifierCombo::separators[0];
+        : ModifierCombo::defaultSeparator();
     for (auto& modifier : KeyCombo::modifierMasks) {
         if (modifier.mask & mws.modifiers_) {
             // the modifier is already present in the combination
@@ -81,7 +83,7 @@ template<> string Converter<ModifiersWithString>::str(ModifiersWithString payloa
 {
     stringstream str;
     for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers_)) {
-        str << modName << ModifierCombo::separators[0];
+        str << modName << ModifierCombo::defaultSeparator();
     }
     str << payload.suffix_;
     return str.str();
@@ -102,7 +104,12 @@ string KeyCombo::str() const {
         HSWarning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
     }
-    return Converter<ModifiersWithString>::str({ modifiers_, name });
+    string prefix;
+    if (onRelease_) {
+        prefix = releaseModifier;
+        prefix += ModifierCombo::defaultSeparator();
+    }
+    return prefix + Converter<ModifiersWithString>::str({ modifiers_, name });
 }
 
 /*!
@@ -141,25 +148,43 @@ KeySym KeyCombo::keySymFromString(const string& str) {
  *
  * \throws meaningful exceptions on parsing errors
  */
-KeyCombo KeyCombo::fromString(const string& str) {
-    auto mws = Converter<ModifiersWithString>::parse(str);
+
+template<> KeyCombo Converter<KeyCombo>::parse(const string& source) {
+    auto str = source; // copy to make it modifiable
     KeyCombo combo = {};
+    for (auto &sep : string(KeyCombo::separators)) {
+        string prefix = KeyCombo::releaseModifier;
+        prefix += sep;
+        if (stringStartsWith(str, prefix)) {
+            // strip "Release-" from the begin
+            str = str.substr(prefix.size());
+            combo.onRelease_ = true;
+            break;
+        }
+    }
+    auto mws = Converter<ModifiersWithString>::parse(str);
     combo.modifiers_ = mws.modifiers_;
-    combo.keysym = keySymFromString(mws.suffix_);
+    combo.keysym = KeyCombo::keySymFromString(mws.suffix_);
     return combo;
 }
 
 bool KeyCombo::operator==(const KeyCombo& other) const {
-    bool sameMods = modifiers_ == other.modifiers_;
-    bool sameKeySym = keysym == other.keysym;
-    return sameMods && sameKeySym;
+    return modifiers_ == other.modifiers_
+            && keysym == other.keysym
+            && onRelease_ == other.onRelease_;
+}
+
+bool KeyCombo::operator<(const KeyCombo& other) const
+{
+    return std::make_tuple(modifiers_, keysym, onRelease_)
+            < std::make_tuple(other.modifiers_, other.keysym, onRelease_);
 }
 
 //! Splits a given key combo string into a list of tokens
 vector<string> ModifierCombo::tokensFromString(string keySpec)
 {
     // Normalize spec to use the default separator:
-    char baseSep = separators[0];
+    char baseSep = defaultSeparator();
     for (auto &sep : string(separators)) {
         std::replace(keySpec.begin(), keySpec.end(), sep, baseSep);
     }
@@ -199,12 +224,19 @@ vector<string> ModifierCombo::getNamesForModifierMask(unsigned int mask) {
     return names;
 }
 
-void KeyCombo::complete(Completion& complete) {
-    ModifiersWithString::complete(complete, [] (Completion& compWrapped, string prefix) {
+template<> void Converter<KeyCombo>::complete(Completion& complete, KeyCombo const*) {
+    const string releasePrefix = string(KeyCombo::releaseModifier) + ModifierCombo::defaultSeparator();
+    complete.partial(releasePrefix);
+    ModifiersWithString::complete(complete, [&releasePrefix] (Completion& compWrapped, string prefix) {
         // Offer full completions for a final keysym:
         auto keySyms = XKeyGrabber::getPossibleKeySyms();
-        for (auto keySym : keySyms) {
+        for (const auto& keySym : keySyms) {
             compWrapped.full(prefix + keySym);
+            compWrapped.full(releasePrefix + prefix + keySym);
         }
     });
+}
+
+template<> string Converter<KeyCombo>::str(KeyCombo payload) {
+    return payload.str();
 }

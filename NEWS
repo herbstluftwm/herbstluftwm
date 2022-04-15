@@ -7,6 +7,7 @@ older versions.
 Current git version
 -------------------
 
+  * Key binds for release events.
   * The Setting 'smart_frame_surroundings' has been changed to accept the
     following new values: 'off', 'hide_all', and 'hide_gaps'. Setting it to
     'hide_gaps' will only hide frame gaps when applicable, 'hide_all' and 'off'
