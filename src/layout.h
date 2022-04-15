@@ -91,6 +91,11 @@ protected:
     std::weak_ptr<FrameSplit> parent_;
     Rectangle  last_rect; // last rectangle when being drawn
                           // this is only used for 'split explode'
+    /** each time, last_rect is updated, contentGeometry_ must be
+        updated, too! For FrameLeaf, the geometry is slightly different
+        because last_rect is the "outer" geometry.
+       */
+    Attribute_<Rectangle> contentGeometry_;
 };
 
 class FrameLeaf : public Frame, public FrameDataLeaf {
