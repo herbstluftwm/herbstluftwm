@@ -1050,13 +1050,15 @@ class MultiscreenDisplay:
 def keyboard():
     class KeyBoard:
         def press(self, key_spec):
+            print(f"send key press and release {key_spec}", file=sys.stderr)
             subprocess.check_call(['xdotool', 'key', key_spec])
-            print(f"sended key press {key_spec}", file=sys.stderr)
 
         def down(self, key_spec):
+            print(f"send key release {key_spec}", file=sys.stderr)
             subprocess.check_call(['xdotool', 'keydown', key_spec])
 
         def up(self, key_spec):
+            print(f"send key press {key_spec}", file=sys.stderr)
             subprocess.check_call(['xdotool', 'keyup', key_spec])
 
         def get_focus(self):

@@ -534,7 +534,7 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
 }
 
 void XMainLoop::keypressOrRelease(XKeyEvent* event) {
-    HSDebug("name is: KeyPress\n");
+    // HSDebug("name is: KeyPress or KeyRelease\n");
     root_->keys()->handleKeyPress(event);
 }
 
