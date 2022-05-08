@@ -38,6 +38,9 @@ public:
      * we need well-defined reverse lookups for stringification.
      */
     static const std::vector<ModifierNameAndMask> modifierMasks;
+    /*! bit-wise or of all supported modifier masks
+     */
+    static const unsigned int allModifierMasks;
     static unsigned int modifierMaskFromTokens(const std::vector<std::string>& tokens);
     static std::vector<std::string> tokensFromString(std::string keySpec);
     static std::vector<std::string> getNamesForModifierMask(unsigned int mask);
