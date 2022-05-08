@@ -28,6 +28,7 @@ class Tmp; // IWYU pragma: keep
 class TypesDoc; // IWYU pragma: keep
 class Watchers;
 class XConnection;
+class XKeyGrabber;
 
 class Globals {
 public:
@@ -73,6 +74,7 @@ public:
     std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
     std::unique_ptr<GlobalCommands> global_commands; // Using "pimpl" to avoid include
     XConnection& X;
+    std::unique_ptr<XKeyGrabber> xKeyGrabber_;
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information
     // automatically from the signals emitted by ClientManager, etc

@@ -9,7 +9,6 @@
 #include "keycombo.h"
 #include "object.h"
 #include "regexstr.h"
-#include "xkeygrabber.h"
 
 class Client;
 class Completion;
@@ -67,6 +66,13 @@ public:
     KeyManager() = default;
     ~KeyManager();
 
+    //! emitted whenever a keycombo changes from inactive to active
+    Signal_<KeyCombo> keyComboActive;
+    //! emitted whenever a keycombo changes from active to inactive
+    Signal_<KeyCombo> keyComboInactive;
+    //! emitted when all keycombos become inactive
+    Signal keyComboAllInactive;
+
     void keybindCommand(CallOrComplete invoc);
     int addKeybind(KeyBinding newBinding, Output output);
     int listKeybindsCommand(Output output) const;
@@ -74,26 +80,17 @@ public:
 
     void removeKeybindCompletion(Completion &complete);
 
-    void handleKeyPress(XKeyEvent* ev);
+    void handleKeyComboEvent(KeyCombo combo);
 
-    void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);
     void setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive);
     void clearActiveKeyMask();
-
-    // TODO: This is not supposed to exist. It only does as a workaround,
-    // because mouse.cpp still wants to know the numlock mask.
-    unsigned int getNumlockMask() const {
-        return xKeyGrabber_.getNumlockMask();
-    }
 
 private:
     bool removeKeyBinding(const KeyCombo& comboToRemove, bool* wasActive = nullptr);
 
     //! Currently defined keybindings
     std::vector<std::unique_ptr<KeyBinding>> binds;
-
-    XKeyGrabber xKeyGrabber_;
 
     // The last applies KeyMask & KeysInactive(for comparison on change)
     KeyMask currentKeyMask_;

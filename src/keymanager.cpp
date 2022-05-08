@@ -22,7 +22,6 @@ using std::string;
 using std::unique_ptr;
 
 KeyManager::~KeyManager() {
-    xKeyGrabber_.ungrabAll();
 }
 
 void KeyManager::keybindCommand(CallOrComplete invoc)
@@ -62,7 +61,7 @@ int KeyManager::addKeybind(KeyBinding newBinding, Output output) {
         // Grab for events on this keycode
         newBinding.grabbed = true;
         if (!alreadyActive) {
-            xKeyGrabber_.grabKeyCombo(newBinding.keyCombo);
+            keyComboActive.emit(newBinding.keyCombo);
         }
     }
 
@@ -94,7 +93,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
 
     if (arg == "--all" || arg == "-F") {
         binds.clear();
-        xKeyGrabber_.ungrabAll();
+        keyComboAllInactive.emit();
     } else {
         KeyCombo comboToRemove = {};
         try {
@@ -105,8 +104,11 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         }
 
         // Remove binding (or moan if none was found)
-        if (removeKeyBinding(comboToRemove)) {
-            regrabAll();
+        bool wasActive = false;
+        if (removeKeyBinding(comboToRemove, &wasActive)) {
+            if (wasActive) {
+                keyComboInactive.emit(comboToRemove);
+            }
         } else {
             output.perror() << "Key \"" << arg << "\" is not bound\n";
             return HERBST_INVALID_ARGUMENT;
@@ -126,12 +128,11 @@ void KeyManager::removeKeybindCompletion(Completion &complete) {
     }
 }
 
-void KeyManager::handleKeyPress(XKeyEvent* ev) {
-    KeyCombo pressed = xKeyGrabber_.xEventToKeyCombo(ev);
+void KeyManager::handleKeyComboEvent(KeyCombo combo) {
 
     auto found = std::find_if(binds.begin(), binds.end(),
             [=](const unique_ptr<KeyBinding> &other) {
-                return pressed == other->keyCombo;
+                return combo == other->keyCombo;
             });
     if (found != binds.end()) {
         // execute the bound command
@@ -141,20 +142,6 @@ void KeyManager::handleKeyPress(XKeyEvent* ev) {
         // discard output, but forward errors to std::cerr
         OutputChannels channels(cmd.front(), discardedOutput, std::cerr);
         Commands::call(input, channels);
-    }
-}
-
-void KeyManager::regrabAll() {
-    xKeyGrabber_.updateNumlockMask();
-
-     // Remove all current grabs:
-    xKeyGrabber_.ungrabAll();
-
-    for (auto& binding : binds) {
-        // grab precisely those again, that have been grabbed before
-        if (binding->grabbed) {
-            xKeyGrabber_.grabKeyCombo(binding->keyCombo);
-        }
     }
 }
 
@@ -198,11 +185,11 @@ void KeyManager::setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysIna
         bool isAllowed = keysInactive.allowsBinding(binding->keyCombo)
                          && keyMask.allowsBinding(binding->keyCombo);
         if (isAllowed && !binding->grabbed) {
-            xKeyGrabber_.grabKeyCombo(binding->keyCombo);
             binding->grabbed = true;
+            keyComboActive.emit(binding->keyCombo);
         } else if (!isAllowed && binding->grabbed) {
-            xKeyGrabber_.ungrabKeyCombo(binding->keyCombo);
             binding->grabbed = false;
+            keyComboInactive.emit(binding->keyCombo);
         }
     }
     currentKeyMask_ = keyMask;

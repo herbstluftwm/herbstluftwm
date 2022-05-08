@@ -23,6 +23,7 @@
 #include "root.h"
 #include "tag.h"
 #include "x11-utils.h"
+#include "xkeygrabber.h"
 
 using std::make_shared;
 using std::vector;
@@ -317,15 +318,8 @@ MouseManager::MouseFunction MouseManager::string2mousefunction(const string& nam
 }
 
 std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     MouseCombo mb = {};
-    mb.modifiers_ = modifiers
-        & ~(numlockMask|LockMask) // remove numlock and capslock mask
-        & ~( Button1Mask // remove all mouse button masks
-           | Button2Mask
-           | Button3Mask
-           | Button4Mask
-           | Button5Mask );
+    mb.modifiers_ = modifiers & ModifierCombo::allModifierMasks;
     mb.button_ = button;
 
     auto found = std::find_if(binds.begin(), binds.end(),
@@ -341,7 +335,7 @@ std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_bind
 
 void MouseManager::grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    unsigned int numlockMask = Root::get()->xKeyGrabber_->getNumlockMask();
     vector<unsigned int> modifiers = { 0, LockMask, numlockMask, numlockMask | LockMask };
     if (focused) {
         for (auto& bind : binds) {

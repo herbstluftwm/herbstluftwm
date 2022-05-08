@@ -32,6 +32,7 @@
 #include "utils.h"
 #include "watchers.h"
 #include "xconnection.h"
+#include "xkeygrabber.h"
 
 using std::make_pair;
 using std::function;
@@ -535,14 +536,14 @@ void XMainLoop::focusin(XFocusChangeEvent* event) {
 
 void XMainLoop::keypressOrRelease(XKeyEvent* event) {
     // HSDebug("name is: KeyPress or KeyRelease\n");
-    root_->keys()->handleKeyPress(event);
+    root_->keys()->handleKeyComboEvent(root_->xKeyGrabber_->xEventToKeyCombo(event));
 }
 
 void XMainLoop::mappingnotify(XMappingEvent* ev) {
     // regrab when keyboard map changes
     XRefreshKeyboardMapping(ev);
     if(ev->request == MappingKeyboard) {
-        root_->keys()->regrabAll();
+        root_->xKeyGrabber_->regrabAll();
         //TODO: mouse_regrab_all();
     }
 }
