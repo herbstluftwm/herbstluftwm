@@ -6,8 +6,8 @@
 #include <tuple>
 
 #include "argparse.h"
-#include "parserutils.h"
 #include "globals.h"
+#include "parserutils.h"
 
 using std::endl;
 using std::function;
