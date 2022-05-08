@@ -51,6 +51,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , lock_frames(false)
     , mouse { 0, 0 }
     , rect(this, "geometry", rect_, &Monitor::atLeastMinWindowSize)
+    , contentGeometry(this, "content_geometry", &Monitor::getFloatingArea)
     , settings(settings_)
     , monman(monman_)
 {
@@ -66,6 +67,9 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     rect.changedByUser().connect(this, &Monitor::applyLayout);
 
     rect.setDoc("the outer geometry of the monitor");
+    contentGeometry.setDoc("the inner geometry of the monitor, i.e. the geometry with "
+                           "the pads deducted from all sides. This is the area floating "
+                           "and tiled client windows are placed.");
 
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
@@ -164,7 +168,8 @@ void Monitor::applyLayout() {
     cur_rect.width -= (pad_left() + pad_right());
     cur_rect.y += pad_up();
     cur_rect.height -= (pad_up() + pad_down());
-    if (!g_settings->smart_frame_surroundings() || tag->frame->root_->isSplit()) {
+    if (g_settings->smart_frame_surroundings() == SmartFrameSurroundings::off
+        || tag->frame->root_->isSplit()) {
         // apply frame gap
         cur_rect.x += settings->frame_gap();
         cur_rect.y += settings->frame_gap();

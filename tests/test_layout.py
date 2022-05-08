@@ -887,6 +887,21 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     assert (frame_geom.width, frame_geom.height) == (800, 600)
 
 
+@pytest.mark.parametrize("align", ["horizontal", "vertical"])
+def test_split_and_remove_with_smart_frame_surroundings_hide_gaps(hlwm, x11, align):
+    # Split frame, then merge it again to one root frame
+    # Root frame should have no frame gaps in the end
+    hlwm.call('set frame_border_width 15')
+    hlwm.call('set smart_frame_surroundings hide_gaps')
+    hlwm.call(['split', align])
+    hlwm.call('remove')
+
+    # Search for all frames, there should only be one
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (770, 570)
+
+
 @pytest.mark.parametrize("client_focused", list(range(0, 4)))
 @pytest.mark.parametrize("direction", ['u', 'd', 'l', 'r'])
 def test_focus_directional_2x2grid(hlwm, client_focused, direction):
@@ -1901,3 +1916,27 @@ def test_frame_leaf_algorithm_change(hlwm, x11):
     assert geom1_before.height < geom1_now.height
     assert geom1_now.width == geom2_now.width
     assert geom1_now.height == geom2_now.height
+
+
+def test_frame_content_geometry_attribute(hlwm):
+    hlwm.attr.settings.smart_frame_surroundings = 'off'
+    hlwm.attr.settings.frame_gap = 0
+    hlwm.attr.settings.frame_border_width = 1
+    bw = 1
+    winid, _ = hlwm.create_client()
+    mon_rect = hlwm.attr.monitors.focus.content_geometry()
+    mon_rect_minus_frame_border = mon_rect.adjusted(dx=bw, dy=bw, dw=bw * -2, dh=bw * -2)
+
+    for split_count in range(0, 4):
+        # the content of the root frame should match the monitor.
+        # the frame border is only applied if the root frame is a
+        # frame leaf (with decoration), i.e. if split_count == 0
+        assert hlwm.attr.tags.focus.tiling.root.content_geometry() \
+            == (mon_rect_minus_frame_border if split_count == 0 else mon_rect)
+
+        # the content of the leaf frame should match the decoration of the client:
+        assert hlwm.attr.clients[winid].decoration_geometry() \
+            == hlwm.attr.tags.focus.tiling.focused_frame.content_geometry()
+
+        # split again:
+        hlwm.call('split explode')

@@ -110,6 +110,7 @@ def types_and_shorthands():
         'color': 'c',
         'string': 's',
         'regex': 'r',
+        'SmartFrameSurroundings': 'n',
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
         'TextAlign': 'n',

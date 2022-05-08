@@ -36,7 +36,16 @@ Frame::Frame(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
     , tag_(tag)
     , settings_(settings)
     , parent_(parent)
-{}
+    , contentGeometry_(this, "content_geometry", {})
+{
+    contentGeometry_.setDoc("the geometry of the frame\'s contents, i.e. "
+                            "of the area filled by child frames or client windows.");
+    frameIndexAttr_.setDoc("A string containing only \'0\' and \'1\' that describes the "
+                           "position of the frame in the tree. The empty string "
+                           "denotes the root frame. Appending \'0\' (respectively "
+                           "\'1\') to a frame index yields the frame index of the first "
+                           "(respectively second) subtree.");
+}
 Frame::~Frame() = default;
 
 FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
@@ -320,10 +329,14 @@ TilingResult FrameLeaf::layoutGrid(Rectangle rect) {
 
 TilingResult FrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
-    if (!settings_->smart_frame_surroundings() || parent_.lock()) {
+    if (settings_->smart_frame_surroundings() == SmartFrameSurroundings::off
+        || parent_.lock()) {
         // apply frame gap
         rect.height -= settings_->frame_gap();
         rect.width -= settings_->frame_gap();
+    }
+    if (!(settings_->smart_frame_surroundings() == SmartFrameSurroundings::hide_all)
+        || parent_.lock()) {
         // apply frame border
         rect.x += settings_->frame_border_width();
         rect.y += settings_->frame_border_width();
@@ -333,11 +346,12 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
 
     rect.width = std::max(WINDOW_MIN_WIDTH, rect.width);
     rect.height = std::max(WINDOW_MIN_HEIGHT, rect.height);
+    contentGeometry_ = rect;
 
     // move windows
     TilingResult res;
     FrameDecorationData frame_data;
-    frame_data.geometry = rect;
+    frame_data.contentGeometry = rect;
     frame_data.visible = true;
     frame_data.hasClients = !clients.empty();
     frame_data.hasParent = (bool)parent_.lock();
@@ -407,6 +421,7 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
 
 TilingResult FrameSplit::computeLayout(Rectangle rect) {
     last_rect = rect;
+    contentGeometry_ = rect;
     auto first = rect;
     auto second = rect;
     if (align_ == SplitAlign::vertical) {

@@ -325,7 +325,7 @@ shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr
             [tileres] (shared_ptr<FrameLeaf> frame) -> Rectangle {
         for (auto& framedata : tileres.frames) {
             if (framedata.first == frame->decoration) {
-                return framedata.second.geometry;
+                return framedata.second.contentGeometry;
             }
         }
         // if not found, return an invalid rectangle;

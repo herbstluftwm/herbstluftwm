@@ -94,10 +94,11 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     }
     int bw = settings->frame_border_width();
 
-    if (settings->smart_frame_surroundings() && !data.hasParent) {
+    if (settings->smart_frame_surroundings() == SmartFrameSurroundings::hide_all
+        && !data.hasParent) {
         bw = 0;
     }
-    Rectangle rect = data.geometry;
+    Rectangle rect = data.contentGeometry;
     XSetWindowBorderWidth(xcon.display(), window, bw);
     XMoveResizeWindow(xcon.display(), window,
                       rect.x - bw,
@@ -123,8 +124,8 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
         }
         for (Client* client : frame_.clients) {
             Rectangle geom = client->dec->last_outer();
-            geom.x -= data.geometry.x;
-            geom.y -= data.geometry.y;
+            geom.x -= data.contentGeometry.x;
+            geom.y -= data.contentGeometry.y;
             holes.push_back(geom);
         }
         window_cut_rect_holes(xcon, window, rect.width, rect.height, holes);

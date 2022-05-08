@@ -1,5 +1,11 @@
 name: HLWM CI
 
+concurrency:
+  # Using concurrency to cancel any in-progress job or run.
+  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-concurrency-to-cancel-any-in-progress-job-or-run
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -243,7 +249,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: install asciidoc
-        run: sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
       - name: restrict cmake to doc
         run: |
           cat > CMakeLists.txt <<EOF

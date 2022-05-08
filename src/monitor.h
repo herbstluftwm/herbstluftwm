@@ -41,6 +41,7 @@ public:
         int y;
     } mouse;
     Attribute_<Rectangle>   rect;   // area for this monitor
+    DynAttribute_<Rectangle> contentGeometry;
     Window      stacking_window;   // window used for making stacking easy
     Signal monitorMoved;
     Rectangle clampRelativeGeometry(Rectangle relativeGeo) const;

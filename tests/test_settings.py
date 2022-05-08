@@ -1,5 +1,16 @@
 import pytest
 
+SMART_FRAME_SURROUNDINGS = {
+    'hide_all': 'hide_all',
+    'on': 'hide_all',
+    'true': 'hide_all',
+    '1': 'hide_all',
+    'hide_gaps': 'hide_gaps',
+    'off': 'off',
+    'false': 'off',
+    '0': 'off',
+}
+
 
 can_toggle = [
     'update_dragged_clients',
@@ -126,3 +137,34 @@ def test_toggle_invalid_setting(hlwm):
 def test_monitors_locked_negative_value(hlwm):
     hlwm.call_xfail('set monitors_locked -1') \
         .expect_stderr('out of range')
+
+
+def test_smart_frame_surroundings_parsing(hlwm):
+    assert sorted(SMART_FRAME_SURROUNDINGS) == sorted(hlwm.complete(['set', 'smart_frame_surroundings']))
+
+    for k in SMART_FRAME_SURROUNDINGS:
+        hlwm.attr.settings.smart_frame_surroundings = k
+        assert hlwm.attr.settings.smart_frame_surroundings() == SMART_FRAME_SURROUNDINGS[k]
+
+    hlwm.call_xfail('set smart_frame_surroundings foobar') \
+        .expect_stderr('Expecting one of: hide_all.*')
+
+
+def test_smart_frame_surroundings(hlwm, x11):
+    hlwm.attr.settings.frame_border_width = 5
+    hlwm.attr.settings.frame_gap = 7
+
+    hlwm.attr.settings.smart_frame_surroundings = 'hide_all'
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (800, 600)
+
+    hlwm.attr.settings.smart_frame_surroundings = 'hide_gaps'
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (790, 590)
+
+    hlwm.attr.settings.smart_frame_surroundings = 'off'
+    frame_x11 = x11.get_hlwm_frames()[0]
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (776, 576)

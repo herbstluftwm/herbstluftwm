@@ -36,31 +36,62 @@ void XKeyGrabber::updateNumlockMask() {
  *
  * Normalization means stripping any ignored modifiers from the modifier mask
  * (including the runtime-defined Numlock mask).
+ *
+ * Also, for release-events, we look up the modifier state that was active during
+ * the key press.
  */
-KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
+KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) {
     KeyCombo combo = {};
     combo.keysym = XkbKeycodeToKeysym(g_display, ev->keycode, 0, 0);
-    combo.modifiers_ = ev->state;
-
-    // Normalize
-    combo.modifiers_ &= ~(numlockMask_ | LockMask);
+    combo.modifiers_ =  ev->state & ~(numlockMask_ | LockMask);
+    if (ev->type == KeyRelease) {
+        // on key release: extract the modifier state from when
+        // the corresponding key press happened
+        auto it = keycode2modifierMask_.find(ev->keycode);
+        if (it != keycode2modifierMask_.end()) {
+            combo.modifiers_ = it->second;
+            combo.modifiers_ &= ~(numlockMask_ | LockMask);
+            // since we see the release event,
+            // the modifier mask is not needed anymore:
+            keycode2modifierMask_.erase(it);
+        }
+        combo.onRelease_ = true;
+    } else {
+        // on key press:
+        // - keep the modifiers as extracted from ev->state.
+        // - but remember them for the corresponding release event
+        keycode2modifierMask_[ev->keycode] = combo.modifiers_;
+    }
 
     return combo;
 }
 
 //! Grabs the given key combo
 void XKeyGrabber::grabKeyCombo(const KeyCombo& keyCombo) {
-    changeGrabbedState(keyCombo, true);
+    auto x11KeyCombo = keyCombo;
+    x11KeyCombo.onRelease_ = false;
+    int oldCount = keyComboCount(x11KeyCombo);
+    setKeyComboCount(x11KeyCombo, oldCount + 1);
+    if (oldCount <= 0) {
+        changeGrabbedState(x11KeyCombo, true);
+    }
 }
 
 //! Ungrabs the given key combo
 void XKeyGrabber::ungrabKeyCombo(const KeyCombo& keyCombo) {
-    changeGrabbedState(keyCombo, false);
+    auto x11KeyCombo = keyCombo;
+    x11KeyCombo.onRelease_ = false;
+    int oldCount = keyComboCount(x11KeyCombo);
+    setKeyComboCount(x11KeyCombo, oldCount - 1);
+    if (oldCount > 0 && oldCount - 1 <= 0) {
+        changeGrabbedState(x11KeyCombo, false);
+    }
 }
 
 //! Removes all grabbed keys (without knowing them)
 void XKeyGrabber::ungrabAll() {
     XUngrabKey(g_display, AnyKey, AnyModifier, g_root);
+    keycombo2bindCount_.clear();
 }
 
 //! Grabs/ungrabs a given key combo
@@ -84,6 +115,25 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
         }
     }
 }
+
+int XKeyGrabber::keyComboCount(const KeyCombo& x11KeyCombo)
+{
+    auto it = keycombo2bindCount_.find(x11KeyCombo);
+    if (it != keycombo2bindCount_.end()) {
+        return it->second;
+    }
+    return 0;
+}
+
+void XKeyGrabber::setKeyComboCount(const KeyCombo& x11KeyCombo, int newCount)
+{
+    if (newCount <= 0) {
+        keycombo2bindCount_.erase(x11KeyCombo);
+    } else {
+        keycombo2bindCount_[x11KeyCombo] = newCount;
+    }
+}
+
 
 vector<string> XKeyGrabber::getPossibleKeySyms() {
     vector<string> ret;

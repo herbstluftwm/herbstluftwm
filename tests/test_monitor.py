@@ -618,24 +618,35 @@ def test_monitor_rect_command(hlwm):
     hlwm.call('add othertag')
     # two monitors with unique coordinates and pads
     hlwm.call('set_monitors 300x400+1+2 500x600+300+4')
+    assert hlwm.attr.monitors[0].geometry() \
+        == hlwm.attr.monitors[0].content_geometry()
+    assert hlwm.attr.monitors[1].geometry() \
+        == hlwm.attr.monitors[1].content_geometry()
+
     hlwm.attr.monitors[0].pad_left = 10
     hlwm.attr.monitors[0].pad_right = 20
     hlwm.attr.monitors[0].pad_up = 30
     hlwm.attr.monitors[0].pad_down = 40
+    mon_0_content_geo = [11, 32, 270, 330]
+    assert hlwm.attr.monitors[0].content_geometry() \
+        == Rectangle(*mon_0_content_geo)
 
     hlwm.attr.monitors[1].pad_left = 11
     hlwm.attr.monitors[1].pad_right = 21
     hlwm.attr.monitors[1].pad_up = 31
     hlwm.attr.monitors[1].pad_down = 41
+    mon_1_content_geo = [311, 35, 468, 528]
+    assert hlwm.attr.monitors[1].content_geometry() \
+        == Rectangle(*mon_1_content_geo)
 
     def monitor_rect(args):
-        return hlwm.call(['monitor_rect'] + args).stdout.strip()
+        return [int(v) for v in hlwm.call(['monitor_rect'] + args).stdout.strip().split(' ')]
 
-    assert monitor_rect([]) == '1 2 300 400'
+    assert monitor_rect([]) == [1, 2, 300, 400]
     assert monitor_rect(['0']) == monitor_rect([])
-    assert monitor_rect(['-p', '']) == '11 32 270 330'
-    assert monitor_rect(['1']) == '300 4 500 600'
-    assert monitor_rect(['-p', '1']) == '311 35 468 528'
+    assert monitor_rect(['-p', '']) == mon_0_content_geo
+    assert monitor_rect(['1']) == [300, 4, 500, 600]
+    assert monitor_rect(['-p', '1']) == mon_1_content_geo
     assert monitor_rect(['-p', '1']) == monitor_rect(['1', '-p'])
 
 

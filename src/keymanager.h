@@ -67,14 +67,14 @@ public:
     KeyManager() = default;
     ~KeyManager();
 
-    int addKeybindCommand(Input input, Output output);
+    void keybindCommand(CallOrComplete invoc);
+    int addKeybind(KeyBinding newBinding, Output output);
     int listKeybindsCommand(Output output) const;
     int removeKeybindCommand(Input input, Output output);
 
-    void addKeybindCompletion(Completion &complete);
     void removeKeybindCompletion(Completion &complete);
 
-    void handleKeyPress(XKeyEvent* ev) const;
+    void handleKeyPress(XKeyEvent* ev);
 
     void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);
@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    bool removeKeyBinding(const KeyCombo& comboToRemove);
+    bool removeKeyBinding(const KeyCombo& comboToRemove, bool* wasActive = nullptr);
 
     //! Currently defined keybindings
     std::vector<std::unique_ptr<KeyBinding>> binds;
