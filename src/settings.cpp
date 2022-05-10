@@ -278,11 +278,11 @@ Settings::Settings()
 
     show_frame_decorations.setDoc(
                 "This controls, which frame decorations are shown at all. \n"
-                "\'none\' shows no frame decorations at all, \n"
-                "\'nonempty\' shows decorations of frames that have client windows, \n"
-                "\'if_multiple\' shows decorations on the tags with at least two frames, \n"
-                "\'focused\' shows the decoration of focused and nonempty frames, \n"
-                "\'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
+                "- \'none\' shows no frame decorations at all, \n"
+                "- \'nonempty\' shows decorations of frames that have client windows, \n"
+                "- \'if_multiple\' shows decorations on the tags with at least two frames, \n"
+                "- \'focused\' shows the decoration of focused and nonempty frames, \n"
+                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
                 );
 
     frame_active_opacity.setDoc(
