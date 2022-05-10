@@ -32,7 +32,8 @@ template<>
 Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values = ValueListPlain {
     { ShowFrameDecorations::all, "all" },
     { ShowFrameDecorations::focused, "focused" },
-    { ShowFrameDecorations::focused_if_ambiguous, "focused_if_ambiguous" },
+    { ShowFrameDecorations::focused_if_multiple, "focused_if_multiple" },
+    { ShowFrameDecorations::if_multiple, "if_multiple" },
     { ShowFrameDecorations::nonempty, "nonempty" },
     { ShowFrameDecorations::none, "none" },
 };
@@ -276,11 +277,12 @@ Settings::Settings()
                 );
 
     show_frame_decorations.setDoc(
-                "This controls, which frame decorations are shown at all. "
-                "\'none\' shows no frame decorations at all, "
-                "\'nonempty\' shows frame decorations of frames that have client windows, "
-                "\'focused_if_ambiguous\' additionally shows decoration of the focused frame on tags with multiple frames, "
-                "\'focused\' additionally shows the decoration of the focused frame."
+                "This controls, which frame decorations are shown at all. \n"
+                "\'none\' shows no frame decorations at all, \n"
+                "\'nonempty\' shows decorations of frames that have client windows, \n"
+                "\'if_multiple\' shows decorations on the tags with at least two frames, \n"
+                "\'focused\' shows the decoration of focused and nonempty frames, \n"
+                "\'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
                 );
 
     frame_active_opacity.setDoc(

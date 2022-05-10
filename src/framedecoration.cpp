@@ -146,19 +146,26 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
 void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isFocused)
 {
     bool show = false;
-    ShowFrameDecorations when = settings->show_frame_decorations();
-    if (when >= ShowFrameDecorations::nonempty) {
-        show = show || data.hasClients;
-    }
-    if (when >= ShowFrameDecorations::focused) {
-        show = show || isFocused;
-    }
-    if (when >= ShowFrameDecorations::focused_if_ambiguous) {
-        bool isRootFrame = frame_.parent_.expired();
-        show = show || (isFocused && !isRootFrame);;
-    }
-    if (when >= ShowFrameDecorations::all) {
+    bool isRootFrame = frame_.parent_.expired();
+    switch (settings->show_frame_decorations()) {
+    case ShowFrameDecorations::none:
+        show = false;
+        break;
+    case ShowFrameDecorations::nonempty:
+        show = data.hasClients;
+        break;
+    case ShowFrameDecorations::focused:
+        show = data.hasClients || isFocused;
+        break;
+    case ShowFrameDecorations::focused_if_multiple:
+        show = data.hasClients || (isFocused && !isRootFrame);
+        break;
+    case ShowFrameDecorations::if_multiple:
+        show = data.hasClients || !isRootFrame;
+        break;
+    case ShowFrameDecorations::all:
         show = true;
+        break;
     }
     XConnection& xcon = XConnection::get();
     if (show != visible) {

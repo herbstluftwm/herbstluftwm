@@ -25,11 +25,12 @@ template<> Finite<SmartFrameSurroundings>::ValueList Finite<SmartFrameSurroundin
 template<> inline Type Attribute_<SmartFrameSurroundings>::staticType() { return Type::NAMES; }
 
 enum class ShowFrameDecorations {
-    none = 0,
-    nonempty = 1,
-    focused_if_ambiguous = 2,
-    focused = 3,
-    all = 4,
+    none,
+    nonempty,
+    focused_if_multiple,
+    focused,
+    if_multiple,
+    all,
 };
 
 template <>
@@ -72,7 +73,7 @@ public:
     Attribute_<int>           frame_normal_opacity = {"frame_normal_opacity", 100};
     Attribute_<bool>          focus_crosses_monitor_boundaries = {"focus_crosses_monitor_boundaries", true};
     Attribute_<bool>          always_show_frame = {"always_show_frame", false};
-    Attribute_<ShowFrameDecorations> show_frame_decorations = {"show_frame_decorations", ShowFrameDecorations::focused_if_ambiguous};
+    Attribute_<ShowFrameDecorations> show_frame_decorations = {"show_frame_decorations", ShowFrameDecorations::focused_if_multiple};
     Attribute_<bool>          default_direction_external_only = {"default_direction_external_only", false};
     Attribute_<LayoutAlgorithm> default_frame_layout = {"default_frame_layout", LayoutAlgorithm::vertical};
     Attribute_<bool>          focus_follows_mouse = {"focus_follows_mouse", false};

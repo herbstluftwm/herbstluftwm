@@ -6,8 +6,9 @@ def test_show_frame_decorations_one_frame(hlwm, x11, running_clients, running_cl
     expected_frame_count = {
         'all': 1,
         'focused': 1,
-        'focused_if_ambiguous': 1 if running_clients_num > 0 else 0,
+        'focused_if_multiple': 1 if running_clients_num > 0 else 0,
         'nonempty': 1 if running_clients_num > 0 else 0,
+        'if_multiple': 1 if running_clients_num > 0 else 0,
         'none': 0,
     }
     for v in hlwm.complete(['set', 'show_frame_decorations']):
@@ -25,8 +26,9 @@ def test_show_frame_decorations_focus(hlwm, x11):
     expected_frame_count = {
         'all': 2,
         'focused': 2,
-        'focused_if_ambiguous': 2,
+        'focused_if_multiple': 2,
         'nonempty': 1,
+        'if_multiple': 2,
         'none': 0,
     }
     for v in hlwm.complete(['set', 'show_frame_decorations']):
