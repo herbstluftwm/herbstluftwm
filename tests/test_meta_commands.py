@@ -94,9 +94,8 @@ def test_set_attr_can_not_set_writable(hlwm):
 
 
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
-    call = hlwm.call_xfail('substitute X echo X')
-
-    assert call.stderr == 'substitute: The root object has no attribute "echo"\n'
+    hlwm.call_xfail('substitute X echo X') \
+        .expect_stderr('substitute: The root object has no attribute "echo"')
 
 
 def test_substitute_command_missing(hlwm):
@@ -135,9 +134,8 @@ def test_sprintf_nested(hlwm):
 
 
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
-    call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
-
-    assert call.stderr == 'sprintf: The root object has no attribute "echo"\n'
+    hlwm.call_xfail('sprintf X %s/%s tags.count echo X') \
+        .expect_stderr('sprintf: The root object has no attribute "echo"')
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
@@ -186,6 +184,73 @@ def test_sprintf_completion_s_after_c_placeholder(hlwm):
 def test_sprintf_completion_0_placeholders(hlwm):
     assert hlwm.complete('sprintf T %%') \
         == sorted(['T'] + hlwm.call('list_commands').stdout.splitlines())
+
+
+def test_sprintf_simple_nested_format(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add yetanothertag')
+    commands = [
+        'sprintf S "%{tags.count}" echo S',
+        'sprintf S "%{%c.count}" tags echo S',
+        'sprintf S "%{%ccount}" tags. echo S',
+        'sprintf S "%{%c}" tags.count echo S',
+        'sprintf S "%{%c%c%c%c}" tags . count "" echo S',
+        'mktemp string T chain'
+        + ' , set_attr T tags.count'
+        + ' , sprintf S "%{%s}" T echo S',
+        'mktemp string T chain'
+        + ' , set_attr T tags.count'
+        + ' , sprintf S "%{%{%c}}" T echo S',
+        'sprintf S "%{%{%c}}" my_attr_path echo S',
+    ]
+    hlwm.attr.my_attr_path = 'tags.count'
+    expect_output = '3\n'
+    for cmd in commands:
+        assert hlwm.call(cmd).stdout == expect_output
+
+
+def test_sprintf_simple_nested_format_multiple_blos(hlwm):
+    commands = [
+        'sprintf S "%{tags.count}-%{tags.count}" echo S',
+    ]
+    expect_output = '1-1\n'
+    for cmd in commands:
+        assert hlwm.call(cmd).stdout == expect_output
+
+
+def test_sprintf_error_nested_format(hlwm):
+    hlwm.call_xfail('sprintf S "%{x"') \
+        .expect_stderr('unmatched { at position 1')
+
+    hlwm.call_xfail('sprintf S "%{foo%{bar%{}x"') \
+        .expect_stderr('unmatched { at position 6')
+
+    hlwm.call_xfail('sprintf S "x%{y%{zzz%"') \
+        .expect_stderr('dangling %')
+
+    hlwm.call_xfail('sprintf S "%{%s%}"') \
+        .expect_stderr('invalid format type %} at position 5')
+
+    hlwm.call_xfail('sprintf S "%{invalid.path}"') \
+        .expect_stderr('No such object invalid')
+
+    hlwm.call_xfail('sprintf S "%{monitors.wrong_attr}"') \
+        .expect_stderr('Object "monitors" has no attribute "wrong_attr"')
+
+    # the inner %{} works, but the outer %{...} fails
+    hlwm.attr.my_invalid_path = 'settings.invalid.path'
+    hlwm.call_xfail('sprintf S "%{%{my_invalid_path}}"') \
+        .expect_stderr('No such object settings.invalid')
+
+
+def test_sprintf_foreach_list_tag_names(hlwm):
+    hlwm.attr.tags[0].name = 'tag0'
+    hlwm.call('add othertag')
+    hlwm.call('add lasttag')
+    command = \
+        'foreach --filter-name="[0-9]*" T tags. ' \
+        + 'sprintf S "%{%c.name}" T echo S'
+    assert hlwm.call(command).stdout == 'tag0\nothertag\nlasttag\n'
 
 
 def test_disjoin_rects(hlwm):
