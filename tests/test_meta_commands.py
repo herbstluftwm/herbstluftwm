@@ -191,10 +191,10 @@ def test_sprintf_simple_nested_format(hlwm):
     hlwm.call('add yetanothertag')
     commands = [
         'sprintf S "%{tags.count}" echo S',
-        'sprintf S "%{%c.count}" tags echo S',
+        'sprintf ABC "%{%c.count}" tags echo ABC',
         'sprintf S "%{%ccount}" tags. echo S',
-        'sprintf S "%{%c}" tags.count echo S',
-        'sprintf S "%{%c%c%c%c}" tags . count "" echo S',
+        'sprintf alwaysuseupperace "%{%c}" tags.count echo alwaysuseupperace',
+        'sprintf - "%{%c%c%c%c}" tags . count "" echo -',
         'mktemp string T chain'
         + ' , set_attr T tags.count'
         + ' , sprintf S "%{%s}" T echo S',
@@ -225,7 +225,7 @@ def test_sprintf_error_nested_format(hlwm):
     hlwm.call_xfail('sprintf S "%{foo%{bar%{}x"') \
         .expect_stderr('unmatched { at position 6')
 
-    hlwm.call_xfail('sprintf S "x%{y%{zzz%"') \
+    hlwm.call_xfail('sprintf X "x%{y%{zzz%"') \
         .expect_stderr('dangling %')
 
     hlwm.call_xfail('sprintf S "%{%s%}"') \

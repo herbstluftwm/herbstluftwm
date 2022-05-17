@@ -174,7 +174,7 @@ Attribute* MetaCommands::getAttribute(string path, Output output) {
     }
 }
 
-Attribute* MetaCommands::getAttributeOrException(std::string path)
+Attribute* MetaCommands::getAttributeOrException(string path)
 {
     auto attr_path = Object::splitPath(path);
     auto child = root.child(attr_path.first);
