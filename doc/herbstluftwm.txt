@@ -900,6 +900,9 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
       - +%s+ inserts an attribute value whose path is given by the string value
         of the next 'FORMATARG'
       - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%\{ATTR\}+ inserts the current value of the attribute 'ATTR'. The path
+        'ATTR' can itself contain format placeholders. This can be used to
+        compose attribute paths at run time, e.g. in a +foreach+ loop.
       - +%%+ stands for a plain +%+
 
  ::
@@ -923,6 +926,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +sprintf VALUE "%{%c.client_count}" tags.0 echo VALUE+ +
+          +
+          Prints the number of clients on the tag with index 0
+        * +foreach --filter-name="[0-9]*" T tags. sprintf S "%{%c.client_count}" T echo T S+ +
+          +
+          Prints the number of clients for each tag.
         * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
           +
           has the same output as +
