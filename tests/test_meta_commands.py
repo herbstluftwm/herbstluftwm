@@ -209,7 +209,46 @@ def test_sprintf_simple_nested_format(hlwm):
         assert hlwm.call(cmd).stdout == expect_output
 
 
-def test_sprintf_simple_nested_format_multiple_blos(hlwm):
+def test_sprintf_braces_in_attribute_values(hlwm):
+    hlwm.attr.my_empty = ''
+    hlwm.attr.clients.my_empty = ''
+    hlwm.attr.my_ptr_empty = 'clients.my_empty'
+    hlwm.attr.my_ptr_brace_open = 'my_brace_open'
+    hlwm.attr.my_ptr_brace_close = 'my_brace_close'
+    hlwm.attr.my_brace_open = '{'
+    hlwm.attr.my_brace_close = '}'
+    format2output = {
+        '%{my_brace_open}': '{',
+        '%{my_brace_close}': '}',
+        '%{%{my_ptr_brace_open}}': '{',
+        '%{%{my_ptr_brace_close}}': '}',
+        '%{%{my_empty}my_brace_open}': '{',
+        '%{%{my_empty}my_brace_close}': '}',
+        '%{%{my_empty}my_brace_open}...': '{...',
+        ',,,%{%{my_empty}my_brace_open}...': ',,,{...',
+        ',,,%{%{my_empty}my_brace_open}': ',,,{',
+        '%{my_brace_open%{my_empty}}': '{',
+        '%{%{my_empty}my_brace_close%{my_empty}}': '}',
+        '%{%{%{my_ptr_empty}}my_brace_open}': '{',
+        '%{%{%{my_ptr_empty}}my_brace_close}': '}',
+    }
+    format2error = {
+        '%{%{my_brace_open}.foo}': 'No such object {',
+        '%{%{my_brace_close}.foo}': 'No such object }',
+        '%{tags.%{my_brace_open}}': '"tags" has no attribute "{"',
+        '%{tags.%{my_brace_close}}': '"tags" has no attribute "}"',
+    }
+
+    def format_cmd(frm):
+        return ['sprintf', 'S', frm, 'echo', 'S']
+
+    for frm, out in format2output.items():
+        assert hlwm.call(format_cmd(frm)).stdout.rstrip() == out
+    for frm, err in format2error.items():
+        hlwm.call_xfail(format_cmd(frm)).expect_stderr(err)
+
+
+def test_sprintf_simple_nested_format_multiple_blobs(hlwm):
     commands = [
         'sprintf S "%{tags.count}-%{tags.count}" echo S',
     ]
@@ -218,29 +257,55 @@ def test_sprintf_simple_nested_format_multiple_blos(hlwm):
         assert hlwm.call(cmd).stdout == expect_output
 
 
+def test_sprintf_toplevel_closing_braces_are_literals(hlwm):
+    format2output = {
+        '}': '}',
+        '}}}': '}}}',
+        'a}b}c}d': 'a}b}c}d',
+        '}bc}': '}bc}',
+        'before}': 'before}',
+        '%%{foo}': '%{foo}',
+        'x%%{foo}z': 'x%{foo}z',
+        '}after': '}after',
+        "@}-'-,-": "@}-'-,-",
+    }
+
+    def format_cmd(frm):
+        return ['sprintf', 'S', frm, 'echo', 'S']
+
+    for frm, out in format2output.items():
+        assert hlwm.call(format_cmd(frm)).stdout.rstrip() == out
+
+
 def test_sprintf_error_nested_format(hlwm):
-    hlwm.call_xfail('sprintf S "%{x"') \
-        .expect_stderr('unmatched { at position 1')
-
-    hlwm.call_xfail('sprintf S "%{foo%{bar%{}x"') \
-        .expect_stderr('unmatched { at position 6')
-
-    hlwm.call_xfail('sprintf X "x%{y%{zzz%"') \
-        .expect_stderr('dangling %')
-
-    hlwm.call_xfail('sprintf S "%{%s%}"') \
-        .expect_stderr('invalid format type %} at position 5')
-
-    hlwm.call_xfail('sprintf S "%{invalid.path}"') \
-        .expect_stderr('No such object invalid')
-
-    hlwm.call_xfail('sprintf S "%{monitors.wrong_attr}"') \
-        .expect_stderr('Object "monitors" has no attribute "wrong_attr"')
-
-    # the inner %{} works, but the outer %{...} fails
+    format2error = {
+        '%{x': 'unmatched { at position 1',
+        '%{foo%{bar%{}x': 'unmatched { at position 6',
+        'x%{y%{zzz%': 'dangling %',
+        '%{%s%}': 'invalid format type %} at position 5',
+        '%{invalid.path}': 'No such object invalid',
+        '%{monitors.wrong_attr}': 'Object "monitors" has no attribute "wrong_attr"',
+        '%{foo%}': 'invalid format type %}',
+        # the inner %{} works, but the outer %{...} fails:
+        '%{%{my_invalid_path}}': 'No such object settings.invalid',
+    }
     hlwm.attr.my_invalid_path = 'settings.invalid.path'
-    hlwm.call_xfail('sprintf S "%{%{my_invalid_path}}"') \
-        .expect_stderr('No such object settings.invalid')
+
+    for frm, err in format2error.items():
+        hlwm.call_xfail(['sprintf', 'S', frm, 'echo', 'S']).expect_stderr(err)
+
+
+def test_sprintf_nested_format_invalid_args(hlwm):
+    command2error = {
+        'sprintf S "%s.%{%{%{%c}}}" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%s}}}" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%c}}}%s" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%s}}}%s" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{}}}" tags.count echo S': 'has no attribute ""',
+        'sprintf S "%s.%{%{%{}}}" tags.count echo S': 'has no attribute ""',
+    }
+    for cmd, err in command2error.items():
+        hlwm.call_xfail(cmd).expect_stderr(err)
 
 
 def test_sprintf_foreach_list_tag_names(hlwm):
