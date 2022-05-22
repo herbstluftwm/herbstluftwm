@@ -7,6 +7,7 @@
 
 #include "commandio.h"
 
+class DomTree;
 
 class CssBox {
 public:
@@ -35,11 +36,17 @@ public:
     std::vector<CssDeclaration> declarations_;
 };
 
-class CssTree {
+class DomTree {
+    /**
+     * a very simple iterator to traverse a dom-like tree
+     * when testing whether a css selector holds
+     */
 public:
-    virtual CssTree* parent() = 0;
-    virtual CssTree* nthChild(size_t idx) = 0;
-    /* virtual CssTree* leftSibling() = 0; */
+    virtual ~DomTree() = default;
+    virtual DomTree* parent() = 0;
+    virtual DomTree* nthChild(size_t idx) = 0;
+    virtual DomTree* leftSibling() = 0;
+    virtual bool hasClass(const std::string& className) = 0;
     virtual size_t childCount() = 0;
 };
 
