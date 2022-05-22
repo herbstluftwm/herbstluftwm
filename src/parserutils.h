@@ -21,7 +21,7 @@ public:
         ss.buf = source;
         ss.pos = 0;
         return ss;
-    };
+    }
     class Error : public std::exception {
     public:
         size_t line_ = 0;
