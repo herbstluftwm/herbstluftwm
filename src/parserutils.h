@@ -184,7 +184,7 @@ public:
 template<typename Result>
 class Parser {
 public:
-    Parser(std::function<Result(SourceStream& source)> r) : run_(r) {};
+    Parser(const std::function<Result(SourceStream& source)>& r) : run_(r) {}
     bool isApplicable(SourceStream& source) const {
         if (source.isEOF()) {
             return false;

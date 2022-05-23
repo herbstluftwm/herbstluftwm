@@ -17,6 +17,8 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
+const ComputedStyle ComputedStyle::empty;
+
 Parser<CssFile> cssFileParser() {
     auto nextToken = [](SourceStream& source) -> string {
         return source.nextToken("/*{}>~,;+:");

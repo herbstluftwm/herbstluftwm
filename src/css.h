@@ -9,20 +9,29 @@
 
 class DomTree;
 
-class CssBox {
+class ComputedStyle {
 public:
-    short borderWidthTop;
-    short borderWidthRight;
-    short borderWidthBottom;
-    short borderWidthLeft;
+    short borderWidthTop = 0;
+    short borderWidthRight = 0;
+    short borderWidthBottom = 0;
+    short borderWidthLeft = 0;
+    static const ComputedStyle empty;
 };
 
+class CssName {
+public:
+    enum class Special {
+        window,
+        tabs,
+        client_content,
+    };
+};
 
 class CssDeclaration {
 public:
     std::string property_;
     std::vector<std::string> values_;
-    // std::function<void(CssBox& target)> apply_;
+    // std::function<void(ComputedStyle& target)> apply_;
 };
 
 class CssSelector {

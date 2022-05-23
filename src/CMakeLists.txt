@@ -74,6 +74,7 @@ target_sources(herbstluftwm PRIVATE
     typesdoc.cpp typesdoc.h
     utils.cpp utils.h
     watchers.h watchers.cpp
+    widget.h widget.cpp
     x11-types.cpp x11-types.h
     x11-utils.cpp x11-utils.h
     xconnection.cpp xconnection.h
