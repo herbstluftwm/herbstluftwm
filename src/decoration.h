@@ -94,8 +94,9 @@ public:
 
 private:
     Widget widMain;
-    Widget widTabs;
+    Widget widTabBar;
     Widget widClient;
+    std::vector<TabWidget*> widTabs;
     static Visual* check_32bit_client(Client* c);
     static XConnection& xconnection();
     void redrawPixmap();

@@ -79,7 +79,6 @@ void Widget::computeMinimumSize()
     if (vertical_) {
         stackingDimension = &Point2D::y;
         fixedDimension = &Point2D::x;
-    } else {
     }
     for (Widget* child : nestedWidgets_) {
         child->computeMinimumSize();
@@ -97,7 +96,7 @@ void Widget::computeMinimumSize()
 
     minimumSizeCached_ =
             Point2D::fold(
-                [](int a, int b) { return std::min(a,b); },
+                [](int a, int b) { return std::max(a,b); },
     {minimumSizeUser_, nestedSize + surroundingsSize});
 }
 

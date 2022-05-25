@@ -52,8 +52,7 @@ Decoration::Decoration(Client* client, Settings& settings)
       settings_(settings)
 {
     widMain.vertical_ = true;
-    widTabs.minimumSizeUser_ = {10, 20};
-    widMain.addChild(&widTabs);
+    widMain.addChild(&widTabBar);
     widMain.addChild(&widClient);
     widClient.expandX_ = true;
     widClient.expandY_ = true;
@@ -145,6 +144,11 @@ void Decoration::createWindow() {
 Decoration::~Decoration() {
     XConnection& xcon = xconnection();
     decwin2client.erase(decwin);
+    widTabBar.clearChildren();
+    for (TabWidget* w : widTabs) {
+        delete w;
+    }
+    widTabs.clear();
     if (colormap) {
         XFreeColormap(xcon.display(), colormap);
     }
@@ -161,7 +165,37 @@ Decoration::~Decoration() {
 
 void Decoration::setParameters(const DecorationParameters& params)
 {
-    // TODO: set classes in widgets and then apply css rules
+    // make sure the number of tab widgets is correct:
+    if (params.tabs_.size() != widTabs.size()) {
+        if (params.tabs_.size() > widTabs.size()) {
+            // we need more tabs
+            widTabs.reserve(params.tabs_.size());
+            while (params.tabs_.size() > widTabs.size()) {
+                TabWidget* newTab = new TabWidget();
+                newTab->minimumSizeUser_ = {10,10};
+                widTabs.push_back(newTab);
+                widTabBar.addChild(newTab);
+            }
+        } else {
+            // we need fewer tabs:
+            auto firstToRemove = widTabs.begin() + params.tabs_.size();
+            // remove all from tab bar and add remaining widgets again:
+            widTabBar.clearChildren();
+            for (auto it = widTabs.begin(); it != firstToRemove; it++) {
+                widTabBar.addChild(*it);
+            }
+            // actually free the memory:
+            for (auto it = firstToRemove; it != widTabs.end(); it++) {
+                TabWidget* t = *it;
+                delete t;
+            }
+            widTabs.erase(firstToRemove, widTabs.end());
+        }
+    }
+    // now the vector sizes match, so we can sync the contents:
+    for (size_t i = 0; i < params.tabs_.size(); i++) {
+        widTabs[i]->tabClient = params.tabs_[i];
+    }
 }
 
 Client* Decoration::toClient(Window decoration_window)
@@ -176,8 +210,6 @@ Client* Decoration::toClient(Window decoration_window)
 
 void Decoration::resize_inner(Rectangle inner) {
     // we need to update (i.e. clear) tabs before inner_rect_to_outline()
-    tabs_.clear();
-    widTabs.clearChildren();
     if (client_->decorated_()) {
         client_->applysizehints(&inner.width, &inner.height);
         widClient.minimumSizeUser_ = inner.dimensions();

@@ -14,7 +14,7 @@ class Widget
 public:
     Widget();
     /** whether the children of this widged are placed below each other */
-    bool vertical_ = true;
+    bool vertical_ = false;
     /** whether this widget likes growing into the X-direction */
     bool expandX_ = false;
     /** whether this widget likes growing into the Y-direction */
