@@ -6,15 +6,22 @@
 #include <vector>
 
 #include "commandio.h"
+#include "x11-types.h" // only for Color
 
 class DomTree;
 
 class ComputedStyle {
 public:
-    short borderWidthTop = 0;
-    short borderWidthRight = 0;
-    short borderWidthBottom = 0;
-    short borderWidthLeft = 0;
+    short borderWidthTop = 2;
+    short borderWidthRight = 2;
+    short borderWidthBottom = 2;
+    short borderWidthLeft = 2;
+    short paddingTop = 2;
+    short paddingRight = 2;
+    short paddingBottom = 2;
+    short paddingLeft = 2;
+    Color backgroundColor = {};
+    Color borderColor = {};
     static const ComputedStyle empty;
 };
 

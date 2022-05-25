@@ -16,6 +16,7 @@
 #include "theme.h"
 #include "utils.h"
 #include "xconnection.h"
+#include "x11-widgetrender.h"
 
 using std::string;
 using std::swap;
@@ -50,6 +51,12 @@ Decoration::Decoration(Client* client, Settings& settings)
     : client_(client),
       settings_(settings)
 {
+    widMain.vertical_ = true;
+    widTabs.minimumSizeUser_ = {10, 20};
+    widMain.addChild(&widTabs);
+    widMain.addChild(&widClient);
+    widClient.expandX_ = true;
+    widClient.expandY_ = true;
 }
 
 void Decoration::createWindow() {
@@ -152,6 +159,11 @@ Decoration::~Decoration() {
     }
 }
 
+void Decoration::setParameters(const DecorationParameters& params)
+{
+    // TODO: set classes in widgets and then apply css rules
+}
+
 Client* Decoration::toClient(Window decoration_window)
 {
     auto cl = decwin2client.find(decoration_window);
@@ -162,16 +174,21 @@ Client* Decoration::toClient(Window decoration_window)
     }
 }
 
-void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
+void Decoration::resize_inner(Rectangle inner) {
     // we need to update (i.e. clear) tabs before inner_rect_to_outline()
     tabs_.clear();
-    // if the client is undecorated, the outline is identical to the inner geometry
-    // otherwise, we convert the geometry using the theme
-    auto outline = (client_->decorated_())
-                   ? scheme.inner_rect_to_outline(inner, tabs_.size())
-                   : inner;
-    resize_outline(outline, scheme, {});
+    widTabs.clearChildren();
+    if (client_->decorated_()) {
+        client_->applysizehints(&inner.width, &inner.height);
+        widClient.minimumSizeUser_ = inner.dimensions();
+        widMain.computeMinimumSize();
+        Point2D outerSize = widMain.minimumSizeCached();
+        widMain.computeGeometry({0, 0, outerSize.x, outerSize.y});
+        // move everything such that widClient.tl() is inner.tl():
+        widMain.moveGeometryCached(inner.tl() - widClient.geometryCached().tl());
+    }
     last_rect_inner = true;
+    applyWidgetGeometries();
 }
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
@@ -292,16 +309,25 @@ void Decoration::removeFromTabBar(Client* otherClientTab)
     }), tabs_.end());
 }
 
-void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme, vector<Client*> tabs)
+void Decoration::resize_outline(Rectangle outline)
 {
-    bool decorated = client_->decorated_();
-    auto inner = scheme.outline_to_inner_rect(outline, tabs.size());
-    if (!decorated) {
-        inner = outline;
-    }
-    Window win = client_->window_;
+    Rectangle inner;
+    widClient.minimumSizeUser_ = {WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT};
+    widMain.computeMinimumSize();
 
-    auto tile = inner;
+    widMain.computeGeometry(outline);
+    last_rect_inner = false;
+    applyWidgetGeometries();
+}
+
+void Decoration::applyWidgetGeometries() {
+    bool decorated = client_->decorated_();
+    Window win = client_->window_;
+    const auto tile = widClient.geometryCached();
+    Rectangle inner =
+            decorated
+            ? widClient.geometryCached()
+            : widMain.geometryCached();
     client_->applysizehints(&inner.width, &inner.height);
 
     // center the window in the outline tile
@@ -313,23 +339,12 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     inner.x = tile.x + ((dx < threshold) ? 0 : dx);
     inner.y = tile.y + ((dy < threshold) ? 0 : dy);
 
-    //if (RECTANGLE_EQUALS(client->last_size, rect)
-    //    && client->last_border_width == border_width) {
-    //    return;
-    //}
-
-    if (decorated && scheme.tight_decoration()) {
-        // updating the outline only has an affect for tiled clients
-        // because for floating clients, this has been done already
-        // right when the window size changed.
-        outline = scheme.inner_rect_to_outline(inner, tabs.size());
-    }
     last_inner_rect = inner;
     if (decorated) {
         // if the window is decorated, then x/y are relative
         // to the decoration window's top left
-        inner.x -= outline.x;
-        inner.y -= outline.y;
+        inner.x -= widMain.geometryCached().x;
+        inner.y -= widMain.geometryCached().y;
     }
     XWindowChanges changes;
     changes.x = inner.x;
@@ -351,13 +366,10 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     //}
     // send new size to client
     // update structs
-    bool size_changed = outline.width != last_outer_rect.width
-                     || outline.height != last_outer_rect.height;
-    last_outer_rect = outline;
+    bool size_changed = widMain.geometryCached().dimensions() != last_outer_rect.dimensions();
+    last_outer_rect = widMain.geometryCached();
     last_rect_inner = false;
-    tabs_ = tabs;
     client_->last_size_ = inner;
-    last_scheme = &scheme;
     // redraw
     // TODO: reduce flickering
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
@@ -386,10 +398,9 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     }
     // update geometry of resizeArea window
     if (decorated) {
-        int bw = 0;
-        if (last_scheme) {
-            bw = last_scheme->border_width();
-        }
+        Rectangle outline = widMain.geometryCached();
+        Point2D borderWidth =  outline.br() - widClient.geometryCached().br();
+        int bw = std::max(borderWidth.x, borderWidth.y);
         Rectangle areaGeo;
         for (size_t i = 0; i < resizeAreaSize; i++) {
             areaGeo = resizeAreaGeometry(i, bw, outline.width, outline.height);
@@ -408,15 +419,17 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
 }
 
 void Decoration::updateFrameExtends() {
-    int left = last_inner_rect.x - last_outer_rect.x;
-    int top  = last_inner_rect.y - last_outer_rect.y;
-    int right = last_outer_rect.width - last_inner_rect.width - left;
-    int bottom = last_outer_rect.height - last_inner_rect.height - top;
-    if (!client_->decorated_()) {
-        left = 0;
-        top = 0;
-        right = 0;
-        bottom = 0;
+    int left = 0;
+    int top  = 0;
+    int right = 0;
+    int bottom = 0;
+    if (client_->decorated_()) {
+        Point2D tl = widClient.geometryCached().tl() - widMain.geometryCached().tl();
+        Point2D br = widMain.geometryCached().br() - widClient.geometryCached().br();
+        left = tl.x;
+        top = tl.y;
+        right = br.x;
+        bottom = br.y;
     }
     client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
 }
@@ -426,38 +439,19 @@ XConnection& Decoration::xconnection()
     return XConnection::get();
 }
 
-void Decoration::change_scheme(const DecorationScheme& scheme) {
-    if (last_inner_rect.width < 0) {
-        // TODO: do something useful here
-        return;
-    }
-    if (last_rect_inner) {
-        resize_inner(last_inner_rect, scheme);
-    } else {
-        resize_outline(last_outer_rect, scheme, tabs_);
-    }
-}
-
 void Decoration::redraw()
 {
     if (client_->decorated_()) {
-        if (last_scheme) {
-            change_scheme(*last_scheme);
-        }
+        applyWidgetGeometries();
     }
 }
 
 // draw a decoration to the client->dec.pixmap
 void Decoration::redrawPixmap() {
-    if (!last_scheme) {
-        // do nothing if we don't have a scheme.
-        return;
-    }
     XConnection& xcon = xconnection();
     Display* display = xcon.display();
-    const DecorationScheme& s = *last_scheme;
     auto dec = this;
-    auto outer = last_outer_rect;
+    auto outer = widMain.geometryCached();
     // TODO: maybe do something like pixmap recreate threshhold?
     bool recreate_pixmap = (dec->pixmap == 0) || (dec->pixmap_width != outer.width)
                                               || (dec->pixmap_height != outer.height);
@@ -465,201 +459,17 @@ void Decoration::redrawPixmap() {
         if (dec->pixmap) {
             XFreePixmap(display, dec->pixmap);
         }
-        dec->pixmap = XCreatePixmap(display, decwin, outer.width, outer.height, depth);
+        dec->pixmap = XCreatePixmap(display, decwin,
+                                    static_cast<unsigned int>(outer.width),
+                                    static_cast<unsigned int>(outer.height),
+                                    depth);
     }
-    auto get_client_color = [&](const Color& color) -> unsigned long {
-        return xcon.allocColor(colormap, color);
-    };
     buttons_.clear();
     Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(display, pix, 0, nullptr);
 
-    // draw background
-    XSetForeground(display, gc, get_client_color(s.border_color()));
-    XFillRectangle(display, pix, gc, 0, 0, outer.width, outer.height);
-
-    // Draw inner border
-    unsigned short iw = s.inner_width();
-    auto inner = last_inner_rect;
-    inner.x -= last_outer_rect.x;
-    inner.y -= last_outer_rect.y;
-    // convert signed and possibly negative integers to
-    // unsigned short, which is used by XRectangle.
-    auto toUnsigned =
-            [](int length) -> unsigned short {
-        if (length < 0) {
-            return 0;
-        } else {
-            return static_cast<unsigned short>(length);
-        }
-    };
-    if (iw > 0) {
-        /* fill rectangles because drawing does not work */
-        vector<XRectangle> rects{
-            { (short)(inner.x - iw), (short)(inner.y - iw), toUnsigned(inner.width + 2*iw), toUnsigned(iw) }, /* top */
-            { (short)(inner.x - iw), (short)(inner.y), toUnsigned(iw), toUnsigned(inner.height) },  /* left */
-            { (short)(inner.x + inner.width), (short)(inner.y), toUnsigned(iw), toUnsigned(inner.height) }, /* right */
-            { (short)(inner.x - iw), (short)(inner.y + inner.height), toUnsigned(inner.width + 2*iw), toUnsigned(iw) }, /* bottom */
-        };
-        XSetForeground(display, gc, get_client_color(s.inner_color()));
-        XFillRectangles(display, pix, gc, &rects.front(), rects.size());
-    }
-
-    // Draw outer border
-    unsigned short ow = s.outer_width;
-    outer.x -= last_outer_rect.x;
-    outer.y -= last_outer_rect.y;
-    if (ow > 0) {
-        ow = std::min((int)ow, (outer.height+1) / 2);
-        vector<XRectangle> rects{
-            { 0, 0, toUnsigned(outer.width), toUnsigned(ow) }, /* top */
-            { 0, (short)ow, toUnsigned(ow), toUnsigned(outer.height - 2*ow) }, /* left */
-            { (short)(outer.width - ow), (short)ow, toUnsigned(ow), toUnsigned(outer.height - 2*ow) }, /* right */
-            { 0, (short)(outer.height - ow), toUnsigned(outer.width), toUnsigned(ow) }, /* bottom */
-        };
-        XSetForeground(display, gc, get_client_color(s.outer_color));
-        XFillRectangles(display, pix, gc, &rects.front(), rects.size());
-    }
-    // fill inner rect that is not covered by the client
-    XSetForeground(display, gc, get_client_color(s.background_color));
-    if (dec->last_actual_rect.width < inner.width) {
-        XFillRectangle(display, pix, gc,
-                       dec->last_actual_rect.x + dec->last_actual_rect.width,
-                       dec->last_actual_rect.y,
-                       inner.width - dec->last_actual_rect.width,
-                       dec->last_actual_rect.height);
-    }
-    if (dec->last_actual_rect.height < inner.height) {
-        XFillRectangle(display, pix, gc,
-                       dec->last_actual_rect.x,
-                       dec->last_actual_rect.y + dec->last_actual_rect.height,
-                       inner.width,
-                       inner.height - dec->last_actual_rect.height);
-    }
-    if (s.showTitle(tabs_.size())) {
-        Point2D titlepos = {
-            static_cast<int>(s.padding_left() + s.border_width()),
-            static_cast<int>(s.title_height())
-        };
-        if (tabs_.size() <= 1) {
-            drawText(pix, gc, s.title_font->data(), s.title_color(),
-                     titlepos, client_->title_(), inner.width, s.title_align);
-        } else {
-            int tabWidth = outer.width / tabs_.size();
-            int tabIndex = 0;
-            int tabPadLeft = inner.x;
-            // if there is more than one tab
-            for (Client* tabClient : tabs_) {
-                bool isFirst = tabClient == tabs_.front();
-                bool isLast = tabClient == tabs_.back();
-                // we use the geometry from client_'s scheme,
-                // but the colors from TabScheme
-                const DecorationScheme& tabScheme =
-                        (tabClient == client_)
-                        ? s : tabClient->getDecorationScheme(false);
-                Color tabColor = tabScheme.border_color();
-                Color tabBorderColor = tabScheme.outer_color();
-                unsigned long tabBorderWidth = tabScheme.outer_width();
-                Color tabTitleColor = tabScheme.title_color();
-                if (tabClient != client_ && !tabClient->urgent_()) {
-                    // for tabs referring to non-urgent clients, try
-                    // to use the tab_* attributes of the DecorationScheme s:
-                    tabColor = s.tab_color->rightOr(tabScheme.border_color());
-                    tabBorderColor = s.tab_outer_color->rightOr(tabScheme.outer_color());
-                    tabBorderWidth = s.tab_outer_width->rightOr(tabScheme.outer_width());
-                    tabTitleColor = s.tab_title_color->rightOr(tabScheme.title_color());
-                }
-                Rectangle tabGeo {
-                    tabIndex * tabWidth,
-                    0,
-                    tabWidth + int(isLast ? (outer.width % tabs_.size()) : 0),
-                    int(s.title_height() + s.title_depth()), // tab height
-                };
-                if (tabClient != client_) {
-                    // only add clickable buttons for the other clients
-                    ClickArea tabButton;
-                    tabButton.area_ = tabGeo;
-                    tabButton.tabClient_ = tabClient;
-                    buttons_.push_back(tabButton);
-                }
-                int titleWidth = tabGeo.width - tabScheme.outer_width;
-                if (tabClient == client_) {
-                    tabGeo.height += s.border_width() - s.inner_width();
-                }
-                // tab background
-                vector<XRectangle> fillRects = {
-                    { (short)tabGeo.x, (short)tabGeo.y,
-                      toUnsigned(tabGeo.width), toUnsigned(tabGeo.height) },
-                };
-                XSetForeground(display, gc, get_client_color(tabColor));
-                XFillRectangles(display, pix, gc, &fillRects.front(), fillRects.size());
-                vector<XRectangle> borderRects = {
-                    // top edge
-                    { (short)tabGeo.x, (short)tabGeo.y,
-                      toUnsigned(tabGeo.width), toUnsigned(tabBorderWidth) },
-                };
-                if (isFirst) {
-                    // edge on the left
-                    borderRects.push_back(
-                    { (short)tabGeo.x, (short)tabGeo.y,
-                      toUnsigned(tabBorderWidth), toUnsigned(tabGeo.height) }
-                    );
-                } else if (client_ == tabClient) {
-                    // shorter edge on the left
-                    borderRects.push_back(
-                    { (short)tabGeo.x, (short)tabGeo.y,
-                      toUnsigned(tabBorderWidth),
-                      toUnsigned(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
-                    );
-                }
-                if (isLast) {
-                    // edge on the right
-                    borderRects.push_back(
-                    { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      toUnsigned(tabBorderWidth),
-                      toUnsigned(tabGeo.height) }
-                    );
-                } else if (client_ == tabClient) {
-                    // shorter edge on the right
-                    borderRects.push_back(
-                    { (short)(tabGeo.x + tabGeo.width - tabScheme.outer_width), (short)tabGeo.y,
-                      toUnsigned(tabBorderWidth),
-                      toUnsigned(tabGeo.height - (s.border_width() - s.outer_width() - s.inner_width())) }
-                    );
-                }
-                XSetForeground(display, gc, get_client_color(tabBorderColor));
-                XFillRectangles(display, pix, gc, &borderRects.front(), borderRects.size());
-                drawText(pix, gc, tabScheme.title_font->data(), tabTitleColor,
-                         tabGeo.tl() + Point2D { tabPadLeft, (int)s.title_height()},
-                         tabClient->title_(), titleWidth - 2 * tabPadLeft, s.title_align);
-                if (client_ != tabClient) {
-                    // horizontal border connecting the focused tab with the outer border
-                    Point2D westEnd = tabGeo.bl();
-                    XSetForeground(display, gc, get_client_color(s.outer_color));
-                    XFillRectangle(display, pix, gc,
-                                   westEnd.x, westEnd.y,
-                                   toUnsigned(tabGeo.width), toUnsigned(s.outer_width())
-                                   );
-                    // horizontal border connecting the focused tab content with the outer border
-                    int remainingBorderColorHeight = s.border_width() - s.inner_width() - s.outer_width();
-                    int fillWidth = tabGeo.width;
-                    if (isFirst || isLast) {
-                        fillWidth -= s.outer_width();
-                    }
-                    if (isFirst) {
-                        westEnd.x += s.outer_width();
-                    }
-                    XSetForeground(display, gc, get_client_color(s.border_color));
-                    XFillRectangle(display, pix, gc,
-                                   westEnd.x,
-                                   westEnd.y + s.outer_width(),
-                                   toUnsigned(fillWidth), toUnsigned(remainingBorderColorHeight)
-                                   );
-                }
-                tabIndex++;
-            }
-        }
-    }
+    X11WidgetRender painter(pix, outer.tl(), colormap, gc);
+    painter.render(widMain);
     // clean up
     XFreeGC(display, gc);
 }
@@ -855,4 +665,9 @@ std::experimental::optional<unsigned int> ResizeAction::toCursorShape() const
             return {};
         }
     }
+}
+
+TabWidget::TabWidget()
+{
+    expandX_ = true;
 }

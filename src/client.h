@@ -14,6 +14,7 @@
 #include "x11-types.h"
 
 class Decoration;
+class DecorationParameters;
 class ResizeAction;
 class DecTriple;
 class Ewmh;
@@ -154,6 +155,7 @@ private:
     const DecTriple& getDecTriple();
     const DecorationScheme& getDecorationScheme(bool focused);
     ThemeType mostRecentThemeType;
+    std::unique_ptr<DecorationParameters> decParams; // pimpl
 };
 
 

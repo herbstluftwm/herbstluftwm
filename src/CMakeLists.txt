@@ -77,6 +77,7 @@ target_sources(herbstluftwm PRIVATE
     widget.h widget.cpp
     x11-types.cpp x11-types.h
     x11-utils.cpp x11-utils.h
+    x11-widgetrender.cpp x11-widgetrender.h
     xconnection.cpp xconnection.h
     xkeygrabber.cpp xkeygrabber.h
     xmainloop.cpp xmainloop.h

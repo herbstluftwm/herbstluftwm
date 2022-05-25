@@ -85,6 +85,7 @@ struct Point2D {
         return x < other.x || (x == other.x && y < other.y);
     }
     bool operator==(const Point2D& other) const { return x == other.x && y == other.y; }
+    bool operator!=(const Point2D& other) const { return x != other.x || y != other.y; }
     //! essentially return y/x > other.y/other.x
     bool biggerSlopeThan(const Point2D& other) const {
        return y * other.x > other.y * x;

@@ -65,6 +65,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , ewmh(*cm.ewmh)
     , X_(*cm.X_)
     , mostRecentThemeType(ThemeType::Tiling)
+    , decParams(make_unique<DecorationParameters>())
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
@@ -262,7 +263,8 @@ const DecorationScheme& Client::getDecorationScheme(bool focused)
 }
 
 void Client::setup_border(bool focused) {
-    dec->change_scheme(getDecorationScheme(focused));
+    decParams->focused_ = focused;
+    dec->setParameters(*decParams);
     redrawRelevantTabBars();
 }
 
@@ -289,8 +291,12 @@ void Client::redrawRelevantTabBars()
 }
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
-    dec->resize_outline(monitor_rect, theme[ThemeType::Fullscreen](isFocused,urgent_()), {});
-    mostRecentThemeType = ThemeType::Fullscreen;
+    *decParams = DecorationParameters();
+    decParams->focused_ = isFocused;
+    decParams->minimal_ = true;
+    decParams->urgent_ = urgent_();
+    dec->setParameters(*decParams);
+    dec->resize_outline(monitor_rect);
 }
 
 void Client::raise() {
@@ -311,20 +317,26 @@ void Client::lower()
  */
 void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, vector<Client*> tabs) {
     // only apply minimal decoration if the window is not pseudotiled
-    auto themetype = (minimalDecoration && !pseudotile_())
-            ? ThemeType::Minimal : ThemeType::Tiling;
-    mostRecentThemeType = themetype;
-    auto& scheme = theme[themetype](isFocused, urgent_());
+    *decParams = DecorationParameters();
+    decParams->minimal_ = minimalDecoration && !this->pseudotile_();
+    decParams->pseudotiled_ = this->pseudotile_();
+    decParams->tabs_ = tabs;
+    decParams->urgent_ = this->urgent_();
+    decParams->urgentTabs_.reserve(tabs.size());
+    decParams->focused_ = isFocused;
+    for (const Client* tab : tabs) {
+        decParams->urgentTabs_.push_back(tab->urgent_());
+    }
+    dec->setParameters(*decParams);
     if (this->pseudotile_) {
         Rectangle inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
-        auto outline = scheme.inner_rect_to_outline(inner, tabs.size());
-        rect.x += std::max(0, (rect.width - outline.width)/2);
-        rect.y += std::max(0, (rect.height - outline.height)/2);
-        rect.width = std::min(outline.width, rect.width);
-        rect.height = std::min(outline.height, rect.height);
+        rect.x += std::max(0, (rect.width - inner.width)/2);
+        rect.y += std::max(0, (rect.height - inner.height)/2);
+        rect.width = std::min(inner.width, rect.width);
+        rect.height = std::min(inner.height, rect.height);
     }
-    dec->resize_outline(rect, scheme, tabs);
+    dec->resize_outline(rect);
 }
 
 /**
@@ -518,8 +530,12 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     rect.y += m->rect->y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
-    dec->resize_inner(rect, theme[ThemeType::Floating](isFocused,urgent_()));
-    mostRecentThemeType = ThemeType::Floating;
+    *decParams = DecorationParameters();
+    decParams->floating_ = true;
+    decParams->focused_ = isFocused;
+    decParams->urgent_ = urgent_();
+    dec->setParameters(*decParams);
+    dec->resize_inner(rect);
 }
 
 Rectangle Client::outer_floating_rect() {

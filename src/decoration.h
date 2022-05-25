@@ -6,6 +6,7 @@
 
 #include "optional.h"
 #include "rectangle.h"
+#include "widget.h"
 #include "x11-types.h"
 
 class Client;
@@ -36,6 +37,27 @@ public:
 };
 
 
+class TabWidget : public Widget {
+public:
+    TabWidget();
+    Client* tabClient = nullptr;
+};
+
+/**
+ * @brief the parameters that affect the look of decorations
+ */
+class DecorationParameters {
+public:
+    bool focused_;
+    bool pseudotiled_;
+    bool floating_;
+    bool minimal_;
+    bool urgent_;
+    std::vector<Client*> tabs_;
+    std::vector<bool> urgentTabs_;
+};
+
+
 class Decoration {
 public:
     class ClickArea {
@@ -47,12 +69,13 @@ public:
     Decoration(Client* client_, Settings& settings_);
     void createWindow();
     virtual ~Decoration();
+    void setParameters(const DecorationParameters& params);
     // resize such that the decorated outline of the window fits into rect
-    void resize_outline(Rectangle outline, const DecorationScheme& scheme, std::vector<Client*> tabs);
+    void resize_outline(Rectangle outline);
+    void applyWidgetGeometries();
 
     // resize such that the window content fits into rect
-    void resize_inner(Rectangle inner, const DecorationScheme& scheme);
-    void change_scheme(const DecorationScheme& scheme);
+    void resize_inner(Rectangle inner);
     void redraw();
 
     static Client* toClient(Window decoration_window);
@@ -70,6 +93,9 @@ public:
     void removeFromTabBar(Client* otherClientTab);
 
 private:
+    Widget widMain;
+    Widget widTabs;
+    Widget widClient;
     static Visual* check_32bit_client(Client* c);
     static XConnection& xconnection();
     void redrawPixmap();

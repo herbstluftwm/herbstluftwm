@@ -7,6 +7,7 @@
 #include <memory>
 
 class ComputedStyle;
+class X11WidgetRender;
 
 class Widget
 {
@@ -18,8 +19,6 @@ public:
     bool expandX_ = false;
     /** whether this widget likes growing into the Y-direction */
     bool expandY_ = false;
-    std::vector<Widget> nestedWidgets_;
-    std::shared_ptr<const ComputedStyle> style_;
     void computeGeometry(Rectangle outerGeometry);
     void computeMinimumSize();
     Point2D minimumSizeCached() const {
@@ -28,9 +27,17 @@ public:
     Rectangle geometryCached() const {
         return geometryCached_;
     }
+    void moveGeometryCached(Point2D delta);
+    void clearChildren();
+    void addChild(Widget* child);
 
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size
 private:
+    friend class X11WidgetRender;
+    Widget* parent_;
+    size_t indexInParent_;
+    std::vector<Widget*> nestedWidgets_;
+    std::shared_ptr<const ComputedStyle> style_;
     Rectangle geometryCached_;
     Point2D minimumSizeCached_;
 };
