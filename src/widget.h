@@ -34,12 +34,12 @@ public:
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size
 private:
     friend class X11WidgetRender;
-    Widget* parent_;
-    size_t indexInParent_;
+    Widget* parent_ = nullptr;
+    size_t indexInParent_ = 0;
     std::vector<Widget*> nestedWidgets_;
     std::shared_ptr<const ComputedStyle> style_;
     Rectangle geometryCached_;
-    Point2D minimumSizeCached_;
+    Point2D minimumSizeCached_ = {0, 0};
 };
 
 #endif // WIDGET_H

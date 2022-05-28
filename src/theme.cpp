@@ -15,13 +15,16 @@ Finite<TitleWhen>::ValueList Finite<TitleWhen>::values = ValueListPlain {
 
 
 Theme::Theme()
-    : fullscreen(*this, "fullscreen")
+    : custom_style(this, "custom_style", {})
+    , fullscreen(*this, "fullscreen")
     , tiling(*this, "tiling")
     , floating(*this, "floating")
     , minimal(*this, "minimal")
     // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
+    custom_style.setWritable();
+
     for (auto dec : decTriples) {
         dec->triple_changed_.connect([this](){ this->theme_changed_.emit(); });
     }

@@ -6,6 +6,7 @@
 #include "attribute_.h"
 #include "child.h"
 #include "converter.h"
+#include "css.h"
 #include "either.h"
 #include "finite.h"
 #include "font.h"
@@ -201,6 +202,8 @@ public:
     Theme();
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
+
+    Attribute_<CssSource> custom_style;
 
     ChildMember_<DecTriple> fullscreen;
     ChildMember_<DecTriple> tiling;

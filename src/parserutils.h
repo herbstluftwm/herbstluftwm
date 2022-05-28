@@ -119,13 +119,17 @@ public:
         return std::make_pair(line, column);
     }
 
-    void raise(const char* message) {
+    Error constructErrorObject(const char* message) {
         auto sourcePos = sourcePosition();
         Error err;
         err.line_ = sourcePos.first;
         err.column_ = sourcePos.second;
         err.message_ = message;
-        throw err;
+        return err;
+    }
+
+    void raise(const char* message) {
+        throw constructErrorObject(message);
     }
 
     void expectedButGot(const char* expected) {
