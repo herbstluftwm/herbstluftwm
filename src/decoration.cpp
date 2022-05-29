@@ -266,6 +266,7 @@ void Decoration::updateResizeAreaCursors()
 std::experimental::optional<Decoration::ClickArea>
 Decoration::positionHasButton(Point2D p)
 {
+    p = p + widMain.geometryCached().tl();
     for (TabWidget* tab : widTabs) {
         if (tab->geometryCached().contains(p)) {
             ClickArea button;
