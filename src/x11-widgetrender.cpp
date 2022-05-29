@@ -22,9 +22,9 @@ X11WidgetRender::X11WidgetRender(Pixmap& pixmap, Point2D pixmapPos,
 void X11WidgetRender::render(const Widget& widget)
 {
     Rectangle geo = widget.geometryCached().shifted(pixmapPos_ * -1);
-    const ComputedStyle& style = widget.style_
+    const BoxStyle& style = widget.style_
             ? *widget.style_
-            : ComputedStyle::empty;
+            : BoxStyle::empty;
     fillRectangle(geo, style.backgroundColor);
     Color bcol("red");
     vector<Rectangle> borderRects = {

@@ -14,6 +14,7 @@ class FontData;
 enum class TextAlign;
 class Settings;
 class DecorationScheme;
+class Theme;
 class XConnection;
 
 class ResizeAction {
@@ -66,7 +67,7 @@ public:
         Client* tabClient_ = {}; //! the client that will get activated
     };
 
-    Decoration(Client* client_, Settings& settings_);
+    Decoration(Client* client, Settings& settings, Theme& theme);
     void createWindow();
     virtual ~Decoration();
     void setParameters(const DecorationParameters& params);
@@ -133,6 +134,7 @@ private:
 private:
     Client* client_; // the client to decorate
     Settings& settings_;
+    Theme& theme_;
     static std::map<Window,Client*> decwin2client;
 };
 

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "css.h"
+#include "boxstyle.h"
 #include "globals.h"
 
 using std::function;
@@ -19,7 +19,7 @@ void Widget::computeGeometry(Rectangle outerGeometry)
     geometryCached_ = outerGeometry;
     geometryCached_.width = std::max(geometryCached_.width, minimumSizeCached_.x);
     geometryCached_.height = std::max(geometryCached_.height, minimumSizeCached_.y);
-    const ComputedStyle& style = style_ ? *style_ : ComputedStyle::empty;
+    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty;
     Rectangle innerGeo = geometryCached_.adjusted(
                 -style.borderWidthLeft - style.paddingLeft,
                 -style.borderWidthTop - style.paddingTop,
@@ -87,17 +87,17 @@ void Widget::computeMinimumSize()
         nestedSize.*fixedDimension = std::max(nestedSize.*fixedDimension,
                                               childSize.*fixedDimension) ;
     }
-    const ComputedStyle& style = style_ ? *style_ : ComputedStyle::empty;
+    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty;
     Point2D surroundingsSize = {0, 0};
     surroundingsSize.x += style.borderWidthLeft + style.borderWidthRight;
     surroundingsSize.y += style.borderWidthTop + style.borderWidthBottom;
     surroundingsSize.x += style.paddingLeft + style.paddingRight;
     surroundingsSize.y += style.paddingTop + style.paddingBottom;
 
-    minimumSizeCached_ =
+    minimumSizeCached_ = surroundingsSize +
             Point2D::fold(
                 [](int a, int b) { return std::max(a,b); },
-    {minimumSizeUser_, nestedSize + surroundingsSize});
+    {minimumSizeUser_, nestedSize});
 }
 
 void Widget::moveGeometryCached(Point2D delta)
@@ -123,4 +123,63 @@ void Widget::addChild(Widget* child)
     child->parent_ = this;
     child->indexInParent_ = nestedWidgets_.size();
     nestedWidgets_.push_back(child);
+}
+
+void Widget::setStyle(std::shared_ptr<BoxStyle> style)
+{
+    style_ = style;
+}
+
+void Widget::recurse(std::function<void (Widget&)> body)
+{
+    body(*this);
+    for (Widget* child : nestedWidgets_) {
+        child->recurse(body);
+    }
+}
+
+const DomTree* Widget::parent() const
+{
+    return parent_;
+}
+
+const DomTree* Widget::nthChild(size_t idx) const
+{
+    if (idx < nestedWidgets_.size()) {
+        return nestedWidgets_[idx];
+    }
+    return nullptr;
+}
+
+const DomTree* Widget::leftSibling() const
+{
+    if (parent_ && indexInParent_ > 0) {
+        return parent_->nthChild(indexInParent_ - 1);
+    }
+    return nullptr;
+}
+
+bool Widget::hasClass(const CssName& className) const
+{
+    return classes_.contains(className);
+}
+
+size_t Widget::childCount() const
+{
+    return nestedWidgets_.size();
+}
+
+void Widget::setClasses(const CssNameSet& classes)
+{
+    classes_ = classes;
+}
+
+void Widget::setClassEnabled(const CssName& className, bool enabled)
+{
+    classes_.setEnabled(className, enabled);
+}
+
+void Widget::setClassEnabled(std::initializer_list<std::pair<CssName, bool> > classes)
+{
+    classes_.setEnabled(classes);
 }

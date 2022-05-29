@@ -33,7 +33,7 @@ using std::stringstream;
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
-    , dec(make_unique<Decoration>(this, *cm.settings))
+    , dec(make_unique<Decoration>(this, *cm.settings, *cm.theme))
     , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
     , decorated_(this, "decorated", true)
     , visible_(this, "visible", visible_already)
@@ -266,6 +266,11 @@ void Client::setup_border(bool focused) {
     decParams->focused_ = focused;
     dec->setParameters(*decParams);
     redrawRelevantTabBars();
+}
+
+void Client::recomputeStyle()
+{
+    dec->setParameters(*decParams);
 }
 
 void Client::redraw()

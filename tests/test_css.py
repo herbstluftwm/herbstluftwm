@@ -94,3 +94,31 @@ def test_basic_dummy_tree(hlwm):
     for source, error in input2error.items():
         hlwm.call_xfail(['debug-css', '--print-tree', '--tree=' + source, '']) \
             .expect_stderr(error)
+
+
+def test_css_property_parsing(hlwm):
+    input2error = {
+        '* { border-width: 1sdfpx; }': "unparsable suffix",
+        '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
+    }
+    for source, error in input2error.items():
+        assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
+            .expect_stderr(error)
+
+
+def test_css_basic_selectors(hlwm):
+    tree = '(window (c focus (e f)))'
+    selector2match = {
+        '.window': ['0'],
+        #'.window>.focus': ['0'],
+        '.window * > .focus': [],
+        '*': ['', '0', '0 0'],
+    }
+    for selector, expected in selector2match.items():
+        cmd = [
+            'debug-css', '--tree=' + tree,
+            '--query-tree-indices=' + selector,
+            ''  # empty css
+        ]
+        output = hlwm.call(cmd).stdout.splitlines()
+        assert sorted(output) == [('match: ' + x).strip() for x in sorted(expected)]

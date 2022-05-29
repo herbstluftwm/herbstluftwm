@@ -1,8 +1,10 @@
 #include "theme.h"
 
 #include "completion.h"
+#include "globals.h"
 
 using std::vector;
+using std::shared_ptr;
 using std::string;
 
 template<>
@@ -24,9 +26,12 @@ Theme::Theme()
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
     custom_style.setWritable();
+    custom_style.changed().connect([this]() {
+        this->theme_changed_.emit();
+    });
 
     for (auto dec : decTriples) {
-        dec->triple_changed_.connect([this](){ this->theme_changed_.emit(); });
+        dec->triple_changed_.connect(this, &Theme::onDecTripleChange);
     }
 
     // forward attribute changes: only to tiling and floating
@@ -65,6 +70,19 @@ Theme::Theme()
     minimal.setChildDoc("configures clients with minimal decorations "
                         "triggered by +smart_window_surroundings+");
     fullscreen.setChildDoc("configures clients in fullscreen state");
+}
+
+void Theme::onDecTripleChange()
+{
+
+}
+
+shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
+{
+    if (!element) {
+        return nullptr;
+    }
+    return custom_style->computeStyle(element);
 }
 
 DecorationScheme::DecorationScheme()

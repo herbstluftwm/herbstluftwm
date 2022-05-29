@@ -9,6 +9,8 @@
 #include <sstream>
 #include <vector>
 
+#include "either.h"
+
 class SourceStream {
 private:
     std::string buf;
@@ -22,7 +24,8 @@ public:
         ss.pos = 0;
         return ss;
     }
-    class Error : public std::exception {
+
+    class ErrorData {
     public:
         size_t line_ = 0;
         size_t column_ = 0;
@@ -33,6 +36,14 @@ public:
                << " column " << (column_ + 1)
                << ": " << message_;
             return ss.str();
+        }
+    };
+
+    class Error : public std::exception {
+    public:
+        ErrorData data_;
+        std::string str() const {
+            return data_.str();
         }
     };
 
@@ -122,9 +133,9 @@ public:
     Error constructErrorObject(const char* message) {
         auto sourcePos = sourcePosition();
         Error err;
-        err.line_ = sourcePos.first;
-        err.column_ = sourcePos.second;
-        err.message_ = message;
+        err.data_.line_ = sourcePos.first;
+        err.data_.column_ = sourcePos.second;
+        err.data_.message_ = message;
         return err;
     }
 
@@ -188,7 +199,9 @@ public:
 template<typename Result>
 class Parser {
 public:
+    Parser() {}
     Parser(const std::function<Result(SourceStream& source)>& r) : run_(r) {}
+
     bool isApplicable(SourceStream& source) const {
         if (source.isEOF()) {
             return false;
@@ -200,6 +213,17 @@ public:
     }
     Result operator()(SourceStream& source) const {
         return run_(source);
+    }
+
+    Either<SourceStream::ErrorData, Result> oneShot(const std::string& source) {
+        auto stream = SourceStream::fromString(source);
+        try {
+            return run_(stream);
+        } catch (const SourceStream::Error& error) {
+            return error.data_;
+        } catch (const std::exception& exc) {
+            return stream.constructErrorObject(exc.what()).data_;
+        }
     }
 
 

@@ -146,6 +146,18 @@ hc attr theme.floating.outer_color black
 hc attr theme.active.inner_color '#789161'
 hc attr theme.urgent.inner_color '#9A65B0'
 hc attr theme.normal.inner_color '#606060'
+
+hc attr theme.custom_style "
+.window {
+    border-width: 3px;
+}
+
+.tabbar .tab {
+    border-width: 1px;
+    border-bottom-width: 0px;
+}
+"
+
 # copy inner color to outer_color
 for state in active urgent normal ; do
     hc substitute C theme.${state}.inner_color \

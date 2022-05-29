@@ -1,15 +1,16 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include "css.h"
 #include "rectangle.h"
 
 #include <vector>
 #include <memory>
 
-class ComputedStyle;
+class BoxStyle;
 class X11WidgetRender;
 
-class Widget
+class Widget : public DomTree
 {
 public:
     Widget();
@@ -30,14 +31,27 @@ public:
     void moveGeometryCached(Point2D delta);
     void clearChildren();
     void addChild(Widget* child);
+    void setStyle(std::shared_ptr<BoxStyle> style);
 
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size
+
+    void recurse(std::function<void(Widget&)> body);
+
+    const DomTree* parent() const override;
+    const DomTree* nthChild(size_t idx) const override;
+    const DomTree* leftSibling() const override;
+    bool hasClass(const CssName& className) const override;
+    size_t childCount() const override;
+    void setClasses(const CssNameSet& classes);
+    void setClassEnabled(const CssName& className, bool enabled);
+    void setClassEnabled(std::initializer_list<std::pair<CssName, bool>> classes);
 private:
     friend class X11WidgetRender;
+    CssNameSet classes_ = {};
     Widget* parent_ = nullptr;
     size_t indexInParent_ = 0;
     std::vector<Widget*> nestedWidgets_;
-    std::shared_ptr<const ComputedStyle> style_;
+    std::shared_ptr<const BoxStyle> style_;
     Rectangle geometryCached_;
     Point2D minimumSizeCached_ = {0, 0};
 };

@@ -9,6 +9,7 @@ target_sources(herbstluftwm PRIVATE
     argparse.cpp argparse.h
     attribute.cpp attribute.h attribute_.h
     autostart.cpp autostart.h
+    boxstyle.cpp boxstyle.h
     byname.cpp byname.h
     child.h
     client.cpp client.h

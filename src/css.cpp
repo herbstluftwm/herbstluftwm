@@ -12,173 +12,60 @@
 using std::endl;
 using std::function;
 using std::make_pair;
+using std::make_shared;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::stringstream;
 using std::vector;
 
-const ComputedStyle ComputedStyle::empty;
-
 const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
 {
     { CssName::Builtin::child, ">" },
+    { CssName::Builtin::has_class, "." },
     { CssName::Builtin::descendant, " " },
     { CssName::Builtin::adjacent_sibling, "+" },
-    { CssName::Builtin::tabs, "tabbar" },
+    { CssName::Builtin::any, "*" },
+    { CssName::Builtin::tabbar, "tabbar" },
+    { CssName::Builtin::tab, "tab" },
     { CssName::Builtin::client_content, "client_content" },
     { CssName::Builtin::window, "window" },
+    { CssName::Builtin::urgent, "urgent" },
     { CssName::Builtin::focus, "focus" },
 };
 
-class CssValueParser {
+class CssFileParser {
 public:
-    CssValueParser() {}
-    // template<typename T>
-    // CssValueParser(T ComputedStyle::*styleMember) {
-    //     parameterCount_ = 1;
-    //     parser_ = [styleMember](const vector<string>& args) {
-    //         T arg1 = Converter<T>::parse(args.empty() ? "" : args[0]);
-    //         return [styleMember,arg1](ComputedStyle& style) -> void {
-    //             style.*styleMember = arg1;
-    //         };
-    //     };
-    // }
-    size_t parameterCount_ = 0;
-    function<ComputedStyle::setter(const vector<string>&)> parser_ = {};
-};
+    function<string(SourceStream&)> nextToken_;
+    Parser<CssDeclaration> parseDecl_;
+    Parser<CssSelector> parseSelector_;
+    Parser<CssRuleSet> parseRuleSet_;
+    Parser<CssSource> parseFile_;
 
-// CssValueParser tmp = myfun;
-template<typename A>
-CssValueParser P(function<void(ComputedStyle&,A)> typedSetter)
-{
-    CssValueParser cvp;
-    cvp.parameterCount_ = 1;
-    cvp.parser_ = [typedSetter](const vector<string>& args) {
-        A arg1 = Converter<A>::parse(args.empty() ? "" : args[0]);
-        return [typedSetter,arg1](ComputedStyle& style) -> void{
-            typedSetter(style, arg1);
+    CssFileParser()
+    {
+        auto nextToken = [](SourceStream& source) -> string {
+            return source.nextToken("/*{}>~,;+:.");
         };
-    };
-    return cvp;
-}
-
-template<typename A, typename B>
-CssValueParser P(function<void(ComputedStyle&,A,B)> typedSetter)
-{
-    CssValueParser cvp;
-    cvp.parameterCount_ = 2;
-    cvp.parser_ = [typedSetter](const vector<string>& args) {
-        A arg1 = Converter<A>::parse((args.size() < 2) ? "" : args[0]);
-        B arg2 = Converter<B>::parse((args.size() < 2) ? "" : args[1]);
-        return [typedSetter,arg1,arg2](ComputedStyle& style) -> void{
-            typedSetter(style, arg1, arg2);
-        };
-    };
-    return cvp;
-}
-
-template<typename A, typename B, typename C, typename D>
-CssValueParser P(function<void(ComputedStyle&,A,B,C,D)> typedSetter)
-{
-    CssValueParser cvp;
-    cvp.parameterCount_ = 4;
-    cvp.parser_ = [typedSetter](const vector<string>& args) {
-        A arg1 = Converter<A>::parse((args.size() < 4) ? "" : args[0]);
-        B arg2 = Converter<B>::parse((args.size() < 4) ? "" : args[1]);
-        C arg3 = Converter<C>::parse((args.size() < 4) ? "" : args[2]);
-        D arg4 = Converter<D>::parse((args.size() < 4) ? "" : args[3]);
-        return [typedSetter,arg1,arg2,arg3,arg4](ComputedStyle& style) -> void{
-            typedSetter(style, arg1, arg2, arg3, arg4);
-        };
-    };
-    return cvp;
-}
-
-const vector<pair<string, CssValueParser>> cssValueParsers = {
-    {"border-width", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.borderWidthLeft = len.inPixels_;
-         style.borderWidthRight = len.inPixels_;
-         style.borderWidthTop = len.inPixels_;
-         style.borderWidthBottom = len.inPixels_;
-     })},
-    {"border-width", P<CssLen,CssLen>([](ComputedStyle& style, CssLen topBot, CssLen leftRight) {
-         style.borderWidthLeft = leftRight.inPixels_;
-         style.borderWidthRight = leftRight.inPixels_;
-         style.borderWidthTop = topBot.inPixels_;
-         style.borderWidthBottom = topBot.inPixels_;
-     })},
-    {"border-width", P<CssLen,CssLen,CssLen,CssLen>([](ComputedStyle& style, CssLen top, CssLen right, CssLen bot, CssLen left) {
-         style.borderWidthLeft = left.inPixels_;
-         style.borderWidthRight = right.inPixels_;
-         style.borderWidthTop = top.inPixels_;
-         style.borderWidthBottom = bot.inPixels_;
-     })},
-    {"border-top-width", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.borderWidthTop = len.inPixels_;
-     })},
-    {"border-bottom-width", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.borderWidthBottom = len.inPixels_;
-     })},
-    {"border-left-width", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.borderWidthLeft = len.inPixels_;
-     })},
-    {"border-right-width", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.borderWidthRight = len.inPixels_;
-     })},
-    {"padding-top", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.paddingTop = len.inPixels_;
-     })},
-    {"padding-bottom", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.paddingBottom = len.inPixels_;
-     })},
-    {"padding-left", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.paddingLeft = len.inPixels_;
-     })},
-    {"padding-right", P<CssLen>([](ComputedStyle& style, CssLen len) {
-         style.paddingRight = len.inPixels_;
-     })},
-};
-
-Parser<CssSource> cssFileParser() {
-    auto nextToken = [](SourceStream& source) -> string {
-        return source.nextToken("/*{}>~,;+:");
-    };
-    Parser<CssDeclaration> parseDecl = {
-        [nextToken] (SourceStream& source) {
-            CssDeclaration decl;
-            decl.property_ = nextToken(source);
-            source.skipWhitespace();
-            source.consumeOrException(":");
-            source.skipWhitespace();
-            while (!source.startswith(";") && !source.startswith("}")) {
-                decl.values_.push_back(nextToken(source));
+        Parser<CssDeclaration> parseDecl {[nextToken] (SourceStream& source) -> CssDeclaration {
+                CssDeclaration decl;
+                decl.property_ = nextToken(source);
+                CssValueParser prop = CssValueParser::find(decl.property_);
                 source.skipWhitespace();
-            }
-            source.skipWhitespace();
-            bool parserFound = false;
-            for (const auto& parser : cssValueParsers) {
-                if (parser.first == decl.property_
-                    && parser.second.parameterCount_ == decl.values_.size())
-                {
-                    decl.apply_ = parser.second.parser_(decl.values_);
-                    parserFound = true;
-                    break;
+                source.consumeOrException(":");
+                source.skipWhitespace();
+                while (!source.startswith(";") && !source.startswith("}")) {
+                    decl.values_.push_back(nextToken(source));
+                    source.skipWhitespace();
                 }
-            }
-            if (!parserFound) {
-                stringstream msg;
-                msg << "no parser found for \""
-                    << decl.property_ << "\" with "
-                    << decl.values_.size() << " argument(s).";
-                throw std::invalid_argument(msg.str());
-            }
-            return decl;
-    }};
-    Parser<CssSelector> parseSelector = {
-        [nextToken] (SourceStream& source) {
+                source.skipWhitespace();
+                decl.apply_ = prop.parse(decl.values_);
+                return decl;
+        }};
+        Parser<CssSelector> parseSelector {[nextToken] (SourceStream& source) -> CssSelector {
             source.skipWhitespace();
             vector<string> selectorRaw;
-            while (!source.startswith("{") && !source.startswith("}") && !source.startswith(",")) {
+            while (!source.isEOF() && !source.startswith("{") && !source.startswith("}") && !source.startswith(",")) {
                 string tok = nextToken(source);
                 selectorRaw.push_back(tok);
                 if (source.skipWhitespace() > 0) {
@@ -198,10 +85,9 @@ Parser<CssSource> cssFileParser() {
                 selector.content_.push_back(Converter<CssName>::parse(tok));
             }
             return selector;
-        }
-    };
-    Parser<CssRuleSet> parseRuleSet = {
-        [parseSelector, parseDecl] (SourceStream& source) {
+        }};
+        Parser<CssRuleSet> parseRuleSet {
+            [parseSelector, parseDecl] (SourceStream& source) -> CssRuleSet {
             CssRuleSet ruleSet;
             ruleSet.selectors_ = parseSelector.notApplicableFor("{").sepEndBy(',')(source);
             if (ruleSet.selectors_.empty()) {
@@ -215,9 +101,8 @@ Parser<CssSource> cssFileParser() {
             source.consumeOrException("}");
             source.skipWhitespace();
             return ruleSet;
-    }};
-    return {
-        [parseRuleSet] (SourceStream& source) {
+        }};
+        Parser<CssSource> parseFile {[parseRuleSet] (SourceStream& source) {
             CssSource file;
             source.skipWhitespace();
             file.content_ = parseRuleSet.many()(source);
@@ -226,25 +111,40 @@ Parser<CssSource> cssFileParser() {
                 source.expectedButGot("EOF");
             }
             return file;
-        }
-    };
-}
+        }};
+        nextToken_ = nextToken;
+        parseDecl_ = parseDecl;
+        parseSelector_ = parseSelector;
+        parseRuleSet_ = parseRuleSet;
+        parseFile_ = parseFile;
+    }
+};
 
-class DummyTree {
+class DummyTree : public DomTree, public std::enable_shared_from_this<DummyTree> {
 public:
+    using Ptr = shared_ptr<DummyTree>;
     vector<string> classes_ = {};
-    vector<DummyTree> children_ = {};
-    static DummyTree parse(SourceStream& source) {
+    CssNameSet classesHashed_ = {};
+    vector<DummyTree::Ptr> children_ = {};
+    std::weak_ptr<DummyTree> parent_ = {};
+    size_t indexInParent_ = 0;
+    static DummyTree::Ptr parse(SourceStream& source) {
         source.consumeOrException("(");
-        DummyTree tree;
+        DummyTree::Ptr tree = make_shared<DummyTree>();
         source.skipWhitespace();
         while (!source.isEOF() && !source.startswith(")")) {
             if (source.startswith("(")) {
-                tree.children_.push_back(parse(source));
+                auto child = parse(source);
+                child->parent_ = tree;
+                child->indexInParent_ = tree->children_.size();
+                tree->children_.push_back(child);
             } else {
-                tree.classes_.push_back(source.nextToken("() "));
+                tree->classes_.push_back(source.nextToken("() "));
             }
             source.skipWhitespace();
+        }
+        for (const auto& name : tree->classes_) {
+            tree->classesHashed_.setEnabled(name, true);
         }
         source.consumeOrException(")");
         return tree;
@@ -264,18 +164,62 @@ public:
         }
         for (const auto& child : children_) {
             output << "\n";
-            child.print(output, indent + 1);
+            child->print(output, indent + 1);
         }
         output << ")";
+    }
+    vector<int> treeIndex() const {
+        auto parent = parent_.lock();
+        if (parent) {
+            vector<int> index = parent->treeIndex();
+            index.push_back(static_cast<int>(indexInParent_));
+            return index;
+        } else {
+            return {};
+        }
+    }
+
+    void recurse(std::function<void(DummyTree::Ptr)> body) {
+        body(shared_from_this());
+        for (const auto& child : children_) {
+            child->recurse(body);
+        }
+    }
+
+    const DomTree* parent() const override {
+        auto ptr = parent_.lock();
+        if (ptr) {
+            return ptr.get();
+        }
+        return nullptr;
+    }
+    const DomTree* nthChild(size_t idx) const override {
+        if (idx < children_.size()) {
+            return children_[idx].get();
+        }
+        return nullptr;
+    }
+    const DomTree* leftSibling() const override {
+        auto ptr = parent_.lock();
+        if (indexInParent_ > 0 && ptr) {
+            return ptr->nthChild(indexInParent_ - 1);
+        }
+        return nullptr;
+    }
+    bool hasClass(const CssName& className) const override {
+        return classesHashed_.contains(className);
+    }
+    size_t childCount() const override {
+        return children_.size();
     }
 };
 
 template<>
-DummyTree Converter<DummyTree>::parse(const string& source) {
+DummyTree::Ptr Converter<DummyTree::Ptr>::parse(const string& source) {
     try {
         SourceStream stream = SourceStream::fromString(source);
         stream.skipWhitespace();
-        DummyTree tree = DummyTree::parse(stream);
+        DummyTree::Ptr tree = DummyTree::parse(stream);
         stream.skipWhitespace();
         if (!stream.isEOF()) {
             stream.expectedButGot("EOF");
@@ -287,15 +231,15 @@ DummyTree Converter<DummyTree>::parse(const string& source) {
 }
 
 template<>
-string Converter<DummyTree>::str(DummyTree payload) {
+string Converter<DummyTree::Ptr>::str(DummyTree::Ptr payload) {
     stringstream output;
 
-    payload.print(output);
+    payload->print(output);
     return output.str();
 }
 
 template<>
-void Converter<DummyTree>::complete(Completion& complete, const DummyTree*) {
+void Converter<DummyTree::Ptr>::complete(Completion& complete, const DummyTree::Ptr*) {
 }
 
 
@@ -330,31 +274,55 @@ void CssSource::print(std::ostream& out) const
     }
 }
 
+shared_ptr<BoxStyle> CssSource::computeStyle(DomTree* element) const
+{
+    shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
+    for (const auto& block : content_) {
+        bool matches = false;
+        for (const auto& selector : block.selectors_) {
+            if (selector.matches(element)) {
+                matches = true;
+                break;
+            }
+        }
+        if (matches) {
+            for (const auto& property : block.declarations_) {
+                property.apply_(*style);
+            }
+        }
+    }
+    return style;
+}
+
 void debugCssCommand(CallOrComplete invoc)
 {
     string cssSource;
     bool print = false, printTree = false;
-    DummyTree tree;
+    DummyTree::Ptr tree;
+    string cssSelectorStr;
     ArgParse ap;
     ap.mandatory(cssSource);
     ap.flags({
         {"--print-css", &print },
         {"--tree=", tree },
         {"--print-tree", &printTree },
+        {"--query-tree-indices=", cssSelectorStr },
     });
     ap.command(invoc,
         [&] (Output output) {
-            Parser<CssSource> parser = cssFileParser();
+            auto parser = CssFileParser();
             CssSource file;
-            auto stream = SourceStream::fromString(cssSource);
-            try {
-                file = parser(stream);
-            } catch (const SourceStream::Error& error) {
-                output.error() << error.str();
-                return 1;
-            } catch (const std::exception& exc) {
-                auto sourceError = stream.constructErrorObject(exc.what());
-                output.error() << sourceError.str();
+            bool error = false;
+            parser.parseFile_.oneShot(cssSource)
+                  .cases(
+                        [&output,&error](const SourceStream::ErrorData& err) {
+                output.error() << err.str();
+                error = true;
+            },
+            [&file](const CssSource& data) {
+                file = data;
+            });
+            if (error) {
                 return 1;
             }
 
@@ -362,7 +330,30 @@ void debugCssCommand(CallOrComplete invoc)
                 file.print(output.output());
             }
             if (printTree) {
-                output << Converter<DummyTree>::str(tree) << endl;
+                output << Converter<DummyTree::Ptr>::str(tree) << endl;
+            }
+            if (!cssSelectorStr.empty()) {
+                if (!tree) {
+                    output.error() << "selector queries requires a tree";
+                } else {
+                    CssSelector selector;
+                    parser.parseSelector_.oneShot(cssSelectorStr)
+                            .cases([&output, &error, &cssSelectorStr](const SourceStream::ErrorData& err) {
+                        output.error() << err.str();
+                        error = true;
+                    }, [&selector](const CssSelector res) {
+                        selector = res;
+                    });
+                    tree->recurse([&output, &selector](DummyTree::Ptr node){
+                        if (selector.matches(node.get())) {
+                            output << "match:";
+                            for (auto idx : node->treeIndex()) {
+                                output << " " << idx;
+                            }
+                            output << "\n";
+                        }
+                    });
+                }
             }
             return 0;
     });
@@ -373,18 +364,14 @@ template<> CssName Converter<CssName>::parse(const string& source)
 {
     for (const auto& row : CssName::specialNames) {
         if (row.second == source) {
-            CssName name;
-            name.special_ = row.first;
-            return name;
+            return row.first;
         }
     }
     // else:
     if (source.empty()) {
         throw std::invalid_argument("A class name must not be empty");
     }
-    CssName name;
-    name.custom_ = source;
-    return name;
+    return source;
 }
 
 template<> string Converter<CssName>::str(CssName payload)
@@ -403,33 +390,13 @@ template<> void Converter<CssName>::complete(Completion&, CssName const*)
 {
 }
 
-template<> CssLen Converter<CssLen>::parse(const string& source)
-{
-    if (source.size() < 2 || source.substr(source.size() - 2) != "px") {
-        throw std::invalid_argument("length must be of the format \"<n>px\", e.g. 4px");
-    }
-    int pxInt = Converter<int>::parse(source.substr(0, source.size() - 2));
-    CssLen len;
-    len.inPixels_ = static_cast<short>(pxInt);
-    return len;
-}
-
-template<> std::string Converter<CssLen>::str(CssLen payload)
-{
-    return Converter<int>::str(payload.inPixels_) + "px";
-}
-
-template<> void Converter<CssLen>::complete(Completion&, CssLen const*)
-{
-}
-
 template<> CssSource Converter<CssSource>::parse(const string& source)
 {
-    Parser<CssSource> parser = cssFileParser();
+    auto parser = CssFileParser();
     auto stream = SourceStream::fromString(source);
     SourceStream::Error parseError;
     try {
-        return parser(stream);
+        return parser.parseFile_(stream);
     } catch (const SourceStream::Error& error) {
         parseError = error;
     } catch (const std::exception& exc) {
@@ -447,4 +414,98 @@ template<> std::string Converter<CssSource>::str(CssSource payload)
 
 template<> void Converter<CssSource>::complete(Completion&, CssSource const*)
 {
+}
+
+bool CssSelector::matches(const DomTree* element) const
+{
+    return matches(element, content_.size());
+}
+
+bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
+{
+    if (prefixLen == 0 || content_.empty()) {
+        return true;
+    }
+    if (prefixLen >= content_.size()) {
+        prefixLen = content_.size() - 1;
+        if (prefixLen == 0) {
+            return true;
+        }
+    }
+    if (element == nullptr) {
+        return false;
+    }
+    const CssName& current = content_[prefixLen - 1];
+    if (current.isBuiltin()) {
+        switch (current.special_) {
+        case CssName::Builtin::child:
+            return matches(element->parent(), prefixLen - 1);
+        case CssName::Builtin::descendant:
+            {
+                const DomTree* parent = element->parent();
+                while (parent) {
+                    // try to match the selector
+                    if (matches(parent, prefixLen - 1)) {
+                        return true;
+                    }
+                    // otherwise, go one level further up
+                    parent = parent->parent();
+                }
+                return false;
+            }
+        case CssName::Builtin::any:
+            return matches(element, prefixLen - 1);
+        default:
+            // we have an ordinary token in the selector,
+            // this could be a selector for element type, class, or id.
+            if (prefixLen >= 2) {
+                CssName::Builtin previous =
+                        content_[prefixLen - 2].isBuiltin()
+                        ? content_[prefixLen - 2].special_
+                        : CssName::Builtin::any;
+                switch (previous) {
+                case CssName::Builtin::has_class:
+                    return element->hasClass(current)
+                            && matches(element, prefixLen - 2);
+                default:
+                    // check element type: not implemented yet so always false
+                    return false;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool CssName::isCombinator() const
+{
+    return custom_.empty() && special_ <= Builtin::LAST_COMBINATOR;
+}
+
+
+void CssNameSet::setEnabled(std::initializer_list<std::pair<CssName, bool> > classes)
+{
+    for (const auto& item : classes) {
+        setEnabled(item.first, item.second);
+    }
+}
+
+bool CssNameSet::contains(CssName className) const
+{
+    if (className.isBuiltin()) {
+        return names_ & (1ull << static_cast<unsigned long long>(className.special_));
+    } else {
+        return false;
+    }
+}
+
+void CssNameSet::setEnabled(CssName className, bool enabled)
+{
+    if (className.isBuiltin()) {
+        if (enabled) {
+            names_ |= (1ull << static_cast<unsigned long long>(className.special_));
+        } else {
+            names_ &= ~(1ull << static_cast<unsigned long long>(className.special_));
+        }
+    }
 }

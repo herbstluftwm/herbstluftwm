@@ -47,13 +47,16 @@ Visual* Decoration::check_32bit_client(Client* c)
     return nullptr;
 }
 
-Decoration::Decoration(Client* client, Settings& settings)
-    : client_(client),
-      settings_(settings)
+Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
+    : client_(client)
+    , settings_(settings)
+    , theme_(theme)
 {
+    widTabBar.setClassEnabled(CssName::Builtin::window, true);
     widMain.vertical_ = true;
     widMain.addChild(&widTabBar);
     widMain.addChild(&widClient);
+    widTabBar.setClassEnabled(CssName::Builtin::tabbar, true);
     widClient.expandX_ = true;
     widClient.expandY_ = true;
 }
@@ -195,7 +198,22 @@ void Decoration::setParameters(const DecorationParameters& params)
     // now the vector sizes match, so we can sync the contents:
     for (size_t i = 0; i < params.tabs_.size(); i++) {
         widTabs[i]->tabClient = params.tabs_[i];
+        widTabs[i]->setClassEnabled({
+            {CssName::Builtin::focus, params.tabs_[i] == client_},
+            {CssName::Builtin::urgent, params.tabs_[i] == client_},
+        });
     }
+    // set the css classes
+    CssNameSet classes;
+    classes.setEnabled({
+       {{CssName::Builtin::focus}, params.focused_},
+    });
+    widMain.setClasses(classes);
+
+    // and compute the resulting styles
+    widMain.recurse([this](Widget& wid) {
+        wid.setStyle(this->theme_.computeBoxStyle(&wid));
+    });
 }
 
 Client* Decoration::toClient(Window decoration_window)
@@ -702,4 +720,9 @@ std::experimental::optional<unsigned int> ResizeAction::toCursorShape() const
 TabWidget::TabWidget()
 {
     expandX_ = true;
+    CssNameSet classes;
+    classes.setEnabled({
+        { CssName::Builtin::tabbar, true },
+    });
+    setClasses(classes);
 }

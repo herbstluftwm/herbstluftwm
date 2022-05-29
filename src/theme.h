@@ -203,7 +203,10 @@ public:
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
 
+    void onDecTripleChange();
+
     Attribute_<CssSource> custom_style;
+    std::shared_ptr<BoxStyle> computeBoxStyle(DomTree* element);
 
     ChildMember_<DecTriple> fullscreen;
     ChildMember_<DecTriple> tiling;
