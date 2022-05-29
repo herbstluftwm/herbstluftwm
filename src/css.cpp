@@ -81,8 +81,21 @@ public:
             }
             CssSelector selector;
             selector.content_.reserve(selectorRaw.size());
-            for (const auto& tok : selectorRaw) {
-                selector.content_.push_back(Converter<CssName>::parse(tok));
+            for (auto it = selectorRaw.begin(); it != selectorRaw.end(); it++) {
+                CssName parsed = Converter<CssName>::parse(*it);
+                CssName whitespace{CssName::Builtin::descendant};
+                if (parsed.isBinaryOperator()) {
+                    // drop whitespace before binary operator
+                    while (!selector.content_.empty()
+                           && *(selector.content_.rbegin()) == whitespace) {
+                        selector.content_.pop_back();
+                    }
+                    // drop whitespace after binary operator
+                    while (it + 1 != selectorRaw.end() && *(it + 1) == " ") {
+                        it++;
+                    }
+                }
+                selector.content_.push_back(parsed);
             }
             return selector;
         }};
@@ -258,7 +271,13 @@ void CssSource::print(std::ostream& out) const
                 out << " ,\n";
             }
             for (const auto& s: selector.content_) {
+                if (s.isBinaryOperator()) {
+                    out << " ";
+                }
                 out << Converter<CssName>::str(s);
+                if (s.isBinaryOperator()) {
+                    out << " ";
+                }
             }
         }
         // print block
@@ -338,7 +357,7 @@ void debugCssCommand(CallOrComplete invoc)
                 } else {
                     CssSelector selector;
                     parser.parseSelector_.oneShot(cssSelectorStr)
-                            .cases([&output, &error, &cssSelectorStr](const SourceStream::ErrorData& err) {
+                            .cases([&output, &error](const SourceStream::ErrorData& err) {
                         output.error() << err.str();
                         error = true;
                     }, [&selector](const CssSelector res) {
@@ -423,14 +442,11 @@ bool CssSelector::matches(const DomTree* element) const
 
 bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
 {
+    if (prefixLen >= content_.size()) {
+        prefixLen = content_.size();
+    }
     if (prefixLen == 0 || content_.empty()) {
         return true;
-    }
-    if (prefixLen >= content_.size()) {
-        prefixLen = content_.size() - 1;
-        if (prefixLen == 0) {
-            return true;
-        }
     }
     if (element == nullptr) {
         return false;
@@ -440,6 +456,8 @@ bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
         switch (current.special_) {
         case CssName::Builtin::child:
             return matches(element->parent(), prefixLen - 1);
+        case CssName::Builtin::adjacent_sibling:
+            return matches(element->leftSibling(), prefixLen - 1);
         case CssName::Builtin::descendant:
             {
                 const DomTree* parent = element->parent();
@@ -480,6 +498,16 @@ bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
 bool CssName::isCombinator() const
 {
     return custom_.empty() && special_ <= Builtin::LAST_COMBINATOR;
+}
+
+/*** whether this is a binary operator, i.e. something that consumes
+ * whitespace before and after
+ */
+bool CssName::isBinaryOperator() const
+{
+    return custom_.empty()
+            && (special_ == Builtin::adjacent_sibling
+                || special_ == Builtin::child);
 }
 
 

@@ -55,7 +55,11 @@ public:
         , custom_(other.custom_) {}
 
     bool isCombinator() const;
+    bool isBinaryOperator() const;
     bool isBuiltin() const { return custom_.empty(); }
+    bool operator==(const CssName& other) const {
+        return special_ == other.special_ && custom_ == other.custom_;
+    }
     Builtin special_ = Builtin::LAST;
     std::string custom_;
     static const std::vector<std::pair<Builtin, std::string>> specialNames;

@@ -27,14 +27,14 @@ template<> void Converter<CssLen>::complete(Completion& complete, CssLen const* 
  */
 class BoxStyle {
 public:
-    CssLen borderWidthTop = 2;
-    CssLen borderWidthRight = 2;
-    CssLen borderWidthBottom = 2;
-    CssLen borderWidthLeft = 2;
-    CssLen paddingTop = 2;
-    CssLen paddingRight = 2;
-    CssLen paddingBottom = 2;
-    CssLen paddingLeft = 2;
+    CssLen borderWidthTop = 0;
+    CssLen borderWidthRight = 0;
+    CssLen borderWidthBottom = 0;
+    CssLen borderWidthLeft = 0;
+    CssLen paddingTop = 0;
+    CssLen paddingRight = 0;
+    CssLen paddingBottom = 0;
+    CssLen paddingLeft = 0;
     Color backgroundColor = {};
     Color borderColor = {};
     static const BoxStyle empty;

@@ -52,7 +52,6 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
     , settings_(settings)
     , theme_(theme)
 {
-    widTabBar.setClassEnabled(CssName::Builtin::window, true);
     widMain.vertical_ = true;
     widMain.addChild(&widTabBar);
     widMain.addChild(&widClient);
@@ -206,6 +205,7 @@ void Decoration::setParameters(const DecorationParameters& params)
     // set the css classes
     CssNameSet classes;
     classes.setEnabled({
+       {{CssName::Builtin::window}, true},
        {{CssName::Builtin::focus}, params.focused_},
     });
     widMain.setClasses(classes);
@@ -722,7 +722,7 @@ TabWidget::TabWidget()
     expandX_ = true;
     CssNameSet classes;
     classes.setEnabled({
-        { CssName::Builtin::tabbar, true },
+        { CssName::Builtin::tab, true },
     });
     setClasses(classes);
 }

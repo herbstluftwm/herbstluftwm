@@ -26,7 +26,6 @@ void X11WidgetRender::render(const Widget& widget)
             ? *widget.style_
             : BoxStyle::empty;
     fillRectangle(geo, style.backgroundColor);
-    Color bcol("red");
     vector<Rectangle> borderRects = {
         {geo.x, geo.y, style.borderWidthLeft, geo.height},
         {geo.x, geo.y, geo.width, style.borderWidthTop},
@@ -36,7 +35,7 @@ void X11WidgetRender::render(const Widget& widget)
          geo.width, style.borderWidthBottom},
     };
     for (const auto& r : borderRects) {
-        fillRectangle(r, bcol);
+        fillRectangle(r, style.borderColor);
     }
     for (const Widget* child : widget.nestedWidgets_) {
         render(*child);

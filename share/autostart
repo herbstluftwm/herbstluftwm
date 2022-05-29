@@ -66,6 +66,7 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 tag_names=( {1..9} )
 tag_keys=( {1..9} 0 )
 
+hc try attr tags.0.tiling.root.algorithm 'max'
 hc rename default "${tag_names[0]}" || true
 for i in "${!tag_names[@]}" ; do
     hc add "${tag_names[$i]}"
@@ -149,12 +150,27 @@ hc attr theme.normal.inner_color '#606060'
 
 hc attr theme.custom_style "
 .window {
-    border-width: 3px;
+    border-width: 4px;
+    border-color: #9fbc00;
+    padding: 2px;
 }
 
-.tabbar .tab {
-    border-width: 1px;
-    border-bottom-width: 0px;
+.tabbar {
+    border-width: 2px;
+    border-color: #0000ff;
+}
+
+.tabbar > .tab {
+    border-width: 3px;
+    border-color: #ff0000;
+}
+
+.tabbar > .tab + .tab {
+    border-left-width: 0px;
+}
+
+.tabbar > .tab.focus {
+    background-color: #ab0000;
 }
 "
 
@@ -169,7 +185,7 @@ hc attr theme.background_color '#141414'
 hc set window_gap 0
 hc set frame_padding 0
 hc set smart_window_surroundings off
-hc set smart_frame_surroundings on
+hc set smart_frame_surroundings off
 hc set mouse_recenter_gap 0
 
 # rules

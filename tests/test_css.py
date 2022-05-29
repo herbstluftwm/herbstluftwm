@@ -6,7 +6,7 @@ def test_basic_css_normalize(hlwm):
         "// comment\n foo .p, bar.c,* +c { border-width: 4px 2px; }": """\
         foo .p ,
         bar.c ,
-        * +c {
+        * + c {
             border-width: 4px 2px;
         }
         """,
@@ -34,6 +34,13 @@ def test_basic_css_normalize(hlwm):
             border-width: 1px;
             border-width: 1px;
             border-width: 1px;
+        }
+        """,
+        ".cl { border-color: #9fbc00; background-color: #1234ab; }":
+        """\
+        .cl {
+            border-color: #9fbc00;
+            background-color: #1234ab;
         }
         """,
         "foo.class1     .class2    {border-left-width:4px;   border-right-width   : 2px  ;   }   //": """\
@@ -107,12 +114,16 @@ def test_css_property_parsing(hlwm):
 
 
 def test_css_basic_selectors(hlwm):
-    tree = '(window (c focus (e f)))'
+    tree = '(window (focus (e f)) (nonfocus))'
     selector2match = {
-        '.window': ['0'],
-        #'.window>.focus': ['0'],
+        '.window': [''],
+        '.window>.focus': ['0'],
+        '.window > .focus': ['0'],
+        '.window >.focus': ['0'],
         '.window * > .focus': [],
-        '*': ['', '0', '0 0'],
+        '.window > .focus + *': ['1'],
+        '*': ['', '0', '0 0', '1'],
+        '* *': ['0', '0 0', '1'],
     }
     for selector, expected in selector2match.items():
         cmd = [

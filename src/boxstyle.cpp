@@ -135,6 +135,8 @@ void CssValueParser::buildParserCache()
         {"border-width", // top right bot left
            {{&BoxStyle::borderWidthTop}, {&BoxStyle::borderWidthRight},
             {&BoxStyle::borderWidthBottom}, {&BoxStyle::borderWidthLeft}}},
+        {"background-color", &BoxStyle::backgroundColor },
+        {"border-color", &BoxStyle::borderColor },
 
         {"padding-top", &BoxStyle::paddingTop },
         {"padding-bottom", &BoxStyle::paddingBottom },
