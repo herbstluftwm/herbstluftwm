@@ -1,6 +1,5 @@
 #include "decoration.h"
 
-#include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
@@ -56,6 +55,7 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
     widMain.addChild(&widTabBar);
     widMain.addChild(&widClient);
     widTabBar.setClassEnabled(CssName::Builtin::tabbar, true);
+    widClient.setClassEnabled(CssName::Builtin::client_content, true);
     widClient.expandX_ = true;
     widClient.expandY_ = true;
 }
@@ -174,7 +174,6 @@ void Decoration::setParameters(const DecorationParameters& params)
             widTabs.reserve(params.tabs_.size());
             while (params.tabs_.size() > widTabs.size()) {
                 TabWidget* newTab = new TabWidget();
-                newTab->minimumSizeUser_ = {10,10};
                 widTabs.push_back(newTab);
                 widTabBar.addChild(newTab);
             }
@@ -197,6 +196,7 @@ void Decoration::setParameters(const DecorationParameters& params)
     // now the vector sizes match, so we can sync the contents:
     for (size_t i = 0; i < params.tabs_.size(); i++) {
         widTabs[i]->tabClient = params.tabs_[i];
+        widTabs[i]->textContent_ = params.tabs_[i]->title_();
         widTabs[i]->setClassEnabled({
             {CssName::Builtin::focus, params.tabs_[i] == client_},
             {CssName::Builtin::urgent, params.tabs_[i] == client_},
@@ -235,21 +235,16 @@ void Decoration::resize_inner(Rectangle inner) {
         Point2D outerSize = widMain.minimumSizeCached();
         widMain.computeGeometry({0, 0, outerSize.x, outerSize.y});
         // move everything such that widClient.tl() is inner.tl():
-        widMain.moveGeometryCached(inner.tl() - widClient.geometryCached().tl());
+        widMain.moveGeometryCached(inner.tl() - widClient.contentGeometryCached().tl());
     }
     last_rect_inner = true;
     applyWidgetGeometries();
 }
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
-    if (!last_scheme) {
-        // if the decoration was never drawn, just take a guess.
-        // Since the 'inner' rect is usually a floating geometry,
-        // take a scheme from there.
-        const DecorationScheme& fallback =  client_->theme.floating.normal;
-        return fallback.inner_rect_to_outline(rect, tabs_.size());
-    }
-    return last_scheme->inner_rect_to_outline(rect, tabs_.size());
+    Point2D deltaTL = last_outer().tl() - last_inner().tl();
+    Point2D deltaBR = last_outer().br() - last_inner().br();
+    return Rectangle::fromCorners(deltaTL + rect.tl(), deltaBR + rect.br());
 }
 
 void Decoration::updateResizeAreaCursors()
@@ -271,12 +266,27 @@ void Decoration::updateResizeAreaCursors()
 std::experimental::optional<Decoration::ClickArea>
 Decoration::positionHasButton(Point2D p)
 {
-    for (auto& button : buttons_) {
-        if (button.area_.contains(p)) {
+    for (TabWidget* tab : widTabs) {
+        if (tab->geometryCached().contains(p)) {
+            ClickArea button;
+            button.area_ = tab->geometryCached();
+            button.tabClient_ = tab->tabClient;
             return button;
         }
     }
     return {};
+}
+
+/*** estimate the border width from widget geometries
+ */
+int Decoration::borderWidth() const
+{
+    Point2D deltaTL = last_inner().tl() - last_outer().tl();
+    Point2D deltaBR = last_inner().br() - last_outer().br();
+    return
+        std::max(
+            std::min(std::abs(deltaTL.x), std::abs(deltaBR.x)),
+            std::min(std::abs(deltaTL.y), std::abs(deltaBR.y)));
 }
 
 /**
@@ -287,13 +297,8 @@ Decoration::positionHasButton(Point2D p)
  */
 ResizeAction Decoration::positionTriggersResize(Point2D p)
 {
-    if (!last_scheme) {
-        // this should never happen, so we just randomly pick:
-        // never resize if there is no decoration scheme
-        return ResizeAction();
-    }
-    auto border_width = static_cast<int>(last_scheme->border_width());
     ResizeAction act;
+    int border_width = borderWidth();
     if (p.x < border_width) {
         act.left = True;
     }
@@ -353,10 +358,10 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
  */
 void Decoration::removeFromTabBar(Client* otherClientTab)
 {
-    tabs_.erase(std::remove_if(tabs_.begin(), tabs_.end(),
-                               [=](Client* c) {
-        return c == otherClientTab;
-    }), tabs_.end());
+    widTabs.erase(std::remove_if(widTabs.begin(), widTabs.end(),
+                               [=](TabWidget* w) {
+        return w->tabClient == otherClientTab;
+    }), widTabs.end());
 }
 
 void Decoration::resize_outline(Rectangle outline)
@@ -373,10 +378,10 @@ void Decoration::resize_outline(Rectangle outline)
 void Decoration::applyWidgetGeometries() {
     bool decorated = client_->decorated_();
     Window win = client_->window_;
-    const auto tile = widClient.geometryCached();
+    const auto tile = widClient.contentGeometryCached();
     Rectangle inner =
             decorated
-            ? widClient.geometryCached()
+            ? widClient.contentGeometryCached()
             : widMain.geometryCached();
     client_->applysizehints(&inner.width, &inner.height);
 
@@ -449,7 +454,7 @@ void Decoration::applyWidgetGeometries() {
     // update geometry of resizeArea window
     if (decorated) {
         Rectangle outline = widMain.geometryCached();
-        Point2D borderWidth =  outline.br() - widClient.geometryCached().br();
+        Point2D borderWidth =  outline.br() - widClient.contentGeometryCached().br();
         int bw = std::max(borderWidth.x, borderWidth.y);
         Rectangle areaGeo;
         for (size_t i = 0; i < resizeAreaSize; i++) {
@@ -474,8 +479,8 @@ void Decoration::updateFrameExtends() {
     int right = 0;
     int bottom = 0;
     if (client_->decorated_()) {
-        Point2D tl = widClient.geometryCached().tl() - widMain.geometryCached().tl();
-        Point2D br = widMain.geometryCached().br() - widClient.geometryCached().br();
+        Point2D tl = widClient.contentGeometryCached().tl() - widMain.geometryCached().tl();
+        Point2D br = widMain.geometryCached().br() - widClient.contentGeometryCached().br();
         left = tl.x;
         top = tl.y;
         right = br.x;
@@ -514,100 +519,13 @@ void Decoration::redrawPixmap() {
                                     static_cast<unsigned int>(outer.height),
                                     depth);
     }
-    buttons_.clear();
     Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(display, pix, 0, nullptr);
 
-    X11WidgetRender painter(pix, outer.tl(), colormap, gc);
+    X11WidgetRender painter(settings_, pix, outer.tl(), colormap, gc, visual);
     painter.render(widMain);
     // clean up
     XFreeGC(display, gc);
-}
-
-/**
- * @brief Draw a given text
- * @param pix The pixmap
- * @param gc The graphic context
- * @param fontData
- * @param color
- * @param position The position of the left end of the baseline
- * @param width The maximum width of the string (in pixels)
- * @param the horizontal alignment within this maximum width
- * @param text
- */
-void Decoration::drawText(Pixmap& pix, GC& gc, const FontData& fontData, const Color& color,
-                          Point2D position, const string& text, int width,
-                          const TextAlign& align)
-{
-    XConnection& xcon = xconnection();
-    Display* display = xcon.display();
-    // shorten the text first:
-    size_t textLen = text.size();
-    int textwidth = fontData.textwidth(text, textLen);
-    string with_ellipsis; // declaration here for sufficently long lifetime
-    const char* final_c_str = nullptr;
-    if (textwidth <= width) {
-        final_c_str = text.c_str();
-    } else {
-        // shorten title:
-        with_ellipsis = text + settings_.ellipsis();
-        // temporarily, textLen is the length of the text surviving from the
-        // original window title
-        while (textLen > 0 && textwidth > width) {
-            textLen--;
-            // remove the (multibyte-)character that ends at with_ellipsis[textLen]
-            size_t character_width = 1;
-            while (textLen > 0 && utf8_is_continuation_byte(with_ellipsis[textLen])) {
-                textLen--;
-                character_width++;
-            }
-            // now, textLen points to the first byte of the (multibyte-)character
-            with_ellipsis.erase(textLen, character_width);
-            textwidth = fontData.textwidth(with_ellipsis, with_ellipsis.size());
-        }
-        // make textLen refer to the actual string and shorten further if it
-        // is still too wide:
-        textLen = with_ellipsis.size();
-        while (textLen > 0 && textwidth > width) {
-            textLen--;
-            textwidth = fontData.textwidth(with_ellipsis, textLen);
-        }
-        final_c_str = with_ellipsis.c_str();
-    }
-    switch (align) {
-    case TextAlign::left: break;
-    case TextAlign::center: position.x += (width - textwidth) / 2; break;
-    case TextAlign::right: position.x += width - textwidth; break;
-    }
-    if (fontData.xftFont_) {
-        Visual* xftvisual = visual ? visual : xcon.visual();
-        Colormap xftcmap = colormap ? colormap : xcon.colormap();
-        XftDraw* xftd = XftDrawCreate(display, pix, xftvisual, xftcmap);
-        XRenderColor xrendercol = {
-                color.red_,
-                color.green_,
-                color.blue_,
-                // TODO: make xft respect the alpha value
-                0xffff, // alpha as set by XftColorAllocName()
-        };
-        XftColor xftcol = { };
-        XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
-        XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
-                       position.x, position.y,
-                       (const XftChar8*)final_c_str, textLen);
-        XftDrawDestroy(xftd);
-        XftColorFree(display, xftvisual, xftcmap, &xftcol);
-    } else if (fontData.xFontSet_) {
-        XSetForeground(display, gc, xcon.allocColor(colormap, color));
-        XmbDrawString(display, pix, fontData.xFontSet_, gc, position.x, position.y,
-                final_c_str, textLen);
-    } else if (fontData.xFontStruct_) {
-        XSetForeground(display, gc, xcon.allocColor(colormap, color));
-        XFontStruct* font = fontData.xFontStruct_;
-        XSetFont(display, gc, font->fid);
-        XDrawString(display, pix, gc, position.x, position.y,
-                final_c_str, textLen);
-    }
 }
 
 ResizeAction Decoration::resizeAreaInfo(size_t idx)
@@ -724,5 +642,6 @@ TabWidget::TabWidget()
     classes.setEnabled({
         { CssName::Builtin::tab, true },
     });
+    hasText_ = true;
     setClasses(classes);
 }

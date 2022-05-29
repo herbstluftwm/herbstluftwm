@@ -19,12 +19,7 @@ void Widget::computeGeometry(Rectangle outerGeometry)
     geometryCached_ = outerGeometry;
     geometryCached_.width = std::max(geometryCached_.width, minimumSizeCached_.x);
     geometryCached_.height = std::max(geometryCached_.height, minimumSizeCached_.y);
-    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty;
-    Rectangle innerGeo = geometryCached_.adjusted(
-                -style.borderWidthLeft - style.paddingLeft,
-                -style.borderWidthTop - style.paddingTop,
-                -style.borderWidthRight - style.paddingRight,
-                -style.borderWidthBottom - style.paddingBottom);
+    Rectangle innerGeo = contentGeometryCached();
     int expandingChildrenCount = 0;
     // the dimension/direction in which the children will be stacked
     int Point2D::*stackingDimension = &Point2D::x;
@@ -87,17 +82,33 @@ void Widget::computeMinimumSize()
         nestedSize.*fixedDimension = std::max(nestedSize.*fixedDimension,
                                               childSize.*fixedDimension) ;
     }
-    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty;
+    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty();
     Point2D surroundingsSize = {0, 0};
     surroundingsSize.x += style.borderWidthLeft + style.borderWidthRight;
     surroundingsSize.y += style.borderWidthTop + style.borderWidthBottom;
     surroundingsSize.x += style.paddingLeft + style.paddingRight;
     surroundingsSize.y += style.paddingTop + style.paddingBottom;
 
+    Point2D textSize = {0, 0};
+    if (hasText_) {
+        textSize.y = style.textDepth + style.textHeight;
+    }
     minimumSizeCached_ = surroundingsSize +
             Point2D::fold(
                 [](int a, int b) { return std::max(a,b); },
-    {minimumSizeUser_, nestedSize});
+    {minimumSizeUser_, nestedSize, textSize});
+}
+
+Rectangle Widget::contentGeometryCached() const
+{
+    if (style_) {
+        return geometryCached_.adjusted(
+                -style_->borderWidthLeft - style_->paddingLeft,
+                -style_->borderWidthTop - style_->paddingTop,
+                -style_->borderWidthRight - style_->paddingRight,
+                -style_->borderWidthBottom - style_->paddingBottom);
+    }
+    return geometryCached_;
 }
 
 void Widget::moveGeometryCached(Point2D delta)

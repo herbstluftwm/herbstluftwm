@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "font.h"
 #include "x11-types.h"
 
 class CssLen {
@@ -37,7 +38,14 @@ public:
     CssLen paddingLeft = 0;
     Color backgroundColor = {};
     Color borderColor = {};
-    static const BoxStyle empty;
+    Color fontColor = {};
+    TextAlign textAlign = TextAlign::left;
+    CssLen textDepth = 0;
+    CssLen textHeight = 0;
+    HSFont font = HSFont::fromStr("");
+    static const BoxStyle empty() {
+        return {};
+    }
     using setter = std::function<void(BoxStyle&)>;
 };
 

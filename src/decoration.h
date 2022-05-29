@@ -10,8 +10,6 @@
 #include "x11-types.h"
 
 class Client;
-class FontData;
-enum class TextAlign;
 class Settings;
 class DecorationScheme;
 class Theme;
@@ -82,8 +80,8 @@ public:
     static Client* toClient(Window decoration_window);
 
     Window decorationWindow() { return decwin; }
-    Rectangle last_inner() const { return last_inner_rect; }
-    Rectangle last_outer() const { return last_outer_rect; }
+    Rectangle last_inner() const { return widClient.contentGeometryCached(); }
+    Rectangle last_outer() const { return widMain.geometryCached(); }
     Rectangle inner_to_outer(Rectangle rect);
 
     void updateResizeAreaCursors();
@@ -97,15 +95,12 @@ private:
     Widget widMain;
     Widget widTabBar;
     Widget widClient;
+    int borderWidth() const;
     std::vector<TabWidget*> widTabs;
     static Visual* check_32bit_client(Client* c);
     static XConnection& xconnection();
     void redrawPixmap();
     void updateFrameExtends();
-
-    void drawText(Pixmap& pix, GC& gc, const FontData& fontData,
-                  const Color& color, Point2D position, const std::string& text,
-                  int width, const TextAlign& align );
 
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
@@ -113,8 +108,6 @@ private:
     Rectangle   last_inner_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
-    std::vector<Client*>    tabs_ = {}; //! the tabs shown in the decoration
-    std::vector<ClickArea>  buttons_ = {};
     /* X specific things */
     Visual*                 visual = nullptr;
     Colormap                colormap = 0;

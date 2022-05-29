@@ -20,6 +20,9 @@ public:
     bool expandX_ = false;
     /** whether this widget likes growing into the Y-direction */
     bool expandY_ = false;
+    bool hasText_ = false;
+    std::string textContent_ = {};
+
     void computeGeometry(Rectangle outerGeometry);
     void computeMinimumSize();
     Point2D minimumSizeCached() const {
@@ -28,6 +31,7 @@ public:
     Rectangle geometryCached() const {
         return geometryCached_;
     }
+    Rectangle contentGeometryCached() const;
     void moveGeometryCached(Point2D delta);
     void clearChildren();
     void addChild(Widget* child);

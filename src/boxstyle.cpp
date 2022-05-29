@@ -7,7 +7,6 @@ using std::pair;
 using std::string;
 using std::vector;
 
-const BoxStyle BoxStyle::empty;
 std::map<std::string, CssValueParser> CssValueParser::propName2Parser_;
 
 
@@ -137,6 +136,11 @@ void CssValueParser::buildParserCache()
             {&BoxStyle::borderWidthBottom}, {&BoxStyle::borderWidthLeft}}},
         {"background-color", &BoxStyle::backgroundColor },
         {"border-color", &BoxStyle::borderColor },
+        {"font", &BoxStyle::font },
+        {"color", &BoxStyle::fontColor },
+        {"text-align", &BoxStyle::textAlign },
+        {"-hlwm-text-depth", &BoxStyle::textDepth },
+        {"-hlwm-text-height", &BoxStyle::textHeight },
 
         {"padding-top", &BoxStyle::paddingTop },
         {"padding-bottom", &BoxStyle::paddingBottom },
@@ -171,6 +175,14 @@ void CssValueParser::buildParserCache()
 
 BoxStyle::setter CssValueParser::parse(const std::vector<std::string>& args) const
 {
+    if (parser1_ && !(parser2_ || parser3_ || parser4_)) {
+        // if this property only accepts one argument, then join the args
+        std::stringstream buf;
+        for (const auto& a : args) {
+            buf << a;
+        }
+        return parser1_(buf.str());
+    }
     if (args.size() == 1 && parser1_) {
         return parser1_(args[0]);
     }
