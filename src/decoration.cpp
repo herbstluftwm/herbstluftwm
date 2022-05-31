@@ -196,7 +196,6 @@ void Decoration::setParameters(const DecorationParameters& params)
     // now the vector sizes match, so we can sync the contents:
     for (size_t i = 0; i < params.tabs_.size(); i++) {
         widTabs[i]->tabClient = params.tabs_[i];
-        widTabs[i]->textContent_ = params.tabs_[i]->title_();
         widTabs[i]->setClassEnabled({
             {CssName::Builtin::focus, params.tabs_[i] == client_},
             {CssName::Builtin::urgent, params.tabs_[i] == client_},
@@ -359,10 +358,15 @@ ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
  */
 void Decoration::removeFromTabBar(Client* otherClientTab)
 {
-    widTabs.erase(std::remove_if(widTabs.begin(), widTabs.end(),
-                               [=](TabWidget* w) {
-        return w->tabClient == otherClientTab;
-    }), widTabs.end());
+    for (size_t i = 0; i < widTabs.size(); i++) {
+        if (widTabs[i]->tabClient == otherClientTab) {
+            widTabBar.removeChild(i);
+            delete widTabs[i];
+            auto idxTyped = static_cast<vector<TabWidget*>::difference_type>(i);
+            widTabs.erase(widTabs.begin() + idxTyped);
+            return;
+        }
+    }
 }
 
 void Decoration::resize_outline(Rectangle outline)
@@ -645,4 +649,9 @@ TabWidget::TabWidget()
     });
     hasText_ = true;
     setClasses(classes);
+}
+
+string TabWidget::textContent() const
+{
+    return tabClient->title_();
 }

@@ -14,6 +14,7 @@ class Widget : public DomTree
 {
 public:
     Widget();
+    virtual ~Widget() override = default;
     /** whether the children of this widged are placed below each other */
     bool vertical_ = false;
     /** whether this widget likes growing into the X-direction */
@@ -21,7 +22,7 @@ public:
     /** whether this widget likes growing into the Y-direction */
     bool expandY_ = false;
     bool hasText_ = false;
-    std::string textContent_ = {};
+    virtual std::string textContent() const { return {}; }
 
     void computeGeometry(Rectangle outerGeometry);
     void computeMinimumSize();
@@ -35,6 +36,7 @@ public:
     void moveGeometryCached(Point2D delta);
     void clearChildren();
     void addChild(Widget* child);
+    void removeChild(size_t idx);
     void setStyle(std::shared_ptr<BoxStyle> style);
 
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size

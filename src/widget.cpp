@@ -7,6 +7,7 @@
 #include "globals.h"
 
 using std::function;
+using std::vector;
 
 Widget::Widget()
 {
@@ -134,6 +135,17 @@ void Widget::addChild(Widget* child)
     child->parent_ = this;
     child->indexInParent_ = nestedWidgets_.size();
     nestedWidgets_.push_back(child);
+}
+
+void Widget::removeChild(size_t idx)
+{
+    if (idx >= nestedWidgets_.size()) {
+        return;
+    }
+    nestedWidgets_[idx]->parent_ = nullptr;
+    nestedWidgets_[idx]->indexInParent_ = 0;
+    auto idxTyped = static_cast<vector<Widget*>::difference_type>(idx);
+    nestedWidgets_.erase(nestedWidgets_.begin() + idxTyped);
 }
 
 void Widget::setStyle(std::shared_ptr<BoxStyle> style)

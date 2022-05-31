@@ -40,6 +40,7 @@ class TabWidget : public Widget {
 public:
     TabWidget();
     Client* tabClient = nullptr;
+    virtual std::string textContent() const override;
 };
 
 /**

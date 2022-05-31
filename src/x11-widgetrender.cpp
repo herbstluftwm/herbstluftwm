@@ -56,7 +56,7 @@ void X11WidgetRender::render(const Widget& widget)
         int extraSpace = contentGeo.height - style.textHeight - style.textDepth;
         textPos.y += extraSpace / 2 + style.textHeight;
         drawText(pixmap_, gc_, style.font.data(), style.fontColor,
-                 textPos - pixmapPos_, widget.textContent_, geo.width, style.textAlign);
+                 textPos - pixmapPos_, widget.textContent(), geo.width, style.textAlign);
     }
 }
 
