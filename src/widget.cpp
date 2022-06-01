@@ -146,6 +146,11 @@ void Widget::removeChild(size_t idx)
     nestedWidgets_[idx]->indexInParent_ = 0;
     auto idxTyped = static_cast<vector<Widget*>::difference_type>(idx);
     nestedWidgets_.erase(nestedWidgets_.begin() + idxTyped);
+    // update the index in later children
+    for (vector<Widget*>::iterator it = nestedWidgets_.begin() + idxTyped;
+         it != nestedWidgets_.end(); it++) {
+        (*it)->indexInParent_ --;
+    }
 }
 
 void Widget::setStyle(std::shared_ptr<BoxStyle> style)

@@ -1,0 +1,43 @@
+
+.window {
+    border-width: 4px;
+    border-color: #9fbc00;
+    padding: 2px;
+}
+
+.tabbar {
+    border-width: 2px;
+    border-color: #0000ff;
+}
+
+.tabbar > .tab {
+    border-width: 3px;
+    border-color: #ff0000;
+    color: #efefef;
+    padding-left: 4px;
+    text-align: center;
+}
+
+.tabbar > .tab + .tab {
+    border-left-width: 0px;
+}
+
+.tabbar > .tab.focus {
+    background-color: #ab0000;
+    color: #efefef;
+}
+
+.client_content {
+    border-width: 1px;
+    border-color: #121212;
+    background-color: #121212;
+    padding: 2px;
+}
+
+* {
+    font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
+    -hlwm-text-height: 15px;
+    -hlwm-text-depth: 4px;
+}
+
+
