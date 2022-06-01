@@ -122,6 +122,8 @@ def test_css_basic_selectors(hlwm):
         '.window >.focus': ['0'],
         '.window * > .focus': [],
         '.window > .focus + *': ['1'],
+        ':first-child': ['0', '0 0'],
+        ':last-child': ['1', '0 0'],
         '*': ['', '0', '0 0', '1'],
         '* *': ['0', '0 0', '1'],
     }

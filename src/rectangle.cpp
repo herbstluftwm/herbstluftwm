@@ -76,7 +76,7 @@ bool Rectangle::operator==(const Rectangle& other) const
 }
 
 /**
- * @brief Check whether a rectangle has non-negative width and height
+ * @brief Check whether a rectangle has positive width and height
  */
 Rectangle::operator bool() const
 {

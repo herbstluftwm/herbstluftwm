@@ -36,6 +36,10 @@ public:
     CssLen paddingRight = 0;
     CssLen paddingBottom = 0;
     CssLen paddingLeft = 0;
+    CssLen marginTop = 0;
+    CssLen marginRight = 0;
+    CssLen marginBottom = 0;
+    CssLen marginLeft = 0;
     Color backgroundColor = {};
     Color borderColor = {};
     Color fontColor = {};

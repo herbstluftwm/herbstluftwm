@@ -85,6 +85,8 @@ void Widget::computeMinimumSize()
     }
     const BoxStyle& style = style_ ? *style_ : BoxStyle::empty();
     Point2D surroundingsSize = {0, 0};
+    surroundingsSize.x += style.marginLeft + style.marginRight;
+    surroundingsSize.y += style.marginTop + style.marginBottom;
     surroundingsSize.x += style.borderWidthLeft + style.borderWidthRight;
     surroundingsSize.y += style.borderWidthTop + style.borderWidthBottom;
     surroundingsSize.x += style.paddingLeft + style.paddingRight;
@@ -104,10 +106,10 @@ Rectangle Widget::contentGeometryCached() const
 {
     if (style_) {
         return geometryCached_.adjusted(
-                -style_->borderWidthLeft - style_->paddingLeft,
-                -style_->borderWidthTop - style_->paddingTop,
-                -style_->borderWidthRight - style_->paddingRight,
-                -style_->borderWidthBottom - style_->paddingBottom);
+                -style_->marginLeft - style_->borderWidthLeft - style_->paddingLeft,
+                -style_->marginTop - style_->borderWidthTop - style_->paddingTop,
+                -style_->marginRight - style_->borderWidthRight - style_->paddingRight,
+                -style_->marginBottom - style_->borderWidthBottom - style_->paddingBottom);
     }
     return geometryCached_;
 }

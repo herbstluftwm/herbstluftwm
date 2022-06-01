@@ -31,10 +31,17 @@ X11WidgetRender::X11WidgetRender(Settings& settings, Pixmap& pixmap, Point2D pix
 
 void X11WidgetRender::render(const Widget& widget)
 {
-    Rectangle geo = widget.geometryCached().shifted(pixmapPos_ * -1);
     const BoxStyle& style = widget.style_
             ? *widget.style_
             : BoxStyle::empty();
+    Rectangle geo =
+            widget
+            .geometryCached()
+            .shifted(pixmapPos_ * -1)
+            .adjusted(-style.marginLeft,
+                      -style.marginTop,
+                      -style.marginRight,
+                      -style.marginBottom);
     fillRectangle(geo, style.backgroundColor);
     vector<Rectangle> borderRects = {
         {geo.x, geo.y, style.borderWidthLeft, geo.height},
@@ -45,7 +52,9 @@ void X11WidgetRender::render(const Widget& widget)
          geo.width, style.borderWidthBottom},
     };
     for (const auto& r : borderRects) {
-        fillRectangle(r, style.borderColor);
+        if (r) {
+            fillRectangle(r, style.borderColor);
+        }
     }
     for (const Widget* child : widget.nestedWidgets_) {
         render(*child);

@@ -196,9 +196,11 @@ void Decoration::setParameters(const DecorationParameters& params)
     // now the vector sizes match, so we can sync the contents:
     for (size_t i = 0; i < params.tabs_.size(); i++) {
         widTabs[i]->tabClient = params.tabs_[i];
+        bool focus = params.tabs_[i] == client_;
         widTabs[i]->setClassEnabled({
-            {CssName::Builtin::focus, params.tabs_[i] == client_},
-            {CssName::Builtin::urgent, params.tabs_[i] == client_},
+            {CssName::Builtin::focus, focus},
+            {CssName::Builtin::urgent, params.tabs_[i]->urgent_()},
+            {CssName::Builtin::normal, !focus && !params.tabs_[i]->urgent_()},
         });
     }
     // set the css classes
@@ -206,6 +208,8 @@ void Decoration::setParameters(const DecorationParameters& params)
     classes.setEnabled({
        {{CssName::Builtin::window}, true},
        {{CssName::Builtin::focus}, params.focused_},
+       {{CssName::Builtin::urgent}, client_->urgent_()},
+       {{CssName::Builtin::normal}, !params.focused_ && !client_->urgent_()},
     });
     widMain.setClasses(classes);
 

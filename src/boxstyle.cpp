@@ -146,9 +146,29 @@ void CssValueParser::buildParserCache()
         {"padding-bottom", &BoxStyle::paddingBottom },
         {"padding-left", &BoxStyle::paddingLeft },
         {"padding-right", &BoxStyle::paddingRight },
-        {"padding", // top right bot left
+        {"padding", // top right bot left all together
            {&BoxStyle::paddingTop, &BoxStyle::paddingRight,
             &BoxStyle::paddingBottom, &BoxStyle::paddingLeft}},
+        {"padding", // top&bot left&right
+           {{&BoxStyle::paddingTop, &BoxStyle::paddingBottom},
+            {&BoxStyle::paddingRight, &BoxStyle::paddingLeft}}},
+        {"padding", // top right bot left separately
+           {{&BoxStyle::paddingTop}, {&BoxStyle::paddingRight},
+            {&BoxStyle::paddingBottom}, {&BoxStyle::paddingLeft}}},
+
+        {"margin-top", &BoxStyle::marginTop },
+        {"margin-bottom", &BoxStyle::marginBottom },
+        {"margin-left", &BoxStyle::marginLeft },
+        {"margin-right", &BoxStyle::marginRight },
+        {"margin", // top right bot left all together
+           {&BoxStyle::marginTop, &BoxStyle::marginRight,
+            &BoxStyle::marginBottom, &BoxStyle::marginLeft}},
+        {"margin", // top right bot left separately
+           {{&BoxStyle::marginTop, &BoxStyle::marginBottom},
+            {&BoxStyle::marginRight, &BoxStyle::marginLeft}}},
+        {"margin", // top right bot left separately
+           {{&BoxStyle::marginTop}, {&BoxStyle::marginRight},
+            {&BoxStyle::marginBottom}, {&BoxStyle::marginLeft}}},
     };
     propName2Parser_.clear();
     for (const auto& line : memberParsers) {

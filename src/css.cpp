@@ -23,15 +23,19 @@ const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
 {
     { CssName::Builtin::child, ">" },
     { CssName::Builtin::has_class, "." },
+    { CssName::Builtin::pseudo_class, ":" },
     { CssName::Builtin::descendant, " " },
     { CssName::Builtin::adjacent_sibling, "+" },
     { CssName::Builtin::any, "*" },
     { CssName::Builtin::tabbar, "tabbar" },
     { CssName::Builtin::tab, "tab" },
     { CssName::Builtin::client_content, "client_content" },
+    { CssName::Builtin::first_child, "first-child" },
+    { CssName::Builtin::last_child, "last-child" },
     { CssName::Builtin::window, "window" },
     { CssName::Builtin::urgent, "urgent" },
     { CssName::Builtin::focus, "focus" },
+    { CssName::Builtin::normal, "normal" },
 };
 
 class CssFileParser {
@@ -485,6 +489,22 @@ bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
                 case CssName::Builtin::has_class:
                     return element->hasClass(current)
                             && matches(element, prefixLen - 2);
+                case CssName::Builtin::pseudo_class:
+                {
+                    const DomTree* parent = element->parent();
+                    switch (current.special_) {
+                        case CssName::Builtin::first_child:
+                            return parent &&
+                                    parent->nthChild(0) == element &&
+                                    matches(element, prefixLen - 2);
+                        case CssName::Builtin::last_child:
+                            return parent &&
+                                    parent->nthChild(parent->childCount() - 1) == element &&
+                                    matches(element, prefixLen - 2);
+                        default:
+                            return false;
+                    }
+                }
                 default:
                     // check element type: not implemented yet so always false
                     return false;

@@ -1,0 +1,80 @@
+
+.window {
+    border-width: 1px;
+    background-color: #3E631C;
+    padding: 1px;
+    border-color: #3E631C;
+}
+
+.tabbar {
+    border-width: 0px;
+    background-color: #3E631C;
+}
+
+.tabbar > .tab.focus ,
+.client_content {
+    border-color: #CCEFAB;
+    border-width: 1px;
+}
+
+.tabbar > .tab.normal {
+    border-color: #CCEFAB;
+    border-width: 1px;
+}
+
+.tabbar {
+    border-bottom-width: 0px;
+}
+
+.client_content {
+    border-top-width: 0px;
+}
+
+
+.tabbar > .tab {
+    border-bottom-width: 0px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    background-color: #5B8534;
+    color: #121212;
+    padding-left: 4px;
+    text-align: center;
+    margin-top: 4px;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.tabbar > .tab.normal + .tab.normal {
+    border-left-width: 1px;
+}
+
+.tabbar > .tab:first-child {
+    border-left-width: 1px;
+    padding-left: 0px;
+}
+.tabbar > .tab:last-child {
+    border-right-width: 1px;
+    padding-right: 0px;
+}
+
+
+.tabbar > .tab.focus {
+    background-color: #345C0F;
+    color: #efefef;
+    margin-top: 0px;
+    padding-top: 4px;
+    padding-left: 0px;
+    padding-right: 0px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+}
+
+
+
+* {
+    font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
+    -hlwm-text-height: 15px;
+    -hlwm-text-depth: 4px;
+}
+
+
