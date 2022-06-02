@@ -1,14 +1,13 @@
 
 .window {
     border-width: 1px;
-    background-color: #3E631C;
-    padding: 1px;
-    border-color: #3E631C;
+    background-color: #020202;
+    border-color: red;
+    border-style: solid;
 }
 
 .tabbar {
     border-width: 0px;
-    background-color: #3E631C;
 }
 
 .tabbar > .tab.focus ,
@@ -60,6 +59,7 @@
 
 .tabbar > .tab.focus {
     background-color: #345C0F;
+    background-color: transparent;
     color: #efefef;
     margin-top: 0px;
     padding-top: 4px;

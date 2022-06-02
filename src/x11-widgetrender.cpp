@@ -14,6 +14,7 @@
 #include "widget.h"
 #include "xconnection.h"
 
+using std::pair;
 using std::string;
 using std::vector;
 
@@ -42,18 +43,24 @@ void X11WidgetRender::render(const Widget& widget)
                       -style.marginTop,
                       -style.marginRight,
                       -style.marginBottom);
-    fillRectangle(geo, style.backgroundColor);
-    vector<Rectangle> borderRects = {
-        {geo.x, geo.y, style.borderWidthLeft, geo.height},
-        {geo.x, geo.y, geo.width, style.borderWidthTop},
-        {geo.x + geo.width - style.borderWidthRight, geo.y,
-         style.borderWidthRight, geo.height},
-        {geo.x, geo.y + geo.height - style.borderWidthBottom,
-         geo.width, style.borderWidthBottom},
+    style.backgroundColor.ifRight([&](const Color& bgcol) {
+        fillRectangle(geo, bgcol);
+    });
+    vector<pair<const Color*,Rectangle>> borderRects = {
+        {&style.borderColorTop,
+         Rectangle{geo.x, geo.y, geo.width, style.borderWidthTop}},
+        {&style.borderColorRight,
+         {geo.x + geo.width - style.borderWidthRight, geo.y,
+          style.borderWidthRight, geo.height}},
+        {&style.borderColorBottom,
+         {geo.x, geo.y + geo.height - style.borderWidthBottom,
+         geo.width, style.borderWidthBottom}},
+        {&style.borderColorLeft,
+         {geo.x, geo.y, style.borderWidthLeft, geo.height}},
     };
-    for (const auto& r : borderRects) {
-        if (r) {
-            fillRectangle(r, style.borderColor);
+    for (const auto& p : borderRects) {
+        if (p.second) {
+            fillRectangle(p.second, *(p.first));
         }
     }
     for (const Widget* child : widget.nestedWidgets_) {

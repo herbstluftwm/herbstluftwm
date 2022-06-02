@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "either.h"
 #include "font.h"
+#include "unit.h"
 #include "x11-types.h"
 
 class CssLen {
@@ -28,10 +30,11 @@ template<> void Converter<CssLen>::complete(Completion& complete, CssLen const* 
  */
 class BoxStyle {
 public:
-    CssLen borderWidthTop = 0;
-    CssLen borderWidthRight = 0;
-    CssLen borderWidthBottom = 0;
-    CssLen borderWidthLeft = 0;
+    static const char solid[];
+    static const char transparent[];
+
+    Either<Unit<transparent>,Color> backgroundColor = Unit<transparent>();
+
     CssLen paddingTop = 0;
     CssLen paddingRight = 0;
     CssLen paddingBottom = 0;
@@ -40,8 +43,31 @@ public:
     CssLen marginRight = 0;
     CssLen marginBottom = 0;
     CssLen marginLeft = 0;
-    Color backgroundColor = {};
-    Color borderColor = {};
+
+    CssLen borderWidthTop = 0;
+    CssLen borderWidthRight = 0;
+    CssLen borderWidthBottom = 0;
+    CssLen borderWidthLeft = 0;
+
+    Color borderColorTop = {};
+    Color borderColorRight = {};
+    Color borderColorBottom = {};
+    Color borderColorLeft = {};
+
+    Unit<solid> borderStyle; // only solid border style supported currently
+
+    CssLen outlineWidthTop = 0;
+    CssLen outlineWidthRight = 0;
+    CssLen outlineWidthBottom = 0;
+    CssLen outlineWidthLeft = 0;
+
+    Color outlineColorTop = {};
+    Color outlineColorRight = {};
+    Color outlineColorBottom = {};
+    Color outlineColorLeft = {};
+
+    Unit<solid> outlineStyle; // only solid border style supported currently
+
     Color fontColor = {};
     TextAlign textAlign = TextAlign::left;
     CssLen textDepth = 0;

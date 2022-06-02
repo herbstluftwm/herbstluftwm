@@ -46,6 +46,12 @@ public:
             return onB(data_.b_);
         }
     }
+
+    void ifRight(std::function<void(const B&)> onB) const {
+        if (!isA_) {
+            return onB(data_.b_);
+        }
+    }
     Either(const A& a)
         : data_(a), isA_(true)
     {}

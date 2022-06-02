@@ -7,6 +7,9 @@ using std::pair;
 using std::string;
 using std::vector;
 
+const char BoxStyle::solid[] = "solid";
+const char BoxStyle::transparent[] = "transparent";
+
 std::map<std::string, CssValueParser> CssValueParser::propName2Parser_;
 
 
@@ -117,25 +120,52 @@ public:
 
 };
 
+template<typename T>
+inline vector<pair<string, FixedLenParser>>
+fourSidesParser(string nameAll,
+                string nameTop, T BoxStyle::*memberTop,
+                string nameRight, T BoxStyle::*memberRight,
+                string nameBottom, T BoxStyle::*memberBottom,
+                string nameLeft, T BoxStyle::*memberLeft) {
+
+    return {
+        {nameTop, memberTop},
+        {nameRight, memberRight },
+        {nameBottom, memberBottom },
+        {nameLeft, memberLeft },
+        {nameAll, // setting all 4 sides to the same value
+           {{memberTop, memberRight, memberBottom, memberLeft }}},
+        {nameAll, // top&bot  left&right
+           {{memberTop, memberBottom}, {memberLeft, memberRight }}},
+        {nameAll, // setting all separately in one line
+           {{memberTop}, {memberRight}, {memberBottom}, {memberLeft}}},
+    };
+}
+
+static void append_vector(vector<pair<string, FixedLenParser>>& target, const vector<pair<string, FixedLenParser>>& source) {
+    target.insert(target.end(), source.cbegin(), source.cend());
+}
 
 void CssValueParser::buildParserCache()
 {
-    const vector<pair<string, FixedLenParser>> memberParsers = {
-        {"border-top-width", &BoxStyle::borderWidthTop },
-        {"border-bottom-width", &BoxStyle::borderWidthBottom },
-        {"border-left-width", &BoxStyle::borderWidthLeft },
-        {"border-right-width", &BoxStyle::borderWidthRight },
-        {"border-width", // setting all 4 sides to the same value
-           {{&BoxStyle::borderWidthTop, &BoxStyle::borderWidthBottom,
-             &BoxStyle::borderWidthLeft, &BoxStyle::borderWidthRight}}},
-        {"border-width", // top&bot  left&right
-           {{&BoxStyle::borderWidthTop, &BoxStyle::borderWidthBottom},
-            {&BoxStyle::borderWidthLeft, &BoxStyle::borderWidthRight}}},
-        {"border-width", // top right bot left
-           {{&BoxStyle::borderWidthTop}, {&BoxStyle::borderWidthRight},
-            {&BoxStyle::borderWidthBottom}, {&BoxStyle::borderWidthLeft}}},
+    vector<pair<string, FixedLenParser>> memberParsers = {
+        {"border-top-color", &BoxStyle::borderColorTop },
+        {"border-bottom-color", &BoxStyle::borderColorBottom },
+        {"border-left-color", &BoxStyle::borderColorLeft },
+        {"border-right-color", &BoxStyle::borderColorRight },
+        {"border-color", // setting all 4 sides to the same value
+           {{&BoxStyle::borderColorTop, &BoxStyle::borderColorBottom,
+             &BoxStyle::borderColorLeft, &BoxStyle::borderColorRight}}},
+        {"border-color", // top&bot  left&right
+           {{&BoxStyle::borderColorTop, &BoxStyle::borderColorBottom},
+            {&BoxStyle::borderColorLeft, &BoxStyle::borderColorRight}}},
+        {"border-color", // top right bot left
+           {{&BoxStyle::borderColorTop}, {&BoxStyle::borderColorRight},
+            {&BoxStyle::borderColorBottom}, {&BoxStyle::borderColorLeft}}},
+
+        {"border-style", &BoxStyle::borderStyle },
+
         {"background-color", &BoxStyle::backgroundColor },
-        {"border-color", &BoxStyle::borderColor },
         {"font", &BoxStyle::font },
         {"color", &BoxStyle::fontColor },
         {"text-align", &BoxStyle::textAlign },
@@ -170,6 +200,14 @@ void CssValueParser::buildParserCache()
            {{&BoxStyle::marginTop}, {&BoxStyle::marginRight},
             {&BoxStyle::marginBottom}, {&BoxStyle::marginLeft}}},
     };
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "border-width",
+                      "border-top-width", &BoxStyle::borderWidthTop,
+                      "border-right-width", &BoxStyle::borderWidthRight,
+                      "border-bottom-width", &BoxStyle::borderWidthBottom,
+                      "border-left-width", &BoxStyle::borderWidthLeft)
+                  );
     propName2Parser_.clear();
     for (const auto& line : memberParsers) {
         auto it = propName2Parser_.find(line.first);
