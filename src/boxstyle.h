@@ -49,24 +49,24 @@ public:
     CssLen borderWidthBottom = 0;
     CssLen borderWidthLeft = 0;
 
+    Unit<solid> borderStyle; // only solid border style supported currently
+
     Color borderColorTop = {};
     Color borderColorRight = {};
     Color borderColorBottom = {};
     Color borderColorLeft = {};
-
-    Unit<solid> borderStyle; // only solid border style supported currently
 
     CssLen outlineWidthTop = 0;
     CssLen outlineWidthRight = 0;
     CssLen outlineWidthBottom = 0;
     CssLen outlineWidthLeft = 0;
 
+    Unit<solid> outlineStyle; // only solid border style supported currently
+
     Color outlineColorTop = {};
     Color outlineColorRight = {};
     Color outlineColorBottom = {};
     Color outlineColorLeft = {};
-
-    Unit<solid> outlineStyle; // only solid border style supported currently
 
     Color fontColor = {};
     TextAlign textAlign = TextAlign::left;

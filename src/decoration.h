@@ -55,6 +55,7 @@ public:
     bool urgent_;
     std::vector<Client*> tabs_;
     std::vector<bool> urgentTabs_;
+    void updateTabUrgencyFlags();
 };
 
 

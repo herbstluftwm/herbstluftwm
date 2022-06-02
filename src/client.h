@@ -109,7 +109,6 @@ public:
 
     Rectangle outer_floating_rect();
 
-    void setup_border(bool focused);
     void recomputeStyle();
     void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, std::vector<Client*> tabs);
     void resize_floating(Monitor* m, bool isFocused);

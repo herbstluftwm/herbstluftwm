@@ -216,6 +216,7 @@ void Client::make_full_client() {
                             |EnterWindowMask|PropertyChangeMask);
     // redraw decoration on title change
     title_.changed().connect(this, &Client::redraw);
+    title_.changed().connect(this, &Client::redrawRelevantTabBars);
     decorated_.changed().connect(this, &Client::fixParentWindow);
     urgent_.changed().connect(this, &Client::urgencyAttributeChanged);
 }
@@ -262,12 +263,6 @@ const DecorationScheme& Client::getDecorationScheme(bool focused)
     return getDecTriple()(focused, urgent_());
 }
 
-void Client::setup_border(bool focused) {
-    decParams->focused_ = focused;
-    dec->setParameters(*decParams);
-    redrawRelevantTabBars();
-}
-
 void Client::recomputeStyle()
 {
     dec->setParameters(*decParams);
@@ -275,8 +270,9 @@ void Client::recomputeStyle()
 
 void Client::redraw()
 {
-    this->dec->redraw();
-    redrawRelevantTabBars();
+    decParams->updateTabUrgencyFlags();
+    dec->setParameters(*decParams);
+    dec->redraw();
 }
 
 void Client::redrawRelevantTabBars()
@@ -288,7 +284,7 @@ void Client::redrawRelevantTabBars()
         if (parent && parent->getLayout() == LayoutAlgorithm::max) {
             parent->foreachClient([&](Client* otherClient) {
                 if (otherClient != this) {
-                    otherClient->dec->redraw();
+                    otherClient->redraw();
                 }
             });
         }
@@ -599,7 +595,9 @@ void Client::urgencyAttributeChanged(bool state)
         return;
     }
     hook_emit({"urgent", state ? "on" : "off", WindowID(window_).str() });
-    setup_border(this == manager.focus());
+    decParams->urgent_ = urgent_();
+    redraw();
+    redrawRelevantTabBars();
     if (state != x11urgent_) {
         x11urgent_ = state;
         X_.setWindowUrgencyHint(window_, state);

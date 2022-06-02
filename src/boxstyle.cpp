@@ -142,64 +142,39 @@ fourSidesParser(string nameAll,
     };
 }
 
-static void append_vector(vector<pair<string, FixedLenParser>>& target, const vector<pair<string, FixedLenParser>>& source) {
+static void append_vector(vector<pair<string, FixedLenParser>>& target,
+                          const vector<pair<string, FixedLenParser>>& source) {
     target.insert(target.end(), source.cbegin(), source.cend());
 }
 
 void CssValueParser::buildParserCache()
 {
     vector<pair<string, FixedLenParser>> memberParsers = {
-        {"border-top-color", &BoxStyle::borderColorTop },
-        {"border-bottom-color", &BoxStyle::borderColorBottom },
-        {"border-left-color", &BoxStyle::borderColorLeft },
-        {"border-right-color", &BoxStyle::borderColorRight },
-        {"border-color", // setting all 4 sides to the same value
-           {{&BoxStyle::borderColorTop, &BoxStyle::borderColorBottom,
-             &BoxStyle::borderColorLeft, &BoxStyle::borderColorRight}}},
-        {"border-color", // top&bot  left&right
-           {{&BoxStyle::borderColorTop, &BoxStyle::borderColorBottom},
-            {&BoxStyle::borderColorLeft, &BoxStyle::borderColorRight}}},
-        {"border-color", // top right bot left
-           {{&BoxStyle::borderColorTop}, {&BoxStyle::borderColorRight},
-            {&BoxStyle::borderColorBottom}, {&BoxStyle::borderColorLeft}}},
-
         {"border-style", &BoxStyle::borderStyle },
-
+        {"outline-style", &BoxStyle::outlineStyle },
         {"background-color", &BoxStyle::backgroundColor },
         {"font", &BoxStyle::font },
         {"color", &BoxStyle::fontColor },
         {"text-align", &BoxStyle::textAlign },
         {"-hlwm-text-depth", &BoxStyle::textDepth },
         {"-hlwm-text-height", &BoxStyle::textHeight },
-
-        {"padding-top", &BoxStyle::paddingTop },
-        {"padding-bottom", &BoxStyle::paddingBottom },
-        {"padding-left", &BoxStyle::paddingLeft },
-        {"padding-right", &BoxStyle::paddingRight },
-        {"padding", // top right bot left all together
-           {&BoxStyle::paddingTop, &BoxStyle::paddingRight,
-            &BoxStyle::paddingBottom, &BoxStyle::paddingLeft}},
-        {"padding", // top&bot left&right
-           {{&BoxStyle::paddingTop, &BoxStyle::paddingBottom},
-            {&BoxStyle::paddingRight, &BoxStyle::paddingLeft}}},
-        {"padding", // top right bot left separately
-           {{&BoxStyle::paddingTop}, {&BoxStyle::paddingRight},
-            {&BoxStyle::paddingBottom}, {&BoxStyle::paddingLeft}}},
-
-        {"margin-top", &BoxStyle::marginTop },
-        {"margin-bottom", &BoxStyle::marginBottom },
-        {"margin-left", &BoxStyle::marginLeft },
-        {"margin-right", &BoxStyle::marginRight },
-        {"margin", // top right bot left all together
-           {&BoxStyle::marginTop, &BoxStyle::marginRight,
-            &BoxStyle::marginBottom, &BoxStyle::marginLeft}},
-        {"margin", // top right bot left separately
-           {{&BoxStyle::marginTop, &BoxStyle::marginBottom},
-            {&BoxStyle::marginRight, &BoxStyle::marginLeft}}},
-        {"margin", // top right bot left separately
-           {{&BoxStyle::marginTop}, {&BoxStyle::marginRight},
-            {&BoxStyle::marginBottom}, {&BoxStyle::marginLeft}}},
     };
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "padding",
+                      "padding-top", &BoxStyle::paddingTop,
+                      "padding-right", &BoxStyle::paddingRight,
+                      "padding-bottom", &BoxStyle::paddingBottom,
+                      "padding-left", &BoxStyle::paddingLeft)
+                  );
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "margin",
+                      "margin-top", &BoxStyle::marginTop,
+                      "margin-right", &BoxStyle::marginRight,
+                      "margin-bottom", &BoxStyle::marginBottom,
+                      "margin-left", &BoxStyle::marginLeft)
+                  );
     append_vector(memberParsers,
                   fourSidesParser(
                       "border-width",
@@ -208,6 +183,31 @@ void CssValueParser::buildParserCache()
                       "border-bottom-width", &BoxStyle::borderWidthBottom,
                       "border-left-width", &BoxStyle::borderWidthLeft)
                   );
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "border-color",
+                      "border-top-color", &BoxStyle::borderColorTop,
+                      "border-right-color", &BoxStyle::borderColorRight,
+                      "border-bottom-color", &BoxStyle::borderColorBottom,
+                      "border-left-color", &BoxStyle::borderColorLeft)
+                  );
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "outline-width",
+                      "outline-top-width", &BoxStyle::outlineWidthTop,
+                      "outline-right-width", &BoxStyle::outlineWidthRight,
+                      "outline-bottom-width", &BoxStyle::outlineWidthBottom,
+                      "outline-left-width", &BoxStyle::outlineWidthLeft)
+                  );
+    append_vector(memberParsers,
+                  fourSidesParser(
+                      "outline-color",
+                      "outline-top-color", &BoxStyle::outlineColorTop,
+                      "outline-right-color", &BoxStyle::outlineColorRight,
+                      "outline-bottom-color", &BoxStyle::outlineColorBottom,
+                      "outline-left-color", &BoxStyle::outlineColorLeft)
+                  );
+
     propName2Parser_.clear();
     for (const auto& line : memberParsers) {
         auto it = propName2Parser_.find(line.first);

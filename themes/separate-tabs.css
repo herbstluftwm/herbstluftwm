@@ -1,79 +1,97 @@
 
 .window {
     border-width: 1px;
-    background-color: #020202;
-    border-color: red;
+    background-color: #282828;
     border-style: solid;
+    border-color: #969696;
+
+    margin: 1px; /* make space for outline */
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: black;
 }
 
-.tabbar {
-    border-width: 0px;
+.window.focus {
+    background-color: #174F6A;
 }
 
-.tabbar > .tab.focus ,
 .client_content {
-    border-color: #CCEFAB;
+    border-color: #868686;
     border-width: 1px;
+    border-color: #616161;
+}
+
+.window.focus ,
+.window.focus .client_content {
+    border-color: #50A9D4;
+}
+
+
+
+.window > * {
+    margin: 4px;
+}
+
+.window > * + * {
+    margin-top: 0px;
+}
+
+.tabbar > .tab {
+    background-color: #343434;
+    border-width: 1px;
+    text-align: center;
+    margin: 0px 0px;
+    padding: 0px 8px;
+    color: #dedede;
+}
+
+.tabbar > .tab + .tab {
+    margin-left: 4px;
 }
 
 .tabbar > .tab.normal {
-    border-color: #CCEFAB;
-    border-width: 1px;
+    background-color: #343434;
+    border-color: #434343;
+    color: #898989;
 }
 
-.tabbar {
-    border-bottom-width: 0px;
+.window.focus .tabbar > .tab {
+    background-color: #287092;
+    border-color: #4A98BC;
+    color: #ababab;
 }
 
-.client_content {
-    border-top-width: 0px;
-}
-
-
-.tabbar > .tab {
-    border-bottom-width: 0px;
-    border-left-width: 0px;
-    border-right-width: 0px;
-    background-color: #5B8534;
-    color: #121212;
-    padding-left: 4px;
-    text-align: center;
-    margin-top: 4px;
-    padding-left: 1px;
-    padding-right: 1px;
-}
-
-.tabbar > .tab.normal + .tab.normal {
-    border-left-width: 1px;
-}
-
-.tabbar > .tab:first-child {
-    border-left-width: 1px;
-    padding-left: 0px;
-}
-.tabbar > .tab:last-child {
-    border-right-width: 1px;
-    padding-right: 0px;
-}
-
-
-.tabbar > .tab.focus {
-    background-color: #345C0F;
-    background-color: transparent;
+.window.normal .tabbar > .tab.focus {
+    background-color: #565656;
+    border-color: #656565;
     color: #efefef;
-    margin-top: 0px;
-    padding-top: 4px;
-    padding-left: 0px;
-    padding-right: 0px;
-    border-left-width: 1px;
-    border-right-width: 1px;
 }
 
+.window.focus .tabbar > .tab.focus {
+    background-color: #64BCE6;
+    border-color: #C3D9E4;
+    color: #121212;
+}
+
+
+.tabbar > .tab.focus:first-child:last-child {
+    background-color: transparent;
+    border-width: 0px;
+    padding: 1px; /* compensate lack of border */
+    color: #dedede;
+}
+
+
+.tabbar > .tab.urgent {
+    background-color: #D787D7;
+    border-color: #FFC0FF;
+    color: #4C284C;
+}
 
 
 * {
     font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
-    -hlwm-text-height: 15px;
+    -hlwm-text-height: 13px;
     -hlwm-text-depth: 4px;
 }
 

@@ -659,3 +659,11 @@ string TabWidget::textContent() const
 {
     return tabClient->title_();
 }
+
+void DecorationParameters::updateTabUrgencyFlags()
+{
+    urgentTabs_.clear();
+    for (Client* tab : tabs_) {
+        urgentTabs_.push_back(tab->urgent_());
+    }
+}

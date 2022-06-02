@@ -46,6 +46,27 @@ void X11WidgetRender::render(const Widget& widget)
     style.backgroundColor.ifRight([&](const Color& bgcol) {
         fillRectangle(geo, bgcol);
     });
+
+    Rectangle outline = geo.adjusted(style.outlineWidthLeft, style.outlineWidthTop,
+                                     style.outlineWidthRight, style.outlineWidthBottom);
+    vector<pair<const Color*,Rectangle>> outlineRects = {
+        {&style.outlineColorTop,
+         Rectangle{outline.x, outline.y, outline.width, style.outlineWidthTop}},
+        {&style.outlineColorRight,
+         {outline.x + outline.width - style.outlineWidthRight, outline.y,
+          style.outlineWidthRight, outline.height}},
+        {&style.outlineColorBottom,
+         {outline.x, outline.y + outline.height - style.outlineWidthBottom,
+         outline.width, style.outlineWidthBottom}},
+        {&style.outlineColorLeft,
+         {outline.x, outline.y, style.outlineWidthLeft, outline.height}},
+    };
+    for (const auto& p : outlineRects) {
+        if (p.second) {
+            fillRectangle(p.second, *(p.first));
+        }
+    }
+
     vector<pair<const Color*,Rectangle>> borderRects = {
         {&style.borderColorTop,
          Rectangle{geo.x, geo.y, geo.width, style.borderWidthTop}},
@@ -72,7 +93,7 @@ void X11WidgetRender::render(const Widget& widget)
         int extraSpace = contentGeo.height - style.textHeight - style.textDepth;
         textPos.y += extraSpace / 2 + style.textHeight;
         drawText(pixmap_, gc_, style.font.data(), style.fontColor,
-                 textPos - pixmapPos_, widget.textContent(), geo.width, style.textAlign);
+                 textPos - pixmapPos_, widget.textContent(), contentGeo.width, style.textAlign);
     }
 }
 
