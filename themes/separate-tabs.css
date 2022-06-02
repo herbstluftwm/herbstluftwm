@@ -19,6 +19,7 @@
     border-color: #868686;
     border-width: 1px;
     border-color: #616161;
+    background-color: #12121234;
 }
 
 .window.focus ,
@@ -89,8 +90,7 @@
 
 * {
     font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
-    -hlwm-text-height: 13px;
-    -hlwm-text-depth: 4px;
+    /* font: Dejavu Sans:pixelsize=12; */
 }
 
 

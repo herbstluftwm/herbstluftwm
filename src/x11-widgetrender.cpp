@@ -90,8 +90,16 @@ void X11WidgetRender::render(const Widget& widget)
     if (widget.hasText_) {
         Rectangle contentGeo = widget.contentGeometryCached();
         Point2D textPos = contentGeo.tl();
-        int extraSpace = contentGeo.height - style.textHeight - style.textDepth;
-        textPos.y += extraSpace / 2 + style.textHeight;
+        int textHeight, textDepth;
+        if (style.textHeight != 0 || style.textDepth != 0) {
+            textHeight = style.textHeight;
+            textDepth = style.textDepth;
+        } else {
+            textHeight = style.font.data().ascent;
+            textDepth = style.font.data().descent;
+        }
+        int extraSpace = contentGeo.height - textHeight - textDepth;
+        textPos.y += extraSpace / 2 + textHeight;
         drawText(pixmap_, gc_, style.font.data(), style.fontColor,
                  textPos - pixmapPos_, widget.textContent(), contentGeo.width, style.textAlign);
     }

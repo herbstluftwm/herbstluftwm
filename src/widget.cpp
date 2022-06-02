@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "boxstyle.h"
+#include "fontdata.h"
 #include "globals.h"
 
 using std::function;
@@ -94,7 +95,13 @@ void Widget::computeMinimumSize()
 
     Point2D textSize = {0, 0};
     if (hasText_) {
-        textSize.y = style.textDepth + style.textHeight;
+        if (style.textDepth != 0 || style.textHeight != 0) {
+            textSize.y = style.textDepth + style.textHeight;
+        } else {
+            FontData& data = style.font.data();
+            HSDebug("using font data: %d/%d\n", data.ascent, data.descent);
+            textSize.y = data.ascent + data.descent;
+        }
     }
     minimumSizeCached_ = surroundingsSize +
             Point2D::fold(
