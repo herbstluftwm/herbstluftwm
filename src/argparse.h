@@ -61,11 +61,14 @@ public:
         }
         //! a flag with a parameter
         template<typename X>
-        Flag(const std::string& name, X& target)
+        Flag(const std::string& name, X& target, bool* flagIsPresent = nullptr)
             : name_(name)
         {
-            callback_ = [&target] (const std::string& source) {
+            callback_ = [&target, flagIsPresent] (const std::string& source) {
                 target = Converter<X>::parse(source);
+                if (flagIsPresent) {
+                    *flagIsPresent = true;
+                }
             };
             parameterTypeCompletion_ = [] (Completion& completion) {
                 Converter<X>::complete(completion, nullptr);

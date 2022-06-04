@@ -53,7 +53,7 @@ public:
         getter_ = [member](const BoxStyle& style) -> string {
             return Converter<A>::str(style.*member);
         };
-        differ_ = [member](const BoxStyle& s1, const BoxStyle& s2) -> bool {
+        valuesMatch_ = [member](const BoxStyle& s1, const BoxStyle& s2) -> bool {
             return s1.*member == s2.*member;
         };
     }
@@ -222,6 +222,12 @@ void CssValueParser::buildParserCache()
             it = propName2Parser_.find(line.first);
             it->second.propertyName_ = line.first;
         }
+        if (line.second.getter_) {
+            it->second.getter_ = line.second.getter_;
+        }
+        if (line.second.valuesMatch_) {
+            it->second.valuesMatch_ = line.second.valuesMatch_;
+        }
         if (line.second.parser1_) {
             it->second.parser1_ = line.second.parser1_;
         }
@@ -278,5 +284,16 @@ const CssValueParser& CssValueParser::find(const std::string& propertyName)
         return it->second;
     } else {
         throw std::invalid_argument("No such property \"" + propertyName + "\"");
+    }
+}
+
+void CssValueParser::foreachParser(function<void (const CssValueParser&)> loopBody)
+{
+    if (propName2Parser_.empty()) {
+        // built the cache
+        buildParserCache();
+    }
+    for (const auto& it : propName2Parser_) {
+        loopBody(it.second);
     }
 }

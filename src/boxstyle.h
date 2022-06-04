@@ -86,17 +86,18 @@ public:
     BoxStyle::setter parse(const std::vector<std::string>& args) const;
     //! find a parser for a propertyName or throw an std::invalid_argument exception
     static const CssValueParser& find(const std::string& propertyName);
-
-    using Str = const std::string&;
+    static void foreachParser(std::function<void(const CssValueParser&)> loopBody);
 
     // if the parser refers to only one member, then
     // the following functions are set:
     //! return the member as a string
-    std::function<Str(const BoxStyle&)> getter_ = {};
+    std::function<std::string(const BoxStyle&)> getter_ = {};
     //! tell whether the two box styles match on this member
-    std::function<bool(const BoxStyle&, const BoxStyle&)> differ_ = {};
+    std::function<bool(const BoxStyle&, const BoxStyle&)> valuesMatch_ = {};
+    std::string name() const { return propertyName_; }
 protected:
     std::string propertyName_;
+    using Str = const std::string&;
     std::function<BoxStyle::setter(Str)> parser1_ = {};
     std::function<BoxStyle::setter(Str,Str)> parser2_ = {};
     std::function<BoxStyle::setter(Str,Str,Str)> parser3_ = {};

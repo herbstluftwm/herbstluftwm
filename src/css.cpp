@@ -166,6 +166,16 @@ public:
         source.consumeOrException(")");
         return tree;
     }
+    DummyTree::Ptr byTreeIndex(const vector<int>& treeIndex, size_t pos = 0) {
+        if (pos >= treeIndex.size()) {
+            return shared_from_this();
+        }
+        int idx = treeIndex[pos];
+        if (idx < 0 || idx >= static_cast<int>(children_.size())) {
+            return {};
+        }
+        return children_[idx]->byTreeIndex(treeIndex, pos + 1);
+    }
     void print(std::ostream& output, int indent = 0) const {
         for (int i = 0; i < indent ; i++) {
             output << "  ";
@@ -259,6 +269,33 @@ template<>
 void Converter<DummyTree::Ptr>::complete(Completion& complete, const DummyTree::Ptr*) {
 }
 
+template<>
+vector<int> Converter<vector<int>>::parse(const string& source) {
+    vector<int> result;
+    for (const auto& i :  ArgList::split(source, ' ')) {
+        result.push_back(Converter<int>::parse(i));
+    }
+    return result;
+}
+
+template<>
+string Converter<vector<int>>::str(vector<int> payload) {
+    stringstream output;
+    bool first = true;
+    for (int i : payload) {
+        if (!first) {
+            output << " ";
+        }
+        first = false;
+        output << i;
+    }
+    return output.str();
+}
+
+template<>
+void Converter<vector<int>>::complete(Completion& complete, const vector<int>*) {
+}
+
 
 
 void CssSource::print(std::ostream& out) const
@@ -323,6 +360,8 @@ void debugCssCommand(CallOrComplete invoc)
     bool print = false, printTree = false;
     DummyTree::Ptr tree;
     string cssSelectorStr;
+    bool treeIndexPresent = false;
+    vector<int> treeIndex = {};
     ArgParse ap;
     ap.mandatory(cssSource);
     ap.flags({
@@ -330,6 +369,7 @@ void debugCssCommand(CallOrComplete invoc)
         {"--tree=", tree },
         {"--print-tree", &printTree },
         {"--query-tree-indices=", cssSelectorStr },
+        {"--compute-style=", treeIndex, &treeIndexPresent},
     });
     ap.command(invoc,
         [&] (Output output) {
@@ -358,24 +398,45 @@ void debugCssCommand(CallOrComplete invoc)
             if (!cssSelectorStr.empty()) {
                 if (!tree) {
                     output.error() << "selector queries requires a tree";
-                } else {
-                    CssSelector selector;
-                    parser.parseSelector_.oneShot(cssSelectorStr)
-                            .cases([&output, &error](const SourceStream::ErrorData& err) {
-                        output.error() << err.str();
-                        error = true;
-                    }, [&selector](const CssSelector res) {
-                        selector = res;
-                    });
-                    tree->recurse([&output, &selector](DummyTree::Ptr node){
-                        if (selector.matches(node.get())) {
-                            output << "match:";
-                            for (auto idx : node->treeIndex()) {
-                                output << " " << idx;
-                            }
-                            output << "\n";
+                    return 1;
+                }
+                CssSelector selector;
+                parser.parseSelector_.oneShot(cssSelectorStr)
+                        .cases([&output, &error](const SourceStream::ErrorData& err) {
+                    output.error() << err.str();
+                    error = true;
+                }, [&selector](const CssSelector res) {
+                    selector = res;
+                });
+                tree->recurse([&output, &selector](DummyTree::Ptr node){
+                    if (selector.matches(node.get())) {
+                        output << "match: " << Converter<vector<int>>::str(node->treeIndex()) << "\n";
+                    }
+                });
+            }
+            if (treeIndexPresent) {
+                // compute the style for the given node
+                if (!tree) {
+                    output.error() << "--compute-style requires a tree";
+                    return 1;
+                }
+                DummyTree::Ptr nodeOfInterest = tree->byTreeIndex(treeIndex);
+                if (!nodeOfInterest) {
+                    output.error() << "invalid tree index.";
+                    return 1;
+                }
+                std::map<string,string> properties;
+                auto boxStyle = file.computeStyle(nodeOfInterest.get());
+                BoxStyle emptyStyle = BoxStyle::empty();
+                CssValueParser::foreachParser([&](const CssValueParser& propParser) {
+                    if (propParser.valuesMatch_ && propParser.getter_) {
+                        if (!propParser.valuesMatch_(*boxStyle, emptyStyle)) {
+                            properties[propParser.name()] = propParser.getter_(*boxStyle);
                         }
-                    });
+                    }
+                });
+                for (const auto& it : properties) {
+                    output << it.first << ": " << it.second << ";\n";
                 }
             }
             return 0;
