@@ -99,7 +99,6 @@ void Widget::computeMinimumSize()
             textSize.y = style.textDepth + style.textHeight;
         } else {
             FontData& data = style.font.data();
-            HSDebug("using font data: %d/%d\n", data.ascent, data.descent);
             textSize.y = data.ascent + data.descent;
         }
     }

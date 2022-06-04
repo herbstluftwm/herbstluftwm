@@ -103,7 +103,7 @@ public:
             }
         }
     }
-    bool operator==(const Either<A,B>& other) {
+    bool operator==(const Either<A,B>& other) const {
         if (isA_ && other.isA_) {
             return data_.a_ == other.data_.a_;
         }
@@ -112,7 +112,7 @@ public:
         }
         return false;
     }
-    bool operator!=(const Either<A,B>& other) {
+    bool operator!=(const Either<A,B>& other) const {
         return !(*this == other);
     }
 

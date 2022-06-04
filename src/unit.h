@@ -13,7 +13,7 @@
 template<const char name[]>
 class Unit {
 public:
-    bool operator==(const Unit& other) { return true; }
+    bool operator==(const Unit& other) const { return true; }
 };
 
 template <const char name[]>

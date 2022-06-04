@@ -50,6 +50,12 @@ public:
                 style.*member = argTyped;
             };
         };
+        getter_ = [member](const BoxStyle& style) -> string {
+            return Converter<A>::str(style.*member);
+        };
+        differ_ = [member](const BoxStyle& s1, const BoxStyle& s2) -> bool {
+            return s1.*member == s2.*member;
+        };
     }
 
     template<typename A1>
