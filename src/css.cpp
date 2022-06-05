@@ -127,6 +127,7 @@ public:
             if (!source.isEOF()) {
                 source.expectedButGot("EOF");
             }
+            file.recomputeSortedSelectors();
             return file;
         }};
         nextToken_ = nextToken;
@@ -337,21 +338,41 @@ void CssSource::print(std::ostream& out) const
 shared_ptr<BoxStyle> CssSource::computeStyle(DomTree* element) const
 {
     shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
-    for (const auto& block : content_) {
-        bool matches = false;
-        for (const auto& selector : block.selectors_) {
-            if (selector.matches(element)) {
-                matches = true;
-                break;
-            }
-        }
-        if (matches) {
+    for (const auto& selectorIdx : sortedSelectors_) {
+        const auto& block = content_[selectorIdx.second.indexInContent_];
+        const auto& selector = block.selectors_[selectorIdx.second.indexInSelectors_];
+        if (selector.matches(element)) {
             for (const auto& property : block.declarations_) {
                 property.apply_(*style);
             }
         }
     }
     return style;
+}
+
+void CssSource::recomputeSortedSelectors()
+{
+    size_t selectorCount = 0;
+    for (const auto& block : content_) {
+        selectorCount += block.selectors_.size();
+    }
+    sortedSelectors_.clear();
+    sortedSelectors_.reserve(selectorCount);
+    SelectorIndex selIdx;
+    for (const auto& block : content_) {
+        selIdx.indexInSelectors_ = 0;
+        for (const auto& selector : block.selectors_) {
+            sortedSelectors_.push_back(make_pair(selector.specifity(), selIdx));
+            selIdx.indexInSelectors_++;
+        }
+        selIdx.indexInContent_++;
+    }
+    std::stable_sort(
+              sortedSelectors_.begin(),
+              sortedSelectors_.end(),
+              [](const Specifity2Idx& item1, const Specifity2Idx& item2) -> bool {
+        return item1.first < item2.first;
+    });
 }
 
 void debugCssCommand(CallOrComplete invoc)
@@ -503,6 +524,29 @@ template<> void Converter<CssSource>::complete(Completion&, CssSource const*)
 bool CssSelector::matches(const DomTree* element) const
 {
     return matches(element, content_.size());
+}
+
+CssSelector::Specifity CssSelector::specifity() const
+{
+    Specifity spec;
+    int skipItems = 0;
+    for (const auto& item : content_) {
+        while (skipItems > 0) {
+            skipItems--;
+            continue;
+        }
+        if (item == CssName::Builtin::has_class) {
+            spec.classSelectors++;
+            skipItems++;
+            continue;
+        }
+        if (item == CssName::Builtin::pseudo_class) {
+            spec.classSelectors++;
+            skipItems++;
+            continue;
+        }
+    }
+    return spec;
 }
 
 bool CssSelector::matches(const DomTree* element, size_t prefixLen) const

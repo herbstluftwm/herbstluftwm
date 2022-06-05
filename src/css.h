@@ -108,8 +108,20 @@ public:
 
 class CssSelector {
 public:
+    class Specifity {
+    public:
+        // see https://www.w3schools.com/css/css_specificity.asp
+        // short idSelectors = 0; // number of id-selectors (not used by hlwm)
+        short classSelectors = 0; // number of class or pseudo-class selectors
+        // short elementSelectors = 0; // number of element-type selectors (not used by hlwm)
+        bool operator<(const Specifity& other) const {
+            return classSelectors < other.classSelectors;
+        };
+    };
+
     std::vector<CssName> content_;
     bool matches(const DomTree* element) const;
+    Specifity specifity() const;
 private:
     bool matches(const DomTree* element, size_t prefixLen) const;
 };
@@ -125,7 +137,16 @@ public:
     std::vector<CssRuleSet> content_;
     void print(std::ostream& out) const;
     std::shared_ptr<BoxStyle> computeStyle(DomTree* element) const;
+    void recomputeSortedSelectors();
 private:
+    class SelectorIndex {
+    public:
+        size_t indexInContent_ = 0; // the index in CssSource::content_
+        size_t indexInSelectors_ = 0; // index in CssRuleSet::selectors_
+    };
+    using Specifity2Idx = std::pair<CssSelector::Specifity, SelectorIndex>;
+    std::vector<Specifity2Idx > sortedSelectors_;
+
     // dummy required for attribute assignment.
     // we just claim that all CssSource objects
     // are different, so the attribute values are

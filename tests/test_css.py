@@ -185,14 +185,15 @@ def test_css_computed_style(hlwm):
            (some more buttons at the end))
     """
     css = """
-    .tab {
-        border-width: 2px 4px 6px 8px;
-    }
     .tab + .tab {
         border-left-width: 1px;
     }
     .tab.focus {
         border-color: #9fbc00;
+    }
+    /* this definition is later, but less specific */
+    .tab {
+        border-width: 2px 4px 6px 8px;
     }
     """
     index2style = {
