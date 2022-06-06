@@ -36,6 +36,9 @@ void Widget::computeGeometry(Rectangle outerGeometry)
     // the remaining space that is not yet occupied by the minimum size
     int stretchSpace = innerGeo.dimensions().*stackingDimension;
     for (const auto& child : nestedWidgets_) {
+        if (child->isDisplayNone()) {
+            continue;
+        }
         stretchSpace -= child->minimumSizeCached().*stackingDimension;
         if (child->*expanding) {
             expandingChildrenCount++;
@@ -45,6 +48,9 @@ void Widget::computeGeometry(Rectangle outerGeometry)
     int stretchSpaceStep = expandingChildrenCount ? (stretchSpace / expandingChildrenCount) : 0;
     Point2D currentTopLeft = innerGeo.tl();
     for (Widget* child : nestedWidgets_) {
+        if (child->isDisplayNone()) {
+            continue;
+        }
         Point2D size = child->minimumSizeCached();
         // in the non-stacking direction, all widgets have the same size
         size.*fixedDimension = innerGeo.dimensions().*fixedDimension;
@@ -68,6 +74,7 @@ void Widget::computeGeometry(Rectangle outerGeometry)
 
 void Widget::computeMinimumSize()
 {
+    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty();
     Point2D nestedSize = {0, 0};
     // the dimension/direction in which the children will be stacked
     int Point2D::*stackingDimension = &Point2D::x;
@@ -78,13 +85,15 @@ void Widget::computeMinimumSize()
         fixedDimension = &Point2D::x;
     }
     for (Widget* child : nestedWidgets_) {
+        if (child->isDisplayNone()) {
+            continue;
+        }
         child->computeMinimumSize();
         auto childSize = child->minimumSizeCached();
         nestedSize.*stackingDimension += childSize.*stackingDimension;
         nestedSize.*fixedDimension = std::max(nestedSize.*fixedDimension,
                                               childSize.*fixedDimension) ;
     }
-    const BoxStyle& style = style_ ? *style_ : BoxStyle::empty();
     Point2D surroundingsSize = {0, 0};
     surroundingsSize.x += style.marginLeft + style.marginRight;
     surroundingsSize.y += style.marginTop + style.marginBottom;
@@ -105,7 +114,7 @@ void Widget::computeMinimumSize()
     minimumSizeCached_ = surroundingsSize +
             Point2D::fold(
                 [](int a, int b) { return std::max(a,b); },
-    {minimumSizeUser_, nestedSize, textSize});
+    {minimumSizeUser_, nestedSize, textSize, {style.minWidth, style.minHeight}});
 }
 
 Rectangle Widget::contentGeometryCached() const
@@ -164,6 +173,11 @@ void Widget::removeChild(size_t idx)
 void Widget::setStyle(std::shared_ptr<BoxStyle> style)
 {
     style_ = style;
+}
+
+bool Widget::isDisplayNone() const
+{
+    return style_ && style_->display == CssDisplay::none;
 }
 
 void Widget::recurse(std::function<void (Widget&)> body)

@@ -38,6 +38,7 @@ public:
     void addChild(Widget* child);
     void removeChild(size_t idx);
     void setStyle(std::shared_ptr<BoxStyle> style);
+    bool isDisplayNone() const;
 
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size
 

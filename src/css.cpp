@@ -30,6 +30,9 @@ const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
     { CssName::Builtin::tabbar, "tabbar" },
     { CssName::Builtin::tab, "tab" },
     { CssName::Builtin::notabs, "notabs" },
+    { CssName::Builtin::no_tabs, "no-tabs" },
+    { CssName::Builtin::one_tab, "one-tab" },
+    { CssName::Builtin::multiple_tabs, "multiple-tabs" },
     { CssName::Builtin::bar, "bar" },
     { CssName::Builtin::client_content, "client-content" },
     { CssName::Builtin::first_child, "first-child" },
@@ -38,6 +41,8 @@ const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
     { CssName::Builtin::urgent, "urgent" },
     { CssName::Builtin::focus, "focus" },
     { CssName::Builtin::normal, "normal" },
+    { CssName::Builtin::floating, "floating" },
+    { CssName::Builtin::tiling, "tiling" },
 };
 
 class CssFileParser {

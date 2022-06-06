@@ -48,11 +48,11 @@ public:
  */
 class DecorationParameters {
 public:
-    bool focused_;
-    bool pseudotiled_;
-    bool floating_;
-    bool minimal_;
-    bool urgent_;
+    bool focused_ = false;
+    bool pseudotiled_ = false;
+    bool floating_ = false;
+    bool minimal_ = false;
+    bool urgent_ = false;
     std::vector<Client*> tabs_;
     std::vector<bool> urgentTabs_;
     void updateTabUrgencyFlags();
@@ -71,6 +71,7 @@ public:
     void createWindow();
     virtual ~Decoration();
     void setParameters(const DecorationParameters& params);
+    void computeWidgetGeometries(Rectangle innerGeometry);
     // resize such that the decorated outline of the window fits into rect
     void resize_outline(Rectangle outline);
     void applyWidgetGeometries();

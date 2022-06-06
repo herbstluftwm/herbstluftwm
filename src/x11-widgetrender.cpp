@@ -35,6 +35,9 @@ void X11WidgetRender::render(const Widget& widget)
     const BoxStyle& style = widget.style_
             ? *widget.style_
             : BoxStyle::empty();
+    if (style.display == CssDisplay::none) {
+        return;
+    }
     Rectangle geo =
             widget
             .geometryCached()

@@ -31,6 +31,9 @@ public:
         /* built in names */
         tabbar,
         tab,
+        no_tabs,
+        one_tab,
+        multiple_tabs,
         bar,
         notabs,
         client_content,
@@ -38,6 +41,8 @@ public:
         normal,
         urgent,
         window,
+        floating,
+        tiling,
         LAST = window,
     };
     CssName(Builtin builtin) {

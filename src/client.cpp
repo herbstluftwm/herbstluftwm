@@ -734,18 +734,26 @@ void Client::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_->x;
     int extreme_y = float_size_->y;
-    const auto& t = theme[ThemeType::Floating];
-    mostRecentThemeType = ThemeType::Floating;
-    size_t tabCount = 0;
-    auto r = t.active.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
-    r = t.normal.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
-    r = t.urgent.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
+    if (decorated_()) {
+        // fake some decoration parameters for determining
+        // the size of the decoration
+        DecorationParameters fakeDecParams;
+        // compute the sizes of all the widgets in the decoration
+        fakeDecParams.floating_ = true;
+        fakeDecParams.focused_ = true;
+        dec->setParameters(fakeDecParams);
+        dec->computeWidgetGeometries(float_size_);
+        auto r = dec->inner_to_outer(float_size_);
+        extreme_x = std::min(extreme_x, r.x);
+        extreme_y = std::min(extreme_y, r.y);
+
+        fakeDecParams.focused_ = false;
+        dec->setParameters(fakeDecParams);
+        dec->computeWidgetGeometries(float_size_);
+        r = dec->inner_to_outer(float_size_);
+        extreme_x = std::min(extreme_x, r.x);
+        extreme_y = std::min(extreme_y, r.y);
+    }
     // if top left corner might be outside of the monitor, move it accordingly
     Point2D delta = {0, 0};
     if (extreme_x < 0) { delta.x = abs(extreme_x); }

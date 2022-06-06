@@ -24,6 +24,17 @@ template<> std::string Converter<CssLen>::str(CssLen payload);
 template<> void Converter<CssLen>::complete(Completion& complete, CssLen const* relativeTo);
 
 
+enum class CssDisplay {
+    none,
+    flex,
+};
+
+template <>
+struct is_finite<CssDisplay> : std::true_type {};
+template<> Finite<CssDisplay>::ValueList Finite<CssDisplay>::values;
+
+
+
 /**
  * @brief The BoxStyle specifies how to draw a single
  * css box (in our case: widget).
@@ -34,6 +45,11 @@ public:
     static const char transparent[];
 
     Either<Unit<transparent>,Color> backgroundColor = Unit<transparent>();
+
+    CssDisplay display = CssDisplay::flex;
+
+    CssLen minWidth = 0;
+    CssLen minHeight = 0;
 
     CssLen paddingTop = 0;
     CssLen paddingRight = 0;

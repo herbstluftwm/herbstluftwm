@@ -222,9 +222,14 @@ void Decoration::setParameters(const DecorationParameters& params)
     CssNameSet classes;
     classes.setEnabled({
        {{CssName::Builtin::window}, true},
+       {{CssName::Builtin::floating}, params.floating_},
+       {{CssName::Builtin::tiling}, !params.floating_},
        {{CssName::Builtin::focus}, params.focused_},
        {{CssName::Builtin::urgent}, client_->urgent_()},
        {{CssName::Builtin::normal}, !params.focused_ && !client_->urgent_()},
+       {{CssName::Builtin::no_tabs}, params.tabs_.size() == 0},
+       {{CssName::Builtin::one_tab}, params.tabs_.size() == 1},
+       {{CssName::Builtin::multiple_tabs}, params.tabs_.size() > 1},
     });
     widMain.setClasses(classes);
 
@@ -232,6 +237,14 @@ void Decoration::setParameters(const DecorationParameters& params)
     widMain.recurse([this](Widget& wid) {
         wid.setStyle(this->theme_.computeBoxStyle(&wid));
     });
+}
+
+void Decoration::computeWidgetGeometries(Rectangle innerGeometry)
+{
+    widClient.minimumSizeUser_ = innerGeometry.dimensions();
+    widMain.computeMinimumSize();
+    Point2D outerSize = widMain.minimumSizeCached();
+    widMain.computeGeometry({0, 0, outerSize.x, outerSize.y});
 }
 
 Client* Decoration::toClient(Window decoration_window)

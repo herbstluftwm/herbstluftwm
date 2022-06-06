@@ -32,6 +32,14 @@ template<> void Converter<CssLen>::complete(Completion&, CssLen const*)
 {
 }
 
+
+template<>
+Finite<CssDisplay>::ValueList Finite<CssDisplay>::values = ValueListPlain {
+    { CssDisplay::none, "none" },
+    { CssDisplay::flex, "flex" },
+};
+
+
 /**
  * @brief just an intermediate class to hide
  * templated constructors from the .h file.
@@ -156,7 +164,10 @@ static void append_vector(vector<pair<string, FixedLenParser>>& target,
 void CssValueParser::buildParserCache()
 {
     vector<pair<string, FixedLenParser>> memberParsers = {
+        {"display", &BoxStyle::display },
         {"border-style", &BoxStyle::borderStyle },
+        {"min-height", &BoxStyle::minHeight },
+        {"min-width", &BoxStyle::minWidth },
         {"outline-style", &BoxStyle::outlineStyle },
         {"background-color", &BoxStyle::backgroundColor },
         {"font", &BoxStyle::font },
