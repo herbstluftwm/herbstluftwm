@@ -52,9 +52,10 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
     , theme_(theme)
 {
     widMain.vertical_ = true;
-    widMain.addChild(&widTabBar);
-    //widPanel.addChild(&widTabBar);
-    //widPanel.setClassEnabled(CssName::Builtin::panel, true);
+    widMain.addChild(&widPanel);
+    widPanel.addChild(&widTabBar);
+    widTabBar.expandX_ = true;
+    widPanel.setClassEnabled(CssName::Builtin::bar, true);
     widMain.addChild(&widClient);
     widTabBar.setClassEnabled(CssName::Builtin::tabbar, true);
     widClient.setClassEnabled(CssName::Builtin::client_content, true);
@@ -170,18 +171,24 @@ Decoration::~Decoration() {
 void Decoration::setParameters(const DecorationParameters& params)
 {
     // make sure the number of tab widgets is correct:
-    if (params.tabs_.size() != widTabs.size()) {
-        if (params.tabs_.size() > widTabs.size()) {
+    size_t tabsRequired = params.tabs_.size();
+    if (tabsRequired == 0) {
+        // we require at least one tab. if params has no tabs
+        // then we create one tab holding the window title:
+        tabsRequired = 1;
+    }
+    if (tabsRequired != widTabs.size()) {
+        if (tabsRequired > widTabs.size()) {
             // we need more tabs
-            widTabs.reserve(params.tabs_.size());
-            while (params.tabs_.size() > widTabs.size()) {
+            widTabs.reserve(tabsRequired);
+            while (tabsRequired > widTabs.size()) {
                 TabWidget* newTab = new TabWidget();
                 widTabs.push_back(newTab);
                 widTabBar.addChild(newTab);
             }
         } else {
             // we need fewer tabs:
-            auto firstToRemove = widTabs.begin() + params.tabs_.size();
+            auto firstToRemove = widTabs.begin() + tabsRequired;
             // remove all from tab bar and add remaining widgets again:
             widTabBar.clearChildren();
             for (auto it = widTabs.begin(); it != firstToRemove; it++) {
@@ -196,13 +203,19 @@ void Decoration::setParameters(const DecorationParameters& params)
         }
     }
     // now the vector sizes match, so we can sync the contents:
-    for (size_t i = 0; i < params.tabs_.size(); i++) {
-        widTabs[i]->tabClient = params.tabs_[i];
-        bool focus = params.tabs_[i] == client_;
+    for (size_t i = 0; i < tabsRequired; i++) {
+        // take the client from the parameters' tabs
+        // or use our main client if tabsRequired was increased to 1
+        Client* tabClient =
+                (i < params.tabs_.size())
+                ? params.tabs_[i]
+                : client_;
+        widTabs[i]->tabClient = tabClient;
+        bool focus = tabClient == client_;
         widTabs[i]->setClassEnabled({
             {CssName::Builtin::focus, focus},
-            {CssName::Builtin::urgent, params.tabs_[i]->urgent_()},
-            {CssName::Builtin::normal, !focus && !params.tabs_[i]->urgent_()},
+            {CssName::Builtin::urgent, tabClient->urgent_()},
+            {CssName::Builtin::normal, !focus && !tabClient->urgent_()},
         });
     }
     // set the css classes

@@ -30,7 +30,7 @@ const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
     { CssName::Builtin::tabbar, "tabbar" },
     { CssName::Builtin::tab, "tab" },
     { CssName::Builtin::notabs, "notabs" },
-    { CssName::Builtin::panel, "panel" },
+    { CssName::Builtin::bar, "bar" },
     { CssName::Builtin::client_content, "client-content" },
     { CssName::Builtin::first_child, "first-child" },
     { CssName::Builtin::last_child, "last-child" },
