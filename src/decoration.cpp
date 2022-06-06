@@ -53,6 +53,8 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
 {
     widMain.vertical_ = true;
     widMain.addChild(&widTabBar);
+    //widPanel.addChild(&widTabBar);
+    //widPanel.setClassEnabled(CssName::Builtin::panel, true);
     widMain.addChild(&widClient);
     widTabBar.setClassEnabled(CssName::Builtin::tabbar, true);
     widClient.setClassEnabled(CssName::Builtin::client_content, true);

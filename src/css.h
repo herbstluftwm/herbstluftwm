@@ -31,6 +31,8 @@ public:
         /* built in names */
         tabbar,
         tab,
+        panel,
+        notabs,
         client_content,
         focus,
         normal,

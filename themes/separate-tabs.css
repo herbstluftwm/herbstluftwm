@@ -1,5 +1,5 @@
 
-.window {
+.client-decoration {
     border-width: 1px;
     background-color: #282828;
     border-style: solid;
@@ -11,27 +11,27 @@
     outline-color: black;
 }
 
-.window.focus {
+.client-decoration.focus {
     background-color: #174F6A;
 }
 
-.client_content {
+.client-content {
     border-color: #868686;
     border-width: 1px;
     border-color: #616161;
     background-color: #12121234;
 }
 
-.window.focus ,
-.window.focus .client_content {
+.client-decoration.focus ,
+.client-decoration.focus .client-content {
     border-color: #50A9D4;
 }
 
-.window > * {
+.client-decoration > * {
     margin: 4px;
 }
 
-.window > * + * {
+.client-decoration > * + * {
     margin-top: 0px;
 }
 
@@ -54,19 +54,19 @@
     color: #898989;
 }
 
-.window.focus .tabbar > .tab {
+.client-decoration.focus .tabbar > .tab {
     background-color: #287092;
     border-color: #4A98BC;
     color: #ababab;
 }
 
-.window.normal .tabbar > .tab.focus {
+.client-decoration.normal .tabbar > .tab.focus {
     background-color: #565656;
     border-color: #656565;
     color: #efefef;
 }
 
-.window.focus .tabbar > .tab.focus {
+.client-decoration.focus .tabbar > .tab.focus {
     background-color: #64BCE6;
     border-color: #C3D9E4;
     color: #121212;
@@ -89,6 +89,7 @@
 
 
 * {
+    color: white;
     font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
     /* font: Dejavu Sans:pixelsize=12; */
 }

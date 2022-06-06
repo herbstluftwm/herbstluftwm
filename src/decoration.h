@@ -95,6 +95,7 @@ public:
 
 private:
     Widget widMain;
+    Widget widPanel;
     Widget widTabBar;
     Widget widClient;
     int borderWidth() const;
