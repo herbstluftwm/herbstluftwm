@@ -5,12 +5,14 @@
 using std::function;
 using std::pair;
 using std::string;
+using std::stringstream;
+using std::to_string;
 using std::vector;
 
 const char BoxStyle::solid[] = "solid";
 const char BoxStyle::transparent[] = "transparent";
 
-std::map<std::string, CssValueParser> CssValueParser::propName2Parser_;
+std::map<string, CssValueParser> CssValueParser::propName2Parser_;
 
 
 template<> CssLen Converter<CssLen>::parse(const string& source)
@@ -23,7 +25,7 @@ template<> CssLen Converter<CssLen>::parse(const string& source)
     return len;
 }
 
-template<> std::string Converter<CssLen>::str(CssLen payload)
+template<> string Converter<CssLen>::str(CssLen payload)
 {
     return Converter<int>::str(payload.inPixels_) + "px";
 }
@@ -254,11 +256,11 @@ void CssValueParser::buildParserCache()
     }
 }
 
-BoxStyle::setter CssValueParser::parse(const std::vector<std::string>& args) const
+BoxStyle::setter CssValueParser::parse(const vector<string>& args) const
 {
     if (parser1_ && !(parser2_ || parser3_ || parser4_)) {
         // if this property only accepts one argument, then join the args
-        std::stringstream buf;
+        stringstream buf;
         for (const auto& a : args) {
             buf << a;
         }
@@ -279,11 +281,11 @@ BoxStyle::setter CssValueParser::parse(const std::vector<std::string>& args) con
     throw std::invalid_argument("property \""
                                 + propertyName_
                                 + "\" does not accept "
-                                + std::to_string(args.size())
+                                + to_string(args.size())
                                 + " arguments");
 }
 
-const CssValueParser& CssValueParser::find(const std::string& propertyName)
+const CssValueParser& CssValueParser::find(const string& propertyName)
 {
     if (propName2Parser_.empty()) {
         // built the cache

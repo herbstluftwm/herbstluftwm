@@ -18,8 +18,9 @@ using std::shared_ptr;
 using std::string;
 using std::stringstream;
 using std::vector;
+using std::weak_ptr;
 
-const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
+const vector<pair<CssName::Builtin, string>> CssName::specialNames =
 {
     { CssName::Builtin::child, ">" },
     { CssName::Builtin::has_class, "." },
@@ -152,7 +153,7 @@ public:
     vector<string> classes_ = {};
     CssNameSet classesHashed_ = {};
     vector<DummyTree::Ptr> children_ = {};
-    std::weak_ptr<DummyTree> parent_ = {};
+    weak_ptr<DummyTree> parent_ = {};
     size_t indexInParent_ = 0;
     static DummyTree::Ptr parse(SourceStream& source) {
         source.consumeOrException("(");
@@ -215,7 +216,7 @@ public:
         }
     }
 
-    void recurse(std::function<void(DummyTree::Ptr)> body) {
+    void recurse(function<void(DummyTree::Ptr)> body) {
         body(shared_from_this());
         for (const auto& child : children_) {
             child->recurse(body);
@@ -518,7 +519,7 @@ template<> CssSource Converter<CssSource>::parse(const string& source)
     throw std::invalid_argument(parseError.str());
 }
 
-template<> std::string Converter<CssSource>::str(CssSource payload)
+template<> string Converter<CssSource>::str(CssSource payload)
 {
     stringstream buf;
     payload.print(buf);
@@ -644,7 +645,7 @@ bool CssName::isBinaryOperator() const
 }
 
 
-void CssNameSet::setEnabled(std::initializer_list<std::pair<CssName, bool> > classes)
+void CssNameSet::setEnabled(std::initializer_list<pair<CssName, bool> > classes)
 {
     for (const auto& item : classes) {
         setEnabled(item.first, item.second);

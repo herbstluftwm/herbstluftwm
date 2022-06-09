@@ -9,6 +9,8 @@
 
 using std::function;
 using std::vector;
+using std::shared_ptr;
+using std::pair;
 
 Widget::Widget()
 {
@@ -170,7 +172,7 @@ void Widget::removeChild(size_t idx)
     }
 }
 
-void Widget::setStyle(std::shared_ptr<BoxStyle> style)
+void Widget::setStyle(shared_ptr<BoxStyle> style)
 {
     style_ = style;
 }
@@ -180,7 +182,7 @@ bool Widget::isDisplayNone() const
     return style_ && style_->display == CssDisplay::none;
 }
 
-void Widget::recurse(std::function<void (Widget&)> body)
+void Widget::recurse(function<void (Widget&)> body)
 {
     body(*this);
     for (Widget* child : nestedWidgets_) {
@@ -229,7 +231,7 @@ void Widget::setClassEnabled(const CssName& className, bool enabled)
     classes_.setEnabled(className, enabled);
 }
 
-void Widget::setClassEnabled(std::initializer_list<std::pair<CssName, bool> > classes)
+void Widget::setClassEnabled(std::initializer_list<pair<CssName, bool> > classes)
 {
     classes_.setEnabled(classes);
 }
