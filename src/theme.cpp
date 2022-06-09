@@ -17,7 +17,7 @@ Finite<TitleWhen>::ValueList Finite<TitleWhen>::values = ValueListPlain {
 
 
 Theme::Theme()
-    : custom_style(this, "custom_style", {})
+    : style_override(this, "style_override", {})
     , fullscreen(*this, "fullscreen")
     , tiling(*this, "tiling")
     , floating(*this, "floating")
@@ -25,8 +25,8 @@ Theme::Theme()
     // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
-    custom_style.setWritable();
-    custom_style.changed().connect([this]() {
+    style_override.setWritable();
+    style_override.changed().connect([this]() {
         this->theme_changed_.emit();
     });
 
@@ -82,7 +82,7 @@ shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
     if (!element) {
         return nullptr;
     }
-    return custom_style->computeStyle(element);
+    return style_override->computeStyle(element);
 }
 
 DecorationScheme::DecorationScheme()

@@ -205,7 +205,7 @@ public:
 
     void onDecTripleChange();
 
-    Attribute_<CssSource> custom_style;
+    Attribute_<CssSource> style_override;
     std::shared_ptr<BoxStyle> computeBoxStyle(DomTree* element);
 
     ChildMember_<DecTriple> fullscreen;
