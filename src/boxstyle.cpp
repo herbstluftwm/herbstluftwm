@@ -102,6 +102,32 @@ public:
         };
     }
 
+    template<typename A1, typename A2, typename A3>
+    FixedLenParser(std::initializer_list<A1 BoxStyle::*> m1l,
+                   std::initializer_list<A2 BoxStyle::*> m2l,
+                   std::initializer_list<A3 BoxStyle::*> m3l)
+    {
+        vector<A1 BoxStyle::*> m1s = m1l;
+        vector<A2 BoxStyle::*> m2s = m2l;
+        vector<A3 BoxStyle::*> m3s = m3l;
+        parser3_ = [m1s,m2s,m3s](Str arg1, Str arg2, Str arg3) {
+            A1 arg1typed = Converter<A1>::parse(arg1);
+            A2 arg2typed = Converter<A2>::parse(arg2);
+            A3 arg3typed = Converter<A3>::parse(arg3);
+            return [m1s,m2s,m3s,arg1typed,arg2typed,arg3typed](BoxStyle& style) -> void{
+                for (auto m1 : m1s) {
+                    style.*m1 = arg1typed;
+                }
+                for (auto m2 : m2s) {
+                    style.*m2 = arg2typed;
+                }
+                for (auto m3 : m3s) {
+                    style.*m3 = arg3typed;
+                }
+            };
+        };
+    }
+
     template<typename A1, typename A2, typename A3, typename A4>
     FixedLenParser(std::initializer_list<A1 BoxStyle::*> m1l,
                    std::initializer_list<A2 BoxStyle::*> m2l,
@@ -168,6 +194,33 @@ void CssValueParser::buildParserCache()
     vector<pair<string, FixedLenParser>> memberParsers = {
         {"display", &BoxStyle::display },
         {"border-style", &BoxStyle::borderStyle },
+        {"border", {
+            {&BoxStyle::borderWidthTop, &BoxStyle::borderWidthRight,
+             &BoxStyle::borderWidthBottom, &BoxStyle::borderWidthLeft},
+            {&BoxStyle::borderStyle},
+            {&BoxStyle::borderColorTop, &BoxStyle::borderColorRight,
+             &BoxStyle::borderColorBottom, &BoxStyle::borderColorLeft},
+        }},
+        {"border-top", {
+            {&BoxStyle::borderWidthTop},
+            {&BoxStyle::borderStyle},
+            {&BoxStyle::borderColorTop},
+        }},
+        {"border-right", {
+            {&BoxStyle::borderWidthRight},
+            {&BoxStyle::borderStyle},
+            {&BoxStyle::borderColorRight},
+        }},
+        {"border-bottom", {
+            {&BoxStyle::borderWidthBottom},
+            {&BoxStyle::borderStyle},
+            {&BoxStyle::borderColorBottom},
+        }},
+        {"border-left", {
+            {&BoxStyle::borderWidthLeft},
+            {&BoxStyle::borderStyle},
+            {&BoxStyle::borderColorLeft},
+        }},
         {"min-height", &BoxStyle::minHeight },
         {"min-width", &BoxStyle::minWidth },
         {"outline-style", &BoxStyle::outlineStyle },

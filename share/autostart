@@ -148,7 +148,9 @@ hc attr theme.active.inner_color '#789161'
 hc attr theme.urgent.inner_color '#9A65B0'
 hc attr theme.normal.inner_color '#606060'
 
-hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/separate-tabs.css)"
+#hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/separate-tabs.css)"
+#hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/hlwm-theme-attr.css)"
+hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/light-tabs.css)"
 
 # copy inner color to outer_color
 for state in active urgent normal ; do
