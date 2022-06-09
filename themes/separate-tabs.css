@@ -15,6 +15,21 @@
     background-color: #174F6A;
 }
 
+.client-decoration.minimal {
+    padding: 0px;
+    border-width: 0px;
+    background-color: #000000;
+}
+.client-decoration.minimal > * {
+    display: none;
+}
+.client-decoration.minimal .client-content {
+    display: flex;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+}
+
 .client-content {
     border-color: #868686;
     border-width: 1px;

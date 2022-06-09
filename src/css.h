@@ -41,6 +41,7 @@ public:
         normal,
         urgent,
         window,
+        minimal,
         floating,
         tiling,
         LAST = window,

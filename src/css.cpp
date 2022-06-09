@@ -38,6 +38,7 @@ const vector<pair<CssName::Builtin, std::string>> CssName::specialNames =
     { CssName::Builtin::first_child, "first-child" },
     { CssName::Builtin::last_child, "last-child" },
     { CssName::Builtin::window, "client-decoration" },
+    { CssName::Builtin::minimal, "minimal" },
     { CssName::Builtin::urgent, "urgent" },
     { CssName::Builtin::focus, "focus" },
     { CssName::Builtin::normal, "normal" },
