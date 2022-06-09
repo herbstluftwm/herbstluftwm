@@ -300,7 +300,8 @@ Decoration::positionHasButton(Point2D p)
 {
     p = p + widMain.geometryCached().tl();
     for (TabWidget* tab : widTabs) {
-        if (tab->geometryCached().contains(p)) {
+        if (tab->geometryCached().contains(p) &&
+            tab->tabClient != client_) {
             ClickArea button;
             button.area_ = tab->geometryCached();
             button.tabClient_ = tab->tabClient;
