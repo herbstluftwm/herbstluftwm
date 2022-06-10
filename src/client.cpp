@@ -326,8 +326,10 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
         rect.y += std::max(0, (rect.height - inner.height)/2);
         rect.width = std::min(inner.width, rect.width);
         rect.height = std::min(inner.height, rect.height);
+        dec->resize_inner(rect);
+    } else {
+        dec->resize_outline(rect);
     }
-    dec->resize_outline(rect);
 }
 
 /**

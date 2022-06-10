@@ -94,7 +94,7 @@ public:
     static Client* toClient(Window decoration_window);
 
     Window decorationWindow() { return decwin; }
-    inline Rectangle last_inner() const { return widClient.contentGeometryCached(); }
+    Rectangle last_inner() const;
     inline Rectangle last_outer() const { return widMain.geometryCached(); }
     Rectangle inner_to_outer(Rectangle rect);
 

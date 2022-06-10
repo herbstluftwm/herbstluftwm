@@ -257,6 +257,15 @@ Client* Decoration::toClient(Window decoration_window)
     }
 }
 
+Rectangle Decoration::last_inner() const
+{
+    if (client_->decorated_()) {
+        return widClient.contentGeometryCached();
+    } else {
+        return widMain.geometryCached();
+    }
+}
+
 void Decoration::resize_inner(Rectangle inner) {
     // we need to update (i.e. clear) tabs before inner_rect_to_outline()
     if (client_->decorated_()) {
@@ -267,8 +276,11 @@ void Decoration::resize_inner(Rectangle inner) {
         widMain.computeGeometry({0, 0, outerSize.x, outerSize.y});
         // move everything such that widClient.tl() is inner.tl():
         widMain.moveGeometryCached(inner.tl() - widClient.contentGeometryCached().tl());
+        applyWidgetGeometries();
+    } else {
+        client_->applysizehints(&inner.width, &inner.height);
+        resize_outline(inner);
     }
-    applyWidgetGeometries();
 }
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
@@ -409,11 +421,11 @@ void Decoration::resize_outline(Rectangle outline)
 void Decoration::applyWidgetGeometries() {
     bool decorated = client_->decorated_();
     Window win = client_->window_;
-    const auto tile = widClient.contentGeometryCached();
     Rectangle inner =
             decorated
             ? widClient.contentGeometryCached()
             : widMain.geometryCached();
+    const auto tile = inner;
     client_->applysizehints(&inner.width, &inner.height);
 
     // center the window in the outline tile
