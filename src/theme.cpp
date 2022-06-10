@@ -44,6 +44,22 @@ Theme::Theme()
     normal.makeProxyFor({&tiling.normal, &floating.normal});
     urgent.makeProxyFor({&tiling.urgent, &floating.urgent});
 
+    // deactivate window titles for minimal and fullscreen decorations per default:
+    vector<DecorationScheme*> schemesWithoutTitle = {
+        &minimal,
+        &minimal.active,
+        &minimal.normal,
+        &minimal.urgent,
+        &fullscreen,
+        &fullscreen.active,
+        &fullscreen.normal,
+        &fullscreen.urgent,
+    };
+    for (DecorationScheme* s : schemesWithoutTitle) {
+        s->title_when.setInitialAndDefaultValue(TitleWhen::never);
+    }
+
+
     setDoc(
           "    inner_color/inner_width\n"
           "          ╻        outer_color/outer_width\n"

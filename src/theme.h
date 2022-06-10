@@ -112,6 +112,10 @@ public:
     Attribute* toAttribute() override {
         return this;
     }
+    void setInitialAndDefaultValue(const T& value) {
+        Attribute_<T>::payload_ = value;
+        Attribute_<T>::defaultValue_ = value;
+    }
 private:
     std::vector<Object*> targetObjects_;
 };
