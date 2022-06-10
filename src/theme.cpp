@@ -122,13 +122,12 @@ void Theme::generateBuiltinCss()
             {
                 {[&scheme](BoxStyle& style) {
                      style.backgroundColor = scheme.border_color();
-                     style.paddingTop =
-                         style.paddingRight =
-                         style.paddingBottom =
-                         style.paddingLeft =
-                            scheme.border_width()
-                            - scheme.outer_width()
-                            - scheme.inner_width();
+                     auto bw = scheme.border_width() - scheme.outer_width() - scheme.inner_width();
+                     style.paddingTop = bw + scheme.padding_top();
+                     style.paddingRight = bw + scheme.padding_right();
+                     style.paddingBottom = bw + scheme.padding_bottom();
+                     style.paddingLeft = bw + scheme.padding_left();
+
                      style.borderWidthTop =
                          style.borderWidthRight =
                          style.borderWidthBottom =
@@ -183,10 +182,9 @@ void Theme::generateBuiltinCss()
                      // negative top margin to move tab
                      // close to upper edge of decorations
                      auto bw = scheme.border_width() - scheme.inner_width();
-                     style.marginTop =
-                         style.marginLeft =
-                         style.marginRight =
-                            - bw;
+                     style.marginTop = - bw - scheme.padding_top();
+                     style.marginLeft = - bw - scheme.padding_left();
+                     style.marginRight = - bw - scheme.padding_right();
                      style.marginBottom = bw;
                      style.borderWidthBottom = scheme.outer_width();
                      style.borderColorBottom = scheme.outer_color();
@@ -217,7 +215,11 @@ void Theme::generateBuiltinCss()
 
                      style.borderWidthTop =
                          scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
-                     style.paddingTop = -1 * style.borderWidthTop;
+                     style.paddingTop =
+                        // allow overlap with border color:
+                        -1 * style.borderWidthTop
+                        // but apply custom the padding
+                        + scheme.padding_top();
                      style.borderColorTop =
                          style.borderColorRight =
                          style.borderColorLeft =
@@ -226,8 +228,8 @@ void Theme::generateBuiltinCss()
                      style.borderWidthTop =
                              scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
 
-                     style.paddingLeft = scheme.border_width() - scheme.outer_width();
-                     style.paddingRight = scheme.border_width() - scheme.outer_width();
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width();
+                     style.paddingRight = scheme.padding_right() + scheme.border_width();
                 }},
             }}));
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
@@ -242,8 +244,9 @@ void Theme::generateBuiltinCss()
             },
             {
                 {[&scheme,&decTriple](BoxStyle& style) {
-                     style.borderWidthLeft =
-                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     auto bw = scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.borderWidthLeft = bw;
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width() - bw;
                 }},
             }}));
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
@@ -258,8 +261,9 @@ void Theme::generateBuiltinCss()
             },
             {
                 {[&scheme,&decTriple](BoxStyle& style) {
-                     style.borderWidthRight =
-                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     auto bw = scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.borderWidthRight = bw;
+                     style.paddingRight = scheme.padding_right() + scheme.border_width() - bw;
                 }},
             }}));
 
@@ -284,11 +288,19 @@ void Theme::generateBuiltinCss()
                          style.borderColorRight =
                          style.borderColorLeft =
                              scheme.outer_color();
-                     style.borderWidthLeft =
+                     style.borderWidthTop =
+                         style.borderWidthLeft =
                          style.borderWidthRight =
-                             scheme.outer_width();
+                         scheme.outer_width();
+                     style.paddingTop =
+                        // allow overlap with border color:
+                        -1 * style.borderWidthTop
+                        // but apply custom the padding
+                        + scheme.padding_top();
 
                      style.borderWidthBottom = 0;
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width() - scheme.outer_width();
+                     style.paddingRight = scheme.padding_right() + scheme.border_width() - scheme.outer_width();
                      style.paddingBottom = scheme.outer_width();
                      style.marginBottom = -scheme.outer_width();
                 }},
