@@ -203,7 +203,7 @@ def test_css_computed_style(hlwm):
     }
     """
     index2style = {
-        '1 0': # the active tab
+        '1 0':  # the active tab
         """\
         border-top-color: #9fbc00;
         border-right-color: #9fbc00;
@@ -214,7 +214,7 @@ def test_css_computed_style(hlwm):
         border-bottom-width: 6px;
         border-left-width: 8px;
         """,
-        '1 1': # the tab next to it has a thinner left border
+        '1 1':  # the tab next to it has a thinner left border
         """\
         border-top-width: 2px;
         border-right-width: 4px;
