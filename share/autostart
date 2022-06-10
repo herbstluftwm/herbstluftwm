@@ -66,7 +66,6 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 tag_names=( {1..9} )
 tag_keys=( {1..9} 0 )
 
-hc try attr tags.0.tiling.root.algorithm 'max'
 hc rename default "${tag_names[0]}" || true
 for i in "${!tag_names[@]}" ; do
     hc add "${tag_names[$i]}"
@@ -118,17 +117,17 @@ hc set frame_border_active_color '#222222cc'
 hc set frame_border_normal_color '#101010cc'
 hc set frame_bg_normal_color '#565656aa'
 hc set frame_bg_active_color '#345F0Caa'
-hc set frame_border_width 0
+hc set frame_border_width 1
 hc set always_show_frame on
 hc set frame_bg_transparent on
-hc set frame_transparent_width 0  # temporary
+hc set frame_transparent_width 5
 hc set frame_gap 4
 
-hc attr theme.title_height 0
+hc attr theme.title_height 15
 hc attr theme.title_when always
 hc attr theme.title_font 'Dejavu Sans:pixelsize=12'  # example using Xft
 # hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
-hc attr theme.title_depth 0  # space below the title's baseline
+hc attr theme.title_depth 3  # space below the title's baseline
 hc attr theme.active.color '#345F0Cef'
 hc attr theme.title_color '#ffffff'
 hc attr theme.normal.color '#323232dd'
@@ -147,11 +146,6 @@ hc attr theme.floating.outer_color black
 hc attr theme.active.inner_color '#789161'
 hc attr theme.urgent.inner_color '#9A65B0'
 hc attr theme.normal.inner_color '#606060'
-
-#hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/separate-tabs.css)"
-#hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/hlwm-theme-attr.css)"
-#hc attr theme.style_override "$(< $HOME/git/herbstluftwm/themes/light-tabs.css)"
-
 # copy inner color to outer_color
 for state in active urgent normal ; do
     hc substitute C theme.${state}.inner_color \
@@ -163,7 +157,7 @@ hc attr theme.background_color '#141414'
 hc set window_gap 0
 hc set frame_padding 0
 hc set smart_window_surroundings off
-hc set smart_frame_surroundings off
+hc set smart_frame_surroundings on
 hc set mouse_recenter_gap 0
 
 # rules
