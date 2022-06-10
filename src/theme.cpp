@@ -191,6 +191,8 @@ void Theme::generateBuiltinCss()
                          style.marginRight =
                             - border_width;
                      style.marginBottom = border_width;
+                     style.borderWidthBottom = scheme.outer_width();
+                     style.borderColorBottom = scheme.outer_color();
                 }},
             }}));
 
@@ -224,10 +226,6 @@ void Theme::generateBuiltinCss()
 
                      style.borderWidthTop =
                              scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
-
-                     style.borderColorBottom = scheme.outer_color();
-                     style.borderWidthBottom = scheme.outer_width();
-                     style.paddingBottom = -scheme.outer_width();
 
                      style.paddingLeft = scheme.border_width() - scheme.outer_width();
                      style.paddingRight = scheme.border_width() - scheme.outer_width();
@@ -282,7 +280,7 @@ void Theme::generateBuiltinCss()
                      style.font = scheme.title_font();
                      style.fontColor = scheme.title_color();
                      style.textAlign = scheme.title_align();
-                     style.backgroundColor = Unit<BoxStyle::transparent>();
+                     style.backgroundColor = scheme.border_color();
                      style.borderColorTop =
                          style.borderColorRight =
                          style.borderColorLeft =
@@ -292,7 +290,8 @@ void Theme::generateBuiltinCss()
                              scheme.outer_width();
 
                      style.borderWidthBottom = 0;
-                     style.paddingBottom = 0;
+                     style.paddingBottom = scheme.outer_width();
+                     style.marginBottom = -scheme.outer_width();
                 }},
             }}));
             // the selected tab
