@@ -1,6 +1,7 @@
 #include "css.h"
 
 #include <algorithm>
+#include <iostream> // TODO: remove again
 #include <cstring>
 #include <sstream>
 #include <tuple>
@@ -40,6 +41,7 @@ const vector<pair<CssName::Builtin, string>> CssName::specialNames =
     { CssName::Builtin::last_child, "last-child" },
     { CssName::Builtin::window, "client-decoration" },
     { CssName::Builtin::minimal, "minimal" },
+    { CssName::Builtin::fullscreen, "fullscreen" },
     { CssName::Builtin::urgent, "urgent" },
     { CssName::Builtin::focus, "focus" },
     { CssName::Builtin::normal, "normal" },
@@ -347,16 +349,26 @@ void CssSource::print(std::ostream& out) const
 shared_ptr<BoxStyle> CssSource::computeStyle(DomTree* element) const
 {
     shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
+    computeStyle(element, style);
+    return style;
+}
+
+void CssSource::computeStyle(DomTree* element, std::shared_ptr<BoxStyle> target) const
+{
     for (const auto& selectorIdx : sortedSelectors_) {
         const auto& block = content_[selectorIdx.second.indexInContent_];
         const auto& selector = block.selectors_[selectorIdx.second.indexInSelectors_];
         if (selector.matches(element)) {
             for (const auto& property : block.declarations_) {
-                property.apply_(*style);
+                property.apply_(*target);
             }
         }
     }
-    return style;
+    std::cerr << "{\n";
+    for (const auto& it : target->changedProperties()) {
+        std::cerr << "  " << it.first << ": " << it.second << ";\n";
+    }
+    std::cerr << "}\n";
 }
 
 void CssSource::recomputeSortedSelectors()
@@ -457,15 +469,7 @@ void debugCssCommand(CallOrComplete invoc)
                 }
                 std::map<string,string> properties;
                 auto boxStyle = file.computeStyle(nodeOfInterest.get());
-                BoxStyle emptyStyle = BoxStyle::empty();
-                CssValueParser::foreachParser([&](const CssValueParser& propParser) {
-                    if (propParser.valuesMatch_ && propParser.getter_) {
-                        if (!propParser.valuesMatch_(*boxStyle, emptyStyle)) {
-                            properties[propParser.name()] = propParser.getter_(*boxStyle);
-                        }
-                    }
-                });
-                for (const auto& it : properties) {
+                for (const auto& it : boxStyle->changedProperties()) {
                     output << it.first << ": " << it.second << ";\n";
                 }
             }
@@ -670,4 +674,11 @@ void CssNameSet::setEnabled(CssName className, bool enabled)
             names_ &= ~(1ull << static_cast<unsigned long long>(className.special_));
         }
     }
+}
+
+CssRuleSet::CssRuleSet(std::initializer_list<CssSelector> selectors,
+                       std::initializer_list<CssDeclaration> declarations)
+    : selectors_(selectors)
+    , declarations_(declarations)
+{
 }

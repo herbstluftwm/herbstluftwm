@@ -89,6 +89,8 @@ public:
     CssLen textDepth = 0;
     CssLen textHeight = 0;
     HSFont font = HSFont::fromStr("");
+
+    std::map<std::string, std::string> changedProperties() const;
     static const BoxStyle empty() {
         return {};
     }

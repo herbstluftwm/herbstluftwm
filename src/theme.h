@@ -214,6 +214,8 @@ public:
     ChildMember_<DecTriple> minimal;
 
 private:
+    CssSource generatedStyle; // style generated from DecTriples
+    void generateBuiltinCss();
     // a sub-decoration for each type
     std::vector<DecTriple*> decTriples;
 };

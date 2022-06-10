@@ -363,3 +363,17 @@ void CssValueParser::foreachParser(function<void (const CssValueParser&)> loopBo
         loopBody(it.second);
     }
 }
+
+std::map<string, string> BoxStyle::changedProperties() const
+{
+    std::map<string,string> properties;
+    BoxStyle emptyStyle = BoxStyle::empty();
+    CssValueParser::foreachParser([&](const CssValueParser& propParser) {
+        if (propParser.valuesMatch_ && propParser.getter_) {
+            if (!propParser.valuesMatch_(*this, emptyStyle)) {
+                properties[propParser.name()] = propParser.getter_(*this);
+            }
+        }
+    });
+    return properties;
+}

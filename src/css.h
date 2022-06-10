@@ -36,15 +36,17 @@ public:
         multiple_tabs,
         bar,
         notabs,
-        client_content,
         focus,
         normal,
         urgent,
-        window,
         minimal,
+        fullscreen,
         floating,
         tiling,
-        LAST = window,
+        window,
+        /* insert above, so that this stays last */
+        client_content,
+        LAST = client_content,
     };
     CssName(Builtin builtin) {
         special_ = builtin;
@@ -112,6 +114,11 @@ public:
     std::string property_;
     std::vector<std::string> values_;
     BoxStyle::setter apply_;
+
+    CssDeclaration() = default;
+    CssDeclaration(const BoxStyle::setter& apply)
+        : apply_(apply) {
+    }
 };
 
 class CssSelector {
@@ -126,6 +133,10 @@ public:
             return classSelectors < other.classSelectors;
         };
     };
+    CssSelector() = default;
+    CssSelector(std::initializer_list<CssName> content)
+        : content_(content) {
+    }
 
     std::vector<CssName> content_;
     bool matches(const DomTree* element) const;
@@ -136,6 +147,9 @@ private:
 
 class CssRuleSet {
 public:
+    CssRuleSet() = default;
+    CssRuleSet(std::initializer_list<CssSelector> selectors,
+               std::initializer_list<CssDeclaration> declarations);
     std::vector<CssSelector> selectors_;
     std::vector<CssDeclaration> declarations_;
 };
@@ -145,6 +159,7 @@ public:
     std::vector<CssRuleSet> content_;
     void print(std::ostream& out) const;
     std::shared_ptr<BoxStyle> computeStyle(DomTree* element) const;
+    void computeStyle(DomTree* element, std::shared_ptr<BoxStyle> target) const;
     void recomputeSortedSelectors();
 private:
     class SelectorIndex {

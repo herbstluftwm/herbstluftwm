@@ -3,6 +3,9 @@
 #include "completion.h"
 #include "globals.h"
 
+using std::function;
+using std::pair;
+using std::make_shared;
 using std::vector;
 using std::shared_ptr;
 using std::string;
@@ -70,11 +73,13 @@ Theme::Theme()
     minimal.setChildDoc("configures clients with minimal decorations "
                         "triggered by +smart_window_surroundings+");
     fullscreen.setChildDoc("configures clients in fullscreen state");
+
+    generateBuiltinCss();
 }
 
 void Theme::onDecTripleChange()
 {
-
+    scheme_changed_.emit();
 }
 
 shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
@@ -82,7 +87,243 @@ shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
     if (!element) {
         return nullptr;
     }
-    return style_override->computeStyle(element);
+    shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
+    generatedStyle.computeStyle(element, style);
+    style_override->computeStyle(element, style);
+    return style;
+}
+
+void Theme::generateBuiltinCss()
+{
+    vector<pair<ThemeType, CssName>> triples = {
+        { ThemeType::Tiling, CssName::Builtin::tiling },
+        { ThemeType::Floating, CssName::Builtin::floating },
+        { ThemeType::Minimal, CssName::Builtin::minimal },
+        { ThemeType::Fullscreen, CssName::Builtin::fullscreen },
+    };
+    vector<shared_ptr<CssRuleSet>> blocks;
+    for (const auto& triple2cssname : triples) {
+        const DecTriple& decTriple = (*this)[triple2cssname.first];
+        CssName tripleCssName = triple2cssname.second;
+        vector<pair<const DecorationScheme&, CssName>> tripleEntries = {
+            { decTriple.normal, CssName::Builtin::normal },
+            { decTriple.active, CssName::Builtin::focus },
+            { decTriple.urgent, CssName::Builtin::urgent },
+        };
+        for (const auto& scheme2cssname : tripleEntries) {
+            const DecorationScheme& scheme = scheme2cssname.first;
+            CssName schemeCssName = scheme2cssname.second;
+
+            // the decoration
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.backgroundColor = scheme.border_color();
+                     style.paddingTop =
+                         style.paddingRight =
+                         style.paddingBottom =
+                         style.paddingLeft =
+                            scheme.border_width()
+                            - scheme.outer_width()
+                            - scheme.inner_width();
+                     style.borderWidthTop =
+                         style.borderWidthRight =
+                         style.borderWidthBottom =
+                         style.borderWidthLeft =
+                         scheme.outer_width();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorBottom =
+                         style.borderColorLeft =
+                         scheme.outer_color();
+                }},
+            }}));
+
+            // the client content
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::client_content,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.backgroundColor = scheme.background_color();
+                     style.borderWidthTop =
+                         style.borderWidthRight =
+                         style.borderWidthBottom =
+                         style.borderWidthLeft =
+                         scheme.inner_width();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorBottom =
+                         style.borderColorLeft =
+                         scheme.inner_color();
+                }},
+            }}));
+
+            // tab bar
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tabbar,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     // negative top margin to move tab
+                     // close to upper edge of decorations
+                     auto border_width = scheme.border_width() - scheme.inner_width();
+                     style.marginTop =
+                         style.marginLeft =
+                         style.marginRight =
+                            - border_width;
+                     style.marginBottom = border_width;
+                }},
+            }}));
+
+            // tab default style
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.fontColor =
+                        scheme.tab_title_color().rightOr(decTriple.normal.title_color());
+
+                     style.font = decTriple.normal.title_font();
+                     style.textAlign = scheme.title_align();
+                     style.backgroundColor =
+                        scheme.tab_color().rightOr(decTriple.normal.border_color());
+
+                     style.borderWidthTop =
+                         scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.paddingTop = -1 * style.borderWidthTop;
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             scheme.tab_outer_color().rightOr(decTriple.normal.outer_color());
+
+                     style.borderWidthTop =
+                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+
+                     style.borderColorBottom = scheme.outer_color();
+                     style.borderWidthBottom = scheme.outer_width();
+                     style.paddingBottom = -scheme.outer_width();
+
+                     style.paddingLeft = scheme.border_width() - scheme.outer_width();
+                     style.paddingRight = scheme.border_width() - scheme.outer_width();
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::pseudo_class, CssName::Builtin::first_child,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.borderWidthLeft =
+                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::pseudo_class, CssName::Builtin::last_child,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.borderWidthRight =
+                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                }},
+            }}));
+
+            // the selected tab
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::focus,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.font = scheme.title_font();
+                     style.fontColor = scheme.title_color();
+                     style.textAlign = scheme.title_align();
+                     style.backgroundColor = Unit<BoxStyle::transparent>();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             scheme.outer_color();
+                     style.borderWidthLeft =
+                         style.borderWidthRight =
+                             scheme.outer_width();
+
+                     style.borderWidthBottom = 0;
+                     style.paddingBottom = 0;
+                }},
+            }}));
+            // the selected tab
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::window,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::urgent,
+                },
+            },
+            {
+                {[&decTriple](BoxStyle& style) {
+                     style.backgroundColor = decTriple.urgent.border_color();
+                     style.fontColor = decTriple.urgent.title_color();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             decTriple.urgent.outer_color();
+                }},
+            }}));
+        }
+    }
+    generatedStyle.content_.resize(blocks.size());
+    size_t idx = 0;
+    for (const auto& ptr : blocks) {
+        generatedStyle.content_[idx++] = *ptr;
+    }
+    generatedStyle.recomputeSortedSelectors();
 }
 
 DecorationScheme::DecorationScheme()
