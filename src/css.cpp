@@ -352,7 +352,7 @@ shared_ptr<BoxStyle> CssSource::computeStyle(DomTree* element) const
     return style;
 }
 
-void CssSource::computeStyle(DomTree* element, std::shared_ptr<BoxStyle> target) const
+void CssSource::computeStyle(DomTree* element, shared_ptr<BoxStyle> target) const
 {
     for (const auto& selectorIdx : sortedSelectors_) {
         const auto& block = content_[selectorIdx.second.indexInContent_];

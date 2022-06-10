@@ -51,6 +51,10 @@ Finite<CssDisplay>::ValueList Finite<CssDisplay>::values = ValueListPlain {
  */
 class FixedLenParser : public CssValueParser {
 public:
+    // on old compilers, we can't use the protected 'Str'
+    // so just define the shortcut a second time:
+    using StrRef = const string&;
+
     template<typename A>
     FixedLenParser(A BoxStyle::*member)
     {
@@ -72,7 +76,7 @@ public:
     FixedLenParser(std::initializer_list<A1 BoxStyle::*> m1l)
     {
         vector<A1 BoxStyle::*> m1s = m1l;
-        parser1_ = [m1s](Str arg1) {
+        parser1_ = [m1s](StrRef arg1) {
             A1 arg1typed = Converter<A1>::parse(arg1);
             return [m1s,arg1typed](BoxStyle& style) -> void{
                 for (auto m1 : m1s) {
@@ -88,7 +92,7 @@ public:
     {
         vector<A1 BoxStyle::*> m1s = m1l;
         vector<A2 BoxStyle::*> m2s = m2l;
-        parser2_ = [m1s,m2s](Str arg1, Str arg2) {
+        parser2_ = [m1s,m2s](StrRef arg1, StrRef arg2) {
             A1 arg1typed = Converter<A1>::parse(arg1);
             A2 arg2typed = Converter<A2>::parse(arg2);
             return [m1s,m2s,arg1typed,arg2typed](BoxStyle& style) -> void{
@@ -110,7 +114,7 @@ public:
         vector<A1 BoxStyle::*> m1s = m1l;
         vector<A2 BoxStyle::*> m2s = m2l;
         vector<A3 BoxStyle::*> m3s = m3l;
-        parser3_ = [m1s,m2s,m3s](Str arg1, Str arg2, Str arg3) {
+        parser3_ = [m1s,m2s,m3s](StrRef arg1, StrRef arg2, StrRef arg3) {
             A1 arg1typed = Converter<A1>::parse(arg1);
             A2 arg2typed = Converter<A2>::parse(arg2);
             A3 arg3typed = Converter<A3>::parse(arg3);
@@ -138,7 +142,7 @@ public:
         vector<A2 BoxStyle::*> m2s = m2l;
         vector<A3 BoxStyle::*> m3s = m3l;
         vector<A4 BoxStyle::*> m4s = m4l;
-        parser4_ = [m1s,m2s,m3s,m4s](Str arg1, Str arg2, Str arg3, Str arg4) {
+        parser4_ = [m1s,m2s,m3s,m4s](StrRef arg1, StrRef arg2, StrRef arg3, StrRef arg4) {
             A1 arg1typed = Converter<A1>::parse(arg1);
             A2 arg2typed = Converter<A2>::parse(arg2);
             A3 arg3typed = Converter<A3>::parse(arg3);
