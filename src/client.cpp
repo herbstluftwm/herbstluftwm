@@ -64,7 +64,6 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
     , X_(*cm.X_)
-    , mostRecentThemeType(ThemeType::Tiling)
     , decParams(make_unique<DecorationParameters>())
 {
     stringstream tmp;
@@ -254,15 +253,6 @@ Client::~Client() {
     }
 }
 
-const DecTriple& Client::getDecTriple() {
-    return theme[mostRecentThemeType];
-}
-
-const DecorationScheme& Client::getDecorationScheme(bool focused)
-{
-    return getDecTriple()(focused, urgent_());
-}
-
 void Client::recomputeStyle()
 {
     dec->setParameters(*decParams);
@@ -294,7 +284,7 @@ void Client::redrawRelevantTabBars()
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
     *decParams = DecorationParameters();
     decParams->focused_ = isFocused;
-    decParams->minimal_ = true;
+    decParams->fullscreen_ = true;
     decParams->urgent_ = urgent_();
     dec->setParameters(*decParams);
     dec->resize_outline(monitor_rect);

@@ -124,11 +124,11 @@ hc set frame_bg_transparent on
 hc set frame_transparent_width 0  # temporary
 hc set frame_gap 4
 
-hc attr theme.title_height 15
+hc attr theme.title_height 0
 hc attr theme.title_when always
 hc attr theme.title_font 'Dejavu Sans:pixelsize=12'  # example using Xft
 # hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
-hc attr theme.title_depth 3  # space below the title's baseline
+hc attr theme.title_depth 0  # space below the title's baseline
 hc attr theme.active.color '#345F0Cef'
 hc attr theme.title_color '#ffffff'
 hc attr theme.normal.color '#323232dd'

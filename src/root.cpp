@@ -89,8 +89,8 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
         for (const auto& it : clients->clients()) {
             it.second->recomputeStyle();
         }
+        monitors()->relayoutAll();
     });
-    theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 }
 

@@ -1,7 +1,6 @@
 #include "css.h"
 
 #include <algorithm>
-#include <iostream> // TODO: remove again
 #include <cstring>
 #include <sstream>
 #include <tuple>
@@ -364,11 +363,6 @@ void CssSource::computeStyle(DomTree* element, std::shared_ptr<BoxStyle> target)
             }
         }
     }
-    std::cerr << "{\n";
-    for (const auto& it : target->changedProperties()) {
-        std::cerr << "  " << it.first << ": " << it.second << ";\n";
-    }
-    std::cerr << "}\n";
 }
 
 void CssSource::recomputeSortedSelectors()

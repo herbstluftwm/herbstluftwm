@@ -49,12 +49,23 @@ public:
 class DecorationParameters {
 public:
     bool focused_ = false;
+    bool fullscreen_ = false;
     bool pseudotiled_ = false;
     bool floating_ = false;
     bool minimal_ = false;
     bool urgent_ = false;
     std::vector<Client*> tabs_;
     std::vector<bool> urgentTabs_;
+
+    bool operator==(const DecorationParameters& other) const {
+        return focused_ == other.focused_
+                && fullscreen_ == other.fullscreen_
+                && pseudotiled_ == other.pseudotiled_
+                && floating_ == other.floating_
+                && minimal_ == other.minimal_
+                && tabs_ == other.tabs_
+                && urgentTabs_ == other.urgentTabs_;
+    }
     void updateTabUrgencyFlags();
 };
 
@@ -99,6 +110,7 @@ private:
     Widget widPanel;
     Widget widTabBar;
     Widget widClient;
+    DecorationParameters lastParams;
     int borderWidth() const;
     std::vector<TabWidget*> widTabs;
     static Visual* check_32bit_client(Client* c);

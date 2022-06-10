@@ -18,10 +18,10 @@
  * @brief Criteria when to show the window title
  */
 enum class TitleWhen {
-    never,
-    always,
-    one_tab,
-    multiple_tabs,
+    never = 0,
+    multiple_tabs = 1,
+    one_tab = 2,
+    always = 3,
 };
 
 template <>
@@ -196,14 +196,9 @@ enum class ThemeType {
 
 class Theme : public DecTriple {
 public:
-    const DecTriple& operator[](ThemeType t) const {
-        return *decTriples[static_cast<int>(t)];
-    };
     Theme();
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
-
-    void onDecTripleChange();
 
     Attribute_<CssSource> style_override;
     std::shared_ptr<BoxStyle> computeBoxStyle(DomTree* element);
@@ -214,6 +209,9 @@ public:
     ChildMember_<DecTriple> minimal;
 
 private:
+    const DecTriple& operator[](ThemeType t) const {
+        return *decTriples[static_cast<int>(t)];
+    };
     CssSource generatedStyle; // style generated from DecTriples
     void generateBuiltinCss();
     // a sub-decoration for each type

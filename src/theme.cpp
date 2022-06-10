@@ -34,7 +34,9 @@ Theme::Theme()
     });
 
     for (auto dec : decTriples) {
-        dec->triple_changed_.connect(this, &Theme::onDecTripleChange);
+        dec->triple_changed_.connect([this]() {
+            this->theme_changed_.emit();
+        });
     }
 
     // forward attribute changes: only to tiling and floating
@@ -75,11 +77,6 @@ Theme::Theme()
     fullscreen.setChildDoc("configures clients in fullscreen state");
 
     generateBuiltinCss();
-}
-
-void Theme::onDecTripleChange()
-{
-    scheme_changed_.emit();
 }
 
 shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
@@ -213,6 +210,8 @@ void Theme::generateBuiltinCss()
 
                      style.font = decTriple.normal.title_font();
                      style.textAlign = scheme.title_align();
+                     style.textHeight = scheme.title_height();
+                     style.textDepth = scheme.title_depth();
                      style.backgroundColor =
                         scheme.tab_color().rightOr(decTriple.normal.border_color());
 
@@ -315,8 +314,59 @@ void Theme::generateBuiltinCss()
                              decTriple.urgent.outer_color();
                 }},
             }}));
+            // Implement 'title_when' for
+            vector<pair<CssName::Builtin, TitleWhen>> css2titlewhen = {
+                // for each css class, what is the minimum value of 'title_when'
+                // such that the tab bar is shown:
+                { CssName::Builtin::no_tabs, TitleWhen::always },
+                { CssName::Builtin::one_tab, TitleWhen::one_tab },
+                { CssName::Builtin::multiple_tabs, TitleWhen::multiple_tabs },
+            };
+            for (const auto& it : css2titlewhen) {
+                CssName::Builtin cssClass = it.first;
+                TitleWhen minimumValue = it.second;
+                blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+                {
+                    { CssName::Builtin::has_class, CssName::Builtin::window,
+                      CssName::Builtin::has_class, tripleCssName,
+                      CssName::Builtin::has_class, schemeCssName,
+                      CssName::Builtin::has_class, cssClass,
+                      CssName::Builtin::descendant,
+                      CssName::Builtin::has_class, CssName::Builtin::bar,
+                    },
+                },
+                {
+                    {[&scheme,minimumValue,tripleCssName,schemeCssName](BoxStyle& style) {
+                         if (scheme.title_when() >= minimumValue) {
+                             style.display = CssDisplay::flex;
+                         } else {
+                             style.display = CssDisplay::none;
+                         }
+                    }},
+                }}));
+            }
         }
     }
+    // Hide tab bar for 'fullscreen' and 'minimal' per default
+    blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+    {
+        { CssName::Builtin::has_class, CssName::Builtin::window,
+          CssName::Builtin::has_class, CssName::Builtin::minimal,
+          CssName::Builtin::descendant,
+          CssName::Builtin::has_class, CssName::Builtin::bar,
+        },
+        { CssName::Builtin::has_class, CssName::Builtin::window,
+          CssName::Builtin::has_class, CssName::Builtin::fullscreen,
+          CssName::Builtin::descendant,
+          CssName::Builtin::has_class, CssName::Builtin::bar,
+        },
+    },
+    {
+        {[](BoxStyle& style) {
+             style.display = CssDisplay::none;
+        }},
+    }}));
+
     generatedStyle.content_.resize(blocks.size());
     size_t idx = 0;
     for (const auto& ptr : blocks) {

@@ -152,9 +152,6 @@ private:
     Ewmh& ewmh;
     XConnection& X_;
     std::string tagName();
-    const DecTriple& getDecTriple();
-    const DecorationScheme& getDecorationScheme(bool focused);
-    ThemeType mostRecentThemeType;
     std::unique_ptr<DecorationParameters> decParams; // pimpl
 };
 

@@ -170,6 +170,9 @@ Decoration::~Decoration() {
 
 void Decoration::setParameters(const DecorationParameters& params)
 {
+    if (lastParams == params) {
+        return;
+    }
     // make sure the number of tab widgets is correct:
     size_t tabsRequired = params.tabs_.size();
     if (tabsRequired == 0) {
@@ -228,6 +231,7 @@ void Decoration::setParameters(const DecorationParameters& params)
        {{CssName::Builtin::urgent}, client_->urgent_()},
        {{CssName::Builtin::normal}, !params.focused_ && !client_->urgent_()},
        {{CssName::Builtin::minimal}, params.minimal_},
+       {{CssName::Builtin::fullscreen}, params.fullscreen_},
        {{CssName::Builtin::no_tabs}, params.tabs_.size() == 0},
        {{CssName::Builtin::one_tab}, params.tabs_.size() == 1},
        {{CssName::Builtin::multiple_tabs}, params.tabs_.size() > 1},
