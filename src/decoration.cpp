@@ -116,7 +116,6 @@ void Decoration::createWindow() {
                         mask, &at);
     XMapWindow(display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
-    dec->last_rect_inner = true;
     dec->last_inner_rect = client_->float_size_;
     dec->last_outer_rect = client_->float_size_; // TODO: is this correct?
     dec->last_actual_rect = dec->last_inner_rect;
@@ -273,7 +272,6 @@ void Decoration::resize_inner(Rectangle inner) {
         // move everything such that widClient.tl() is inner.tl():
         widMain.moveGeometryCached(inner.tl() - widClient.contentGeometryCached().tl());
     }
-    last_rect_inner = true;
     applyWidgetGeometries();
 }
 
@@ -414,7 +412,6 @@ void Decoration::resize_outline(Rectangle outline)
     widMain.computeMinimumSize();
 
     widMain.computeGeometry(outline);
-    last_rect_inner = false;
     applyWidgetGeometries();
 }
 
@@ -466,7 +463,6 @@ void Decoration::applyWidgetGeometries() {
     // update structs
     bool size_changed = widMain.geometryCached().dimensions() != last_outer_rect.dimensions();
     last_outer_rect = widMain.geometryCached();
-    last_rect_inner = false;
     client_->last_size_ = inner;
     // redraw
     // TODO: reduce flickering

@@ -120,7 +120,6 @@ private:
 
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
-    bool                    last_rect_inner = false; // whether last_rect is inner size
     Rectangle   last_inner_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
