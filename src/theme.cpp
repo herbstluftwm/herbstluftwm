@@ -182,12 +182,12 @@ void Theme::generateBuiltinCss()
                 {[&scheme](BoxStyle& style) {
                      // negative top margin to move tab
                      // close to upper edge of decorations
-                     auto border_width = scheme.border_width() - scheme.inner_width();
+                     auto bw = scheme.border_width() - scheme.inner_width();
                      style.marginTop =
                          style.marginLeft =
                          style.marginRight =
-                            - border_width;
-                     style.marginBottom = border_width;
+                            - bw;
+                     style.marginBottom = bw;
                      style.borderWidthBottom = scheme.outer_width();
                      style.borderColorBottom = scheme.outer_color();
                 }},
