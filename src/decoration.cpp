@@ -165,9 +165,14 @@ Decoration::~Decoration() {
 
 void Decoration::setParameters(const DecorationParameters& params)
 {
-    if (lastParams == params) {
+    if (widMain.hasStyle() && lastParams == params) {
+        // if we had computed the box styles already
+        // and if the new parameters are identical,
+        // there is nothing to do
         return;
     }
+    lastParams = params;
+    HSDebug("updating params\n");
     // make sure the number of tab widgets is correct:
     size_t tabsRequired = params.tabs_.size();
     if (tabsRequired == 0) {
