@@ -28,6 +28,10 @@ const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
     { "Ctrl",       ControlMask },
 };
 
+const unsigned int ModifierCombo::allModifierMasks =
+        Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask
+        | Mod5Mask | ShiftMask | ControlMask;
+
 ModifiersWithString::ModifiersWithString()
     : suffix_("")
 {

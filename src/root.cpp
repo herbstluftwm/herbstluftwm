@@ -23,6 +23,7 @@
 #include "typesdoc.h"
 #include "utils.h"
 #include "watchers.h"
+#include "xkeygrabber.h"
 
 using std::shared_ptr;
 
@@ -46,6 +47,7 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     , meta_commands(make_unique<MetaCommands>(*this))
     , global_commands(make_unique<GlobalCommands>(*this))
     , X(xconnection)
+    , xKeyGrabber_(make_unique<XKeyGrabber>(xconnection))
     , ipcServer_(ipcServer)
     , ewmh_(ewmh)
 {
@@ -92,6 +94,11 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
         monitors()->relayoutAll();
     });
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
+
+    // X11 specific slots:
+    keys->keyComboActive.connect(xKeyGrabber_.get(), &XKeyGrabber::grabKeyCombo);
+    keys->keyComboInactive.connect(xKeyGrabber_.get(), &XKeyGrabber::ungrabKeyCombo);
+    keys->keyComboAllInactive.connect(xKeyGrabber_.get(), &XKeyGrabber::ungrabAll);
 }
 
 Root::~Root() {
