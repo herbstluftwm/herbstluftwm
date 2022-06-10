@@ -116,11 +116,7 @@ void Decoration::createWindow() {
                         mask, &at);
     XMapWindow(display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
-    dec->last_inner_rect = client_->float_size_;
     dec->last_outer_rect = client_->float_size_; // TODO: is this correct?
-    dec->last_actual_rect = dec->last_inner_rect;
-    dec->last_actual_rect.x -= dec->last_outer_rect.x;
-    dec->last_actual_rect.y -= dec->last_outer_rect.y;
     decwin2client[decwin] = client_;
 
     XSetWindowAttributes resizeAttr;
@@ -338,26 +334,26 @@ ResizeAction Decoration::positionTriggersResize(Point2D p)
     if (p.x < border_width) {
         act.left = True;
     }
-    if (p.x + border_width >= last_outer_rect.width) {
+    if (p.x + border_width >= last_outer().width) {
         act.right = True;
     }
     if (act.left || act.right) {
-        if (p.y < last_outer_rect.height / 3) {
+        if (p.y < last_outer().height / 3) {
             act.top = True;
-        } else if (p.y > (2 * last_outer_rect.height) / 3) {
+        } else if (p.y > (2 * last_outer().height) / 3) {
             act.bottom = True;
         }
     }
     if (p.y < border_width) {
         act.top = True;
     }
-    if (p.y + border_width >= last_outer_rect.height) {
+    if (p.y + border_width >= last_outer().height) {
         act.bottom = True;
     }
     if (act.top || act.bottom) {
-        if (p.x < last_outer_rect.width / 3) {
+        if (p.x < last_outer().width / 3) {
             act.left = True;
-        } else if (p.x > (2 * last_outer_rect.width) / 3) {
+        } else if (p.x > (2 * last_outer().width) / 3) {
             act.right = True;
         }
     }
@@ -372,13 +368,8 @@ ResizeAction Decoration::positionTriggersResize(Point2D p)
  */
 ResizeAction Decoration::resizeFromRoughCursorPosition(Point2D cursor)
 {
-    if (!last_scheme) {
-        // this should never happen, so we just randomly pick:
-        // never resize if there is no decoration scheme
-        return ResizeAction();
-    }
     Point2D cursorRelativeToCenter =
-            cursor - last_outer_rect.tl() - last_outer_rect.dimensions() / 2;
+            cursor - last_outer().tl() - last_outer().dimensions() / 2;
     ResizeAction ra;
     ra.left = cursorRelativeToCenter.x < 0;
     ra.right = !ra.left;
@@ -434,7 +425,6 @@ void Decoration::applyWidgetGeometries() {
     inner.x = tile.x + ((dx < threshold) ? 0 : dx);
     inner.y = tile.y + ((dy < threshold) ? 0 : dy);
 
-    last_inner_rect = inner;
     if (decorated) {
         // if the window is decorated, then x/y are relative
         // to the decoration window's top left
@@ -466,12 +456,6 @@ void Decoration::applyWidgetGeometries() {
     client_->last_size_ = inner;
     // redraw
     // TODO: reduce flickering
-    if (!client_->dragged_ || settings_.update_dragged_clients()) {
-        last_actual_rect.x = changes.x;
-        last_actual_rect.y = changes.y;
-        last_actual_rect.width = changes.width;
-        last_actual_rect.height = changes.height;
-    }
     XConnection& xcon = xconnection();
     if (decorated) {
         redrawPixmap();

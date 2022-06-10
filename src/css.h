@@ -64,9 +64,7 @@ public:
             custom_ = customName;
         }
     }
-    CssName(const CssName& other)
-        : special_(other.special_)
-        , custom_(other.custom_) {}
+    CssName(const CssName& other) = default;
 
     bool isCombinator() const;
     bool isBinaryOperator() const;

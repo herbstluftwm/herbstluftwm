@@ -94,8 +94,8 @@ public:
     static Client* toClient(Window decoration_window);
 
     Window decorationWindow() { return decwin; }
-    Rectangle last_inner() const { return widClient.contentGeometryCached(); }
-    Rectangle last_outer() const { return widMain.geometryCached(); }
+    inline Rectangle last_inner() const { return widClient.contentGeometryCached(); }
+    inline Rectangle last_outer() const { return widMain.geometryCached(); }
     Rectangle inner_to_outer(Rectangle rect);
 
     void updateResizeAreaCursors();
@@ -119,10 +119,7 @@ private:
     void updateFrameExtends();
 
     Window                  decwin = 0; // the decoration window
-    const DecorationScheme* last_scheme = {};
-    Rectangle   last_inner_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
-    Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
     /* X specific things */
     Visual*                 visual = nullptr;
     Colormap                colormap = 0;
