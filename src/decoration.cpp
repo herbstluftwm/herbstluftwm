@@ -172,7 +172,6 @@ void Decoration::setParameters(const DecorationParameters& params)
         return;
     }
     lastParams = params;
-    HSDebug("updating params\n");
     // make sure the number of tab widgets is correct:
     size_t tabsRequired = params.tabs_.size();
     if (tabsRequired == 0) {
