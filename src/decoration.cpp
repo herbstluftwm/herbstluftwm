@@ -163,9 +163,9 @@ Decoration::~Decoration() {
     }
 }
 
-void Decoration::setParameters(const DecorationParameters& params)
+void Decoration::setParameters(const DecorationParameters& params, bool force)
 {
-    if (widMain.hasStyle() && lastParams == params) {
+    if (!force && widMain.hasStyle() && lastParams == params) {
         // if we had computed the box styles already
         // and if the new parameters are identical,
         // there is nothing to do

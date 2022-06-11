@@ -255,7 +255,7 @@ Client::~Client() {
 
 void Client::recomputeStyle()
 {
-    dec->setParameters(*decParams);
+    dec->setParameters(*decParams, true);
 }
 
 void Client::redraw()

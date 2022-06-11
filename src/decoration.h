@@ -81,7 +81,7 @@ public:
     Decoration(Client* client, Settings& settings, Theme& theme);
     void createWindow();
     virtual ~Decoration();
-    void setParameters(const DecorationParameters& params);
+    void setParameters(const DecorationParameters& params, bool force = false);
     void computeWidgetGeometries(Rectangle innerGeometry);
     // resize such that the decorated outline of the window fits into rect
     void resize_outline(Rectangle outline);
