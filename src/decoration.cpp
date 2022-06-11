@@ -231,7 +231,7 @@ void Decoration::setParameters(const DecorationParameters& params)
        {{CssName::Builtin::normal}, !params.focused_ && !client_->urgent_()},
        {{CssName::Builtin::minimal}, params.minimal_},
        {{CssName::Builtin::fullscreen}, params.fullscreen_},
-       {{CssName::Builtin::no_tabs}, params.tabs_.size() == 0},
+       {{CssName::Builtin::no_tabs}, params.tabs_.empty()},
        {{CssName::Builtin::one_tab}, params.tabs_.size() == 1},
        {{CssName::Builtin::multiple_tabs}, params.tabs_.size() > 1},
     });
