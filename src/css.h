@@ -8,8 +8,8 @@
 
 #include "attribute_.h"
 #include "boxstyle.h"
-#include "converter.h"
 #include "commandio.h"
+#include "converter.h"
 #include "x11-types.h" // only for Color
 
 class Completion;

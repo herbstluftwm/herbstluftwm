@@ -1,10 +1,10 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+#include <type_traits>
+
 #include "completion.h"
 #include "converter.h"
-
-#include <type_traits>
 
 /**
  * @brief The Unit class represents a type that

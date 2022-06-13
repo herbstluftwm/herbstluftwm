@@ -1,11 +1,11 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include <memory>
+#include <vector>
+
 #include "css.h"
 #include "rectangle.h"
-
-#include <vector>
-#include <memory>
 
 class BoxStyle;
 class X11WidgetRender;

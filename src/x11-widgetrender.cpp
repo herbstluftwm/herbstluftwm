@@ -3,12 +3,11 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
 #include <vector>
 
 #include "css.h"
-#include "rectangle.h"
 #include "fontdata.h"
+#include "rectangle.h"
 #include "settings.h"
 #include "utils.h"
 #include "widget.h"

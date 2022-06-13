@@ -14,8 +14,8 @@
 #include "settings.h"
 #include "theme.h"
 #include "utils.h"
-#include "xconnection.h"
 #include "x11-widgetrender.h"
+#include "xconnection.h"
 
 using std::string;
 using std::swap;
