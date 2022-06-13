@@ -16,6 +16,7 @@ def test_window_border_plain(hlwm, x11):
     color = (0x9f, 0xbc, 0x12)
     bw = 5  # border width
     handle, _ = x11.create_client()
+    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     img = x11.decoration_screenshot(handle)
@@ -33,6 +34,7 @@ def test_window_border_inner(hlwm, x11):
     bw = 5  # border width
     inner_color = (48, 225, 26)
     inner_bw = 2
+    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.inner_color = RawImage.rgb2string(inner_color)
@@ -54,6 +56,7 @@ def test_window_border_outer(hlwm, x11):
     bw = 6  # border width
     outer_color = (48, 225, 26)
     outer_bw = 3
+    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.outer_color = RawImage.rgb2string(outer_color)
