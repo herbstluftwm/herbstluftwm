@@ -38,7 +38,7 @@ const vector<pair<CssName::Builtin, string>> CssName::specialNames =
     { CssName::Builtin::client_content, "client-content" },
     { CssName::Builtin::first_child, "first-child" },
     { CssName::Builtin::last_child, "last-child" },
-    { CssName::Builtin::window, "client-decoration" },
+    { CssName::Builtin::client_decoration, "client-decoration" },
     { CssName::Builtin::minimal, "minimal" },
     { CssName::Builtin::fullscreen, "fullscreen" },
     { CssName::Builtin::urgent, "urgent" },

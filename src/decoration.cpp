@@ -223,7 +223,7 @@ void Decoration::setParameters(const DecorationParameters& params, bool force)
     // set the css classes
     CssNameSet classes;
     classes.setEnabled({
-       {{CssName::Builtin::window}, true},
+       {{CssName::Builtin::client_decoration}, true},
        {{CssName::Builtin::floating}, params.floating_},
        {{CssName::Builtin::tiling}, !params.floating_},
        {{CssName::Builtin::focus}, params.focused_},

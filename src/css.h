@@ -43,7 +43,7 @@ public:
         fullscreen,
         floating,
         tiling,
-        window,
+        client_decoration,
         /* insert above, so that this stays last */
         client_content,
         LAST = client_content,

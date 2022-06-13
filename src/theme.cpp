@@ -130,7 +130,7 @@ void Theme::generateBuiltinCss()
             // the decoration
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                 },
@@ -160,7 +160,7 @@ void Theme::generateBuiltinCss()
             // the client content
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -186,7 +186,7 @@ void Theme::generateBuiltinCss()
             // tab bar
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -210,7 +210,7 @@ void Theme::generateBuiltinCss()
             // tab default style
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -250,7 +250,7 @@ void Theme::generateBuiltinCss()
             }}));
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -267,7 +267,7 @@ void Theme::generateBuiltinCss()
             }}));
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -286,7 +286,7 @@ void Theme::generateBuiltinCss()
             // the selected tab
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -324,7 +324,7 @@ void Theme::generateBuiltinCss()
             // the selected tab
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
-                { CssName::Builtin::has_class, CssName::Builtin::window,
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
@@ -355,7 +355,7 @@ void Theme::generateBuiltinCss()
                 TitleWhen minimumValue = it.second;
                 blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
                 {
-                    { CssName::Builtin::has_class, CssName::Builtin::window,
+                    { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
                       CssName::Builtin::has_class, tripleCssName,
                       CssName::Builtin::has_class, schemeCssName,
                       CssName::Builtin::has_class, cssClass,
@@ -378,12 +378,12 @@ void Theme::generateBuiltinCss()
     // Hide tab bar for 'fullscreen' and 'minimal' per default
     blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
     {
-        { CssName::Builtin::has_class, CssName::Builtin::window,
+        { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
           CssName::Builtin::has_class, CssName::Builtin::minimal,
           CssName::Builtin::descendant,
           CssName::Builtin::has_class, CssName::Builtin::bar,
         },
-        { CssName::Builtin::has_class, CssName::Builtin::window,
+        { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
           CssName::Builtin::has_class, CssName::Builtin::fullscreen,
           CssName::Builtin::descendant,
           CssName::Builtin::has_class, CssName::Builtin::bar,

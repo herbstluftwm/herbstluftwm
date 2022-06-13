@@ -114,17 +114,17 @@ def test_css_property_parsing(hlwm):
 
 
 def test_css_basic_selectors(hlwm):
-    tree = '(window (focus (tab urgent)) (normal))'
+    tree = '(client-decoration (focus (tab urgent)) (normal))'
     selector2match = {
-        '.window': [''],
-        'window': [],  # the . is missing
-        '#window': [],  # wrong access
-        '.window>.focus': ['0'],
-        '.window > .focus': ['0'],
-        '.window  >  .focus': ['0'],
-        '.window >.focus': ['0'],
-        '.window * > .focus': [],
-        '.window > .focus + *': ['1'],
+        '.client-decoration': [''],
+        'client-decoration': [],  # the . is missing
+        '#client-decoration': [],  # wrong access
+        '.client-decoration>.focus': ['0'],
+        '.client-decoration > .focus': ['0'],
+        '.client-decoration  >  .focus': ['0'],
+        '.client-decoration >.focus': ['0'],
+        '.client-decoration * > .focus': [],
+        '.client-decoration > .focus + *': ['1'],
         ':first-child': ['0', '0 0'],
         ':last-child': ['1', '0 0'],
         '.focus :last-child': ['0 0'],
@@ -146,7 +146,7 @@ def test_css_basic_selectors(hlwm):
 
 def test_css_sibling_cominbators(hlwm):
     tree = """
-        (window
+        (client-decoration
            (something with index0)
            (tabbar tab index1
                 (tab)
@@ -160,8 +160,8 @@ def test_css_sibling_cominbators(hlwm):
         '.tab + .tab + .tab': ['1 2'],
         '.tab .tab + .tab': ['1 1', '1 2'],
         '* + .tab': ['1 1', '1 2', '2', '1'],
-        '.window * + .tab': ['1 1', '1 2', '2', '1'],
-        '.window > * + .tab': ['1', '2'],
+        '.client-decoration * + .tab': ['1 1', '1 2', '2', '1'],
+        '.client-decoration > * + .tab': ['1', '2'],
     }
     for selector, expected in selector2match.items():
         cmd = [
@@ -175,7 +175,7 @@ def test_css_sibling_cominbators(hlwm):
 
 def test_css_computed_style(hlwm):
     tree = """
-        (window
+        (client-decoration
            (some buttons in the future maybe)
            (tabbar tab index1
                 (tab focus)
