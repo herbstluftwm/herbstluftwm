@@ -692,8 +692,15 @@ string TabWidget::textContent() const
 
 void DecorationParameters::updateTabUrgencyFlags()
 {
-    urgentTabs_.clear();
+    urgentTabs_.resize(tabs_.size());
+    size_t idx = 0;
     for (Client* tab : tabs_) {
-        urgentTabs_.push_back(tab->urgent_());
+        urgentTabs_[idx++] = tab->urgent_();
     }
+}
+
+void DecorationParameters::removeClient(Client* client)
+{
+    std::remove(tabs_.begin(), tabs_.end(), client);
+    updateTabUrgencyFlags();
 }

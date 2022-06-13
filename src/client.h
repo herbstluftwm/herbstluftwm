@@ -126,6 +126,7 @@ public:
     ResizeAction possibleResizeActions();
 
     void set_visible(bool visible);
+    void forgetOtherClient(Client* otherClient);
 
     void requestClose(); //! ask the client to close
 

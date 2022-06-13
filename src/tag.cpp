@@ -184,7 +184,7 @@ bool HSTag::removeClient(Client* client) {
     // remove 'client' from the tab bars of all other clients
     foreachClient([client](Client* remainingClient) {
         if (remainingClient != client) {
-            remainingClient->dec->removeFromTabBar(client);
+            remainingClient->forgetOtherClient(client);
         }
     });
     if (frame->root_->removeClient(client)) {

@@ -579,6 +579,14 @@ void Client::set_visible(bool visible) {
     this->visible_ = visible;
 }
 
+/*** remove all references/pointers to this other client
+ */
+void Client::forgetOtherClient(Client* otherClient)
+{
+    decParams->removeClient(otherClient);
+    dec->setParameters(*decParams);
+}
+
 void Client::urgencyAttributeChanged(bool state)
 {
     if (this == manager.focus() && state == true) {

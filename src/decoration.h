@@ -67,6 +67,7 @@ public:
                 && urgentTabs_ == other.urgentTabs_;
     }
     void updateTabUrgencyFlags();
+    void removeClient(Client* client);;
 };
 
 
