@@ -934,6 +934,7 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
 def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width):
     hlwm.call('set_layout vertical')
     hlwm.call('set frame_gap 0')
+    hlwm.attr.theme.title_when = 'never'
     mbw = minimal_border_width
     hlwm.call(f'attr theme.minimal.border_width {mbw}')
     hlwm.call(f'set window_border_width {border_width}')

@@ -775,6 +775,7 @@ def assert_that_rectangles_do_not_overlap(rectangles):
 def test_floatplacement_smart_enough_space_for_all(hlwm, x11, num_tiling_clients):
     hlwm.call('move_monitor "" 500x800')
     hlwm.call('rule floatplacement=smart')
+    hlwm.attr.theme.title_when = 'never'
 
     # create a side-by-side split where potential tiling
     # clients are put into the left frame
