@@ -49,32 +49,33 @@ public:
         LAST = client_content,
     };
     CssName(Builtin builtin) {
-        special_ = builtin;
+        index_ = static_cast<size_t>(builtin);
     }
     CssName(std::string customName) {
-        bool found = false;
-        for (const auto& builtin : specialNames) {
-            if (builtin.second == customName) {
-                special_ = builtin.first;
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            custom_ = customName;
-        }
     }
     CssName(const CssName& other) = default;
 
     bool isCombinator() const;
     bool isBinaryOperator() const;
-    bool isBuiltin() const { return custom_.empty(); }
-    bool operator==(const CssName& other) const {
-        return special_ == other.special_ && custom_ == other.custom_;
+    bool isBuiltin() const {
+        return index_ <= static_cast<size_t>(Builtin::LAST);
     }
-    Builtin special_ = Builtin::LAST;
-    std::string custom_;
-    static const std::vector<std::pair<Builtin, std::string>> specialNames;
+    bool operator==(const CssName& other) const {
+        return index_ == other.index_;
+    }
+    size_t index_;
+private:
+    class CondensedName {
+    public:
+        CondensedName() = default;
+        std::string name;
+        size_t index;
+        ~CondensedName();
+    };
+    friend class CondensedName;
+    static size_t s_nextFreeIndex;
+    static std::vector<std::weak_ptr<CondensedName>> s_index2name;
+    static std::map<std::string, size_t> s_name2index_;
 };
 
 
