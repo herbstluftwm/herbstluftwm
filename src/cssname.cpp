@@ -5,7 +5,6 @@
 
 #include "globals.h"
 
-using std::map;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
@@ -15,7 +14,7 @@ using std::weak_ptr;
 
 class CssNameData {
 public:
-    CssNameData(size_t index, const std::string& name)
+    CssNameData(size_t index, const string& name)
         : index_(index)
         , name_(name)
     {
@@ -28,7 +27,7 @@ public:
     }
 
     const size_t index_;
-    const std::string name_;
+    const string name_;
 
     static shared_ptr<CssNameData> lookup(const string& name);
 
@@ -40,7 +39,7 @@ public:
     static vector<weak_ptr<CssNameData>> index2data_;
     static size_t smallestFreeIndex;
 private:
-    static map<string,size_t> name2index_;
+    static std::map<string,size_t> name2index_;
 
 private:
     // to avoid that the builtins don't get freed, keep shared_ptr
@@ -51,7 +50,7 @@ private:
 vector<weak_ptr<CssNameData>> CssNameData::index2data_;
 size_t CssNameData::smallestFreeIndex = 0;
 vector<shared_ptr<CssNameData>> CssNameData::dataBuiltin_;
-map<string,size_t> CssNameData::name2index_;
+std::map<string,size_t> CssNameData::name2index_;
 
 
 void CssNameData::initIfNecessary()
@@ -98,7 +97,7 @@ void CssNameData::initIfNecessary()
     }
 }
 
-shared_ptr<CssNameData> CssNameData::lookup(const std::string& name)
+shared_ptr<CssNameData> CssNameData::lookup(const string& name)
 {
     initIfNecessary();
     auto it = CssNameData::name2index_.find(name);
@@ -128,7 +127,7 @@ shared_ptr<CssNameData> CssNameData::lookup(const std::string& name)
 }
 
 
-CssName::CssName(const std::string& name)
+CssName::CssName(const string& name)
 {
     data_ = CssNameData::lookup(name);
     index_ = data_->index_;
