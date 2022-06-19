@@ -144,6 +144,27 @@ def test_css_basic_selectors(hlwm):
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
 
 
+def test_css_custom_name(hlwm):
+    tree = """
+        (client-decoration
+           (something with index0)
+           (another with custom))
+    """
+    selector2match = {
+        '.something': ['0'],
+        '.with': ['0', '1'],
+        '.custom': ['1'],
+    }
+    for selector, expected in selector2match.items():
+        cmd = [
+            'debug-css', '--tree=' + tree,
+            '--query-tree-indices=' + selector,
+            ''  # empty css
+        ]
+        output = hlwm.call(cmd).stdout.splitlines()
+        assert sorted(output) == ['match: ' + x for x in sorted(expected)]
+
+
 def test_css_sibling_cominbators(hlwm):
     tree = """
         (client-decoration
@@ -176,7 +197,7 @@ def test_css_sibling_cominbators(hlwm):
 def test_css_computed_style(hlwm):
     tree = """
         (client-decoration
-           (some buttons in the future maybe)
+           (some-buttons in the future maybe)
            (tabbar tab index1
                 (tab focus)
                 (tab)
@@ -201,6 +222,19 @@ def test_css_computed_style(hlwm):
     * {
         border-width: 77px;
     }
+
+    .some-buttons.future {
+        margin-left: 5px;
+    }
+
+    .some-buttons {
+        margin-left: 3px;
+        margin-right: 2px;
+    }
+
+    .the.future {
+        border-width: 0px;
+    }
     """
     index2style = {
         '1 0':  # the active tab
@@ -221,6 +255,11 @@ def test_css_computed_style(hlwm):
         border-bottom-width: 6px;
         border-left-width: 1px;
         """,
+        '0':  # the some-buttons...
+        """\
+        margin-left: 5px;
+        margin-right: 2px;
+        """
     }
     for tree_index, computed_style in index2style.items():
         cmd = [

@@ -20,34 +20,6 @@ using std::stringstream;
 using std::vector;
 using std::weak_ptr;
 
-const vector<pair<CssName::Builtin, string>> CssName::specialNames =
-{
-    { CssName::Builtin::child, ">" },
-    { CssName::Builtin::has_class, "." },
-    { CssName::Builtin::pseudo_class, ":" },
-    { CssName::Builtin::descendant, " " },
-    { CssName::Builtin::adjacent_sibling, "+" },
-    { CssName::Builtin::any, "*" },
-    { CssName::Builtin::tabbar, "tabbar" },
-    { CssName::Builtin::tab, "tab" },
-    { CssName::Builtin::notabs, "notabs" },
-    { CssName::Builtin::no_tabs, "no-tabs" },
-    { CssName::Builtin::one_tab, "one-tab" },
-    { CssName::Builtin::multiple_tabs, "multiple-tabs" },
-    { CssName::Builtin::bar, "bar" },
-    { CssName::Builtin::client_content, "client-content" },
-    { CssName::Builtin::first_child, "first-child" },
-    { CssName::Builtin::last_child, "last-child" },
-    { CssName::Builtin::client_decoration, "client-decoration" },
-    { CssName::Builtin::minimal, "minimal" },
-    { CssName::Builtin::fullscreen, "fullscreen" },
-    { CssName::Builtin::urgent, "urgent" },
-    { CssName::Builtin::focus, "focus" },
-    { CssName::Builtin::normal, "normal" },
-    { CssName::Builtin::floating, "floating" },
-    { CssName::Builtin::tiling, "tiling" },
-};
-
 class CssFileParser {
 public:
     function<string(SourceStream&)> nextToken_;
@@ -472,36 +444,6 @@ void debugCssCommand(CallOrComplete invoc)
 }
 
 
-template<> CssName Converter<CssName>::parse(const string& source)
-{
-    for (const auto& row : CssName::specialNames) {
-        if (row.second == source) {
-            return row.first;
-        }
-    }
-    // else:
-    if (source.empty()) {
-        throw std::invalid_argument("A class name must not be empty");
-    }
-    return source;
-}
-
-template<> string Converter<CssName>::str(CssName payload)
-{
-    if (payload.custom_.empty()) {
-        for (const auto& row : CssName::specialNames) {
-            if (row.first == payload.special_) {
-                return row.second;
-            }
-        }
-    }
-    return payload.custom_;
-}
-
-template<> void Converter<CssName>::complete(Completion&, CssName const*)
-{
-}
-
 template<> CssSource Converter<CssSource>::parse(const string& source)
 {
     auto parser = CssFileParser();
@@ -568,107 +510,50 @@ bool CssSelector::matches(const DomTree* element, size_t prefixLen) const
         return false;
     }
     const CssName& current = content_[prefixLen - 1];
-    if (current.isBuiltin()) {
-        switch (current.special_) {
-        case CssName::Builtin::child:
-            return matches(element->parent(), prefixLen - 1);
-        case CssName::Builtin::adjacent_sibling:
-            return matches(element->leftSibling(), prefixLen - 1);
-        case CssName::Builtin::descendant:
-            {
-                const DomTree* parent = element->parent();
-                while (parent) {
-                    // try to match the selector
-                    if (matches(parent, prefixLen - 1)) {
-                        return true;
-                    }
-                    // otherwise, go one level further up
-                    parent = parent->parent();
-                }
-                return false;
+    if (current == CssName::Builtin::child) {
+        return matches(element->parent(), prefixLen - 1);
+    } else if (current == CssName::Builtin::adjacent_sibling) {
+        return matches(element->leftSibling(), prefixLen - 1);
+    } else if (current == CssName::Builtin::descendant) {
+        const DomTree* parent = element->parent();
+        while (parent) {
+            // try to match the selector
+            if (matches(parent, prefixLen - 1)) {
+                return true;
             }
-        case CssName::Builtin::any:
-            return matches(element, prefixLen - 1);
-        default:
-            // we have an ordinary token in the selector,
-            // this could be a selector for element type, class, or id.
-            if (prefixLen >= 2) {
-                CssName::Builtin previous =
-                        content_[prefixLen - 2].isBuiltin()
-                        ? content_[prefixLen - 2].special_
-                        : CssName::Builtin::any;
-                switch (previous) {
-                case CssName::Builtin::has_class:
-                    return element->hasClass(current)
-                            && matches(element, prefixLen - 2);
-                case CssName::Builtin::pseudo_class:
-                {
-                    const DomTree* parent = element->parent();
-                    switch (current.special_) {
-                        case CssName::Builtin::first_child:
-                            return parent &&
-                                    parent->nthChild(0) == element &&
-                                    matches(element, prefixLen - 2);
-                        case CssName::Builtin::last_child:
-                            return parent &&
-                                    parent->nthChild(parent->childCount() - 1) == element &&
-                                    matches(element, prefixLen - 2);
-                        default:
-                            return false;
-                    }
-                }
-                default:
-                    // check element type: not implemented yet so always false
+            // otherwise, go one level further up
+            parent = parent->parent();
+        }
+        return false;
+    } else if (current == CssName::Builtin::any) {
+        return matches(element, prefixLen - 1);
+    } else {
+        // we have an ordinary token in the selector,
+        // this could be a selector for element type, class, or id.
+        if (prefixLen >= 2) {
+            CssName previous = content_[prefixLen - 2];
+            if (previous == CssName::Builtin::has_class) {
+                return element->hasClass(current)
+                        && matches(element, prefixLen - 2);
+            } else if (previous == CssName::Builtin::pseudo_class) {
+                const DomTree* parent = element->parent();
+                if (current == CssName::Builtin::first_child) {
+                    return parent &&
+                           parent->nthChild(0) == element &&
+                           matches(element, prefixLen - 2);
+                } else if (current == CssName::Builtin::last_child) {
+                    return parent &&
+                           parent->nthChild(parent->childCount() - 1) == element &&
+                           matches(element, prefixLen - 2);
+                } else {
                     return false;
                 }
             }
         }
-    }
-    return false;
-}
-
-bool CssName::isCombinator() const
-{
-    return custom_.empty() && special_ <= Builtin::LAST_COMBINATOR;
-}
-
-/*** whether this is a binary operator, i.e. something that consumes
- * whitespace before and after
- */
-bool CssName::isBinaryOperator() const
-{
-    return custom_.empty()
-            && (special_ == Builtin::adjacent_sibling
-                || special_ == Builtin::child);
-}
-
-
-void CssNameSet::setEnabled(std::initializer_list<pair<CssName, bool> > classes)
-{
-    for (const auto& item : classes) {
-        setEnabled(item.first, item.second);
-    }
-}
-
-bool CssNameSet::contains(CssName className) const
-{
-    if (className.isBuiltin()) {
-        return names_ & (1ull << static_cast<unsigned long long>(className.special_));
-    } else {
         return false;
     }
 }
 
-void CssNameSet::setEnabled(CssName className, bool enabled)
-{
-    if (className.isBuiltin()) {
-        if (enabled) {
-            names_ |= (1ull << static_cast<unsigned long long>(className.special_));
-        } else {
-            names_ &= ~(1ull << static_cast<unsigned long long>(className.special_));
-        }
-    }
-}
 
 CssRuleSet::CssRuleSet(std::initializer_list<CssSelector> selectors,
                        std::initializer_list<CssDeclaration> declarations)

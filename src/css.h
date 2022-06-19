@@ -10,79 +10,11 @@
 #include "boxstyle.h"
 #include "commandio.h"
 #include "converter.h"
+#include "cssname.h"
 #include "x11-types.h" // only for Color
 
 class Completion;
 class DomTree;
-
-class CssName {
-public:
-    enum class Builtin {
-        /* CSS Combinators */
-        child,
-        descendant,
-        has_class,
-        pseudo_class,
-        first_child,
-        last_child,
-        adjacent_sibling,
-        any,
-        LAST_COMBINATOR = any,
-        /* built in names */
-        tabbar,
-        tab,
-        no_tabs,
-        one_tab,
-        multiple_tabs,
-        bar,
-        notabs,
-        focus,
-        normal,
-        urgent,
-        minimal,
-        fullscreen,
-        floating,
-        tiling,
-        client_decoration,
-        /* insert above, so that this stays last */
-        client_content,
-        LAST = client_content,
-    };
-    CssName(Builtin builtin) {
-        index_ = static_cast<size_t>(builtin);
-    }
-    CssName(std::string customName) {
-    }
-    CssName(const CssName& other) = default;
-
-    bool isCombinator() const;
-    bool isBinaryOperator() const;
-    bool isBuiltin() const {
-        return index_ <= static_cast<size_t>(Builtin::LAST);
-    }
-    bool operator==(const CssName& other) const {
-        return index_ == other.index_;
-    }
-    size_t index_;
-private:
-    class CondensedName {
-    public:
-        CondensedName() = default;
-        std::string name;
-        size_t index;
-        ~CondensedName();
-    };
-    friend class CondensedName;
-    static size_t s_nextFreeIndex;
-    static std::vector<std::weak_ptr<CondensedName>> s_index2name;
-    static std::map<std::string, size_t> s_name2index_;
-};
-
-
-template<> CssName Converter<CssName>::parse(const std::string& source);
-template<> std::string Converter<CssName>::str(CssName payload);
-template<> void Converter<CssName>::complete(Completion& complete, CssName const* relativeTo);
-
 
 class DomTree {
     /**
@@ -98,14 +30,6 @@ public:
     virtual size_t childCount() const = 0;
 };
 
-
-class CssNameSet {
-public:
-    unsigned long long int names_ = 0; // at least 64 bits
-    void setEnabled(CssName className, bool enabled);
-    void setEnabled(std::initializer_list<std::pair<CssName, bool>> classes);
-    bool contains(CssName className) const;
-};
 
 
 class CssDeclaration {
