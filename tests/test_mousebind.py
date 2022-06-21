@@ -439,7 +439,6 @@ def test_border_click_either_focuses_or_resizes(hlwm, mouse, resize_possible):
 @pytest.mark.parametrize('repeat', list(range(0, 100)))
 def test_resize_client_via_decoration(hlwm, x11, mouse, repeat):
     hlwm.call('attr theme.border_width 20')
-    hlwm.attr.theme.title_when = 'never'
     client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
     size_before = client.get_geometry()

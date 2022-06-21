@@ -224,8 +224,21 @@ void Theme::generateBuiltinCss()
 
                      style.font = decTriple.normal.title_font();
                      style.textAlign = scheme.title_align();
-                     style.textHeight = scheme.title_height();
-                     style.textDepth = scheme.title_depth();
+                     style.textHeight = scheme.title_height().cases<__typeof__(style.textHeight)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const int& len) {
+                             return CssLen(len);
+                         });
+
+                     style.textDepth = scheme.title_depth().cases<__typeof__(style.textDepth)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const unsigned long& len) {
+                             return CssLen(static_cast<int>(len));
+                         });
                      style.backgroundColor =
                         scheme.tab_color().rightOr(decTriple.normal.border_color());
 
@@ -451,7 +464,10 @@ DecorationScheme::DecorationScheme()
                             "the window decoration or only the window "
                             "contents of tiled clients (requires enabled "
                             "sizehints_tiling)");
-    title_depth.setDoc("the space below the baseline of the window title");
+    title_height.setDoc("the space above the baseline of the window title, "
+                       "or \'\' for an automatic calculation based on the font.");
+    title_depth.setDoc("the space below the baseline of the window title, "
+                       "or \'\' for an automatic calculation based on the font.");
     title_when.setDoc("when to show the window title: always, never, "
                       "if the the client is in a tabbed scenario like a max frame (+one_tab+), "
                       "if there are +multiple_tabs+ to be shown.");
@@ -465,13 +481,6 @@ DecorationScheme::DecorationScheme()
     tab_outer_width.setDoc("if non-empty, the outer border width of non-urgent and unfocused tabs");
     tab_title_color.setDoc("if non-empty, the title color of non-urgent and unfocused tabs");
     reset.setDoc("writing this resets all attributes to a default value");
-}
-
-Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect, size_t tabCount) const {
-    return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left,
-                      -*padding_top - (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
-                      -*padding_right, -*padding_bottom);
 }
 
 /**
@@ -492,14 +501,6 @@ bool DecorationScheme::showTitle(size_t tabCount) const
     }
     return true; // Dead code. But otherwise, gcc complains
 }
-
-Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect, size_t tabCount) const {
-    return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left,
-                      *padding_top + (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
-                      *padding_right, *padding_bottom);
-}
-
 
 DecTriple::DecTriple()
    : normal(*this, "normal")

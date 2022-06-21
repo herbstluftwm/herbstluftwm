@@ -57,7 +57,6 @@ def test_directional_focus(hlwm, clientFocused):
 def test_directional_shift_right(hlwm, x11, start_y_rel, hits_obstacle):
     hlwm.call('attr tags.focus.floating on')
     hlwm.call('attr theme.border_width 0')
-    hlwm.attr.theme.title_when = 'never'
     snap_gap = 8
     hlwm.call(f'attr settings.snap_gap {snap_gap}')
     monrect = hlwm.call('monitor_rect').stdout.split(' ')
@@ -96,7 +95,6 @@ def test_directional_shift_resize_left_up(hlwm, command, direction, put_obstacle
     possibly put a window obstacle in the way
     """
     hlwm.attr.tags.focus.floating = True
-    hlwm.attr.theme.title_when = 'never'
     client, _ = hlwm.create_client()
     bw = 3
     hlwm.attr.theme.border_width = bw

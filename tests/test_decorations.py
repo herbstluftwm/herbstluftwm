@@ -16,7 +16,6 @@ def test_window_border_plain(hlwm, x11):
     color = (0x9f, 0xbc, 0x12)
     bw = 5  # border width
     handle, _ = x11.create_client()
-    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     img = x11.decoration_screenshot(handle)
@@ -34,7 +33,6 @@ def test_window_border_inner(hlwm, x11):
     bw = 5  # border width
     inner_color = (48, 225, 26)
     inner_bw = 2
-    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.inner_color = RawImage.rgb2string(inner_color)
@@ -56,7 +54,6 @@ def test_window_border_outer(hlwm, x11):
     bw = 6  # border width
     outer_color = (48, 225, 26)
     outer_bw = 3
-    hlwm.attr.theme.title_when = 'never'
     hlwm.attr.theme.color = RawImage.rgb2string(color)
     hlwm.attr.theme.border_width = bw
     hlwm.attr.theme.outer_color = RawImage.rgb2string(outer_color)
@@ -404,7 +401,7 @@ def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clie
 
     geo = hlwm.attr.clients.focus.decoration_geometry()
     tabbar_top_left = geo.topleft()
-    tabbar_bottom_right = geo.topleft() + Point(geo.width, hlwm.attr.theme.title_height())
+    tabbar_bottom_right = geo.topleft() + Point(geo.width, int(hlwm.attr.theme.title_height()))
     for idx in reversed(range(0, running_clients_num)):
         # pick a point between top left corner of the title bar
         # and the bottom right corner of the title bar:

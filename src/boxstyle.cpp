@@ -9,6 +9,7 @@ using std::stringstream;
 using std::to_string;
 using std::vector;
 
+const char BoxStyle::auto_[] = "auto";
 const char BoxStyle::solid[] = "solid";
 const char BoxStyle::transparent[] = "transparent";
 

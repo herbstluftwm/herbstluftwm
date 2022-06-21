@@ -41,6 +41,7 @@ template<> Finite<CssDisplay>::ValueList Finite<CssDisplay>::values;
  */
 class BoxStyle {
 public:
+    static const char auto_[];
     static const char solid[];
     static const char transparent[];
 
@@ -86,8 +87,8 @@ public:
 
     Color fontColor = {};
     TextAlign textAlign = TextAlign::left;
-    CssLen textDepth = 0;
-    CssLen textHeight = 0;
+    Either<Unit<auto_>,CssLen> textDepth = Unit<auto_>();
+    Either<Unit<auto_>,CssLen> textHeight = Unit<auto_>();
     HSFont font = HSFont::fromStr("");
 
     std::map<std::string, std::string> changedProperties() const;

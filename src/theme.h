@@ -48,10 +48,14 @@ template<> void Converter<Inherit>::complete(Completion& complete, Inherit const
 
 typedef Either<Inherit,Color> MaybeColor;
 typedef Either<Inherit,unsigned long> MaybeULong;
+typedef Either<Inherit,int> MaybeInt;
+
 template<>
 inline Type Attribute_<MaybeColor>::staticType() { return Type::STRING; }
 template<>
 inline Type Attribute_<MaybeULong>::staticType() { return Type::STRING; }
+template<>
+inline Type Attribute_<MaybeInt>::staticType() { return Type::STRING; }
 
 /** The proxy interface
  */
@@ -126,8 +130,8 @@ public:
     ~DecorationScheme() override = default;
     DynAttribute_<std::string> reset;
     AttributeProxy_<unsigned long>     border_width = {"border_width", 0};
-    AttributeProxy_<unsigned long>     title_height = {"title_height", 0};
-    AttributeProxy_<int>           title_depth = {"title_depth", 0};
+    AttributeProxy_<MaybeULong>     title_height = {"title_height", 0};
+    AttributeProxy_<MaybeInt>       title_depth = {"title_depth", 0};
     AttributeProxy_<TitleWhen>     title_when = {"title_when", TitleWhen::always};
     AttributeProxy_<Color>   border_color = {"color", {"black"}};
     AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
@@ -151,8 +155,6 @@ public:
 
     Signal scheme_changed_; //! whenever one of the attributes changes.
 
-    Rectangle inner_rect_to_outline(Rectangle rect, size_t tabCount) const;
-    Rectangle outline_to_inner_rect(Rectangle rect, size_t tabCount) const;
     bool showTitle(size_t tabCount) const;
 
     // after having called this with some vector 'decs', then if an attribute
