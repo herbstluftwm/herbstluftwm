@@ -1,7 +1,9 @@
 #include "css.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstring>
+#include <fstream>
 #include <sstream>
 #include <tuple>
 
@@ -561,3 +563,43 @@ CssRuleSet::CssRuleSet(std::initializer_list<CssSelector> selectors,
     , declarations_(declarations)
 {
 }
+
+template<> CssFile::Ptr Converter<CssFile::Ptr>::parse(const string& source)
+{
+    if (source.empty()) {
+        return {};
+    }
+    shared_ptr<CssFile> result = make_shared<CssFile>();
+    result->name_ = source;
+    // in the future, if name_ does not contain slashes, we
+    // can look it up in global theme directories.
+    result->fullpath_ = source;
+    try {
+        std::ifstream fileHandle;
+        fileHandle.exceptions(fileHandle.exceptions() | std::ios::failbit);
+        fileHandle.open(result->fullpath_);
+        stringstream strStream;
+        strStream << fileHandle.rdbuf();
+        result->content_ = Converter<CssSource>::parse(strStream.str());
+        fileHandle.close();
+        return result;
+    } catch (const std::system_error& e) {
+        auto error = errno;
+        stringstream msg;
+        msg << "Can not open file \""
+            << result->fullpath_ << "\": "
+            << strerror(error);
+        throw std::invalid_argument(msg.str());
+    }
+}
+
+template<> string Converter<CssFile::Ptr>::str(CssFile::Ptr payload) {
+    if (payload) {
+        return payload->name_;
+    } else {
+        return {};
+    };
+}
+
+template<> void Converter<CssFile::Ptr>::complete(Completion& complete, CssFile::Ptr const* relativeTo)
+{}

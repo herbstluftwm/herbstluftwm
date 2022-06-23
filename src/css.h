@@ -111,5 +111,20 @@ template<> CssSource Converter<CssSource>::parse(const std::string& source);
 template<> std::string Converter<CssSource>::str(CssSource payload);
 template<> void Converter<CssSource>::complete(Completion& complete, CssSource const* relativeTo);
 
+class CssFile {
+public:
+    using Ptr = std::shared_ptr<CssFile>;
+    std::string name_; //! the string passed by the user
+    std::string fullpath_; //! the full file path
+    CssSource content_;
+};
+
+template<>
+inline Type Attribute_<CssFile::Ptr>::staticType() { return Type::STRING; }
+
+template<> CssFile::Ptr Converter<CssFile::Ptr>::parse(const std::string& source);
+template<> std::string Converter<CssFile::Ptr>::str(CssFile::Ptr payload);
+template<> void Converter<CssFile::Ptr>::complete(Completion& complete, CssFile::Ptr const* relativeTo);
+
 void debugCssCommand(CallOrComplete invoc);
 

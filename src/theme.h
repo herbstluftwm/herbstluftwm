@@ -206,6 +206,7 @@ public:
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
 
+    Attribute_<CssFile::Ptr> name;
     Attribute_<CssSource> style_override;
     std::shared_ptr<BoxStyle> computeBoxStyle(DomTree* element);
 

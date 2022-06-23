@@ -20,7 +20,8 @@ Finite<TitleWhen>::ValueList Finite<TitleWhen>::values = ValueListPlain {
 
 
 Theme::Theme()
-    : style_override(this, "style_override", {})
+    : name(this, "name", {})
+    , style_override(this, "style_override", {})
     , fullscreen(*this, "fullscreen")
     , tiling(*this, "tiling")
     , floating(*this, "floating")
@@ -28,6 +29,11 @@ Theme::Theme()
     // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
+    name.setWritable();
+    name.changed().connect([this]() {
+        this->theme_changed_.emit();
+    });
+
     style_override.setWritable();
     style_override.changed().connect([this]() {
         this->theme_changed_.emit();
@@ -92,6 +98,12 @@ Theme::Theme()
                         "triggered by +smart_window_surroundings+");
     fullscreen.setChildDoc("configures clients in fullscreen state");
 
+    name.setDoc("the absolute path to a css theme file. if this is empty,"
+                "then the theme is specified by the attributes.");
+    style_override.setDoc(
+                "additional css source to overwrite parts of the theme. "
+                "All rules here have higher precedence than all rules "
+                "in the theme");
     generateBuiltinCss();
 }
 
@@ -101,7 +113,11 @@ shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
         return nullptr;
     }
     shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
-    generatedStyle.computeStyle(element, style);
+    if (name()) {
+        name()->content_.computeStyle(element, style);
+    } else {
+        generatedStyle.computeStyle(element, style);
+    }
     style_override->computeStyle(element, style);
     return style;
 }

@@ -283,3 +283,8 @@ def test_debug_css_errors(hlwm):
         .expect_stderr("invalid tree index")
     hlwm.call_xfail('debug-css --tree="()" --compute-style="0 8" ""') \
         .expect_stderr("invalid tree index")
+
+
+def test_theme_name_invalid_path(hlwm):
+    hlwm.call_xfail('attr theme.name this_does_not_exist') \
+        .expect_stderr('this_does_not_exist.*No such file')
