@@ -951,7 +951,7 @@ class X11:
     def set_numlock_state(self, enabled):
         if self.get_numlock_state() != enabled:
             cmd = ['xdotool', 'key', '--clearmodifiers', 'Num_Lock']
-            subprocess.run(cmd, universal_newlines=True, check=True)
+            subprocess.run(cmd, check=True)
             for _ in range(0, 10):
                 self.display.sync()
                 if self.get_numlock_state() == enabled:
