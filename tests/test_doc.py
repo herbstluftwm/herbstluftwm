@@ -122,6 +122,7 @@ def types_and_shorthands():
         'MaybeULong': 's',
         'MaybeInt': 's',
         'CssSource': 's',
+        'CssFile::Ptr': 's',
     }
 
 

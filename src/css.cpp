@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <system_error>
 #include <tuple>
 
 #include "argparse.h"
