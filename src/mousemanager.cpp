@@ -318,8 +318,10 @@ MouseManager::MouseFunction MouseManager::string2mousefunction(const string& nam
 }
 
 std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
+    unsigned int numlockMask = Root::get()->xKeyGrabber_->getNumlockMask();
     MouseCombo mb = {};
-    mb.modifiers_ = modifiers & ModifierCombo::allModifierMasks;
+    mb.modifiers_ = modifiers & ModifierCombo::allModifierMasks
+        & ~(numlockMask | LockMask);
     mb.button_ = button;
 
     auto found = std::find_if(binds.begin(), binds.end(),
