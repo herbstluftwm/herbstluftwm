@@ -79,8 +79,9 @@ template<> void Converter<CssName>::complete(Completion& complete, CssName const
 
 class CssNameSet {
 public:
+    CssNameSet() = default;
+    CssNameSet(std::initializer_list<std::pair<CssName, bool>> classes);
     void setEnabled(CssName className, bool enabled);
-    void setEnabled(std::initializer_list<std::pair<CssName, bool>> classes);
     bool contains(CssName className) const;
 private:
     unsigned long long int names_ = 0; // at least 64 bits

@@ -214,15 +214,15 @@ void Decoration::setParameters(const DecorationParameters& params, bool force)
                 : client_;
         widTabs[i]->tabClient = tabClient;
         bool focus = tabClient == client_;
-        widTabs[i]->setClassEnabled({
+        widTabs[i]->setClasses({
+            {CssName::Builtin::tab, true },
             {CssName::Builtin::focus, focus},
             {CssName::Builtin::urgent, tabClient->urgent_()},
             {CssName::Builtin::normal, !focus && !tabClient->urgent_()},
         });
     }
     // set the css classes
-    CssNameSet classes;
-    classes.setEnabled({
+    widMain.setClasses({
        {{CssName::Builtin::client_decoration}, true},
        {{CssName::Builtin::floating}, params.floating_},
        {{CssName::Builtin::tiling}, !params.floating_},
@@ -235,7 +235,6 @@ void Decoration::setParameters(const DecorationParameters& params, bool force)
        {{CssName::Builtin::one_tab}, params.tabs_.size() == 1},
        {{CssName::Builtin::multiple_tabs}, params.tabs_.size() > 1},
     });
-    widMain.setClasses(classes);
 
     // and compute the resulting styles
     widMain.recurse([this](Widget& wid) {
@@ -677,12 +676,7 @@ std::experimental::optional<unsigned int> ResizeAction::toCursorShape() const
 TabWidget::TabWidget()
 {
     expandX_ = true;
-    CssNameSet classes;
-    classes.setEnabled({
-        { CssName::Builtin::tab, true },
-    });
     hasText_ = true;
-    setClasses(classes);
 }
 
 string TabWidget::textContent() const

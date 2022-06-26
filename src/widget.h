@@ -52,7 +52,6 @@ public:
     size_t childCount() const override;
     void setClasses(const CssNameSet& classes);
     void setClassEnabled(const CssName& className, bool enabled);
-    void setClassEnabled(std::initializer_list<std::pair<CssName, bool>> classes);
 private:
     friend class X11WidgetRender;
     CssNameSet classes_ = {};

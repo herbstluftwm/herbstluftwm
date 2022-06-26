@@ -150,13 +150,6 @@ bool CssName::isBinaryOperator() const
             || *this == Builtin::child;
 }
 
-void CssNameSet::setEnabled(std::initializer_list<pair<CssName, bool> > classes)
-{
-    for (const auto& item : classes) {
-        setEnabled(item.first, item.second);
-    }
-}
-
 bool CssNameSet::contains(CssName className) const
 {
     if (className.index() < namesLength_) {
@@ -164,6 +157,15 @@ bool CssNameSet::contains(CssName className) const
     } else {
         size_t idx = className.index() - namesLength_;
         return (idx < moreNames_.size()) ? moreNames_[idx] : false;
+    }
+}
+
+CssNameSet::CssNameSet(std::initializer_list<std::pair<CssName, bool> > classes)
+{
+    for (const auto& item : classes) {
+        if (item.second) {
+            setEnabled(item.first, true);
+        }
     }
 }
 

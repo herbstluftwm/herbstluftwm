@@ -229,7 +229,3 @@ void Widget::setClassEnabled(const CssName& className, bool enabled)
     classes_.setEnabled(className, enabled);
 }
 
-void Widget::setClassEnabled(std::initializer_list<pair<CssName, bool> > classes)
-{
-    classes_.setEnabled(classes);
-}
