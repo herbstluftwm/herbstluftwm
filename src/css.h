@@ -54,7 +54,7 @@ public:
         // short elementSelectors = 0; // number of element-type selectors (not used by hlwm)
         bool operator<(const Specifity& other) const {
             return classSelectors < other.classSelectors;
-        };
+        }
     };
     CssSelector() = default;
     CssSelector(std::initializer_list<CssName> content)
