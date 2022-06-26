@@ -145,7 +145,7 @@ Settings::Settings()
     show_frame_decorations.changed().connect(&all_monitors_apply_layout);
     smart_frame_surroundings.changed().connect(&all_monitors_apply_layout);
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
-    // connect deprectaed attribute to new settings:
+    // connect deprecated attribute to new settings:
     always_show_frame.changedByUser().connect([this](bool alwaysShow) {
         this->show_frame_decorations =
                 alwaysShow
