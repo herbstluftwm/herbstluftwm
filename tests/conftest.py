@@ -949,6 +949,19 @@ class X11:
             res.append(self.window(winid_decimal_str))
         return res
 
+    def get_numlock_state(self):
+        return (self.display.get_keyboard_control().led_mask & 2) != 0
+
+    def set_numlock_state(self, enabled):
+        if self.get_numlock_state() != enabled:
+            cmd = ['xdotool', 'key', '--clearmodifiers', 'Num_Lock']
+            subprocess.run(cmd, check=True)
+            for _ in range(0, 10):
+                self.display.sync()
+                if self.get_numlock_state() == enabled:
+                    return
+            assert self.get_numlock_state() == enabled
+
     def shutdown(self):
         # Destroy all created windows:
         for window in self.windows:
