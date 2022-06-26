@@ -1,3 +1,4 @@
+import itertools
 import pytest
 import math
 from herbstluftwm.types import Point, Rectangle
@@ -554,3 +555,30 @@ def test_drag_floating_to_other_monitor(hlwm, mouse, source_floating, client_flo
         # if the target tag is floating, then the client's floating
         # state is unchanged
         assert hlwm.attr.clients[winid].floating() == client_floating
+
+
+def test_binding_independent_of_numlock_state(hlwm, x11, mouse):
+    class state:
+        def __init__(self):
+            self.client_id = None
+        pass
+
+    def step_numlock(state):
+        x11.set_numlock_state(True)
+
+    def step_client(state):
+        state.client_id, _ = hlwm.create_client()
+
+    def step_bind(state):
+        hlwm.call('mousebind Mod2-Button1 call set_attr my_press wrong')
+        hlwm.call('mousebind Button1 call set_attr my_press right')
+
+    steps = [step_numlock, step_client, step_bind]
+    for step_order in itertools.permutations(steps):
+        x11.set_numlock_state(False)
+        for step in step_order:
+            step(state)
+        hlwm.attr.my_press = 'initial'
+        mouse.click('1', state.client_id)
+
+        assert hlwm.get_attr('my_press') == 'right'
