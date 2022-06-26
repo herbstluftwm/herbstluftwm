@@ -13,6 +13,13 @@
 #include "widget.h"
 #include "xconnection.h"
 
+enum {
+    TopBorder = 0,
+    RightBorder = 1,
+    BottomBorder = 2,
+    LeftBorder = 3,
+};
+
 using std::pair;
 using std::string;
 using std::vector;
@@ -51,41 +58,34 @@ void X11WidgetRender::render(const Widget& widget)
 
     Rectangle outline = geo.adjusted(style.outlineWidthLeft, style.outlineWidthTop,
                                      style.outlineWidthRight, style.outlineWidthBottom);
-    vector<pair<const Color*,Rectangle>> outlineRects = {
-        {&style.outlineColorTop,
-         Rectangle{outline.x, outline.y, outline.width, style.outlineWidthTop}},
-        {&style.outlineColorRight,
-         {outline.x + outline.width - style.outlineWidthRight, outline.y,
-          style.outlineWidthRight, outline.height}},
-        {&style.outlineColorBottom,
-         {outline.x, outline.y + outline.height - style.outlineWidthBottom,
-         outline.width, style.outlineWidthBottom}},
-        {&style.outlineColorLeft,
-         {outline.x, outline.y, style.outlineWidthLeft, outline.height}},
+    int outlineWidth[4] = {
+        style.outlineWidthTop,
+        style.outlineWidthRight,
+        style.outlineWidthBottom,
+        style.outlineWidthLeft,
     };
-    for (const auto& p : outlineRects) {
-        if (p.second) {
-            fillRectangle(p.second, *(p.first));
-        }
-    }
+    Color outlineColor[4] = {
+        style.outlineColorTop,
+        style.outlineColorRight,
+        style.outlineColorBottom,
+        style.outlineColorLeft,
+    };
+    drawBorder(outline, outlineWidth, outlineColor);
 
-    vector<pair<const Color*,Rectangle>> borderRects = {
-        {&style.borderColorTop,
-         Rectangle{geo.x, geo.y, geo.width, style.borderWidthTop}},
-        {&style.borderColorRight,
-         {geo.x + geo.width - style.borderWidthRight, geo.y,
-          style.borderWidthRight, geo.height}},
-        {&style.borderColorBottom,
-         {geo.x, geo.y + geo.height - style.borderWidthBottom,
-         geo.width, style.borderWidthBottom}},
-        {&style.borderColorLeft,
-         {geo.x, geo.y, style.borderWidthLeft, geo.height}},
+    int borderWidth[4] = {
+        style.borderWidthTop,
+        style.borderWidthRight,
+        style.borderWidthBottom,
+        style.borderWidthLeft,
     };
-    for (const auto& p : borderRects) {
-        if (p.second) {
-            fillRectangle(p.second, *(p.first));
-        }
-    }
+    Color borderColor[4] = {
+        style.borderColorTop,
+        style.borderColorRight,
+        style.borderColorBottom,
+        style.borderColorLeft,
+    };
+    drawBorder(geo, borderWidth, borderColor);
+
     for (const Widget* child : widget.nestedWidgets_) {
         render(*child);
     }
@@ -103,6 +103,58 @@ void X11WidgetRender::render(const Widget& widget)
     }
 }
 
+void X11WidgetRender::drawBorder(Rectangle outer, int width[4], Color color[4])
+{
+    Rectangle inner = outer.adjusted(-width[LeftBorder],
+                                     -width[TopBorder],
+                                     -width[RightBorder],
+                                     -width[BottomBorder]);
+    // first draw the rectangular subset of the borders:
+    vector<pair<const Color*,Rectangle>> borderRects = {
+        {color + TopBorder,
+         {inner.x, outer.y, inner.width, width[TopBorder]}},
+        {color + RightBorder,
+         {inner.x + inner.width, inner.y, width[RightBorder], inner.height}},
+        {color + BottomBorder,
+         {inner.x, inner.y + inner.height, inner.width, width[BottomBorder]}},
+        {color + LeftBorder,
+         {outer.x, inner.y, width[LeftBorder], inner.height}},
+    };
+    for (const auto& p : borderRects) {
+        if (p.second) {
+            fillRectangle(p.second, *(p.first));
+        }
+    }
+    // top left corner
+    Rectangle tlcorn = {
+        outer.x, outer.y, width[LeftBorder], width[TopBorder]
+    };
+    fillTriangle(tlcorn.tl(), tlcorn.bl(), tlcorn.br(), color[LeftBorder]);
+    fillTriangle(tlcorn.tl(), tlcorn.tr(), tlcorn.br(), color[TopBorder]);
+    // top right corner
+    Rectangle trcorn = {
+        inner.x + inner.width,
+        outer.y, width[RightBorder], width[TopBorder]
+    };
+    fillTriangle(trcorn.tl(), trcorn.tr(), trcorn.bl(), color[TopBorder]);
+    fillTriangle(trcorn.tr(), trcorn.br(), trcorn.bl(), color[RightBorder]);
+    // bottom right corner
+    Rectangle brcorn = {
+        inner.x + inner.width,
+        inner.y + inner.height,
+        width[RightBorder], width[BottomBorder]
+    };
+    fillTriangle(brcorn.tl(), brcorn.tr(), brcorn.br(), color[RightBorder]);
+    fillTriangle(brcorn.br(), brcorn.bl(), brcorn.tl(), color[BottomBorder]);
+    // bottom left corner
+    Rectangle blcorn = {
+        outer.x, inner.y + inner.height,
+        width[LeftBorder], width[BottomBorder]
+    };
+    fillTriangle(blcorn.tr(), blcorn.br(), blcorn.bl(), color[BottomBorder]);
+    fillTriangle(blcorn.tl(), blcorn.tr(), blcorn.bl(), color[LeftBorder]);
+}
+
 void X11WidgetRender::fillRectangle(Rectangle rect, const Color& color)
 {
     if (rect.width <= 0 || rect.height <= 0) {
@@ -116,6 +168,20 @@ void X11WidgetRender::fillRectangle(Rectangle rect, const Color& color)
                    rect.x, rect.y,
                    static_cast<unsigned int>(rect.width),
                    static_cast<unsigned int>(rect.height));
+}
+
+void X11WidgetRender::fillTriangle(Point2D p1, Point2D p2, Point2D p3, const Color& color)
+{
+    XSetForeground(xcon_.display(),
+                   gc_,
+                   xcon_.allocColor(colormap_, color));
+    XPoint corners[3] = {
+        p1.toXPoint(),
+        p2.toXPoint(),
+        p3.toXPoint(),
+    };
+    XFillPolygon(xcon_.display(), pixmap_, gc_,
+                 corners, 3, Convex, CoordModeOrigin);
 }
 
 /**

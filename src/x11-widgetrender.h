@@ -19,7 +19,9 @@ public:
                     Colormap& colormap, GC& gc_, Visual* visual);
     void render(const Widget& widget);
 private:
+    inline void drawBorder(Rectangle outer, int width[4], Color color[4]);
     inline void fillRectangle(Rectangle rect, const Color& color);
+    inline void fillTriangle(Point2D p1, Point2D p2, Point2D p3, const Color& color);
 
     void drawText(Pixmap& pix, GC& gc, const FontData& fontData,
                   const Color& color, Point2D position, const std::string& text,

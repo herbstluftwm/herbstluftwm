@@ -76,6 +76,9 @@ struct Point2D {
         }
         return result;
     }
+    XPoint toXPoint() const {
+        return { static_cast<short>(x), static_cast<short>(y)};
+    }
     Point2D operator+(const Point2D& other) const { return { x + other.x, y + other.y }; }
     Point2D operator-(const Point2D& other) const { return { x - other.x, y - other.y }; }
     Point2D operator*(double scalar) const { return { (int) (x * scalar), (int) (y * scalar) }; }

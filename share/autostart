@@ -146,6 +146,18 @@ hc attr theme.floating.outer_color black
 hc attr theme.active.inner_color '#789161'
 hc attr theme.urgent.inner_color '#9A65B0'
 hc attr theme.normal.inner_color '#606060'
+hc set_attr theme.style_override "
+.client-decoration {
+    margin: 10px;
+    outline-style: solid;
+    outline-width: 10px;
+    outline-color: green blue;
+}
+.client-decoration .tab {
+    border-width: 10px 18px;
+    border-color: black red blue orange;
+}
+"
 # copy inner color to outer_color
 for state in active urgent normal ; do
     hc substitute C theme.${state}.inner_color \
