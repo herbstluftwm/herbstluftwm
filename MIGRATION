@@ -12,6 +12,9 @@ now incompatible with the 'toggle' command. Use 'cycle_values' instead:
 
     hc cycle_value settings.smart_frame_surroundings off hide_gaps hide_all
 
+Instead of 'always_show_frame', the new 'show_frame_decorations' setting should
+be used.
+
 0.9.2 to 0.9.3
 --------------
 The command 'cycle_value' now expects an attribute path instead of a settings

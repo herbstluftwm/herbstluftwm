@@ -12,6 +12,8 @@ Current git version
     following new values: 'off', 'hide_all', and 'hide_gaps'. Setting it to
     'hide_gaps' will only hide frame gaps when applicable, 'hide_all' and 'off'
     mirror the old behaviour with regards to 'true' and 'false'.
+  * New setting 'show_frame_decorations' that controls when frame decorations
+    are shown. This should be used instead of the old 'always_show_frame'
   * New frame attribute 'content_geometry'
   * New monitor attribute 'content_geometry'
 

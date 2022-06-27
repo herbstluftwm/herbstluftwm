@@ -28,6 +28,17 @@ Finite<SmartFrameSurroundings>::ValueList Finite<SmartFrameSurroundings>::values
     { SmartFrameSurroundings::off, "0" },
 };
 
+template<>
+Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values = ValueListPlain {
+    { ShowFrameDecorations::all, "all" },
+    { ShowFrameDecorations::focused, "focused" },
+    { ShowFrameDecorations::focused_if_multiple, "focused_if_multiple" },
+    { ShowFrameDecorations::if_multiple, "if_multiple" },
+    { ShowFrameDecorations::nonempty, "nonempty" },
+    { ShowFrameDecorations::none, "none" },
+};
+
+
 Settings* g_settings = nullptr; // the global settings object
 
 Settings::Settings()
@@ -73,6 +84,7 @@ Settings::Settings()
         &frame_normal_opacity,
         &focus_crosses_monitor_boundaries,
         &always_show_frame,
+        &show_frame_decorations,
         &default_direction_external_only,
         &default_frame_layout,
         &focus_follows_mouse,
@@ -124,15 +136,25 @@ Settings::Settings()
         i->changed().connect(&reset_client_colors);
     }
     frame_bg_transparent.setWritable();
-    for (auto i : {&always_show_frame,
-         &gapless_grid,
+    for (auto i : {&gapless_grid,
          &tabbed_max,
          &smart_window_surroundings,
          &raise_on_focus_temporarily}) {
         i->changed().connect(&all_monitors_apply_layout);
     }
+    show_frame_decorations.changed().connect(&all_monitors_apply_layout);
     smart_frame_surroundings.changed().connect(&all_monitors_apply_layout);
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
+    // connect deprecated attribute to new settings:
+    always_show_frame.changedByUser().connect([this](bool alwaysShow) {
+        this->show_frame_decorations =
+                alwaysShow
+                ? ShowFrameDecorations::all
+                : ShowFrameDecorations::focused;
+    });
+    show_frame_decorations.changed().connect([this](ShowFrameDecorations newValue) {
+        this->always_show_frame = newValue == ShowFrameDecorations::all;
+    });
 
     tree_style.setValidator([] (string new_value) {
         if (utf8_string_length(new_value) < 8) {
@@ -176,7 +198,8 @@ Settings::Settings()
     frame_border_inner_color.setDoc("The color of the inner border of a frame.");
     frame_bg_active_color.setDoc("The fill color of a focused frame.");
     frame_bg_normal_color.setDoc("The fill color of an unfocused frame (It is "
-                                 "only visible if always_show_frame is set).");
+                                 "only visible if non-focused frames are configured "
+                                 "to be visible, see \'show_frame_decorations\').");
     frame_bg_transparent.setDoc(
                 "If set, the background of frames are transparent. That means "
                 "a rectangle is cut out from the inner such that only the "
@@ -249,9 +272,18 @@ Settings::Settings()
 
 
     always_show_frame.setDoc(
-                "If set, all frames are displayed. "
-                "If unset, only frames with focus or with "
-                "windows in them are displayed.");
+                "DEPRECATED, use +show_frame_decorations+ instead. Setting "
+                "this corresponds to \'focused\' in \'show_frame_decorations\'."
+                );
+
+    show_frame_decorations.setDoc(
+                "This controls, which frame decorations are shown at all. \n"
+                "- \'none\' shows no frame decorations at all, \n"
+                "- \'nonempty\' shows decorations of frames that have client windows, \n"
+                "- \'if_multiple\' shows decorations on the tags with at least two frames, \n"
+                "- \'focused\' shows the decoration of focused and nonempty frames, \n"
+                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
+                );
 
     frame_active_opacity.setDoc(
                 "Focused frame opacity in percent. Requires a running "
