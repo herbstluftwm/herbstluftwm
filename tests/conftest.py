@@ -932,18 +932,35 @@ class X11:
         geom.y = y
         return geom
 
-    def get_hlwm_frames(self):
+    def get_hlwm_frames(self, only_visible=False):
         """get list of window handles of herbstluftwm
         frame decoration windows"""
-        cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
+        cmd = ['xdotool', 'search']
+        if only_visible:
+            cmd += ['--onlyvisible']
+        cmd += ['--class', '_HERBST_FRAME']
         frame_wins = subprocess.run(cmd,
                                     stdout=subprocess.PIPE,
-                                    universal_newlines=True,
-                                    check=True)
+                                    universal_newlines=True)
+        # we need to ignore the exit code, because xdotool returns exit
+        # code 1 if no windows were found.
         res = []
         for winid_decimal_str in frame_wins.stdout.splitlines():
             res.append(self.window(winid_decimal_str))
         return res
+
+    def get_numlock_state(self):
+        return (self.display.get_keyboard_control().led_mask & 2) != 0
+
+    def set_numlock_state(self, enabled):
+        if self.get_numlock_state() != enabled:
+            cmd = ['xdotool', 'key', '--clearmodifiers', 'Num_Lock']
+            subprocess.run(cmd, check=True)
+            for _ in range(0, 10):
+                self.display.sync()
+                if self.get_numlock_state() == enabled:
+                    return
+            assert self.get_numlock_state() == enabled
 
     def shutdown(self):
         # Destroy all created windows:
