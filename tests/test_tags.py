@@ -503,3 +503,54 @@ def test_merge_tag_minimized_into_visible_tag(hlwm):
 
     assert hlwm.attr.clients[winid].visible() is False
     assert winid not in hlwm.call('dump').stdout
+
+
+def assert_tag_order(hlwm, tag_names):
+    assert hlwm.attr.tags.count() == len(tag_names)
+    for idx, name in enumerate(tag_names):
+        assert hlwm.attr.tags[idx].name() == name
+        assert hlwm.attr.tags['by-name'][name].index() == idx
+
+
+def test_at_end_forces_reorder(hlwm):
+    hlwm.attr.tags['0'].name = 'a'
+    hlwm.call('add b')
+    hlwm.call('add c')
+    hlwm.call('add d')
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd'])
+
+    hlwm.attr.tags['by-name'].b.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'c', 'd', 'b'])
+
+    hlwm.attr.tags['by-name'].c.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'd', 'c', 'b'])
+
+    hlwm.attr.tags['by-name'].b.at_end = False
+
+    assert_tag_order(hlwm, ['a', 'd', 'b', 'c'])
+
+    hlwm.attr.tags['by-name'].c.at_end = False
+
+    assert_tag_order(hlwm, ['a', 'd', 'b', 'c'])
+
+
+def test_new_tags_before_at_end(hlwm):
+    hlwm.attr.tags['0'].name = 'a'
+    hlwm.call('add b')
+    hlwm.call('add c')
+    assert_tag_order(hlwm, ['a', 'b', 'c'])
+
+    hlwm.attr.tags['by-name'].c.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'b', 'c'])
+
+    hlwm.call('add d')
+
+    assert_tag_order(hlwm, ['a', 'b', 'd', 'c'])
+
+
+def test_at_end_tag_index_assignment(hlwm):
+    pass
+    # TODO
