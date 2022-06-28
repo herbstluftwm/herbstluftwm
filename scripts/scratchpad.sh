@@ -27,7 +27,7 @@ rect=(
     $((${mrect[1]}+(height/4)))
 )
 
-hc add "$tag"
+hc chain , add "$tag" , set_attr tags.by-name."$tag".at_end true
 
 monitor=scratchpad
 

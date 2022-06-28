@@ -91,6 +91,19 @@ string TagManager::isValidTagName(string name) {
     return "";
 }
 
+//! return the index of the first tag with 'at_end' active. Coincidentally,
+//! this is the index where new tags should be inserted.
+//! this searches from the end and only works correctly if if all 'at_end'
+//! tags are grouped together at the end of the tag array.
+size_t TagManager::indexOfAtEndSection()
+{
+    size_t idx = size();
+    while (idx > 0 && byIdx(idx - 1)->atEnd()) {
+        idx--;
+    }
+    return idx;
+}
+
 HSTag* TagManager::add_tag(const string& name) {
     HSTag* find_result = find(name);
     if (find_result) {
@@ -102,12 +115,17 @@ HSTag* TagManager::add_tag(const string& name) {
         return nullptr;
     }
     HSTag* tag = new HSTag(name, this, settings_);
-    addIndexed(tag);
+    // insert the new tag right before the last tag with atEnd() active.
+    size_t newIndex = indexOfAtEndSection();
+    addIndexed(tag, newIndex);
     tag->name.changed().connect([this,tag]() {
         this->onTagRename(tag);
         tag->oldName_ = tag->name;
     });
     tag->needsRelayout_.connect([this,tag]() { this->needsRelayout_.emit(tag); });
+    tag->atEnd.changed().connect([this,tag]() {
+        this->onTagAtEndChange(tag);
+    });
 
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
@@ -205,6 +223,28 @@ void TagManager::tag_rename_command(CallOrComplete invoc) {
 void TagManager::onTagRename(HSTag* tag) {
     Ewmh::get().updateDesktopNames();
     hook_emit({"tag_renamed", tag->oldName_, tag->name()});
+}
+
+void TagManager::onTagAtEndChange(HSTag* tag)
+{
+    size_t indexOfFirstAtEndTag = 0;
+    for (; indexOfFirstAtEndTag < size(); indexOfFirstAtEndTag++) {
+        HSTag* other = byIdx(indexOfFirstAtEndTag);
+        if (other != tag && other->atEnd()) {
+            break;
+        }
+    }
+    if (tag->atEnd()) {
+        // make tag the first among the 'at end' section
+        if (tag->index() < indexOfFirstAtEndTag) {
+            tag->index = indexOfFirstAtEndTag - 1;
+        }
+    } else { // if tag->atEnd() is false:
+        // make tag the last among the 'not at end' section
+        if (indexOfFirstAtEndTag < tag->index()) {
+            tag->index = indexOfFirstAtEndTag;
+        }
+    }
 }
 
 HSTag* TagManager::ensure_tags_are_available() {
