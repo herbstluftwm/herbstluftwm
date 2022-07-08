@@ -2,6 +2,11 @@ import pytest
 
 from conftest import PROCESS_SHUTDOWN_TIME
 
+@pytest.fixture()
+@pytest.mark.parametrize("hlwm_tags", [
+    { 'name': 'a', 'at_end': True },
+    ])  # number of unfocused clients
+def setup_hlwm_tags(hlwm, xvfb):
 
 def test_default_tag_exists_and_has_name(hlwm):
     assert hlwm.get_attr('tags.count') == '1'
@@ -552,5 +557,14 @@ def test_new_tags_before_at_end(hlwm):
 
 
 def test_at_end_tag_index_assignment(hlwm):
-    pass
-    # TODO
+    hlwm.attr.tags['0'].name = 'a'
+    hlwm.call('add b')
+    hlwm.call('add c')
+    hlwm.call('add d')
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd'])
+    hlwm.attr.tag['by-name'].d.at_end = True
+    hlwm.attr.tag['by-name'].c.at_end = True
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd'])
+
+    hlwm.attr.tag['
+
