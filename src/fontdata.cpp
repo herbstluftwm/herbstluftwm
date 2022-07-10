@@ -26,6 +26,9 @@ FontData::~FontData() {
 //! try to parse a font description or throw an exception
 void FontData::initFromStr(const string& source)
 {
+    if (source.empty()) {
+        return;
+    }
     if (!s_xconnection) {
         throw std::invalid_argument("X connection not established yet!");
     }

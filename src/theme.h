@@ -30,7 +30,7 @@ template<> inline Type Attribute_<TitleWhen>::staticType() { return Type::NAMES;
 
 class Inherit {
 public:
-    bool operator==(const Inherit& other) { return true; }
+    bool operator==(const Inherit& other) const { return true; }
 };
 
 template<>

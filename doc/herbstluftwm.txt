@@ -1015,6 +1015,23 @@ unsetenv 'NAME'::
     herbstluftwm session for the same effect. The +export+ command is the same
     as the <<SETENV, setenv command>> with different syntax.
 
+debug-css ['FLAGS'] 'CSSSource'::
+    This command exists solely for testing herbstluftwm; it has no use in normal
+    hlwm sessions. Moreover, the interface of this command may change in
+    incompatible ways.
+    The command parses the given 'CSSSource' and then performs various
+    operations, specified by the optional 'FLAGS':
+
+      - *--print-css* print the CSS in some normalized form
+      - *--tree=TREE* a dom-style tree specification, where the syntax of a tree
+        starts with *(* and ends with *)*. In between, the tree contains a
+        space-separated list of class names and subtrees.
+      - *--print-tree* print the tree specification of 'TREE' again.
+      - *--query-tree-indices=SELECTOR* print the tree indices (analogously to
+        frame indices) of those nodes that match the given css-style *SELECTOR*.
+      - *--compute-style=INDEX* compute the box style of the node in above
+        'TREE' that has the tree index 'INDEX'.
+
 
 [[RULES]]
 RULES

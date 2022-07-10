@@ -35,10 +35,10 @@ class HSFont
 public:
     static HSFont fromStr(const std::string& source);
     std::string str() { return source_; }
-    bool operator==(const HSFont& o) {
+    bool operator==(const HSFont& o) const {
         return source_ == o.source_;
     }
-    bool operator!=(const HSFont& o) {
+    bool operator!=(const HSFont& o) const {
         return source_ != o.source_;
     }
     FontData& data() const { return *fontData_; }

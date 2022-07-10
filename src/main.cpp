@@ -16,6 +16,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "commandio.h"
+#include "css.h"
 #include "ewmh.h"
 #include "fontdata.h"
 #include "frametree.h"
@@ -235,6 +236,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                        &Watchers::watchCompletion }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
+        {"debug-css",      { &debugCssCommand } },
     };
     return unique_ptr<CommandTable>(new CommandTable(init));
 }
