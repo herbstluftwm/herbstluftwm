@@ -98,6 +98,17 @@ template<> void Converter<ModifiersWithString>::complete(Completion& complete, M
     ModifiersWithString::complete(complete, [] (Completion&, string) {});
 }
 
+/**
+ * @brief the KeyCombo with onRelease_ flipped.
+ * @return
+ */
+KeyCombo KeyCombo::otherDirection()
+{
+    KeyCombo other = *this;
+    other.onRelease_ = !other.onRelease_;
+    return other;
+}
+
 /*!
  * Provides a canonical string representation of the key combo
  */

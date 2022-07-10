@@ -15,6 +15,9 @@ now incompatible with the 'toggle' command. Use 'cycle_values' instead:
 Instead of 'always_show_frame', the new 'show_frame_decorations' setting should
 be used.
 
+In the 'keybind' command, if both the key press and the key release are bound,
+this need to be explicitly specified by passing '--bidirectional' to keybind.
+
 0.9.2 to 0.9.3
 --------------
 The command 'cycle_value' now expects an attribute path instead of a settings

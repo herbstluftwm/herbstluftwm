@@ -27,7 +27,9 @@ KeyManager::~KeyManager() {
 void KeyManager::keybindCommand(CallOrComplete invoc)
 {
     KeyCombo key;
+    bool bidirectional = false;
     ArgParse ap;
+    ap.flags({{"--bidirectional", &bidirectional}});
     ap.mandatory(key);
     ap.command(invoc,
                [&](Completion& complete) { complete.completeCommands(0); },
@@ -38,17 +40,28 @@ void KeyManager::keybindCommand(CallOrComplete invoc)
         KeyBinding keybind;
         keybind.keyCombo = key;
         keybind.cmd = { command.begin(), command.end() };
-        return addKeybind(keybind, output);
+        return addKeybind(keybind, bidirectional, output);
     });
 }
 
-int KeyManager::addKeybind(KeyBinding newBinding, Output output) {
+int KeyManager::addKeybind(KeyBinding newBinding, bool bidirectional, Output output) {
     // newBinding->cmd is not empty because the size before the input.shift() was >= 2
     if (!Commands::commandExists(newBinding.cmd[0])) {
         output.perror() << "the command \""
                << newBinding.cmd[0] << "\" does not exist."
                << " Did you forget \"spawn\"?\n";
         return HERBST_COMMAND_NOT_FOUND;
+    }
+
+    if (!bidirectional) {
+        // remove the keybinding for the other direction
+        KeyCombo otherDirection = newBinding.keyCombo.otherDirection();
+        bool otherWasActive = false;
+        if (removeKeyBinding(otherDirection, &otherWasActive)) {
+            if (otherWasActive) {
+                keyComboInactive.emit(otherDirection);
+            }
+        }
     }
 
     // Make sure there is no existing binding with same keysym/modifiers

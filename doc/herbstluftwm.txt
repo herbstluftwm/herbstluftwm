@@ -231,16 +231,19 @@ unlock::
     Decreases the 'monitors_locked' setting. If 'monitors_locked' is changed to
     0, then all monitors are repainted again. See also: *lock*
 
-keybind 'KEY' 'COMMAND' ['ARGS ...']::
+keybind [*--bidirectional*] 'KEY' 'COMMAND' ['ARGS ...']::
     Adds a key binding. If there is already a binding for this 'KEY',
     it will be overwritten. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers
     (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control/Ctrl, Shift) and one key
     (see keysymdef.h for a list of keys). Modifiers and the key are concatenated
     with '-' or '+' as separator. If 'KEY' is prefixed with 'Release-' then the
-    keybinding is only active during the corresponding key release event: that
-    is, in order to run the key binding for 'Release-Mod1-Shift-p' one needs to
-    first press 'Mod1-Shift-p' and then release 'p'.  Examples:
+    keybinding is only active during the corresponding key release event.
+    In order to run the key binding for 'Release-Mod1-Shift-p' one needs to
+    first press 'Mod1-Shift-p' and then release 'p'.
+    If a release-event is bound, then also the corresponding press-event is
+    overwritten, and vice versa. To bind both the press and the release event at
+    the same time, pass *--bidirectional*. Examples:
 
         * keybind Mod4+Ctrl+q quit
         * keybind Mod4-Shift-d attr clients.focus.decorated toggle

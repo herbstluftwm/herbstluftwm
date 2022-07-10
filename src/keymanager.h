@@ -74,7 +74,7 @@ public:
     Signal keyComboAllInactive;
 
     void keybindCommand(CallOrComplete invoc);
-    int addKeybind(KeyBinding newBinding, Output output);
+    int addKeybind(KeyBinding newBinding, bool bidirectional, Output output);
     int listKeybindsCommand(Output output) const;
     int removeKeybindCommand(Input input, Output output);
 

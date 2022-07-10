@@ -72,6 +72,8 @@ public:
 
     static constexpr auto releaseModifier = "Release";
 
+    KeyCombo otherDirection();
+
     std::string str() const;
     bool operator==(const KeyCombo& other) const;
     bool operator<(const KeyCombo& other) const;

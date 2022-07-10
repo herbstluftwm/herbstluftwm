@@ -144,6 +144,7 @@ def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
 @pytest.mark.parametrize('prefix', ['', 'Mod1+'])
 def test_complete_keybind_offers_all_mods_and_syms(hlwm, prefix):
     complete = hlwm.complete(['keybind', prefix], partial=True, position=1)
+    complete = [c for c in complete if c != '--bidirectional ']
 
     assert len(complete) > 200  # plausibility check
     all_mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
@@ -158,8 +159,11 @@ def test_complete_keybind_offers_all_mods_and_syms(hlwm, prefix):
 
 def test_complete_keybind_after_combo_offers_all_commands(hlwm):
     complete = hlwm.complete('keybind x', position=2)
+    complete = [c for c in complete if c != '--bidirectional']
 
-    assert complete == hlwm.complete('', position=0)
+    commands = hlwm.complete('', position=0)
+    assert complete == commands
+    assert commands == hlwm.complete('keybind --bidirectional x', position=3)
 
 
 def test_keys_inactive_regrab_all(hlwm, keyboard):
@@ -359,7 +363,7 @@ def test_keybind_triggers_only_once(hlwm, keyboard):
 
 def test_key_release_works_after_bind(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Release+x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Release+x', 'set_attr', 'my_test', 'release'])
 
     keyboard.down('x')
     assert hlwm.attr.my_test() == 'initial'
@@ -370,8 +374,8 @@ def test_key_release_works_after_bind(hlwm, keyboard):
 
 def test_key_release_and_press(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Mod1-x', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
     assert hlwm.attr.my_test() == 'initial'
 
     keyboard.down('alt+x')
@@ -393,7 +397,7 @@ def test_keys_inactive_key_can_be_removed(hlwm):
 
 def test_keys_inactive_affects_release_binds(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Release-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-x', 'set_attr', 'my_test', 'release'])
     winid, proc = hlwm.create_client(term_command='read -n 1')
     hlwm.attr.clients[winid].keys_inactive = 'x'
 
@@ -411,8 +415,8 @@ def test_keys_inactive_affects_release_binds(hlwm, keyboard):
 
 def test_key_release_after_unbinding_press(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Mod1-x', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
     hlwm.call(['keyunbind', 'Mod1-x'])
     assert hlwm.attr.my_test() == 'initial'
 
@@ -429,8 +433,8 @@ def test_key_release_reuses_mod_mask(hlwm, keyboard):
     that was once active back then when the key press happend.
     """
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Mod1-x', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
     assert hlwm.attr.my_test() == 'initial'
 
     keyboard.down('alt')
@@ -450,8 +454,8 @@ def test_key_release_reuses_mod_mask(hlwm, keyboard):
 
 def test_key_release_of_modifier(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Super_L', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Release-Super_L', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Super_L', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-Super_L', 'set_attr', 'my_test', 'release'])
     assert hlwm.attr.my_test() == 'initial'
     keyboard.down('Super_L')
     assert hlwm.attr.my_test() == 'press'
@@ -461,8 +465,8 @@ def test_key_release_of_modifier(hlwm, keyboard):
 
 def test_key_press_after_unbinding_release(hlwm, keyboard):
     hlwm.call(['new_attr', 'string', 'my_test', 'initial'])
-    hlwm.call(['keybind', 'Mod1-x', 'set_attr', 'my_test', 'press'])
-    hlwm.call(['keybind', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
+    hlwm.call(['keybind', '--bidirectional', 'Mod1-x', 'set_attr', 'my_test', 'press'])
+    hlwm.call(['keybind', '--bidirectional', 'Release-Mod1-x', 'set_attr', 'my_test', 'release'])
     hlwm.call(['keyunbind', 'Release-Mod1-x'])
     assert hlwm.attr.my_test() == 'initial'
 
@@ -488,7 +492,7 @@ def test_client_does_not_see_bound_key(hlwm, keyboard, bind_press, bind_release,
     if bind_press:
         hlwm.call(['keybind', 'z', 'set_attr', 'my_test', 'grabbed'])
     if bind_release:
-        hlwm.call(['keybind', 'Release+z', 'set_attr', 'my_test', 'grabbed'])
+        hlwm.call(['keybind', '--bidirectional', 'Release+z', 'set_attr', 'my_test', 'grabbed'])
 
     if client_spawn_position == 'pre_unbind':
         winid, proc = hlwm.create_client(term_command='read -n 1')
@@ -521,3 +525,41 @@ def test_client_does_not_see_bound_key(hlwm, keyboard, bind_press, bind_release,
             assert False, "Expected client to quit, but it is still running"
     else:
         assert hlwm.attr.my_test() == "grabbed"
+
+
+@pytest.mark.parametrize('bidir', [True, False])
+@pytest.mark.parametrize('press_exists', [True, False])
+@pytest.mark.parametrize('release_exists', [True, False])
+@pytest.mark.parametrize('bind_type', ['', 'Release-'])
+def test_keybind_removes_other_event_unless_bidir(hlwm, keyboard, press_exists, release_exists, bind_type, bidir):
+    hlwm.attr.my_counter = 0
+    if press_exists:
+        hlwm.call(['keybind', '--bidirectional', 'x', 'set_attr', 'my_counter', '+=1'])
+    if release_exists:
+        hlwm.call(['keybind', '--bidirectional', 'Release-x', 'set_attr', 'my_counter', '+=1'])
+
+    # test that the keybind works:
+    keyboard.press('x')
+    assert hlwm.attr.my_counter() == int(press_exists) + int(release_exists)
+    hlwm.attr.my_counter = 0  # reset counter
+
+    # overwrite some of the above keybindings:
+    hlwm.attr.my_test = 'initial'
+    cmd = ['keybind']
+    if bidir:
+        cmd += ['--bidirectional']
+    cmd += [bind_type + 'x', 'set_attr', 'my_test', 'success']
+    hlwm.call(cmd)
+
+    remaining_original_keybinds = 0
+    if bidir:
+        # the original key bindings only survive if '--bidirectional' was passed:
+        remaining_original_keybinds = int(press_exists and bind_type != '')
+        remaining_original_keybinds += int(release_exists and bind_type != 'Release-')
+
+    assert ('my_counter' in hlwm.call('list_keybinds').stdout) == (remaining_original_keybinds > 0)
+
+    # press the keybinding again
+    keyboard.press('x')
+    assert hlwm.attr.my_counter() == remaining_original_keybinds
+    assert hlwm.attr.my_test() == 'success'
