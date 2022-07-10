@@ -322,7 +322,7 @@ def test_condition_class(hlwm):
 
 @pytest.mark.parametrize('rulearg,errormsg', [
     ("fullscreen=foo", 'only.*are valid booleans'),
-    ("keymask=(", 'Parenthesis is not closed'),
+    ("keymask=(", r'(Parenthesis is not closed|Mismatched.*\(.*\).*in regular)'),
     ("floatplacement=bar", 'Expecting one of: center, '),
     ("floating_geometry=4x5+1024+1024", 'Rectangle too small'),
     ("floating_geometry=totallywrong", 'Rectangle too small'),  # TODO: make rectangle parsing fail
