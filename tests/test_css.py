@@ -105,7 +105,9 @@ def test_basic_dummy_tree(hlwm):
 
 def test_css_property_parsing(hlwm):
     input2error = {
+        '* { something-wrong: 2px; }': 'No such property "something-wrong"',
         '* { border-width: 1sdfpx; }': "unparsable suffix",
+        '* { border-width: 1; }': "must be of the format",
         '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
         '* { border-style: invalidstyle; }': 'Expected \"solid\"',
     }
@@ -360,3 +362,31 @@ def test_debug_css_errors(hlwm):
         .expect_stderr("invalid tree index")
     hlwm.call_xfail('debug-css --tree="()" --compute-style="0 8" ""') \
         .expect_stderr("invalid tree index")
+
+
+def test_css_names_tree_check(hlwm):
+    names = [f'class{idx}' for idx in range(0, 900)]
+    tree = '((foo) (' + ' '.join(names) + ') (class4 class8))'
+    matches_all_classes = ''.join(['.' + name for name in names])
+    matches_some_class = ', '.join(['.' + name for name in names])
+    css = f"""
+    // for elements that match all the classes
+    {matches_all_classes} {{
+        border-top-width: 4px;
+    }}
+    // for elements that match one of the classes
+    {matches_some_class} {{
+        border-left-width: 7px;
+    }}
+    """
+
+    def computed_style_of_tree_index(tree_index):
+        cmd = ['debug-css', f'--tree={tree}', f'--compute-style={tree_index}', css]
+        return sorted(hlwm.call(cmd).stdout.splitlines())
+
+    assert computed_style_of_tree_index('0') == []
+    assert computed_style_of_tree_index('1') == [
+        'border-left-width: 7px;',
+        'border-top-width: 4px;']
+    assert computed_style_of_tree_index('2') == [
+        'border-left-width: 7px;']

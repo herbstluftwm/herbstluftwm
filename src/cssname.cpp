@@ -136,11 +136,6 @@ CssName::CssName(const string& name)
     }
 }
 
-bool CssName::isCombinator() const
-{
-    return index_ <= static_cast<size_t>(Builtin::LAST_COMBINATOR);
-}
-
 /*** whether this is a binary operator, i.e. something that consumes
  * whitespace before and after
  */
