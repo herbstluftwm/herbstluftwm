@@ -88,7 +88,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     curframe_wcount.setDoc("number of clients in the selected frame");
 
     atEnd.setDoc("all tags with this property activated will be kept "
-                 "at the end of the tag list. Usually, this property is set"
+                 "at the end of the tag list. Usually, this property is set "
                  "for special purpose tags like scratchpads.");
 }
 

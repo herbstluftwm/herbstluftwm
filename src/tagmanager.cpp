@@ -91,10 +91,11 @@ string TagManager::isValidTagName(string name) {
     return "";
 }
 
-//! return the index of the first tag with 'at_end' active. Coincidentally,
-//! this is the index where new tags should be inserted.
-//! this searches from the end and only works correctly if if all 'at_end'
-//! tags are grouped together at the end of the tag array.
+/** @brief return the index of the first tag with 'at_end' active. Coincidentally,
+ *  this is the index where new tags should be inserted. this searches
+ *  from the end and only works correctly if all 'at_end' tags are grouped
+ *  together at the end of the tag array.
+ *  */
 size_t TagManager::indexOfAtEndSection()
 {
     size_t idx = size();
