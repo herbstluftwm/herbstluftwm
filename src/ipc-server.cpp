@@ -52,7 +52,9 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     }
     auto result = callback(maybeArguments.value());
     // send output back
-    int status = result.exitCode;
+    // here, it is important to use 'long' because XChangeProperty() requires
+    // data of type long.
+    long status = static_cast<long>(result.exitCode);
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
     X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), result.output);

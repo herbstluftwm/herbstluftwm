@@ -16,6 +16,7 @@ Current git version
     are shown. This should be used instead of the old 'always_show_frame'
   * New frame attribute 'content_geometry'
   * New monitor attribute 'content_geometry'
+  * Fix bug in ipc protocol for big-endian systems
 
 Release 0.9.4 on 2022-03-16
 ---------------------------
