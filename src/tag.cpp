@@ -39,6 +39,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
         [tags](string newName) { return tags->isValidTagName(newName); })
+    , atEnd(this, "at_end", false)
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
     , urgent_count(this, "urgent_count", &HSTag::countUrgentClients)
@@ -72,6 +73,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     floating_focused.setValidator([this](bool v) {
         return this->floatingLayerCanBeFocused(v);
     });
+    atEnd.setWritable();
 
     name.setDoc("name of the tag (must be non-empty)");
     index.setDoc("index of this tag (the first index is 0)");
@@ -84,6 +86,10 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     urgent_count.setDoc("the number of urgent clients on this tag");
     curframe_windex.setDoc("index of the focused client in the selected frame");
     curframe_wcount.setDoc("number of clients in the selected frame");
+
+    atEnd.setDoc("all tags with this property activated will be kept "
+                 "at the end of the tag list. Usually, this property is set "
+                 "for special purpose tags like scratchpads.");
 }
 
 HSTag::~HSTag() {
@@ -698,12 +704,23 @@ int HSTag::closeOrRemoveCommand() {
 
 string HSTag::isValidTagIndex(unsigned long newIndex)
 {
-    if (newIndex < tags_->size()) {
-        return "";
-    }
     stringstream ss;
-    ss << "Index must be between 0 and " << (tags_->size() - 1);
-    return ss.str();
+    size_t indexOfAtEndSection = tags_->indexOfAtEndSection();
+    if (atEnd()) {
+        if (indexOfAtEndSection <= newIndex && newIndex < tags_->size()) {
+            return "";
+        }
+        ss << "Index of 'at_end' tags must be between "
+           << indexOfAtEndSection << " and " << (tags_->size() - 1);
+        return ss.str();
+    } else {
+        if (newIndex < indexOfAtEndSection) {
+            return "";
+        }
+        ss << "Index must be between "
+           << 0 << " and " << indexOfAtEndSection - 1;
+        return ss.str();
+    }
 }
 
 string HSTag::floatingLayerCanBeFocused(bool floatingFocused)

@@ -15,6 +15,7 @@ Current git version
   * New setting 'show_frame_decorations' that controls when frame decorations
     are shown. This should be used instead of the old 'always_show_frame'
   * New frame attribute 'content_geometry'
+  * New tag attribute 'at_end'
   * New monitor attribute 'content_geometry'
   * Fix bug in ipc protocol for big-endian systems
 
