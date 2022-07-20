@@ -56,9 +56,11 @@ public:
     std::string isValidTagName(std::string name);
     Signal_<HSTag*> needsRelayout_;
     Link_<HSTag> focus_;
+    size_t indexOfAtEndSection();
 private:
     std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     void onTagRename(HSTag* tag);
+    void onTagAtEndChange(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;

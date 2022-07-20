@@ -30,7 +30,7 @@ rect=(
 y_line=${mrect[1]}
 
 
-hc add "$tag"
+hc chain , add "$tag" , set_attr tags.by-name."$tag".at_end true
 
 
 monitor=q3terminal
