@@ -30,6 +30,7 @@ public:
     MetaCommands(Object& root);
 
     Attribute* getAttribute(std::string path, Output output);
+    Attribute* getAttributeOrException(std::string path);
 
     /* external interface */
     // find an attribute deep in the object tree.
@@ -103,9 +104,14 @@ private:
     public:
         bool literal_; //! whether the data_ field is understood literall
         std::string data_; //! text blob or placeholder
+        std::vector<FormatStringBlob> nested_; //! format string nested
     };
     typedef std::vector<FormatStringBlob> FormatString;
     FormatString parseFormatString(const std::string& format);
+    FormatString parseFormatString(const std::string& format, size_t& idx);
+    std::string evaluateFormatString(const FormatString& format,
+                                     std::function<std::string()> nextToken,
+                                     Output output);
 };
 
 

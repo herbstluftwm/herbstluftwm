@@ -166,11 +166,22 @@ int MetaCommands::attr_cmd(Input in, Output output) {
 }
 
 Attribute* MetaCommands::getAttribute(string path, Output output) {
+    try {
+        return getAttributeOrException(path);
+    } catch (const std::exception& exc) {
+        output.perror() << exc.what() << endl;
+        return nullptr;
+    }
+}
+
+Attribute* MetaCommands::getAttributeOrException(string path)
+{
     auto attr_path = Object::splitPath(path);
     auto child = root.child(attr_path.first);
     if (!child) {
-        output.perror() << "No such object " << attr_path.first.join('.') << endl;
-        return nullptr;
+        stringstream msg;
+        msg << "No such object " << attr_path.first.join('.');
+        throw std::invalid_argument(msg.str());
     }
     Attribute* a = child->attribute(attr_path.second);
     if (!a) {
@@ -181,12 +192,13 @@ Attribute* MetaCommands::getAttribute(string path, Output output) {
             // equip object_path with quotes
             object_path = "Object \"" + object_path + "\"";
         }
-        output.perror() << object_path
-               << " has no attribute \"" << attr_path.second << "\""
-               << endl;
-        return nullptr;
+        stringstream msg;
+        msg << object_path
+               << " has no attribute \"" << attr_path.second << "\"";
+        throw std::invalid_argument(msg.str());
     }
     return a;
+
 }
 
 int MetaCommands::print_object_tree_command(Input in, Output output) {
@@ -370,44 +382,104 @@ int MetaCommands::foreachChild(string ident,
 }
 
 //! parse a format string or throw an exception
-MetaCommands::FormatString MetaCommands::parseFormatString(const string &format)
+MetaCommands::FormatString MetaCommands::parseFormatString(const string &format, size_t& idx)
 {
     FormatString blobs;
-    size_t lastpos = 0; // the position where the last plaintext blob started
-    for (size_t i = 0; i < format.size(); i++) {
-        if (format[i] == '%') {
-            if (i + 1 >= format.size()) {
+    size_t lastpos = idx; // the position where the last plaintext blob started
+    while (idx < format.size() && format[idx] != '}') {
+        if (format[idx] == '%') {
+            if (idx + 1 >= format.size()) {
                 throw std::invalid_argument(
                     "dangling % at the end of format \"" + format + "\"");
             } else {
-                if (i > lastpos) {
+                if (idx > lastpos) {
                     // add literal text blob
-                    blobs.push_back({ true, format.substr(lastpos, i - lastpos)});
+                    blobs.push_back({ true, format.substr(lastpos, idx - lastpos), {}});
                 }
-                char format_type = format[i+1];
-                lastpos = i + 2;
-                i++; // also consume the format_type
+                size_t format_type_idx = idx + 1;
+                char format_type = format[format_type_idx];
+                idx += 2;
+                lastpos = idx;
                 if (format_type == '%') {
-                    blobs.push_back({true, "%"});
+                    blobs.push_back({true, "%", {}});
                 } else if (format_type == 's') {
-                    blobs.push_back({false, "s"});
+                    blobs.push_back({false, "s", {}});
                 } else if (format_type == 'c') {
-                    blobs.push_back({false, "c"});
+                    blobs.push_back({false, "c", {}});
+                } else if (format_type == '{') {
+                    FormatString nested = parseFormatString(format, idx);
+                    blobs.push_back({false, "{", nested});
+                    if (idx >= format.size() || format[idx] != '}') {
+                        stringstream msg;
+                        msg <<  "unmatched { at position "
+                             << format_type_idx
+                             << " in format \"" + format + "\"";
+                        throw std::invalid_argument(msg.str());
+                    }
+                    idx++;
+                    lastpos = idx;
                 } else {
                     stringstream msg;
                     msg << "invalid format type %"
                         << format_type << " at position "
-                        << i << " in format string \""
+                        << format_type_idx << " in format string \""
                         << format << "\"";
                     throw std::invalid_argument(msg.str());
                 }
             }
+        } else {
+            idx++;
         }
     }
-    if (lastpos < format.size()) {
-        blobs.push_back({true, format.substr(lastpos, format.size()-lastpos)});
+    if (lastpos < idx) {
+        blobs.push_back({true, format.substr(lastpos, idx - lastpos), {}});
     }
     return blobs;
+}
+
+MetaCommands::FormatString MetaCommands::parseFormatString(const string &format)
+{
+    size_t idx = 0;
+    FormatString blobs;
+    while (idx < format.size()) {
+        if (format[idx] == '}') {
+            // treat top level unmatched closing braces as literals
+            blobs.push_back({true, "}", {}});
+            idx++;
+        } else {
+            for (const auto& b : parseFormatString(format, idx)) {
+                blobs.push_back(b);
+            }
+        }
+    }
+    return blobs;
+}
+
+string MetaCommands::evaluateFormatString(const FormatString& format,
+                                          function<string()> nextToken,
+                                          Output output)
+{
+    stringstream buf;
+    for (auto& blob : format ) {
+        if (blob.literal_) {
+            buf << blob.data_;
+        } else if (blob.data_ == "c") {
+            buf << nextToken();
+        } else if (blob.data_ == "{") {
+            auto attrpath = evaluateFormatString(blob.nested_, nextToken, output);
+            Attribute* a = getAttributeOrException(attrpath);
+            if (a) {
+                buf << a->str();
+            }
+        } else {
+            // hence, data is "s", i.e. a %s format
+            Attribute* a = getAttributeOrException(nextToken());
+            if (a) {
+                buf << a->str();
+            }
+        }
+    }
+    return buf.str();
 }
 
 int MetaCommands::sprintf_cmd(Input input, Output output)
@@ -417,37 +489,22 @@ int MetaCommands::sprintf_cmd(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     FormatString format;
+    string replacedString = "";
+    function<string()> nextToken = [&input]() {
+        string s;
+        if (input >> s) {
+            return s;
+        } else {
+            throw std::invalid_argument("not enough arguments");
+        }
+    };
     try {
         format = parseFormatString(formatStringSrc);
+        // evaluate placeholders in the format string
+        replacedString = evaluateFormatString(format, nextToken, output);
     }  catch (const std::invalid_argument& e) {
         output.perror() << e.what() << endl;
         return HERBST_INVALID_ARGUMENT;
-    }
-    // evaluate placeholders in the format string
-    string replacedString = "";
-    for (const auto& blob : format) {
-        if (blob.literal_) {
-            replacedString += blob.data_;
-        } else if (blob.data_ == "c") {
-            // a constant string argument
-            string constString;
-            if (!(input >> constString)) {
-                return HERBST_NEED_MORE_ARGS;
-            }
-            // just copy the plain string to the output
-            replacedString += constString;
-        } else {
-            // we reached %s
-            string path;
-            if (!(input >> path)) {
-                return HERBST_NEED_MORE_ARGS;
-            }
-            Attribute* a = getAttribute(path, output);
-            if (!a) {
-                return HERBST_INVALID_ARGUMENT;
-            }
-            replacedString += a->str();
-        }
     }
     auto carryover = input.fromHere();
     carryover.replace(ident, replacedString);
