@@ -4,8 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
-Current git version
--------------------
+Release 0.9.5 on 2022-07-30
+---------------------------
 
   * Key binds for release events.
   * The Setting 'smart_frame_surroundings' has been changed to accept the
