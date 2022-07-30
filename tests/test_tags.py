@@ -3,6 +3,27 @@ import pytest
 from conftest import PROCESS_SHUTDOWN_TIME
 
 
+def assert_tag_order(hlwm, tag_names):
+    assert hlwm.attr.tags.count() == len(tag_names)
+    for idx, name in enumerate(tag_names):
+        assert hlwm.attr.tags[idx].name() == name
+        assert hlwm.attr.tags['by-name'][name].index() == idx
+
+
+@pytest.fixture()
+def setup_hlwm_tags(hlwm, xvfb, hlwm_tags):
+    for idx, tag in enumerate(hlwm_tags):
+        print(f">>>> {tag} <<<")
+        if idx == 0:
+            hlwm.attr.tags['0'].name = tag['name']
+        else:
+            hlwm.call(['add', tag['name']])
+        for attr_name, attr_value in tag.items():
+            if attr_name != 'name':
+                hlwm.attr.tags[idx][attr_name] = attr_value
+    assert_tag_order(hlwm, [t['name'] for t in hlwm_tags])
+
+
 def test_default_tag_exists_and_has_name(hlwm):
     assert hlwm.get_attr('tags.count') == '1'
     assert hlwm.get_attr('tags.0.name') == 'default'
@@ -503,3 +524,91 @@ def test_merge_tag_minimized_into_visible_tag(hlwm):
 
     assert hlwm.attr.clients[winid].visible() is False
     assert winid not in hlwm.call('dump').stdout
+
+
+@pytest.mark.parametrize("hlwm_tags", [[
+    {'name': 'a'},
+    {'name': 'b'},
+    {'name': 'c'},
+    {'name': 'd'},
+]])
+def test_at_end_forces_reorder(hlwm, setup_hlwm_tags, hlwm_tags):
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd'])
+
+    hlwm.attr.tags['by-name'].b.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'c', 'd', 'b'])
+
+    hlwm.attr.tags['by-name'].c.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'd', 'c', 'b'])
+
+    hlwm.attr.tags['by-name'].b.at_end = False
+
+    assert_tag_order(hlwm, ['a', 'd', 'b', 'c'])
+
+    hlwm.attr.tags['by-name'].c.at_end = False
+
+    assert_tag_order(hlwm, ['a', 'd', 'b', 'c'])
+
+
+@pytest.mark.parametrize("hlwm_tags", [[
+    {'name': 'a'},
+    {'name': 'b'},
+    {'name': 'c'},
+]])
+def test_new_tags_before_at_end(hlwm, setup_hlwm_tags, hlwm_tags):
+    hlwm.attr.tags['by-name'].c.at_end = True
+
+    assert_tag_order(hlwm, ['a', 'b', 'c'])
+
+    hlwm.call('add d')
+
+    assert_tag_order(hlwm, ['a', 'b', 'd', 'c'])
+
+
+@pytest.mark.parametrize("hlwm_tags", [[
+    {'name': 'a'},
+    {'name': 'b'},
+    {'name': 'c'},
+    {'name': 'd'},
+    {'name': 'e'},
+    {'name': 'f', 'at_end': True},
+]])
+def test_at_end_valid_index_assignment(hlwm, setup_hlwm_tags, hlwm_tags):
+    hlwm.attr.tags['by-name'].e.at_end = True
+    hlwm.attr.tags['by-name'].d.at_end = True
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd', 'e', 'f'])
+    hlwm.attr.tags['by-name'].a.index = 2
+    assert_tag_order(hlwm, ['b', 'c', 'a', 'd', 'e', 'f'])
+    hlwm.attr.tags['by-name'].c.index = 0
+    assert_tag_order(hlwm, ['c', 'b', 'a', 'd', 'e', 'f'])
+    hlwm.attr.tags['by-name'].a.index = 0
+    assert_tag_order(hlwm, ['a', 'c', 'b', 'd', 'e', 'f'])
+    hlwm.attr.tags['by-name'].d.index = 5
+    assert_tag_order(hlwm, ['a', 'c', 'b', 'e', 'f', 'd'])
+    hlwm.attr.tags['by-name'].d.index = 3
+    assert_tag_order(hlwm, ['a', 'c', 'b', 'd', 'e', 'f'])
+    hlwm.attr.tags['by-name'].f.index = 4
+    assert_tag_order(hlwm, ['a', 'c', 'b', 'd', 'f', 'e'])
+
+
+@pytest.mark.parametrize("hlwm_tags", [[
+    {'name': 'a'},
+    {'name': 'b'},
+    {'name': 'c'},
+    {'name': 'd', 'at_end': True},
+]])
+def test_at_end_tag_invalid_index_assignment(hlwm, setup_hlwm_tags, hlwm_tags):
+    hlwm.attr.tags['by-name'].c.at_end = True
+    assert_tag_order(hlwm, ['a', 'b', 'c', 'd'])
+
+    for tag in ['a', 'b']:
+        for index in [2, 3, 4, 5]:
+            hlwm.call_xfail(f'set_attr tags.by-name.{tag}.index {index}') \
+                .expect_stderr('between 0 and 1')
+
+    for tag in ['c', 'd']:
+        for index in [0, 1]:
+            hlwm.call_xfail(f'set_attr tags.by-name.{tag}.index {index}') \
+                .expect_stderr('between 2 and 3')

@@ -826,7 +826,7 @@ class X11:
         return w, self.winid_str(w)
 
     def screenshot(self, win_handle) -> RawImage:
-        """screenshot of a windows content, not including its border"""
+        """screenshot of a window's content, not including its border"""
         geom = win_handle.get_geometry()
         attr = win_handle.get_attributes()
         # Xlib defines AllPlanes as: ((unsigned long)~0L)
@@ -860,7 +860,14 @@ class X11:
             assert raw.depth in [32, 24]
             # both for depth 32 and 24, the order is BGRA
             pixelsize = 4
-            (blue, green, red) = (0, 1, 2)
+            # actually, there should be an attribute raw.byte_order which
+            # tells the byte order in the present XImage,
+            # but this is unfortunately missing in python-xlib. so let's
+            # work around this using the system's settings:
+            if sys.byteorder == 'little':
+                (blue, green, red) = (0, 1, 2)
+            else:
+                (blue, green, red) = (3, 2, 1)
             size = geom.width * geom.height
             assert len(raw.data) == pixelsize * size
             rgbvals = [(raw.data[pixelsize * (y * geom.width + x) + red],

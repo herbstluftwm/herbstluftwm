@@ -94,9 +94,8 @@ def test_set_attr_can_not_set_writable(hlwm):
 
 
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
-    call = hlwm.call_xfail('substitute X echo X')
-
-    assert call.stderr == 'substitute: The root object has no attribute "echo"\n'
+    hlwm.call_xfail('substitute X echo X') \
+        .expect_stderr('substitute: The root object has no attribute "echo"')
 
 
 def test_substitute_command_missing(hlwm):
@@ -135,9 +134,8 @@ def test_sprintf_nested(hlwm):
 
 
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
-    call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
-
-    assert call.stderr == 'sprintf: The root object has no attribute "echo"\n'
+    hlwm.call_xfail('sprintf X %s/%s tags.count echo X') \
+        .expect_stderr('sprintf: The root object has no attribute "echo"')
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
@@ -186,6 +184,138 @@ def test_sprintf_completion_s_after_c_placeholder(hlwm):
 def test_sprintf_completion_0_placeholders(hlwm):
     assert hlwm.complete('sprintf T %%') \
         == sorted(['T'] + hlwm.call('list_commands').stdout.splitlines())
+
+
+def test_sprintf_simple_nested_format(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add yetanothertag')
+    commands = [
+        'sprintf S "%{tags.count}" echo S',
+        'sprintf ABC "%{%c.count}" tags echo ABC',
+        'sprintf S "%{%ccount}" tags. echo S',
+        'sprintf alwaysuseupperace "%{%c}" tags.count echo alwaysuseupperace',
+        'sprintf - "%{%c%c%c%c}" tags . count "" echo -',
+        'mktemp string T chain'
+        + ' , set_attr T tags.count'
+        + ' , sprintf S "%{%s}" T echo S',
+        'mktemp string T chain'
+        + ' , set_attr T tags.count'
+        + ' , sprintf S "%{%{%c}}" T echo S',
+        'sprintf S "%{%{%c}}" my_attr_path echo S',
+    ]
+    hlwm.attr.my_attr_path = 'tags.count'
+    expect_output = '3\n'
+    for cmd in commands:
+        assert hlwm.call(cmd).stdout == expect_output
+
+
+def test_sprintf_braces_in_attribute_values(hlwm):
+    hlwm.attr.my_empty = ''
+    hlwm.attr.clients.my_empty = ''
+    hlwm.attr.my_ptr_empty = 'clients.my_empty'
+    hlwm.attr.my_ptr_brace_open = 'my_brace_open'
+    hlwm.attr.my_ptr_brace_close = 'my_brace_close'
+    hlwm.attr.my_brace_open = '{'
+    hlwm.attr.my_brace_close = '}'
+    format2output = {
+        '%{my_brace_open}': '{',
+        '%{my_brace_close}': '}',
+        '%{%{my_ptr_brace_open}}': '{',
+        '%{%{my_ptr_brace_close}}': '}',
+        '%{%{my_empty}my_brace_open}': '{',
+        '%{%{my_empty}my_brace_close}': '}',
+        '%{%{my_empty}my_brace_open}...': '{...',
+        ',,,%{%{my_empty}my_brace_open}...': ',,,{...',
+        ',,,%{%{my_empty}my_brace_open}': ',,,{',
+        '%{my_brace_open%{my_empty}}': '{',
+        '%{%{my_empty}my_brace_close%{my_empty}}': '}',
+        '%{%{%{my_ptr_empty}}my_brace_open}': '{',
+        '%{%{%{my_ptr_empty}}my_brace_close}': '}',
+    }
+    format2error = {
+        '%{%{my_brace_open}.foo}': 'No such object {',
+        '%{%{my_brace_close}.foo}': 'No such object }',
+        '%{tags.%{my_brace_open}}': '"tags" has no attribute "{"',
+        '%{tags.%{my_brace_close}}': '"tags" has no attribute "}"',
+    }
+
+    def format_cmd(frm):
+        return ['sprintf', 'S', frm, 'echo', 'S']
+
+    for frm, out in format2output.items():
+        assert hlwm.call(format_cmd(frm)).stdout.rstrip() == out
+    for frm, err in format2error.items():
+        hlwm.call_xfail(format_cmd(frm)).expect_stderr(err)
+
+
+def test_sprintf_simple_nested_format_multiple_blobs(hlwm):
+    commands = [
+        'sprintf S "%{tags.count}-%{tags.count}" echo S',
+    ]
+    expect_output = '1-1\n'
+    for cmd in commands:
+        assert hlwm.call(cmd).stdout == expect_output
+
+
+def test_sprintf_toplevel_closing_braces_are_literals(hlwm):
+    format2output = {
+        '}': '}',
+        '}}}': '}}}',
+        'a}b}c}d': 'a}b}c}d',
+        '}bc}': '}bc}',
+        'before}': 'before}',
+        '%%{foo}': '%{foo}',
+        'x%%{foo}z': 'x%{foo}z',
+        '}after': '}after',
+        "@}-'-,-": "@}-'-,-",
+    }
+
+    def format_cmd(frm):
+        return ['sprintf', 'S', frm, 'echo', 'S']
+
+    for frm, out in format2output.items():
+        assert hlwm.call(format_cmd(frm)).stdout.rstrip() == out
+
+
+def test_sprintf_error_nested_format(hlwm):
+    format2error = {
+        '%{x': 'unmatched { at position 1',
+        '%{foo%{bar%{}x': 'unmatched { at position 6',
+        'x%{y%{zzz%': 'dangling %',
+        '%{%s%}': 'invalid format type %} at position 5',
+        '%{invalid.path}': 'No such object invalid',
+        '%{monitors.wrong_attr}': 'Object "monitors" has no attribute "wrong_attr"',
+        '%{foo%}': 'invalid format type %}',
+        # the inner %{} works, but the outer %{...} fails:
+        '%{%{my_invalid_path}}': 'No such object settings.invalid',
+    }
+    hlwm.attr.my_invalid_path = 'settings.invalid.path'
+
+    for frm, err in format2error.items():
+        hlwm.call_xfail(['sprintf', 'S', frm, 'echo', 'S']).expect_stderr(err)
+
+
+def test_sprintf_nested_format_invalid_args(hlwm):
+    command2error = {
+        'sprintf S "%s.%{%{%{%c}}}" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%s}}}" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%c}}}%s" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{%s}}}%s" tags.count': 'not enough arguments',
+        'sprintf S "%s.%{%{%{}}}" tags.count echo S': 'has no attribute ""',
+        'sprintf S "%s.%{%{%{}}}" tags.count echo S': 'has no attribute ""',
+    }
+    for cmd, err in command2error.items():
+        hlwm.call_xfail(cmd).expect_stderr(err)
+
+
+def test_sprintf_foreach_list_tag_names(hlwm):
+    hlwm.attr.tags[0].name = 'tag0'
+    hlwm.call('add othertag')
+    hlwm.call('add lasttag')
+    command = \
+        'foreach --filter-name="[0-9]*" T tags. ' \
+        + 'sprintf S "%{%c.name}" T echo S'
+    assert hlwm.call(command).stdout == 'tag0\nothertag\nlasttag\n'
 
 
 def test_disjoin_rects(hlwm):
