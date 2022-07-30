@@ -61,6 +61,7 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
             env=self.env,
             stdout=subprocess.PIPE
         )
+        self.open_persistent_pipe()
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}

@@ -62,6 +62,22 @@ OPTIONS
 *-h*, *--help*::
     Print the herbstclient usage with its command line options.
 
+*-p*, *--binary-pipe*::
+    Run multiple commands via a binary interface. The interface consists of
+    null-byte terminated UTF-8 text tokens. The token 'ARG' pushes the next
+    token to the next command to be run, and the token 'RUN' runs the command.
+    On stdout, the same format applies, and herbstclient will print tokens
+    'STDOUT', 'STDERR', 'STATUS', each followed by a text token containing the
+    output, error channel, and status code of the executed command.
+    After writing 'RUN' and the nullbyte to herbstclient's stdin, do not forget
+    to flush! For example:
++
+----
+printf 'ARG\0echo\0ARG\0hello world\0RUN\0ARG\0get_attr\0ARG\0tags.count\0RUN\0' \
+    | herbstclient --binary-pipe \
+    | hexdump -C
+----
+
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
