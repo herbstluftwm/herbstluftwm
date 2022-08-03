@@ -219,7 +219,7 @@ def test_ewmh_set_current_desktop(hlwm, x11, swap_monitors_to_get_tag, on_anothe
         hlwm.call('add_monitor 800x600+800+0 otherTag')
 
     x11.ewmh.setCurrentDesktop(tag_idx)
-    x11.display.sync()
+    x11.sync_with_hlwm()
 
     assert int(hlwm.get_attr('tags.focus.index')) == tag_idx
     if swap_monitors_to_get_tag or not on_another_monitor or tag_idx == 0:
@@ -231,7 +231,7 @@ def test_ewmh_set_current_desktop(hlwm, x11, swap_monitors_to_get_tag, on_anothe
 def test_ewmh_set_current_desktop_invalid_idx(hlwm, hlwm_process, x11):
     with hlwm_process.wait_stderr_match('_NET_CURRENT_DESKTOP: invalid index'):
         x11.ewmh.setCurrentDesktop(4)
-        x11.display.sync()
+        x11.sync_with_hlwm()
     assert int(hlwm.get_attr('tags.focus.index')) == 0
 
 
@@ -273,7 +273,7 @@ def test_ewmh_focus_client(hlwm, x11):
     assert hlwm.get_attr('clients.focus.winid') == winid_focus
 
     x11.ewmh.setActiveWindow(winHandleToBeFocused)
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr('clients.focus.winid') == winid
 
@@ -291,7 +291,7 @@ def test_ewmh_focus_client_on_other_tag(hlwm, x11, on_another_monitor):
     assert 'focus' not in hlwm.list_children('clients')
 
     x11.ewmh.setActiveWindow(handle)
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr('tags.focus.name') == 'tag2'
     assert hlwm.get_attr('clients.focus.winid') == winid
@@ -304,7 +304,7 @@ def test_ewmh_move_client_to_tag(hlwm, x11):
     assert hlwm.get_attr(f'clients.{winid}.tag') == 'default'
 
     x11.ewmh.setWmDesktop(winHandleToMove, 1)
-    x11.display.sync()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.tag') == 'otherTag'
 
@@ -323,7 +323,7 @@ def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
 
     demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
     x11.ewmh.setWmState(winHandle, 1, demandsAttent)
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
     assert ['tag_flags'] in hc_idle.hooks()
@@ -344,7 +344,7 @@ def test_ewmh_focused_client_never_urgent(hlwm, hc_idle, x11, focused):
     # mark the client urgent
     demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
     x11.ewmh.setWmState(winHandle, 1, demandsAttent)
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.urgent') == hlwm.bool(not focused)
     assert (['urgent', 'on', winid] in hc_idle.hooks()) == (not focused)
@@ -359,7 +359,7 @@ def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     winHandle, winid = x11.create_client()
 
     x11.ewmh.setActiveWindow(winHandle)
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
     demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
@@ -397,6 +397,7 @@ def test_minimize_via_xlib(hlwm, x11):
     assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
 
     xiconifywindow(x11.display, winHandle, x11.screen)
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
 
@@ -406,7 +407,7 @@ def test_unminimize_via_xlib(hlwm, x11):
     hlwm.call(f'set_attr clients.{winid}.minimized true')
 
     winHandle.map()
-    x11.display.flush()
+    x11.sync_with_hlwm()
 
     assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
 

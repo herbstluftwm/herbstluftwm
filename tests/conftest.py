@@ -324,6 +324,12 @@ class HlwmProcess:
     def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
         expect_sth = ((until_stdout or until_stderr) is not None)
         max_wait = 15
+        # Mark the start of the scanning phase to make it easier to debug
+        # if we run into the 'match not found' exception at the end.
+        if until_stdout is not None:
+            print(f"== Starting to scan stdout ({until_stdout})==\n", file=sys.stdout, flush=True)
+        if until_stderr is not None:
+            print("== Starting to scan stderr ({until_stderr}) ==\n", file=sys.stderr, flush=True)
 
         # Track which file objects have EOFed:
         eof_fileobjs = set()
@@ -410,7 +416,7 @@ class HlwmProcess:
             sys.stdout.flush()
         duration = (datetime.now() - started).total_seconds()
         if expect_sth and not match_found():
-            assert False, f'Expected string not encountered within {duration:.1f} seconds'
+            assert False, f'Expected string not encountered within {duration:.1f} seconds.'
 
     @contextmanager
     def wait_stdout_match(self, match):
@@ -891,7 +897,7 @@ class X11:
         # wait for hlwm to flush all events:
         hlwm_bridge = HlwmBridge.INSTANCE
         assert hlwm_bridge is not None, "hlwm must be running"
-        hlwm_bridge.call('true')
+        hlwm_bridge.unchecked_call('true', read_hlwm_output=False)
 
     def get_decoration_window(self, window):
         tree = window.query_tree()
