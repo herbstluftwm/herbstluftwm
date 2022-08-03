@@ -427,11 +427,12 @@ Q: How to navigate between monitors?
 ------------------------------------
 In order to switch focus between the monitors, use the usual direction based
 focusing (the command +focus+). It either focuses a window on the current
-monitor or the next monitor if the boundary is reached.
+monitor or the next monitor if the boundary is reached. Since version 0.9.3,
+the same works when moving windows (command +shift+).
 
-The analogous behaviour for +shift+ is not implemented yet, so you need to
-configure it in your +autostart+. In order to shift windows from monitor to
-monitor, replace the usual usage of +shift+ in your autostart by this one:
+If you're using an older version you need to configure it in your +autostart+.
+In order to shift windows from monitor to monitor, replace the usual usage of
++shift+ in your autostart by this one:
 
 ----
 hc keybind $Mod-Shift-h or / shift left / \
