@@ -178,8 +178,8 @@ int main_hook(int argc, char* argv[]) {
 
 static bool main_binary_pipe_loop(HCConnection* con) {
     bool running = true;
-    freopen(NULL, "rb", stdin);
-    freopen(NULL, "wb", stdout);
+    (void) freopen(NULL, "rb", stdin);
+    (void) freopen(NULL, "wb", stdout);
     while (running) {
         ArgList* command_args = arglist_new();
         bool command_complete = false;
