@@ -103,13 +103,12 @@ class Herbstluftwm:
             complete_proc.stderr = reply['STDERR']
         else:
             complete_proc = subprocess.run(
-                    [self.herbstclient_path, '-n'] + args,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                    env=self.env,
-                    universal_newlines=True,
-                    # Kill hc when it hangs due to crashed server:
-                    timeout=2
-                    )
+                [self.herbstclient_path, '-n'] + args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env=self.env,
+                universal_newlines=True,
+                # Kill hc when it hangs due to crashed server:
+                timeout=2)
 
         return complete_proc
 
