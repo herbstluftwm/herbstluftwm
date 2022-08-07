@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 // inspired by dwm's gettextprop()
 char* read_window_property(Display* dpy, Window window, Atom atom) {
