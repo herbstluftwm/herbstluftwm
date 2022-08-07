@@ -17,7 +17,7 @@ void argv_free(int argc, char** argv);
  * @param the stream to read from
  * @return the string before the null byte; the caller has to free it.
  */
-char* read_until_null_byte(FILE* stream);
+char* read_until_null_byte(int fd);
 
 struct ArgList_ {
     // data[null_index] is always in range and contains NULL

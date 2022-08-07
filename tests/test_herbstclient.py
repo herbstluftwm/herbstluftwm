@@ -98,11 +98,18 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     # might be send too early and not be in the output of 'proc'. This is
     # why we send much more then we want to receive (--count) and we perform
     # two hc-calls and hope that this gives hc --wait enough time to boot up.
-    hlwm.call('true')
-    hlwm.call('true')
+
+    def slow_hc_call(cmd):
+        print(f"herbstclient {cmd}", file=sys.stderr, flush=True)
+        subprocess.run([HC_PATH] + cmd.split(' '), check=True)
+
+    slow_hc_call('true')
+    slow_hc_call('true')
+    slow_hc_call('true')
+
     for _ in range(0, num_hooks_sent):
-        hlwm.call('emit_hook nonmatch nonarg')
-        hlwm.call('emit_hook matcher somearg')
+        slow_hc_call('emit_hook nonmatch nonarg')
+        slow_hc_call('emit_hook matcher somearg')
 
     # first read output entirely to avoid blocking on the side
     # of herbstclient
@@ -113,6 +120,7 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     assert proc.returncode == 0
     proc.stdout.close()
     proc.stderr.close()
+    print("test passed", flush=True)
 
 
 @pytest.mark.parametrize('repeat', range(0, 3))  # use more repetitions to test the race-condtion
@@ -128,8 +136,13 @@ def test_lastarg_only(hlwm, repeat):
     # we send two dummy commands and hope that in the mean-time of two full
     # herbstclient round-trips, 'proc' establishes a connection to hlwm's hook
     # window. Then, we hope that the first 'emit_hook a' isn't too early yet.
-    hlwm.call('true')
-    hlwm.call('true')
+
+    def slow_hc_call(cmd):
+        print(f"herbstclient {cmd}", file=sys.stderr, flush=True)
+        subprocess.run([HC_PATH] + cmd.split(' '), check=True)
+
+    slow_hc_call('true')
+    slow_hc_call('true')
     hooks = [
         ['a'],
         ['b', 'c'],
@@ -139,7 +152,7 @@ def test_lastarg_only(hlwm, repeat):
     ]
     expected_lines = []
     for h in hooks:
-        hlwm.call(['emit_hook'] + h)
+        slow_hc_call(['emit_hook'] + h)
         expected_lines.append(h[-1])
 
     # first read output entirely to avoid blocking on the side

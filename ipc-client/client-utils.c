@@ -64,13 +64,31 @@ void argv_free(int argc, char** argv) {
     free(argv);
 }
 
-char* read_until_null_byte(FILE* stream) {
+static bool read_char_from_stream(FILE* stream, char* ch) {
+    int c = fgetc(stream);
+    if (c == EOF) {
+        return false;
+    }
+    // re-interpret the 'int' from fgetc() as a signed char:
+    char c_signed = (char) ((c > CHAR_MAX) ? (c - (UCHAR_MAX + 1)) : c);
+    *ch = c_signed;
+    return true;
+}
+
+static bool read_char_from_fd(int fd, char* ch) {
+    ssize_t count = read(fd, ch, sizeof(*ch));
+    return count != 0;
+}
+
+char* read_until_null_byte(int fd) {
     size_t alloclen = 10;
     char* buf = malloc(sizeof(char) * alloclen);
     size_t next_pos = 0; // where to write the next byte to
     while (true) {
-        int c = fgetc(stream);
-        if (c == EOF) {
+        char ch;
+        // bool suc = read_char_from_stream(stream, &ch);
+        bool suc = read_char_from_fd(fd, &ch);
+        if (!suc) {
             free(buf);
             return NULL;
         }
@@ -79,11 +97,9 @@ char* read_until_null_byte(FILE* stream) {
             alloclen += 10;
             buf = realloc(buf, alloclen);
         }
-        // re-interpret the 'int' from fgetc() as a signed char:
-        char c_signed = (char) ((c > CHAR_MAX) ? (c - (UCHAR_MAX + 1)) : c);
-        buf[next_pos] = c_signed;
+        buf[next_pos] = ch;
         next_pos++;
-        if (c_signed == '\0') {
+        if (ch == '\0') {
             // if this was the terminating null byte,
             // then stop scanning
             break;

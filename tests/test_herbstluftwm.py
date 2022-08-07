@@ -35,6 +35,7 @@ def test_wmexec_to_self(hlwm, hlwm_process, with_client, explicit_arg):
                             read_hlwm_output=False)
     assert p.returncode == 0
     hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+    hlwm.reconnect_pipe()
 
     assert hlwm.attr.settings.snap_gap() != 13
     if with_client:
@@ -59,6 +60,7 @@ def test_wmexec_failure(hlwm, hlwm_process, args, errormsg):
     hlwm_process.read_and_echo_output(until_stderr=expected_error)
     # and so hlwm does the exec to itself:
     hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+    hlwm.reconnect_pipe()
 
     assert hlwm.attr.settings.snap_gap() != 13
 

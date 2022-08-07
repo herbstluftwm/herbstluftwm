@@ -263,6 +263,10 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
                 'waiting for hook triggered by client \"{}\"'.format(wmclass))
         return line[-1]
 
+    def reconnect_pipe(self):
+        self.close_persistent_pipe()
+        self.open_persistent_pipe()
+
     def shutdown(self):
         # first send SIGTERM to all processes, so they
         # can shut down in parallel

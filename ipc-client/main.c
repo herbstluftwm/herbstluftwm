@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
+#include <unistd.h>
 
 #include "../src/ipc-protocol.h"
 #include "client-utils.h"
@@ -177,35 +179,54 @@ int main_hook(int argc, char* argv[]) {
 }
 
 static bool main_binary_pipe_loop(HCConnection* con) {
+    int hc_fd = hc_connection_socket(con);
+    int stdin_fd = STDIN_FILENO;
+    int maximum_plus_1 = 1 + ((hc_fd > stdin_fd) ? hc_fd : stdin_fd);
+    fd_set in_fds;
     bool running = true;
-    (void) freopen(NULL, "rb", stdin);
+    // (void) freopen(NULL, "rb", stdin);
     (void) freopen(NULL, "wb", stdout);
     while (running) {
         ArgList* command_args = arglist_new();
         bool command_complete = false;
         while (!command_complete && running) {
-            // // debuging output, maybe it is useful later:
-            // fprintf(stderr, "Reading the next command...\n");
-            char* token = read_until_null_byte(stdin);
-            if (!token) {
-                running = false;
-                break;
-            } else if (!strcmp(token, "ARG")) {
-                char* arg = read_until_null_byte(stdin);
-                if (arg) {
-                    // // debuging output, maybe it is useful later:
-                    // fprintf(stderr, "arg (%s)\n", arg);
-                    arglist_push_with_ownership(command_args, arg);
+            FD_ZERO(&in_fds);
+            //FD_SET(hc_fd, &in_fds);
+            FD_SET(stdin_fd, &in_fds);
+            // wait for an event or a signal
+            select(maximum_plus_1, &in_fds, NULL, NULL, NULL);
+            if (FD_ISSET(hc_fd, &in_fds)) {
+                hc_process_events(con);
+                if (!hc_check_running(con)) {
+                    fprintf(stderr, "herbstluftwm exited\n");
+                    running = false;
+                    break;
+                }
+            }
+            if (FD_ISSET(stdin_fd, &in_fds)) {
+                // // debuging output, maybe it is useful later:
+                // fprintf(stderr, "Reading the next command...\n");
+                char* token = read_until_null_byte(stdin_fd);
+                if (!token) {
+                    running = false;
+                    break;
+                } else if (!strcmp(token, "ARG")) {
+                    char* arg = read_until_null_byte(stdin_fd);
+                    if (arg) {
+                        // // debuging output, maybe it is useful later:
+                        // fprintf(stderr, "arg (%s)\n", arg);
+                        arglist_push_with_ownership(command_args, arg);
+                    } else {
+                        running = false;
+                    }
+                } else if (!strcmp(token, "RUN")) {
+                    command_complete = true;
                 } else {
+                    fprintf(stderr, "Invalid token (%s)\n", token);
                     running = false;
                 }
-            } else if (!strcmp(token, "RUN")) {
-                command_complete = true;
-            } else {
-                fprintf(stderr, "Invalid token (%s)\n", token);
-                running = false;
+                free(token);
             }
-            free(token);
         }
         if (!running) {
             arglist_free(command_args);
@@ -221,6 +242,7 @@ static bool main_binary_pipe_loop(HCConnection* con) {
         arglist_free(command_args);
         if (!suc) {
             fprintf(stderr, "Error: Could not send command.\n");
+            return false;
         }
         // // debuging output, maybe it is useful later:
         // fprintf(stderr, "stdout=\"%s\"\n", output);

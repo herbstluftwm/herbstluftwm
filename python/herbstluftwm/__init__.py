@@ -35,16 +35,31 @@ class Herbstluftwm:
         self.env = None
         self.proc = None
 
+    def __del__(self):
+        self.close_persistent_pipe()
+
     def open_persistent_pipe(self):
         """
         Establish a persistent pipe
         """
+        if self.proc is not None:
+            return
         self.proc = subprocess.Popen([self.herbstclient_path, '--binary-pipe'],
                                      stdout=subprocess.PIPE,
                                      stdin=subprocess.PIPE,
                                      env=self.env,
                                      encoding=None,  # open stdout/stdin in binary mode
                                      )
+
+    def close_persistent_pipe(self):
+        if self.proc:
+            self.proc.terminate()
+            try:
+                self.proc.wait(2)
+            except Exception:
+                self.proc.kill()
+                self.proc.wait(2)
+            self.proc = None
 
     def _parse_command(self, cmd):
         """
