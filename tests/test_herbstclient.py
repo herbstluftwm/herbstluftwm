@@ -139,10 +139,10 @@ def test_lastarg_only(hlwm, repeat):
 
     def slow_hc_call(cmd):
         print(f"herbstclient {cmd}", file=sys.stderr, flush=True)
-        subprocess.run([HC_PATH] + cmd.split(' '), check=True)
+        subprocess.run([HC_PATH] + cmd, check=True)
 
-    slow_hc_call('true')
-    slow_hc_call('true')
+    slow_hc_call(['true'])
+    slow_hc_call(['true'])
     hooks = [
         ['a'],
         ['b', 'c'],
