@@ -185,7 +185,7 @@ static bool main_binary_pipe_loop(HCConnection* con) {
     fd_set in_fds;
     bool running = true;
     // (void) freopen(NULL, "rb", stdin);
-    (void) freopen(NULL, "wb", stdout);
+    FILE* stdout_bin = freopen(NULL, "wb", stdout);
     while (running) {
         ArgList* command_args = arglist_new();
         bool command_complete = false;
@@ -248,10 +248,10 @@ static bool main_binary_pipe_loop(HCConnection* con) {
         // fprintf(stderr, "stdout=\"%s\"\n", output);
         // fprintf(stderr, "stderr=\"%s\"\n", error);
         // fprintf(stderr, "status=\"%d\"\n", status);
-        fprintf(stdout, "STDOUT%c%s%c", 0, output, 0);
-        fprintf(stdout, "STDERR%c%s%c", 0, error, 0);
-        fprintf(stdout, "STATUS%c%d%c", 0, status, 0);
-        fflush(stdout);
+        fprintf(stdout_bin, "STDOUT%c%s%c", 0, output, 0);
+        fprintf(stdout_bin, "STDERR%c%s%c", 0, error, 0);
+        fprintf(stdout_bin, "STATUS%c%d%c", 0, status, 0);
+        fflush(stdout_bin);
     }
     return true;
 }

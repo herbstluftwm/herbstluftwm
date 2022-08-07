@@ -1,9 +1,9 @@
 #ifndef __HERBSTLUFT_CLIENT_UTILS_H_
 #define __HERBSTLUFT_CLIENT_UTILS_H_
 
-#include <stdio.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <stdio.h>
 
 // return a window property or NULL on error
 char* read_window_property(Display* dpy, Window window, Atom atom);
