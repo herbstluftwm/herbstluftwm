@@ -65,16 +65,16 @@ void argv_free(int argc, char** argv) {
     free(argv);
 }
 
-static bool read_char_from_stream(FILE* stream, char* ch) {
-    int c = fgetc(stream);
-    if (c == EOF) {
-        return false;
-    }
-    // re-interpret the 'int' from fgetc() as a signed char:
-    char c_signed = (char) ((c > CHAR_MAX) ? (c - (UCHAR_MAX + 1)) : c);
-    *ch = c_signed;
-    return true;
-}
+// static bool read_char_from_stream(FILE* stream, char* ch) {
+//     int c = fgetc(stream);
+//     if (c == EOF) {
+//         return false;
+//     }
+//     // re-interpret the 'int' from fgetc() as a signed char:
+//     char c_signed = (char) ((c > CHAR_MAX) ? (c - (UCHAR_MAX + 1)) : c);
+//     *ch = c_signed;
+//     return true;
+// }
 
 static bool read_char_from_fd(int fd, char* ch) {
     ssize_t count = read(fd, ch, sizeof(*ch));

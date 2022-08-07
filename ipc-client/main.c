@@ -191,7 +191,7 @@ static bool main_binary_pipe_loop(HCConnection* con) {
         bool command_complete = false;
         while (!command_complete && running) {
             FD_ZERO(&in_fds);
-            //FD_SET(hc_fd, &in_fds);
+            FD_SET(hc_fd, &in_fds);
             FD_SET(stdin_fd, &in_fds);
             // wait for an event or a signal
             select(maximum_plus_1, &in_fds, NULL, NULL, NULL);
