@@ -309,6 +309,9 @@ class HlwmProcess:
         - env is the environment dictionary
         - args is a list of additional command line arguments
         """
+        self.stdout_scanners = []
+        self.stderr_scanners = []
+
         self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
             [self.bin_path, '--exit-on-xerror', '--verbose'] + args, env=env,
@@ -323,48 +326,101 @@ class HlwmProcess:
         self.output_selector = sel
 
         # Wait for marker output from wrapper script:
-        self.read_and_echo_output(until_stdout=autostart_stdout_message)
+        stdout_message_scanner = HlwmProcess.ChannelScanner(autostart_stdout_message)
+        self.stdout_scanners.append(stdout_message_scanner)
+        while not stdout_message_scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
 
-    def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
-        expect_sth = ((until_stdout or until_stderr) is not None)
+    class ChannelScanner:
+        def __init__(self, matcher):
+            self.matcher = matcher
+            self.buffer = ''
+            self.match_found = HlwmProcess.ChannelScanner.run_matcher(self.matcher, self.buffer)
+
+        @staticmethod
+        def run_matcher(matcher, buffer):
+            if isinstance(matcher, str):
+                print(f"'{matcher}' in buffer = {matcher in buffer}", flush=True)
+                return matcher in buffer
+            elif hasattr(matcher, 'search'):
+                return matcher.search(buffer)
+            else:
+                raise Exception('unknown matcher type. matcher must be a string or have a search method')
+
+        def feed_line(self, line):
+            """a new line in this buffer was read;
+            line ends with a newline character"""
+            if not self.match_found:
+                # only continue to gather lines if match was not found
+                self.buffer += line
+                # look for a match again:
+                self.match_found = HlwmProcess.ChannelScanner.run_matcher(self.matcher, self.buffer)
+
+    def read_and_echo_output_until_stdout(self, stdout_matcher):
+        scanner = HlwmProcess.ChannelScanner(stdout_matcher)
+        self.stdout_scanners.append(scanner)
+        while not scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
+
+    def read_and_echo_output_until_stderr(self, stderr_matcher):
+        scanner = HlwmProcess.ChannelScanner(stderr_matcher)
+        self.stderr_scanners.append(scanner)
+        while not scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
+
+    def read_and_echo_output(self, until_eof=False, wait_for_one_line=False):
+        """
+        read stdout and stderr from herbstluftwm,
+        pass them through the stdout/stderr scanners,
+        and then finally forward to actual stdout/stderr.
+        If 'wait_for_one_line' is not set, then this method
+        immediatelly returns whenever no bytes are ready.
+        If 'wait_for_one_line' is set, then this method
+        blocks until at least one line has been processed.
+        """
         max_wait = 15
         # Mark the start of the scanning phase to make it easier to debug
         # if we run into the 'match not found' exception at the end.
-        if until_stdout is not None:
-            print(f"== Starting to scan stdout ({until_stdout})==\n", file=sys.stdout, flush=True)
-        if until_stderr is not None:
-            print("== Starting to scan stderr ({until_stderr}) ==\n", file=sys.stderr, flush=True)
 
         # Track which file objects have EOFed:
         eof_fileobjs = set()
         fileobjs = set(k.fileobj for k in self.output_selector.get_map().values())
 
-        stderr = ''
+        # gather the current line as bytes.
         stderr_bytes = bytes()
-        stdout = ''
         stdout_bytes = bytes()
 
-        def match_found():
-            if until_stdout:
-                if isinstance(until_stdout, str) and until_stdout in stdout:
-                    return True
-                if hasattr(until_stdout, 'search') and until_stdout.search(stdout):
-                    return True
-            if until_stderr:
-                if isinstance(until_stderr, str) and until_stderr in stderr:
-                    return True
-                if hasattr(until_stderr, 'search') and until_stderr.search(stderr):
-                    return True
-            return False
+        def feed_ready_byte_chunk(byte_chunk, scanners, target_file):
+            """decode the given bytes,
+            pass it to all scanners,
+            and then forward bytes to actual target stream/file.
+            if a scanner matches, then it is removed from the scanners list.
+            """
+            decoded = byte_chunk.decode()
+            removal_indices = []
+            for idx, scanner in enumerate(scanners):
+                scanner.feed_line(decoded)
+                if scanner.match_found:
+                    removal_indices.append(idx)
+            # remove in reverse order such that indices are preserved
+            for idx in reversed(removal_indices):
+                scanners.pop(idx)
+            target_file.write(decoded)
+            target_file.flush()
 
         started = datetime.now()
+        output_observed = False
         while (datetime.now() - started).total_seconds() < max_wait:
-            select_timeout = 1
-            # If we're not polling for a matching string (anymore), there is no
-            # need for a dampening timeout:
-            if not expect_sth or match_found():
+            if wait_for_one_line and not output_observed:
+                select_timeout = 1
+            else:
                 select_timeout = 0
             selected = self.output_selector.select(timeout=select_timeout)
+
+            if not until_eof and not (wait_for_one_line and not output_observed):
+                if selected == []:
+                    break
+
             for key, events in selected:
                 # Read only single byte, otherwise we might block:
                 ch = key.fileobj.read(1)
@@ -376,19 +432,15 @@ class HlwmProcess:
                 if key.fileobj == self.proc.stderr:
                     stderr_bytes += ch
                     if ch == b'\n':
-                        stderr += stderr_bytes.decode()
-                        # Pass it through to the real stderr:
-                        key.data.write(stderr_bytes.decode())
-                        key.data.flush()
+                        output_observed = True
+                        feed_ready_byte_chunk(stderr_bytes, self.stderr_scanners, key.data)
                         stderr_bytes = b''
 
                 if key.fileobj == self.proc.stdout:
                     stdout_bytes += ch
                     if ch == b'\n':
-                        stdout += stdout_bytes.decode()
-                        # Pass it through to the real stdout:
-                        key.data.write(stdout_bytes.decode())
-                        key.data.flush()
+                        output_observed = True
+                        feed_ready_byte_chunk(stdout_bytes, self.stdout_scanners, key.data)
                         stdout_bytes = b''
 
             if until_eof:
@@ -399,28 +451,14 @@ class HlwmProcess:
                 else:
                     continue
 
-            if selected != []:
-                # There is still data available, so keep reading (no matter
-                # what):
-                continue
-
-            # But stop reading if there is nothing to look for or we have
-            # already found it:
-            if not expect_sth or match_found():
-                break
-
-        # decode remaining bytes for the final match_found() check
+        # decode remaining bytes
         if stderr_bytes != b'':
-            stderr += stderr_bytes.decode()
-            sys.stderr.write(stderr_bytes.decode())
-            sys.stderr.flush()
+            feed_ready_byte_chunk(stderr_bytes, self.stderr_scanners, sys.stderr)
         if stdout_bytes != b'':
-            stdout += stdout_bytes.decode()
-            sys.stdout.write(stdout_bytes.decode())
-            sys.stdout.flush()
+            feed_ready_byte_chunk(stdout_bytes, self.stdout_scanners, sys.stdout)
         duration = (datetime.now() - started).total_seconds()
-        if expect_sth and not match_found():
-            assert False, f'Expected string not encountered within {duration:.1f} seconds.'
+        if wait_for_one_line and not output_observed:
+            assert False, f'Expected output not encountered within {duration:.1f} seconds.'
 
     @contextmanager
     def wait_stdout_match(self, match):
@@ -432,8 +470,11 @@ class HlwmProcess:
         unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
+        scanner = HlwmProcess.ChannelScanner(match)
+        self.stdout_scanners.append(scanner)
         yield
-        self.read_and_echo_output(until_stdout=match)
+        while not scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
 
     @contextmanager
     def wait_stderr_match(self, match):
@@ -445,8 +486,11 @@ class HlwmProcess:
         unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
+        scanner = HlwmProcess.ChannelScanner(match)
+        self.stderr_scanners.append(scanner)
         yield
-        self.read_and_echo_output(until_stderr=match)
+        while not scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
 
     def investigate_timeout(self, reason):
         """if some kind of client request observes a timeout, investigate the
