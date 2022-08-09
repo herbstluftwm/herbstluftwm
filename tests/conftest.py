@@ -367,14 +367,12 @@ class HlwmProcess:
         return scanner
 
     def read_and_echo_output_until_stdout(self, stdout_matcher):
-        scanner = HlwmProcess.ChannelScanner(stdout_matcher)
-        self.stdout_scanners.append(scanner)
+        scanner = self.new_stdout_scanner(stdout_matcher)
         while not scanner.match_found:
             self.read_and_echo_output(wait_for_one_line=True)
 
     def read_and_echo_output_until_stderr(self, stderr_matcher):
-        scanner = HlwmProcess.ChannelScanner(stderr_matcher)
-        self.stderr_scanners.append(scanner)
+        scanner = self.new_stderr_scanner(stderr_matcher)
         while not scanner.match_found:
             self.read_and_echo_output(wait_for_one_line=True)
 
@@ -480,8 +478,7 @@ class HlwmProcess:
         unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
-        scanner = HlwmProcess.ChannelScanner(match)
-        self.stdout_scanners.append(scanner)
+        scanner = self.new_stdout_scanner(match)
         yield
         while not scanner.match_found:
             self.read_and_echo_output(wait_for_one_line=True)
@@ -496,8 +493,7 @@ class HlwmProcess:
         unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
-        scanner = HlwmProcess.ChannelScanner(match)
-        self.stderr_scanners.append(scanner)
+        scanner = self.new_stderr_scanner(match)
         yield
         while not scanner.match_found:
             self.read_and_echo_output(wait_for_one_line=True)
@@ -955,7 +951,7 @@ class X11:
         # wait for hlwm to flush all events:
         hlwm_bridge = HlwmBridge.INSTANCE
         assert hlwm_bridge is not None, "hlwm must be running"
-        hlwm_bridge.unchecked_call('true', read_hlwm_output=False)
+        hlwm_bridge.call('true')
 
     def get_decoration_window(self, window):
         tree = window.query_tree()

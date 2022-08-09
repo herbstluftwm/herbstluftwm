@@ -98,18 +98,14 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     # might be send too early and not be in the output of 'proc'. This is
     # why we send much more then we want to receive (--count) and we perform
     # two hc-calls and hope that this gives hc --wait enough time to boot up.
-
-    def slow_hc_call(cmd):
-        print(f"herbstclient {cmd}", file=sys.stderr, flush=True)
-        subprocess.run([HC_PATH] + cmd.split(' '), check=True)
-
-    slow_hc_call('true')
-    slow_hc_call('true')
-    slow_hc_call('true')
+    hlwm.close_persistent_pipe()  # make hlwm calls a bit slower
+    hlwm.call('true')
+    hlwm.call('true')
+    hlwm.call('true')
 
     for _ in range(0, num_hooks_sent):
-        slow_hc_call('emit_hook nonmatch nonarg')
-        slow_hc_call('emit_hook matcher somearg')
+        hlwm.call('emit_hook nonmatch nonarg')
+        hlwm.call('emit_hook matcher somearg')
 
     # first read output entirely to avoid blocking on the side
     # of herbstclient
@@ -136,13 +132,9 @@ def test_lastarg_only(hlwm, repeat):
     # we send two dummy commands and hope that in the mean-time of two full
     # herbstclient round-trips, 'proc' establishes a connection to hlwm's hook
     # window. Then, we hope that the first 'emit_hook a' isn't too early yet.
-
-    def slow_hc_call(cmd):
-        print(f"herbstclient {cmd}", file=sys.stderr, flush=True)
-        subprocess.run([HC_PATH] + cmd, check=True)
-
-    slow_hc_call(['true'])
-    slow_hc_call(['true'])
+    hlwm.close_persistent_pipe()  # make hlwm calls a bit slower
+    hlwm.call('true')
+    hlwm.call('true')
     hooks = [
         ['a'],
         ['b', 'c'],
@@ -152,7 +144,7 @@ def test_lastarg_only(hlwm, repeat):
     ]
     expected_lines = []
     for h in hooks:
-        slow_hc_call(['emit_hook'] + h)
+        hlwm.call(['emit_hook'] + h)
         expected_lines.append(h[-1])
 
     # first read output entirely to avoid blocking on the side
