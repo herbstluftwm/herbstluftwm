@@ -327,10 +327,7 @@ class HlwmProcess:
         self.output_selector = sel
 
         # Wait for marker output from wrapper script:
-        stdout_message_scanner = HlwmProcess.ChannelScanner(autostart_stdout_message)
-        self.stdout_scanners.append(stdout_message_scanner)
-        while not stdout_message_scanner.match_found:
-            self.read_and_echo_output(wait_for_one_line=True)
+        self.wait_for_scanner_match(self.new_stdout_scanner(autostart_stdout_message))
 
     class ChannelScanner:
         def __init__(self, matcher):
@@ -357,6 +354,11 @@ class HlwmProcess:
                 # look for a match again:
                 self.match_found = HlwmProcess.ChannelScanner.run_matcher(self.matcher, self.buffer)
 
+    def wait_for_scanner_match(self, channel_scanner):
+        """process stdout/stderr of hlwm until the given scanner matches"""
+        while not channel_scanner.match_found:
+            self.read_and_echo_output(wait_for_one_line=True)
+
     def new_stdout_scanner(self, *channel_scanner_args):
         scanner = HlwmProcess.ChannelScanner(*channel_scanner_args)
         self.stdout_scanners.append(scanner)
@@ -369,13 +371,11 @@ class HlwmProcess:
 
     def read_and_echo_output_until_stdout(self, stdout_matcher):
         scanner = self.new_stdout_scanner(stdout_matcher)
-        while not scanner.match_found:
-            self.read_and_echo_output(wait_for_one_line=True)
+        self.wait_for_scanner_match(scanner)
 
     def read_and_echo_output_until_stderr(self, stderr_matcher):
         scanner = self.new_stderr_scanner(stderr_matcher)
-        while not scanner.match_found:
-            self.read_and_echo_output(wait_for_one_line=True)
+        self.wait_for_scanner_match(scanner)
 
     def read_and_echo_output(self, until_eof=False, wait_for_one_line=False):
         """
@@ -481,8 +481,7 @@ class HlwmProcess:
         self.read_and_echo_output()
         scanner = self.new_stdout_scanner(match)
         yield
-        while not scanner.match_found:
-            self.read_and_echo_output(wait_for_one_line=True)
+        self.wait_for_scanner_match(scanner)
 
     @contextmanager
     def wait_stderr_match(self, match):
@@ -496,8 +495,7 @@ class HlwmProcess:
         self.read_and_echo_output()
         scanner = self.new_stderr_scanner(match)
         yield
-        while not scanner.match_found:
-            self.read_and_echo_output(wait_for_one_line=True)
+        self.wait_for_scanner_match(scanner)
 
     def investigate_timeout(self, reason):
         """if some kind of client request observes a timeout, investigate the
