@@ -116,7 +116,6 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     assert proc.returncode == 0
     proc.stdout.close()
     proc.stderr.close()
-    print("test passed", flush=True)
 
 
 @pytest.mark.parametrize('repeat', range(0, 3))  # use more repetitions to test the race-condtion
