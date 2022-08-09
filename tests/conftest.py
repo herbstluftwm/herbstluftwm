@@ -356,6 +356,16 @@ class HlwmProcess:
                 # look for a match again:
                 self.match_found = HlwmProcess.ChannelScanner.run_matcher(self.matcher, self.buffer)
 
+    def new_stdout_scanner(self, *channel_scanner_args):
+        scanner = ChannelScanner(*channel_scanner_args)
+        self.stdout_scanners.append(scanner)
+        return scanner
+
+    def new_stderr_scanner(self, *channel_scanner_args):
+        scanner = ChannelScanner(*channel_scanner_args)
+        self.stderr_scanners.append(scanner)
+        return scanner
+
     def read_and_echo_output_until_stdout(self, stdout_matcher):
         scanner = HlwmProcess.ChannelScanner(stdout_matcher)
         self.stdout_scanners.append(scanner)
