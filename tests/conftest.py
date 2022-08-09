@@ -875,15 +875,13 @@ class X11:
                               Xatom.CARDINAL,
                               32,
                               [pid])
-        if sync_hlwm:
-            scanner = self._hlwm_proc().new_stderr_scanner('MapRequest for ' + self.winid_str(w))
         pre_map(w)
         w.map()
         pre_sync(w)
         self.display.sync()
         if sync_hlwm:
             # wait for hlwm to fully recognize it as a client
-            self.sync_with_hlwm(wait_for=scanner)
+            self.sync_with_hlwm()
         return w, self.winid_str(w)
 
     def screenshot(self, win_handle) -> RawImage:
@@ -946,19 +944,12 @@ class X11:
         self.set_property_textlist('_NET_WM_NAME', [title], window=win_handle)
         self.sync_with_hlwm()
 
-    def _hlwm_proc(self):
-        hlwm_bridge = HlwmBridge.INSTANCE
-        assert hlwm_bridge is not None, "hlwm must be running"
-        return hlwm_bridge.hlwm_process
-
-    def sync_with_hlwm(self, wait_for=None):
+    def sync_with_hlwm(self):
         self.display.sync()
         # wait for hlwm to flush all events:
         hlwm_bridge = HlwmBridge.INSTANCE
         assert hlwm_bridge is not None, "hlwm must be running"
         hlwm_bridge.call('true')
-        if wait_for is not None:
-            self._hlwm_proc().wait_for_scanner_match(wait_for)
 
     def get_decoration_window(self, window):
         tree = window.query_tree()
