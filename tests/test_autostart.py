@@ -60,7 +60,7 @@ def test_no_autostart(xvfb):
     }
     env = conftest.extend_env_with_whitelist(env)
     hlwm_proc = HlwmProcess('', env, [])
-    hlwm_proc.read_and_echo_output_until_stderr('Will not run autostart file.')
+    hlwm_proc.read_and_echo_output(until_stderr='Will not run autostart file.')
     hlwm_proc.shutdown()
 
 

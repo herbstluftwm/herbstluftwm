@@ -98,11 +98,8 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     # might be send too early and not be in the output of 'proc'. This is
     # why we send much more then we want to receive (--count) and we perform
     # two hc-calls and hope that this gives hc --wait enough time to boot up.
-    hlwm.close_persistent_pipe()  # make hlwm calls a bit slower
     hlwm.call('true')
     hlwm.call('true')
-    hlwm.call('true')
-
     for _ in range(0, num_hooks_sent):
         hlwm.call('emit_hook nonmatch nonarg')
         hlwm.call('emit_hook matcher somearg')
@@ -131,7 +128,6 @@ def test_lastarg_only(hlwm, repeat):
     # we send two dummy commands and hope that in the mean-time of two full
     # herbstclient round-trips, 'proc' establishes a connection to hlwm's hook
     # window. Then, we hope that the first 'emit_hook a' isn't too early yet.
-    hlwm.close_persistent_pipe()  # make hlwm calls a bit slower
     hlwm.call('true')
     hlwm.call('true')
     hooks = [

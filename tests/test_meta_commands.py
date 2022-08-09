@@ -658,8 +658,9 @@ def test_setenv_and_spawn(hlwm, hlwm_process):
     hlwm.call(['setenv', 'FOO', 'bar'])
 
     hlwm_process.read_and_echo_output()
-    with hlwm_process.wait_stdout_match('FOO is bar .'):
-        hlwm.call(['spawn', 'sh', '-c', 'echo FOO is $FOO .'])
+    hlwm.unchecked_call(['spawn', 'sh', '-c', 'echo FOO is $FOO .'],
+                        read_hlwm_output=False)
+    hlwm_process.read_and_echo_output(until_stdout='FOO is bar .')
 
 
 def test_setenv_completion_existing_var(hlwm):
