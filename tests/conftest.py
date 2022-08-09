@@ -357,12 +357,12 @@ class HlwmProcess:
                 self.match_found = HlwmProcess.ChannelScanner.run_matcher(self.matcher, self.buffer)
 
     def new_stdout_scanner(self, *channel_scanner_args):
-        scanner = ChannelScanner(*channel_scanner_args)
+        scanner = HlwmProcess.ChannelScanner(*channel_scanner_args)
         self.stdout_scanners.append(scanner)
         return scanner
 
     def new_stderr_scanner(self, *channel_scanner_args):
-        scanner = ChannelScanner(*channel_scanner_args)
+        scanner = HlwmProcess.ChannelScanner(*channel_scanner_args)
         self.stderr_scanners.append(scanner)
         return scanner
 
