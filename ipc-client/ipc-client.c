@@ -339,11 +339,17 @@ int hc_connection_socket(HCConnection* con)
 void hc_process_events(HCConnection* con)
 {
     XEvent event;
-    while (XQLength(con->display)) {
+    while (1) {
+        if (XQLength(con->display) == 0) {
+            // if the queue is empty, ask the server for more events:
+            XSync(con->display, False);
+            if (XQLength(con->display) == 0) {
+                // if the queue is then still empty,
+                // quit
+                break;
+            }
+        }
         XNextEvent(con->display, &event);
         handle_event(con, &event);
-        if (con->hook_window == 0) {
-            break;
-        }
     }
 }
