@@ -77,14 +77,15 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
 
         outcome = 'succeeded' if proc.returncode == 0 else 'failed'
         allout = proc.stdout + proc.stderr
+        logfile = sys.stderr
         if allout:
             if log_output:
-                print(f'Client command {args} {outcome} with output:\n{allout}')
+                print(f'Client command {args} {outcome} with output:\n{allout}', file=logfile)
             else:
-                print(f'Client command {args} {outcome} with output', end='')
-                print(' (output suppressed).')
+                print(f'Client command {args} {outcome} with output', end='', file=logfile)
+                print(' (output suppressed).', file=logfile)
         else:
-            print(f'Client command {args} {outcome} (no output)')
+            print(f'Client command {args} {outcome} (no output)', file=logfile)
 
         # Take this opportunity read and echo any hlwm output captured in the
         # meantime:
