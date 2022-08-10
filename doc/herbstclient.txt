@@ -62,21 +62,46 @@ OPTIONS
 *-h*, *--help*::
     Print the herbstclient usage with its command line options.
 
-*-p*, *--binary-pipe*::
-    Run multiple commands via a binary interface. The interface consists of
-    null-byte terminated UTF-8 text tokens. The token 'ARG' pushes the next
-    token to the next command to be run, and the token 'RUN' runs the command.
-    On stdout, the same format applies, and herbstclient will print tokens
-    'STDOUT', 'STDERR', 'STATUS', each followed by a text token containing the
-    output, error channel, and status code of the executed command.
-    After writing 'RUN' and the nullbyte to herbstclient's stdin, do not forget
-    to flush! For example:
-+
+*--binary-pipe*::
+    Run multiple commands via a binary interface. The protocol is described in
+    the <<BINARY_PIPE,*BINARY PIPE*>> section below.
+
+
+[[BINARY_PIPE]]
+BINARY PIPE
+-----------
+When *--binary-pipe* is passed, a binary communication channel to herbstluftwm
+is established such that multiple commands can be run through a single
+herbstclient instance. Both stdin and stdout are in binary mode, whereas the
+stderr channel remains text mode. The interface consists of null-byte terminated
+UTF-8 text tokens. The following token sequences are supported on stdin, where *0*
+denotes a null-byte:
+
+    * +ARG+ *0* 'T' *0* pushes the text token 'T' to the next command to be run.
+    * +RUN+ *0* runs the command (i.e. sends it to herbstluftwm).
+    * After writing 'RUN' and the nullbyte to herbstclient's stdin, do not
+      forget to flush!
+
+On stdout, the following token sequences will be printed:
+
+    * +STDOUT+ *0* 'TEXT' *0* means that the stdout of the recently executed
+      command is 'TEXT'
+    * +STDERR+ *0* 'TEXT' *0* means that the stderr of the recently executed
+      command is 'TEXT'
+    * +STATUS+ *0* 'N' *0* means that the exit status of the recently executed
+      command is the integer 'N'
+
+Whenever herbstluftwm quits, then the binary pipe also closes and herbstclient
+exits.
+
+Example:
+
 ----
 printf 'ARG\0echo\0ARG\0hello world\0RUN\0ARG\0get_attr\0ARG\0tags.count\0RUN\0' \
     | herbstclient --binary-pipe \
     | hexdump -C
 ----
+
 
 ENVIRONMENT VARIABLES
 ---------------------
