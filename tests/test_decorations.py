@@ -214,6 +214,7 @@ def test_title_ellipsis_is_used(hlwm, x11, font):
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
 def test_frame_bg_transparent(hlwm, x11, frame_bg_transparent):
+    hlwm.attr.settings.show_frame_decorations = 'all'
     hlwm.attr.settings.frame_gap = 24  # should not matter
     hlwm.attr.settings.frame_border_width = 0
     hlwm.attr.settings.frame_bg_active_color = '#ef0000'
@@ -240,6 +241,7 @@ def test_frame_bg_transparent(hlwm, x11, frame_bg_transparent):
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
 def test_frame_holes_for_tiled_client(hlwm, x11, frame_bg_transparent):
+    hlwm.attr.settings.show_frame_decorations = 'all'
     hlwm.attr.settings.frame_bg_active_color = '#efcd32'
     hlwm.attr.settings.frame_bg_transparent = frame_bg_transparent
     hlwm.attr.settings.frame_transparent_width = 8
@@ -263,6 +265,7 @@ def test_frame_holes_for_tiled_client(hlwm, x11, frame_bg_transparent):
 
 @pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
 def test_frame_holes_for_pseudotiled_client(hlwm, x11, frame_bg_transparent):
+    hlwm.attr.settings.show_frame_decorations = 'all'
     bgcol = (0xef, 0xcd, 0x32)
     hlwm.attr.settings.frame_bg_active_color = RawImage.rgb2string(bgcol)
     hlwm.attr.settings.frame_bg_transparent = frame_bg_transparent

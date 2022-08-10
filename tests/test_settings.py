@@ -168,3 +168,21 @@ def test_smart_frame_surroundings(hlwm, x11):
     frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (776, 576)
+
+
+def test_always_show_frame(hlwm):
+    # test old->new setting
+    settings = hlwm.attr.settings
+    settings.always_show_frame = True
+    assert settings.show_frame_decorations() == 'all'
+    settings.always_show_frame = False
+    assert settings.show_frame_decorations() == 'focused'
+
+    # test new->old setting
+    settings.always_show_frame = True
+    settings.show_frame_decorations = 'nonempty'
+    assert settings.always_show_frame() is False
+    settings.show_frame_decorations = 'all'
+    assert settings.always_show_frame() is True
+    settings.show_frame_decorations = 'focused'
+    assert settings.always_show_frame() is False

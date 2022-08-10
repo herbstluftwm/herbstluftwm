@@ -105,8 +105,16 @@ def test_basic_dummy_tree(hlwm):
 
 def test_css_property_parsing(hlwm):
     input2error = {
+<<<<<<< HEAD
         '* { border-width: 1sdfpx; }': "unparsable suffix",
         '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
+=======
+        '* { something-wrong: 2px; }': 'No such property "something-wrong"',
+        '* { border-width: 1sdfpx; }': "unparsable suffix",
+        '* { border-width: 1; }': "must be of the format",
+        '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
+        '* { border-style: invalidstyle; }': 'Expected \"solid\"',
+>>>>>>> origin/master
     }
     for source, error in input2error.items():
         assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
@@ -194,6 +202,85 @@ def test_css_sibling_cominbators(hlwm):
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
 
 
+<<<<<<< HEAD
+=======
+def test_css_property_applier(hlwm):
+    decl2computed = {
+        'border: 2px solid #9fbc00':
+        '\n'.join([
+            f'border-{side}-{prop}: {value};'
+            for side in ['top', 'left', 'right', 'bottom']
+            # 'solid' isn't shown because it's the default style
+            for prop, value in [('width', '2px'), ('color', '#9fbc00')]]),
+        'border-top: 5px solid #ffddee':
+        """\
+        border-top-width: 5px;
+        border-top-color: #ffddee;
+        """,
+        'border-left: 5px solid #ffddee':
+        """\
+        border-left-width: 5px;
+        border-left-color: #ffddee;
+        """,
+        'border-right: 5px solid #ffddee':
+        """\
+        border-right-width: 5px;
+        border-right-color: #ffddee;
+        """,
+        'border-bottom: 5px solid #ffddee':
+        """\
+        border-bottom-width: 5px;
+        border-bottom-color: #ffddee;
+        """,
+        'border-width: 4px 2px':
+        """\
+        border-top-width: 4px;
+        border-bottom-width: 4px;
+        border-left-width: 2px;
+        border-right-width: 2px;
+        """,
+        'border-width: 2px 3px 4px 5px':
+        """\
+        border-top-width: 2px;
+        border-right-width: 3px;
+        border-bottom-width: 4px;
+        border-left-width: 5px;
+        """,
+        'display: flex': '',  # flex is the default
+    }
+    simple_props = [
+        'min-height: 5px',
+        'min-width: 6px',
+        'display: none',
+        'color: #125323',
+        'text-align: center',
+        'background-color: #fb4ace',
+    ]
+    for prop in simple_props:
+        decl2computed[prop] = prop
+    for css_decl, computed_style in decl2computed.items():
+        css_decl = css_decl.rstrip(' \n;') + ';'
+        css = f"""
+        .testclass {{
+            {css_decl}
+        }}
+        """
+        tree = '((a) (testclass) (b))'
+        cmd = [
+            'debug-css', '--tree=' + tree,
+            '--compute-style=1',
+            css
+        ]
+
+        def normalize(buf):
+            return sorted([line.strip().rstrip(';') for line in buf.splitlines()])
+
+        expected = normalize(textwrap.dedent(computed_style))
+        output = normalize(hlwm.call(cmd).stdout)
+        assert expected == output
+
+
+>>>>>>> origin/master
 def test_css_computed_style(hlwm):
     tree = """
         (client-decoration
@@ -283,6 +370,34 @@ def test_debug_css_errors(hlwm):
         .expect_stderr("invalid tree index")
     hlwm.call_xfail('debug-css --tree="()" --compute-style="0 8" ""') \
         .expect_stderr("invalid tree index")
+
+
+def test_css_names_tree_check(hlwm):
+    names = [f'class{idx}' for idx in range(0, 900)]
+    tree = '((foo) (' + ' '.join(names) + ') (class4 class8))'
+    matches_all_classes = ''.join(['.' + name for name in names])
+    matches_some_class = ', '.join(['.' + name for name in names])
+    css = f"""
+    // for elements that match all the classes
+    {matches_all_classes} {{
+        border-top-width: 4px;
+    }}
+    // for elements that match one of the classes
+    {matches_some_class} {{
+        border-left-width: 7px;
+    }}
+    """
+
+    def computed_style_of_tree_index(tree_index):
+        cmd = ['debug-css', f'--tree={tree}', f'--compute-style={tree_index}', css]
+        return sorted(hlwm.call(cmd).stdout.splitlines())
+
+    assert computed_style_of_tree_index('0') == []
+    assert computed_style_of_tree_index('1') == [
+        'border-left-width: 7px;',
+        'border-top-width: 4px;']
+    assert computed_style_of_tree_index('2') == [
+        'border-left-width: 7px;']
 
 
 def test_theme_name_invalid_path(hlwm):

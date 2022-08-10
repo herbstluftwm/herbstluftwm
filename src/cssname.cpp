@@ -136,11 +136,6 @@ CssName::CssName(const string& name)
     }
 }
 
-bool CssName::isCombinator() const
-{
-    return index_ <= static_cast<size_t>(Builtin::LAST_COMBINATOR);
-}
-
 /*** whether this is a binary operator, i.e. something that consumes
  * whitespace before and after
  */
@@ -160,7 +155,7 @@ bool CssNameSet::contains(CssName className) const
     }
 }
 
-CssNameSet::CssNameSet(std::initializer_list<std::pair<CssName, bool> > classes)
+CssNameSet::CssNameSet(std::initializer_list<pair<CssName, bool> > classes)
 {
     for (const auto& item : classes) {
         if (item.second) {

@@ -243,7 +243,7 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
     first press 'Mod1-Shift-p' and then release 'p'.  Examples:
 
         * keybind Mod4+Ctrl+q quit
-        * keybind Mod1-i toggle always_show_frame
+        * keybind Mod4-Shift-d attr clients.focus.decorated toggle
         * keybind Mod1-Shift-space cycle_layout -1
         * +keybind Release-Mod4-Shift-p spawn scrot+ takes a screenshot when the
           +p+ is released while Mod4 and Shift are still pressed.
@@ -900,6 +900,9 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
       - +%s+ inserts an attribute value whose path is given by the string value
         of the next 'FORMATARG'
       - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%\{ATTR\}+ inserts the current value of the attribute 'ATTR'. The path
+        'ATTR' can itself contain format placeholders. This can be used to
+        compose attribute paths at run time, e.g. in a +foreach+ loop.
       - +%%+ stands for a plain +%+
 
  ::
@@ -923,6 +926,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +sprintf VALUE "%{%c.client_count}" tags.0 echo VALUE+ +
+          +
+          Prints the number of clients on the tag with index 0
+        * +foreach --filter-name="[0-9]*" T tags. sprintf S "%{%c.client_count}" T echo T S+ +
+          +
+          Prints the number of clients for each tag.
         * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
           +
           has the same output as +
@@ -1014,6 +1023,23 @@ unsetenv 'NAME'::
     herbstluftwm, you can run +herbstclient export FOO=BAR+ from within your
     herbstluftwm session for the same effect. The +export+ command is the same
     as the <<SETENV, setenv command>> with different syntax.
+
+debug-css ['FLAGS'] 'CSSSource'::
+    This command exists solely for testing herbstluftwm; it has no use in normal
+    hlwm sessions. Moreover, the interface of this command may change in
+    incompatible ways.
+    The command parses the given 'CSSSource' and then performs various
+    operations, specified by the optional 'FLAGS':
+
+      - *--print-css* print the CSS in some normalized form
+      - *--tree=TREE* a dom-style tree specification, where the syntax of a tree
+        starts with *(* and ends with *)*. In between, the tree contains a
+        space-separated list of class names and subtrees.
+      - *--print-tree* print the tree specification of 'TREE' again.
+      - *--query-tree-indices=SELECTOR* print the tree indices (analogously to
+        frame indices) of those nodes that match the given css-style *SELECTOR*.
+      - *--compute-style=INDEX* compute the box style of the node in above
+        'TREE' that has the tree index 'INDEX'.
 
 
 [[RULES]]

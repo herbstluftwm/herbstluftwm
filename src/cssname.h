@@ -48,7 +48,6 @@ public:
     CssName(const std::string& name);
     CssName(const CssName& other) = default;
 
-    bool isCombinator() const;
     bool isBinaryOperator() const;
     inline static bool isBuiltin(size_t index) {
         return index <= static_cast<size_t>(Builtin::LAST);

@@ -36,6 +36,7 @@ public:
     Attribute_<bool>         floating;
     Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
+    Attribute_<bool>         atEnd;
     DynAttribute_<int> frame_count;
     DynAttribute_<int> client_count;
     DynAttribute_<int> urgent_count; //! The number of urgent clients
