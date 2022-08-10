@@ -91,6 +91,14 @@ void hc_disconnect(HCConnection* con) {
     free(con);
 }
 
+static void handle_event(HCConnection* con, XEvent* event) {
+    if (event->type == DestroyNotify) {
+        if (event->xdestroywindow.window == con->hook_window) {
+            con->hook_window = 0;
+        }
+    }
+}
+
 bool hc_create_client_window(HCConnection* con) {
     if (con->client_window) {
         return true;
@@ -140,7 +148,13 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
         error_received = true;
     }
     while (!output_received || !error_received || !status_received) {
+        if (!con->hook_window) {
+            free(output);
+            free(error);
+            return false;
+        }
         XNextEvent(con->display, &event);
+        handle_event(con, &event);
         if (event.type != PropertyNotify) {
             // got an event of wrong type
             continue;
@@ -222,15 +236,19 @@ static Window get_hook_window(Display* display) {
     }
     Window win = *value;
     XFree(value);
-    // check that the window 'win' still exists
-    // set our custom error handler and back up old handler
+    XSync(display, False);
+    // check that the window 'win' still exists. We do this by
+    // requesting to be notified with the window's DestroyNotify.
+    // If the window already has disappeared at the current point,
+    // the error handler will be called.
+    // First flush the entire request queue with the old error handler.
+    // Then, set our custom error handler and back up old handler
     int (*old_error_handler)(Display *, XErrorEvent *) =
         XSetErrorHandler(log_bad_window_error);
-    XWindowAttributes attr;
-    // check whether the window still exists. If it does not exist,
+    // Then, ask for DestroyNotify events, if it fails,
     // log_bad_window_error() is called.
     g_bad_window_occurred = false;
-    XGetWindowAttributes(display, win, &attr);
+    XSelectInput(display, win, StructureNotifyMask);
     XSync(display, False);
     // restore old handler
     XSetErrorHandler(old_error_handler);
@@ -311,4 +329,27 @@ bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
         XFree(text_prop.value);
     }
     return true;
+}
+
+int hc_connection_socket(HCConnection* con)
+{
+    return ConnectionNumber(con->display);
+}
+
+void hc_process_events(HCConnection* con)
+{
+    XEvent event;
+    while (1) {
+        if (XQLength(con->display) == 0) {
+            // if the queue is empty, ask the server for more events:
+            XSync(con->display, False);
+            if (XQLength(con->display) == 0) {
+                // if the queue is then still empty,
+                // quit
+                break;
+            }
+        }
+        XNextEvent(con->display, &event);
+        handle_event(con, &event);
+    }
 }

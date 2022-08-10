@@ -4,6 +4,12 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * New herbstclient mode *--binary-pipe* which allows to send multiple
+    commands through a single herbstclient instance.
+
 Release 0.9.5 on 2022-07-30
 ---------------------------
 
