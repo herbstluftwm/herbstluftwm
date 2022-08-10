@@ -700,6 +700,7 @@ def test_lock_unlock_window_not_resized(hlwm, x11):
 
 
 def test_pad_command(hlwm):
+    hlwm.open_persistent_pipe()
     # parameter order of the pad command:
     pad_names = ['up', 'right', 'down', 'left']
     defaults = [10, 20, 30, 40]

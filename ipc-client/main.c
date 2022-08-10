@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
+#include <unistd.h>
 
 #include "../src/ipc-protocol.h"
 #include "client-utils.h"
@@ -88,6 +90,8 @@ void print_help(char* command, FILE* file) {
             "received and printed. The default of COUNT is 1.\n"
         "\t-q, --quiet: Do not print error messages if herbstclient cannot "
             "connect to the running herbstluftwm instance.\n"
+        "\t--binary-pipe: run multiple commands via a binary interface"
+            "on the standard channels.\n"
         "\t-v, --version: Print the herbstclient version. To get the "
             "herbstluftwm version, use 'herbstclient version'.\n"
         "\t-h, --help: Print this help."
@@ -174,6 +178,84 @@ int main_hook(int argc, char* argv[]) {
     return exit_code;
 }
 
+static bool main_binary_pipe_loop(HCConnection* con) {
+    int hc_fd = hc_connection_socket(con);
+    int stdin_fd = STDIN_FILENO;
+    int maximum_plus_1 = 1 + ((hc_fd > stdin_fd) ? hc_fd : stdin_fd);
+    fd_set in_fds;
+    bool running = true;
+    // (void) freopen(NULL, "rb", stdin);
+    FILE* stdout_bin = freopen(NULL, "wb", stdout);
+    while (running) {
+        ArgList* command_args = arglist_new();
+        bool command_complete = false;
+        while (!command_complete && running) {
+            FD_ZERO(&in_fds);
+            FD_SET(hc_fd, &in_fds);
+            FD_SET(stdin_fd, &in_fds);
+            // wait for an event or a signal
+            select(maximum_plus_1, &in_fds, NULL, NULL, NULL);
+            if (FD_ISSET(hc_fd, &in_fds)) {
+                hc_process_events(con);
+                if (!hc_check_running(con)) {
+                    fprintf(stderr, "herbstluftwm exited\n");
+                    running = false;
+                    break;
+                }
+            }
+            if (FD_ISSET(stdin_fd, &in_fds)) {
+                // // debuging output, maybe it is useful later:
+                // fprintf(stderr, "Reading the next command...\n");
+                char* token = read_until_null_byte(stdin_fd);
+                if (!token) {
+                    running = false;
+                    break;
+                } else if (!strcmp(token, "ARG")) {
+                    char* arg = read_until_null_byte(stdin_fd);
+                    if (arg) {
+                        // // debuging output, maybe it is useful later:
+                        // fprintf(stderr, "arg (%s)\n", arg);
+                        arglist_push_with_ownership(command_args, arg);
+                    } else {
+                        running = false;
+                    }
+                } else if (!strcmp(token, "RUN")) {
+                    command_complete = true;
+                } else {
+                    fprintf(stderr, "Invalid token (%s)\n", token);
+                    running = false;
+                }
+                free(token);
+            }
+        }
+        if (!running) {
+            arglist_free(command_args);
+            break;
+        }
+        // run the command
+        char* output = NULL;
+        char* error = NULL;
+        int status = 0;
+        bool suc = hc_send_command(con,
+                                   command_args->null_index, command_args->data,
+                                   &output, &error, &status);
+        arglist_free(command_args);
+        if (!suc) {
+            fprintf(stderr, "Error: Could not send command.\n");
+            return false;
+        }
+        // // debuging output, maybe it is useful later:
+        // fprintf(stderr, "stdout=\"%s\"\n", output);
+        // fprintf(stderr, "stderr=\"%s\"\n", error);
+        // fprintf(stderr, "status=\"%d\"\n", status);
+        fprintf(stdout_bin, "STDOUT%c%s%c", 0, output, 0);
+        fprintf(stdout_bin, "STDERR%c%s%c", 0, error, 0);
+        fprintf(stdout_bin, "STATUS%c%d%c", 0, status, 0);
+        fflush(stdout_bin);
+    }
+    return true;
+}
+
 /**
  * @brief checks whether the text ends with a line
  * that misses a newline character
@@ -191,10 +273,12 @@ static bool trailing_newline_missing(const char* text) {
 }
 
 int main(int argc, char* argv[]) {
-    static struct option long_options[] = {
+    int binary_pipe = 0;
+    struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
         {"print0", 0, 0, '0'},
         {"last-arg", 0, 0, 'l'},
+        {"binary-pipe", 0, &binary_pipe, 1},
         {"wait", 0, 0, 'w'},
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
@@ -211,6 +295,9 @@ int main(int argc, char* argv[]) {
             break;
         }
         switch (c) {
+            case 0:
+                /* ignore recognized long option */
+                break;
             case 'i':
                 g_hook_count = 0;
                 g_wait_for_hook = 1;
@@ -244,10 +331,10 @@ int main(int argc, char* argv[]) {
         }
     }
     int arg_index = optind; // index of the first-non-option argument
-    if ((argc - arg_index == 0) && !g_wait_for_hook) {
+    if ((argc - arg_index == 0) && !g_wait_for_hook && !binary_pipe) {
         // if there are no non-option arguments, and no --idle/--wait, display
         // the help and exit
-        fprintf(stderr, "Error: COMMAND or --wait or --idle missing.\n");
+        fprintf(stderr, "Error: COMMAND, --wait, --idle, or --binary-pipe missing.\n");
         print_help(argv[0], stderr);
         exit(EXIT_FAILURE);
     }
@@ -273,8 +360,16 @@ int main(int argc, char* argv[]) {
             hc_disconnect(con);
             return EXIT_FAILURE;
         }
-        bool suc = hc_send_command(con, argc-arg_index, argv+arg_index,
-                                   &output, &error, &command_status);
+        bool suc;
+        if (binary_pipe) {
+            suc = main_binary_pipe_loop(con);
+        } else {
+            suc = hc_send_command(con, argc-arg_index, argv+arg_index,
+                                       &output, &error, &command_status);
+            if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
+                fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
+            }
+        }
         hc_disconnect(con);
         if (!suc) {
             if (!g_quiet) {
@@ -282,22 +377,23 @@ int main(int argc, char* argv[]) {
             }
             return EXIT_FAILURE;
         }
-        // usually, it makes more sense to print the error first.
-        fputs(error, stderr);
-        if (trailing_newline_missing(error)) {
-            // always ensure that the error messages
-            // are enclosed with newlines
-            fputs("\n", stderr);
+        if (error) {
+            // usually, it makes more sense to print the error first.
+            fputs(error, stderr);
+            if (trailing_newline_missing(error)) {
+                // always ensure that the error messages
+                // are enclosed with newlines
+                fputs("\n", stderr);
+            }
+            free(error);
         }
-        fputs(output, stdout);
-        if (g_ensure_newline && trailing_newline_missing(output)) {
-            fputs("\n", stdout);
+        if (output) {
+            fputs(output, stdout);
+            if (g_ensure_newline && trailing_newline_missing(output)) {
+                fputs("\n", stdout);
+            }
+            free(output);
         }
-        if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
-            fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
-        }
-        free(output);
-        free(error);
     }
     return command_status;
 }
