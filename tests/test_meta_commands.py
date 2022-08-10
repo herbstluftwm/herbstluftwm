@@ -845,7 +845,7 @@ def test_foreach_invalid_flag(hlwm):
     hlwm.call_xfail('foreach C --filter-typo=X tags. echo C') \
         .expect_stderr('"" has no child named "--filter-typo=X"')
     hlwm.call_xfail('foreach C --filter-name=( tags. echo C') \
-        .expect_stderr('Parenthesis is not closed')
+        .expect_stderr(r'(Parenthesis is not closed|Mismatched.*\(.*\).*in regular)')
     hlwm.call_xfail('foreach C tags. get_attr --filter-name=X') \
         .expect_stderr('has no attribute "--filter-name=X"')
 
