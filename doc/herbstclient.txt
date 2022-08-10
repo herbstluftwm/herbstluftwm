@@ -93,8 +93,8 @@ may be extended in the future, but will always stick to the key-value-format.
     * +STATUS+ *0* 'N' *0* means that the exit status of the recently executed
       command is the integer 'N'
 
-Whenever herbstluftwm quits, then the binary pipe also closes and herbstclient
-exits.
+Whenever herbstluftwm quits or when the EOF of stdin is reached, then the binary
+pipe also closes and herbstclient exits.
 
 Example:
 
