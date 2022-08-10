@@ -90,7 +90,7 @@ void print_help(char* command, FILE* file) {
             "received and printed. The default of COUNT is 1.\n"
         "\t-q, --quiet: Do not print error messages if herbstclient cannot "
             "connect to the running herbstluftwm instance.\n"
-        "\t-p, --binary-pipe: run multiple commands via a binary interface"
+        "\t--binary-pipe: run multiple commands via a binary interface"
             "on the standard channels.\n"
         "\t-v, --version: Print the herbstclient version. To get the "
             "herbstluftwm version, use 'herbstclient version'.\n"
@@ -273,12 +273,12 @@ static bool trailing_newline_missing(const char* text) {
 }
 
 int main(int argc, char* argv[]) {
-    bool binary_pipe = false;
-    static struct option long_options[] = {
+    int binary_pipe = 0;
+    struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
         {"print0", 0, 0, '0'},
         {"last-arg", 0, 0, 'l'},
-        {"binary-pipe", 0, 0, 'p'},
+        {"binary-pipe", 0, &binary_pipe, 1},
         {"wait", 0, 0, 'w'},
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
@@ -295,6 +295,9 @@ int main(int argc, char* argv[]) {
             break;
         }
         switch (c) {
+            case 0:
+                /* ignore recognized long option */
+                break;
             case 'i':
                 g_hook_count = 0;
                 g_wait_for_hook = 1;
@@ -316,9 +319,6 @@ int main(int argc, char* argv[]) {
                 break;
             case 'q':
                 g_quiet = true;
-                break;
-            case 'p':
-                binary_pipe = true;
                 break;
             case 'h':
                 print_help(argv[0], stdout);
