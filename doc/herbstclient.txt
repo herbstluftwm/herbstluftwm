@@ -82,7 +82,9 @@ denotes a null-byte:
     * After writing 'RUN' and the nullbyte to herbstclient's stdin, do not
       forget to flush!
 
-On stdout, the following token sequences will be printed:
+On stdout, null-byte separated key-value pairs are printed, that is, the output
+will always be a sequence of the format 'KEY' *0* 'VALUE' *0*. The protocol
+may be extended in the future, but will always stick to the key-value-format.
 
     * +STDOUT+ *0* 'TEXT' *0* means that the stdout of the recently executed
       command is 'TEXT'
