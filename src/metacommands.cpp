@@ -327,8 +327,6 @@ int MetaCommands::foreachChild(string ident,
                                Input nestedCommand,
                                Output output)
 {
-    Path path { pathString, OBJECT_PATH_SEPARATOR };
-
     // collect the paths of all children of this object
     vector<string> childPaths;
     // collect the children's names first to ensure that

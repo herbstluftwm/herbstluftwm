@@ -133,6 +133,7 @@ generate_commands.commands_list = set([])
 
 
 def test_generate_completable_commands(hlwm, request):
+    hlwm.open_persistent_pipe()
     # run pytest with --cache-clear to force renewal
     if request.config.cache.get('all_completable_commands', None) is None:
         cmds = generate_commands(hlwm, 4)
@@ -144,6 +145,7 @@ def test_generate_completable_commands(hlwm, request):
     commands can be called at all.')
 @pytest.mark.parametrize('run_destructives', [False, True])
 def test_completable_commands(hlwm, request, run_destructives):
+    hlwm.open_persistent_pipe()
     # wait for test_generate_completable_commands to finish
     # Note that for run_destructives=True, we need a fresh hlwm
     # instance.
@@ -199,14 +201,17 @@ def test_completable_commands(hlwm, request, run_destructives):
             "Running " + ' '.join(command)
 
 
-@pytest.mark.parametrize('name', commands_without_input)
-def test_inputless_commands(hlwm, name):
-    # FIXME: document exit code. Here, 7 = NO_PARAMETER_EXPECTED
-    assert hlwm.call_xfail_no_output('complete 1 ' + name) \
-        .returncode == 7
+def test_inputless_commands(hlwm):
+    global commands_without_input
+    hlwm.open_persistent_pipe()
+    for name in commands_without_input:
+        # FIXME: document exit code. Here, 7 = NO_PARAMETER_EXPECTED
+        assert hlwm.call_xfail_no_output('complete 1 ' + name) \
+            .returncode == 7
 
 
 def test_completionless_commands(hlwm):
+    hlwm.open_persistent_pipe()
     # commands that accept arguments but don't have completion.
     # Their completion must return '0' (instead of NO_PARAMETER_EXPECTED)
     for cmd in ['spawn', 'wmexec']:
@@ -215,6 +220,7 @@ def test_completionless_commands(hlwm):
 
 
 def test_remove_attr(hlwm):
+    hlwm.open_persistent_pipe()
     attr_path = "monitors.my_test"
     # assume you have a user-defined attribute
     hlwm.call("new_attr bool " + attr_path)
@@ -265,6 +271,7 @@ def test_posix_escape_via_pad(hlwm):
 @pytest.mark.parametrize("args_before", [0, 1, 2])
 @pytest.mark.parametrize("junk_arg", ['junk', '234', ' '])
 def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
+    hlwm.open_persistent_pipe()
     commands = hlwm.call('list_commands').stdout.splitlines()
     for cmd_name in commands:
         if cmd_name in ['wmexec', 'quit']:
@@ -281,6 +288,7 @@ def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
 
 
 def test_optional_args_in_argparse_dont_pile_up(hlwm):
+    hlwm.open_persistent_pipe()
     hlwm.call(['move_monitor', '0', '400x300+0+0', '1', '1', '1', '1'])
     commands = [
         ['move_monitor', '0', '400x300+0+0'],

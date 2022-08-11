@@ -20,6 +20,9 @@ HCConnection* hc_connect_to_display(Display* display);
 bool hc_check_running(HCConnection* con);
 void hc_disconnect(HCConnection* con);
 
+int hc_connection_socket(HCConnection* con);
+void hc_process_events(HCConnection* con);
+
 /* ensure there is a client window for sending commands */
 bool hc_create_client_window(HCConnection* con);
 

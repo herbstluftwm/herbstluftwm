@@ -3,6 +3,7 @@ import shlex
 import subprocess
 from herbstluftwm.types import HlwmType
 from typing import List
+import struct
 """
 Python bindings for herbstluftwm. The central entity for communication
 with the herbstluftwm server is the Herbstluftwm class. See the example.py
@@ -32,6 +33,33 @@ class Herbstluftwm:
         """
         self.herbstclient_path = herbstclient
         self.env = None
+        self.proc = None
+
+    def __del__(self):
+        self.close_persistent_pipe()
+
+    def open_persistent_pipe(self):
+        """
+        Establish a persistent pipe
+        """
+        if self.proc is not None:
+            return
+        self.proc = subprocess.Popen([self.herbstclient_path, '--binary-pipe'],
+                                     stdout=subprocess.PIPE,
+                                     stdin=subprocess.PIPE,
+                                     env=self.env,
+                                     encoding=None,  # open stdout/stdin in binary mode
+                                     )
+
+    def close_persistent_pipe(self):
+        if self.proc:
+            self.proc.terminate()
+            try:
+                self.proc.wait(2)
+            except Exception:
+                self.proc.kill()
+                self.proc.wait(2)
+            self.proc = None
 
     def _parse_command(self, cmd):
         """
@@ -45,19 +73,59 @@ class Herbstluftwm:
             args = shlex.split(cmd)
         return args
 
+    @staticmethod
+    def _read_text_until_null_byte(stream):
+        buf = bytearray()
+        while True:
+            byte = stream.read(1)
+            if len(byte) == 0:
+                return None
+            if byte[0] == 0:
+                break
+            buf += byte
+        return buf.decode()
+
     def unchecked_call(self, cmd):
         """Call the command but do not check exit code or stderr"""
         args = self._parse_command(cmd)
 
-        proc = subprocess.run([self.herbstclient_path, '-n'] + args,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              env=self.env,
-                              universal_newlines=True,
-                              # Kill hc when it hangs due to crashed server:
-                              timeout=2
-                              )
+        if self.proc is not None:
+            nullbyte = struct.pack('B', 0)
+            for arg in args:
+                self.proc.stdin.write(b'ARG')
+                self.proc.stdin.write(nullbyte)
+                self.proc.stdin.write(arg.encode())
+                self.proc.stdin.write(nullbyte)
+            self.proc.stdin.write(b'RUN')
+            self.proc.stdin.write(nullbyte)
+            self.proc.stdin.flush()
+            reply = {
+                'STDOUT': '',
+                'STDERR': '',
+                'STATUS': '',
+            }
+            for _ in range(0, 3):
+                fieldname = Herbstluftwm._read_text_until_null_byte(self.proc.stdout)
+                if fieldname is None:
+                    raise Exception('herbstclient did non print a full reply')
+                fieldvalue = Herbstluftwm._read_text_until_null_byte(self.proc.stdout)
+                if fieldvalue is None:
+                    raise Exception('herbstclient did non print a full reply')
+                reply[fieldname] = fieldvalue
+            #
+            complete_proc = subprocess.CompletedProcess(args, int(reply['STATUS']))
+            complete_proc.stdout = reply['STDOUT']
+            complete_proc.stderr = reply['STDERR']
+        else:
+            complete_proc = subprocess.run(
+                [self.herbstclient_path, '-n'] + args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env=self.env,
+                universal_newlines=True,
+                # Kill hc when it hangs due to crashed server:
+                timeout=2)
 
-        return proc
+        return complete_proc
 
     def call(self, cmd, allowed_stderr=None):
         """call the command and expect it to have exit code zero
