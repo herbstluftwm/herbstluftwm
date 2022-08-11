@@ -105,16 +105,11 @@ def test_basic_dummy_tree(hlwm):
 
 def test_css_property_parsing(hlwm):
     input2error = {
-<<<<<<< HEAD
-        '* { border-width: 1sdfpx; }': "unparsable suffix",
-        '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
-=======
         '* { something-wrong: 2px; }': 'No such property "something-wrong"',
         '* { border-width: 1sdfpx; }': "unparsable suffix",
         '* { border-width: 1; }': "must be of the format",
         '* { border-width: 1px 2px 3px 4px 5px; }': '"border-width" does not accept 5',
         '* { border-style: invalidstyle; }': 'Expected \"solid\"',
->>>>>>> origin/master
     }
     for source, error in input2error.items():
         assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
@@ -202,8 +197,6 @@ def test_css_sibling_cominbators(hlwm):
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
 
 
-<<<<<<< HEAD
-=======
 def test_css_property_applier(hlwm):
     decl2computed = {
         'border: 2px solid #9fbc00':
@@ -280,7 +273,6 @@ def test_css_property_applier(hlwm):
         assert expected == output
 
 
->>>>>>> origin/master
 def test_css_computed_style(hlwm):
     tree = """
         (client-decoration
