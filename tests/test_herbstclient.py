@@ -4,7 +4,9 @@ import os
 import re
 import pytest
 import sys
+import struct
 import contextlib
+from herbstluftwm import Herbstluftwm
 from conftest import PROCESS_SHUTDOWN_TIME, HcIdle
 from Xlib import X, Xatom
 
@@ -444,3 +446,86 @@ def test_command_tokenization_in_x11_property(hlwm):
     ]
     for cmd, output in cmd2output:
         assert hlwm.call(cmd).stdout == output
+
+
+class HcBinPipe:
+    def __init__(self):
+        self.proc = subprocess.Popen([HC_PATH, '--binary-pipe'],
+                                     stdout=subprocess.PIPE,
+                                     stdin=subprocess.PIPE)
+
+    def __del__(self):
+        self.proc.terminate()
+        self.proc.wait(5)
+
+    def send(self, *args):
+        nullbyte = struct.pack('B', 0)
+        for chunk in args:
+            self.proc.stdin.write(chunk.encode())
+            self.proc.stdin.write(nullbyte)
+            print(f"Sending to binary pipe: >{chunk}<")
+        self.proc.stdin.flush()
+
+    def receive(self, count):
+        args = []
+        for idx in range(0, count):
+            chunk = Herbstluftwm._read_text_until_null_byte(self.proc.stdout)
+            assert chunk is not None, "Unexpected EOF of binary pipe"
+            print(f"Received from binary pipe: >{chunk}<")
+            args.append(chunk)
+        return args
+
+    def expect(self, *args):
+        assert self.receive(len(args)) == list(args)
+
+    def expect_eof(self):
+        chunk = Herbstluftwm._read_text_until_null_byte(self.proc.stdout)
+        assert chunk is None
+        self.proc.wait(5)
+
+
+def test_binary_pipe_basic_command(hlwm):
+    bin_pipe = HcBinPipe()
+    bin_pipe.send('ARG', 'echo', 'ARG', 'foo', 'RUN')
+    bin_pipe.expect('STDOUT', 'foo\n', 'STDERR', '', 'STATUS', '0')
+    bin_pipe.send('ARG', 'use', 'ARG', 'foo', 'RUN')
+    bin_pipe.expect('STDOUT', '', 'STDERR', 'use: Cannot parse argument "foo": no such tag: foo\n', 'STATUS', '3')
+    bin_pipe.send('ARG', 'cycle', 'RUN')
+    bin_pipe.expect('STDOUT', '', 'STDERR', '', 'STATUS', '0')
+
+
+def test_binary_pipe_closes_on_eof(hlwm):
+    for send_command in [True, False]:
+        bin_pipe = HcBinPipe()
+        if send_command:
+            bin_pipe.send('ARG', 'echo', 'ARG', 'foo', 'RUN')
+            bin_pipe.expect('STDOUT', 'foo\n', 'STDERR', '', 'STATUS', '0')
+
+        # send eof to pipe
+        bin_pipe.proc.stdin.close()
+
+        # then, it exits automatically
+        bin_pipe.expect_eof()
+
+
+@pytest.mark.parametrize('send_command', [True, False])
+def test_binary_pipe_closes_on_hlwm_quit(xvfb, hlwm_spawner, send_command):
+    hlwm_proc = hlwm_spawner(display=xvfb.display)
+    bin_pipe = HcBinPipe()
+    if send_command:
+        bin_pipe.send('ARG', 'echo', 'ARG', 'foo', 'RUN')
+        bin_pipe.expect('STDOUT', 'foo\n', 'STDERR', '', 'STATUS', '0')
+
+    # stop hlwm_proc
+    hlwm_proc.shutdown()
+
+    # then, the pipe shuts down automatically
+    bin_pipe.expect_eof()
+
+
+def test_binary_pipe_if_hlwm_not_running(xvfb):
+    proc = subprocess.run([HC_PATH, '--binary-pipe'],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          stdin=subprocess.PIPE)
+    assert 'Error: herbstluftwm is not running.' in proc.stderr.decode()
