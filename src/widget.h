@@ -10,6 +10,11 @@
 class BoxStyle;
 class X11WidgetRender;
 
+/**
+ * @brief A widget can either have text content
+ * or carry child widgets. The css classes determine
+ * how the widget is rendered.
+ */
 class Widget : public DomTree
 {
 public:
@@ -21,8 +26,9 @@ public:
     bool expandX_ = false;
     /** whether this widget likes growing into the Y-direction */
     bool expandY_ = false;
-    bool hasText_ = false;
-    virtual std::string textContent() const { return {}; }
+    /** if this widget should show text, the following function
+        needs to be set. */
+    std::function<std::string()> textContent_ = {};
 
     void computeGeometry(Rectangle outerGeometry);
     void computeMinimumSize();

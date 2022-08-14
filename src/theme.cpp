@@ -235,26 +235,6 @@ void Theme::generateBuiltinCss()
             },
             {
                 {[&scheme,&decTriple](BoxStyle& style) {
-                     style.fontColor =
-                        scheme.tab_title_color().rightOr(decTriple.normal.title_color());
-
-                     style.font = decTriple.normal.title_font();
-                     style.textAlign = scheme.title_align();
-                     style.textHeight = scheme.title_height().cases<__typeof__(style.textHeight)>(
-                         [](const Inherit&) {
-                             return Unit<BoxStyle::auto_>();
-                         },
-                         [](const int& len) {
-                             return CssLen(len);
-                         });
-
-                     style.textDepth = scheme.title_depth().cases<__typeof__(style.textDepth)>(
-                         [](const Inherit&) {
-                             return Unit<BoxStyle::auto_>();
-                         },
-                         [](const unsigned long& len) {
-                             return CssLen(static_cast<int>(len));
-                         });
                      style.backgroundColor =
                         scheme.tab_color().rightOr(decTriple.normal.border_color());
 
@@ -275,6 +255,41 @@ void Theme::generateBuiltinCss()
 
                      style.paddingLeft = scheme.padding_left() + scheme.border_width();
                      style.paddingRight = scheme.padding_right() + scheme.border_width();
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.fontColor =
+                        scheme.tab_title_color().rightOr(decTriple.normal.title_color());
+
+                     style.font = decTriple.normal.title_font();
+                     style.textAlign = scheme.title_align();
+                     style.textHeight = scheme.title_height().cases<__typeof__(style.textHeight)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const int& len) {
+                             return CssLen(len);
+                         });
+
+                     style.textDepth = scheme.title_depth().cases<__typeof__(style.textDepth)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const unsigned long& len) {
+                             return CssLen(static_cast<int>(len));
+                         });
                 }},
             }}));
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
@@ -325,9 +340,6 @@ void Theme::generateBuiltinCss()
             },
             {
                 {[&scheme](BoxStyle& style) {
-                     style.font = scheme.title_font();
-                     style.fontColor = scheme.title_color();
-                     style.textAlign = scheme.title_align();
                      style.backgroundColor = scheme.border_color();
                      style.borderColorTop =
                          style.borderColorRight =
@@ -350,7 +362,26 @@ void Theme::generateBuiltinCss()
                      style.marginBottom = -scheme.outer_width();
                 }},
             }}));
-            // the selected tab
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::focus,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.font = scheme.title_font();
+                     style.fontColor = scheme.title_color();
+                     style.textAlign = scheme.title_align();
+                }},
+            }}));
+            // the urgent tab
             blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
             {
                 { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
@@ -364,11 +395,28 @@ void Theme::generateBuiltinCss()
             {
                 {[&decTriple](BoxStyle& style) {
                      style.backgroundColor = decTriple.urgent.border_color();
-                     style.fontColor = decTriple.urgent.title_color();
                      style.borderColorTop =
                          style.borderColorRight =
                          style.borderColorLeft =
                              decTriple.urgent.outer_color();
+                }},
+            }}));
+            // the urgent tab title
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::urgent,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&decTriple](BoxStyle& style) {
+                     style.fontColor = decTriple.urgent.title_color();
                 }},
             }}));
             // Implement 'title_when' for

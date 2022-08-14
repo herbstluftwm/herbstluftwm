@@ -89,7 +89,7 @@ void X11WidgetRender::render(const Widget& widget)
     for (const Widget* child : widget.nestedWidgets_) {
         render(*child);
     }
-    if (widget.hasText_) {
+    if (widget.textContent_) {
         Rectangle contentGeo = widget.contentGeometryCached();
         Point2D textPos = contentGeo.tl();
         int textHeight = style.textHeight.rightOr(style.font.data().ascent);
@@ -98,7 +98,7 @@ void X11WidgetRender::render(const Widget& widget)
         textPos.y += extraSpace / 2 + textHeight;
         if (textHeight != 0) {
             drawText(pixmap_, gc_, style.font.data(), style.fontColor,
-                     textPos - pixmapPos_, widget.textContent(), contentGeo.width, style.textAlign);
+                     textPos - pixmapPos_, widget.textContent_(), contentGeo.width, style.textAlign);
         }
     }
 }

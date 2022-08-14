@@ -39,8 +39,9 @@ public:
 class TabWidget : public Widget {
 public:
     TabWidget();
+    Widget widContent;
+    Widget widTitle;
     Client* tabClient = nullptr;
-    virtual std::string textContent() const override;
 };
 
 /**
@@ -108,6 +109,7 @@ public:
 
 private:
     Widget widMain;
+    Widget widContent;
     Widget widPanel;
     Widget widTabBar;
     Widget widClient;

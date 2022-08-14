@@ -52,7 +52,9 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
     , theme_(theme)
 {
     widMain.vertical_ = true;
-    widMain.addChild(&widPanel);
+    widMain.addChild(&widContent);
+    widContent.addChild(&widPanel);
+    widPanel.expandX_ = true;
     widPanel.addChild(&widTabBar);
     widTabBar.expandX_ = true;
     widPanel.setClassEnabled(CssName::Builtin::bar, true);
@@ -676,12 +678,17 @@ std::experimental::optional<unsigned int> ResizeAction::toCursorShape() const
 TabWidget::TabWidget()
 {
     expandX_ = true;
-    hasText_ = true;
-}
-
-string TabWidget::textContent() const
-{
-    return tabClient->title_();
+    addChild(&widContent);
+    // widContent.addChild(&widTitle);
+    widContent.expandX_ = true;
+    widContent.addChild(&widTitle);
+    widTitle.expandX_ = true;
+    widTitle.setClasses({
+        {CssName::Builtin::title, true },
+    });
+    widTitle.textContent_ = [this]() {
+        return this->tabClient->title_();
+    };
 }
 
 void DecorationParameters::updateTabUrgencyFlags()

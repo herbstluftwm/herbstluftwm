@@ -105,7 +105,7 @@ void Widget::computeMinimumSize()
     surroundingsSize.y += style.paddingTop + style.paddingBottom;
 
     Point2D textSize = {0, 0};
-    if (hasText_) {
+    if (textContent_) {
         FontData& data = style.font.data();
         textSize.y =
                 style.textHeight.rightOr(data.ascent)
