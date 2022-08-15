@@ -9,6 +9,8 @@ Current git version
 
   * New herbstclient mode *--binary-pipe* which allows to send multiple
     commands through a single herbstclient instance.
+  * CSS-inspired theme engine (new attributes 'theme.name',
+    'theme.style_override')
 
 Release 0.9.5 on 2022-07-30
 ---------------------------

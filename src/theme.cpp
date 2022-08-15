@@ -98,7 +98,7 @@ Theme::Theme()
                         "triggered by +smart_window_surroundings+");
     fullscreen.setChildDoc("configures clients in fullscreen state");
 
-    name.setDoc("the absolute path to a css theme file. if this is empty,"
+    name.setDoc("the absolute path to a css theme file. if this is empty, "
                 "then the theme is specified by the attributes.");
     style_override.setDoc(
                 "additional css source to overwrite parts of the theme. "
