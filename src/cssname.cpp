@@ -87,6 +87,7 @@ void CssNameData::initIfNecessary()
         { CssName::Builtin::normal, "normal" },
         { CssName::Builtin::floating, "floating" },
         { CssName::Builtin::tiling, "tiling" },
+        { CssName::Builtin::title, "title" },
     };
     for (const auto& it : names) {
         size_t index = static_cast<size_t>(it.first);

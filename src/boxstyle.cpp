@@ -4,6 +4,7 @@
 
 using std::function;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::stringstream;
 using std::to_string;
@@ -381,4 +382,30 @@ std::map<string, string> BoxStyle::changedProperties() const
         }
     });
     return properties;
+}
+
+using MemberCopy = function<void(BoxStyle*, shared_ptr<const BoxStyle>)>;
+template<typename T>
+static inline MemberCopy memberCopy(T BoxStyle::*member) {
+    return [member](BoxStyle* target, shared_ptr<const BoxStyle> source) {
+        target ->* member = source.get() ->* member;
+    };
+}
+
+void BoxStyle::inheritFromParent(shared_ptr<const BoxStyle> parentStyle)
+{
+    if (!parentStyle) {
+        return;
+    }
+    // list of members that are inherited by the parent's style per default
+    std::initializer_list<MemberCopy> members = {
+        memberCopy(&BoxStyle::font),
+        memberCopy(&BoxStyle::fontColor),
+        memberCopy(&BoxStyle::textAlign),
+        memberCopy(&BoxStyle::textHeight),
+        memberCopy(&BoxStyle::textDepth),
+    };
+    for (const MemberCopy& memberCopyLambda : members ) {
+        memberCopyLambda(this, parentStyle);
+    }
 }

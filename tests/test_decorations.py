@@ -404,7 +404,7 @@ def test_decoration_click_changes_tab(hlwm, mouse, running_clients, running_clie
 
     geo = hlwm.attr.clients.focus.decoration_geometry()
     tabbar_top_left = geo.topleft()
-    tabbar_bottom_right = geo.topleft() + Point(geo.width, hlwm.attr.theme.title_height())
+    tabbar_bottom_right = geo.topleft() + Point(geo.width, int(hlwm.attr.theme.title_height()))
     for idx in reversed(range(0, running_clients_num)):
         # pick a point between top left corner of the title bar
         # and the bottom right corner of the title bar:

@@ -37,6 +37,7 @@ public:
         fullscreen,
         floating,
         tiling,
+        title,
         client_decoration,
         /* insert above, so that this stays last */
         client_content,

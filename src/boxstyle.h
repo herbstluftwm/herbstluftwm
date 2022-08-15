@@ -96,6 +96,7 @@ public:
         return {};
     }
     using setter = std::function<void(BoxStyle&)>;
+    void inheritFromParent(std::shared_ptr<const BoxStyle> parentStyle);
 };
 
 class CssValueParser {
