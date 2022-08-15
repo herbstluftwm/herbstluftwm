@@ -113,6 +113,9 @@ shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
         return nullptr;
     }
     shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
+    if (element->parent()) {
+        style->inheritFromParent(element->parent()->cachedStyle());
+    }
     if (name()) {
         name()->content_.computeStyle(element, style);
     } else {

@@ -45,6 +45,9 @@ public:
     void removeChild(size_t idx);
     void setStyle(std::shared_ptr<BoxStyle> style);
     bool hasStyle() { return (bool)style_; }
+    std::shared_ptr<const BoxStyle> cachedStyle() const override {
+        return style_;
+    }
     bool isDisplayNone() const;
 
     Point2D minimumSizeUser_ = {0, 0}; //! custom minimum size

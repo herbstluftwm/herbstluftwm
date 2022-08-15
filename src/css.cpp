@@ -225,6 +225,9 @@ public:
     size_t childCount() const override {
         return children_.size();
     }
+    shared_ptr<const BoxStyle> cachedStyle() const override {
+        return {};
+    }
 };
 
 template<>
