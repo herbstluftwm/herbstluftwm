@@ -2,6 +2,7 @@
 #define __HERBST_X11_TYPES_H_
 
 #include <X11/Xlib.h>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -61,6 +62,23 @@ inline Color Converter<Color>::parse(const std::string &payload) {
 struct Point2D {
     int x;
     int y;
+    static inline Point2D fold(std::function<int(int,int)> oper, const std::initializer_list<Point2D>& points) {
+        bool first = true;
+        Point2D result = {0, 0};
+        for (const auto& p : points) {
+            if (first) {
+                result = p;
+                first = false;
+            } else {
+                result.x = oper(result.x, p.x);
+                result.y = oper(result.y, p.y);
+            }
+        }
+        return result;
+    }
+    XPoint toXPoint() const {
+        return { static_cast<short>(x), static_cast<short>(y)};
+    }
     Point2D operator+(const Point2D& other) const { return { x + other.x, y + other.y }; }
     Point2D operator-(const Point2D& other) const { return { x - other.x, y - other.y }; }
     Point2D operator*(double scalar) const { return { (int) (x * scalar), (int) (y * scalar) }; }
@@ -70,6 +88,7 @@ struct Point2D {
         return x < other.x || (x == other.x && y < other.y);
     }
     bool operator==(const Point2D& other) const { return x == other.x && y == other.y; }
+    bool operator!=(const Point2D& other) const { return x != other.x || y != other.y; }
     //! essentially return y/x > other.y/other.x
     bool biggerSlopeThan(const Point2D& other) const {
        return y * other.x > other.y * x;

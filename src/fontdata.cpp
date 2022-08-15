@@ -40,6 +40,8 @@ void FontData::initFromStr(const string& source)
                                    source.c_str());
     }
     if (xftFont_) {
+        ascent = xftFont_->ascent;
+        descent = xftFont_->descent;
         return;
     }
     // fall back to plain X fonts with unicode support
@@ -64,6 +66,14 @@ void FontData::initFromStr(const string& source)
         if (missingCharSetCount > 0) {
             HSWarning("When loading font \"%s\": %s\n", source.c_str(), msg.str().c_str());
         }
+        // query ascent and descent using some sample text
+        const char sampleText[] = "[]|Xgpq";
+        XRectangle overallInk;
+        XmbTextExtents(xFontSet_, sampleText, sizeof(sampleText), &overallInk, nullptr);
+        // the rectangle is the boundary of the text when drawing the text
+        // for a baseline at (0,0)
+        ascent = -overallInk.y;
+        descent = overallInk.height + overallInk.y;
         return;
     } else {
         if (missingCharSetCount > 0) {
@@ -72,10 +82,13 @@ void FontData::initFromStr(const string& source)
     }
 
     xFontStruct_ = XLoadQueryFont(s_xconnection->display(), source.c_str());
-    if (!xFontStruct_) {
-        throw std::invalid_argument(
-                string("cannot allocate font \'") + source + "\'");
+    if (xFontStruct_) {
+        ascent = xFontStruct_->ascent;
+        descent = xFontStruct_->descent;
+        return;
     }
+    throw std::invalid_argument(
+            string("cannot allocate font \'") + source + "\'");
 }
 
 /**

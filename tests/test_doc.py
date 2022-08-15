@@ -121,6 +121,9 @@ def types_and_shorthands():
         'WindowID': 'w',
         'MaybeColor': 's',
         'MaybeULong': 's',
+        'MaybeInt': 's',
+        'CssSource': 's',
+        'CssFile::Ptr': 's',
     }
 
 

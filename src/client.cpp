@@ -33,7 +33,7 @@ using std::stringstream;
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
-    , dec(make_unique<Decoration>(this, *cm.settings))
+    , dec(make_unique<Decoration>(this, *cm.settings, *cm.theme))
     , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
     , decorated_(this, "decorated", true)
     , visible_(this, "visible", visible_already)
@@ -64,7 +64,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
     , X_(*cm.X_)
-    , mostRecentThemeType(ThemeType::Tiling)
+    , decParams(make_unique<DecorationParameters>())
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
@@ -215,6 +215,7 @@ void Client::make_full_client() {
                             |EnterWindowMask|PropertyChangeMask);
     // redraw decoration on title change
     title_.changed().connect(this, &Client::redraw);
+    title_.changed().connect(this, &Client::redrawRelevantTabBars);
     decorated_.changed().connect(this, &Client::fixParentWindow);
     urgent_.changed().connect(this, &Client::urgencyAttributeChanged);
 }
@@ -252,24 +253,16 @@ Client::~Client() {
     }
 }
 
-const DecTriple& Client::getDecTriple() {
-    return theme[mostRecentThemeType];
-}
-
-const DecorationScheme& Client::getDecorationScheme(bool focused)
+void Client::recomputeStyle()
 {
-    return getDecTriple()(focused, urgent_());
-}
-
-void Client::setup_border(bool focused) {
-    dec->change_scheme(getDecorationScheme(focused));
-    redrawRelevantTabBars();
+    dec->setParameters(*decParams, true);
 }
 
 void Client::redraw()
 {
-    this->dec->redraw();
-    redrawRelevantTabBars();
+    decParams->updateTabUrgencyFlags();
+    dec->setParameters(*decParams);
+    dec->redraw();
 }
 
 void Client::redrawRelevantTabBars()
@@ -281,7 +274,7 @@ void Client::redrawRelevantTabBars()
         if (parent && parent->getLayout() == LayoutAlgorithm::max) {
             parent->foreachClient([&](Client* otherClient) {
                 if (otherClient != this) {
-                    otherClient->dec->redraw();
+                    otherClient->redraw();
                 }
             });
         }
@@ -289,8 +282,12 @@ void Client::redrawRelevantTabBars()
 }
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
-    dec->resize_outline(monitor_rect, theme[ThemeType::Fullscreen](isFocused,urgent_()), {});
-    mostRecentThemeType = ThemeType::Fullscreen;
+    *decParams = DecorationParameters();
+    decParams->focused_ = isFocused;
+    decParams->fullscreen_ = true;
+    decParams->urgent_ = urgent_();
+    dec->setParameters(*decParams);
+    dec->resize_outline(monitor_rect);
 }
 
 void Client::raise() {
@@ -311,20 +308,28 @@ void Client::lower()
  */
 void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, vector<Client*> tabs) {
     // only apply minimal decoration if the window is not pseudotiled
-    auto themetype = (minimalDecoration && !pseudotile_())
-            ? ThemeType::Minimal : ThemeType::Tiling;
-    mostRecentThemeType = themetype;
-    auto& scheme = theme[themetype](isFocused, urgent_());
+    *decParams = DecorationParameters();
+    decParams->minimal_ = minimalDecoration && !this->pseudotile_();
+    decParams->pseudotiled_ = this->pseudotile_();
+    decParams->tabs_ = tabs;
+    decParams->urgent_ = this->urgent_();
+    decParams->urgentTabs_.reserve(tabs.size());
+    decParams->focused_ = isFocused;
+    for (const Client* tab : tabs) {
+        decParams->urgentTabs_.push_back(tab->urgent_());
+    }
+    dec->setParameters(*decParams);
     if (this->pseudotile_) {
         Rectangle inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
-        auto outline = scheme.inner_rect_to_outline(inner, tabs.size());
-        rect.x += std::max(0, (rect.width - outline.width)/2);
-        rect.y += std::max(0, (rect.height - outline.height)/2);
-        rect.width = std::min(outline.width, rect.width);
-        rect.height = std::min(outline.height, rect.height);
+        rect.x += std::max(0, (rect.width - inner.width)/2);
+        rect.y += std::max(0, (rect.height - inner.height)/2);
+        rect.width = std::min(inner.width, rect.width);
+        rect.height = std::min(inner.height, rect.height);
+        dec->resize_inner(rect);
+    } else {
+        dec->resize_outline(rect);
     }
-    dec->resize_outline(rect, scheme, tabs);
 }
 
 /**
@@ -518,8 +523,12 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     rect.y += m->rect->y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
-    dec->resize_inner(rect, theme[ThemeType::Floating](isFocused,urgent_()));
-    mostRecentThemeType = ThemeType::Floating;
+    *decParams = DecorationParameters();
+    decParams->floating_ = true;
+    decParams->focused_ = isFocused;
+    decParams->urgent_ = urgent_();
+    dec->setParameters(*decParams);
+    dec->resize_inner(rect);
 }
 
 Rectangle Client::outer_floating_rect() {
@@ -570,6 +579,14 @@ void Client::set_visible(bool visible) {
     this->visible_ = visible;
 }
 
+/*** remove all references/pointers to this other client
+ */
+void Client::forgetOtherClient(Client* otherClient)
+{
+    decParams->removeClient(otherClient);
+    dec->setParameters(*decParams);
+}
+
 void Client::urgencyAttributeChanged(bool state)
 {
     if (this == manager.focus() && state == true) {
@@ -578,7 +595,9 @@ void Client::urgencyAttributeChanged(bool state)
         return;
     }
     hook_emit({"urgent", state ? "on" : "off", WindowID(window_).str() });
-    setup_border(this == manager.focus());
+    decParams->urgent_ = urgent_();
+    redraw();
+    redrawRelevantTabBars();
     if (state != x11urgent_) {
         x11urgent_ = state;
         X_.setWindowUrgencyHint(window_, state);
@@ -715,18 +734,26 @@ void Client::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_->x;
     int extreme_y = float_size_->y;
-    const auto& t = theme[ThemeType::Floating];
-    mostRecentThemeType = ThemeType::Floating;
-    size_t tabCount = 0;
-    auto r = t.active.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
-    r = t.normal.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
-    r = t.urgent.inner_rect_to_outline(float_size_, tabCount);
-    extreme_x = std::min(extreme_x, r.x);
-    extreme_y = std::min(extreme_y, r.y);
+    if (decorated_()) {
+        // fake some decoration parameters for determining
+        // the size of the decoration
+        DecorationParameters fakeDecParams;
+        // compute the sizes of all the widgets in the decoration
+        fakeDecParams.floating_ = true;
+        fakeDecParams.focused_ = true;
+        dec->setParameters(fakeDecParams);
+        dec->computeWidgetGeometries(float_size_);
+        auto r = dec->inner_to_outer(float_size_);
+        extreme_x = std::min(extreme_x, r.x);
+        extreme_y = std::min(extreme_y, r.y);
+
+        fakeDecParams.focused_ = false;
+        dec->setParameters(fakeDecParams);
+        dec->computeWidgetGeometries(float_size_);
+        r = dec->inner_to_outer(float_size_);
+        extreme_x = std::min(extreme_x, r.x);
+        extreme_y = std::min(extreme_y, r.y);
+    }
     // if top left corner might be outside of the monitor, move it accordingly
     Point2D delta = {0, 0};
     if (extreme_x < 0) { delta.x = abs(extreme_x); }

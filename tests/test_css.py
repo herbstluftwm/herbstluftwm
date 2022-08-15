@@ -390,3 +390,8 @@ def test_css_names_tree_check(hlwm):
         'border-top-width: 4px;']
     assert computed_style_of_tree_index('2') == [
         'border-left-width: 7px;']
+
+
+def test_theme_name_invalid_path(hlwm):
+    hlwm.call_xfail('attr theme.name this_does_not_exist') \
+        .expect_stderr('this_does_not_exist.*No such file')

@@ -20,6 +20,8 @@ public:
 
     void initFromStr(const std::string& source);
     int textwidth(const std::string& text, size_t len) const;
+    int ascent = 0; //! pixels above baseline
+    int descent = 0; //! pixels below baseline
 
     struct _XftFont* xftFont_ = nullptr;
     XFontStruct* xFontStruct_ = nullptr;

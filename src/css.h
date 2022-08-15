@@ -19,7 +19,10 @@ class DomTree;
 class DomTree {
     /**
      * a very simple iterator to traverse a dom-like tree
-     * when testing whether a css selector holds
+     * when testing whether a css selector holds.
+     *
+     * Also it exposes cachedStyle() such that children can inherit
+     * certain properties (e.g. font) from their parent element.
      */
 public:
     virtual ~DomTree() = default;
@@ -28,6 +31,7 @@ public:
     virtual const DomTree* leftSibling() const = 0;
     virtual bool hasClass(const CssName& className) const = 0;
     virtual size_t childCount() const = 0;
+    virtual std::shared_ptr<const BoxStyle> cachedStyle() const = 0;
 };
 
 

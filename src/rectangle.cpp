@@ -25,6 +25,11 @@ Rectangle Rectangle::fromStr(const string &source) {
     };
 }
 
+Rectangle Rectangle::fromCorners(Point2D tl_, Point2D br_)
+{
+    return fromCorners(tl_.x, tl_.y, br_.x, br_.y);
+}
+
 Rectangle Rectangle::fromCorners(int x1, int y1, int x2, int y2) {
     Rectangle r;
     r.x = x1;
@@ -71,7 +76,7 @@ bool Rectangle::operator==(const Rectangle& other) const
 }
 
 /**
- * @brief Check whether a rectangle has non-negative width and height
+ * @brief Check whether a rectangle has positive width and height
  */
 Rectangle::operator bool() const
 {
@@ -150,7 +155,9 @@ static RectangleVec disjoin_from_subset(Rectangle large, Rectangle center)
     // +-----------------------+
     // coordinates of the bottom right corner of large
     int br_x = large.x + large.width, br_y = large.y + large.height;
-    auto r = Rectangle::fromCorners;
+    auto r = [](int x1, int y1, int x2, int y2) {
+        return Rectangle::fromCorners(x1, y1, x2, y2);
+    };
     Rectangle top   = r(large.x, large.y, large.x + large.width, center.y);
     Rectangle left  = r(large.x, center.y, center.x, center.y + center.height);
     Rectangle right = r(center.x + center.width, center.y, br_x, center.y + center.height);

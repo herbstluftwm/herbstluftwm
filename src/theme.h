@@ -6,6 +6,7 @@
 #include "attribute_.h"
 #include "child.h"
 #include "converter.h"
+#include "css.h"
 #include "either.h"
 #include "finite.h"
 #include "font.h"
@@ -17,10 +18,10 @@
  * @brief Criteria when to show the window title
  */
 enum class TitleWhen {
-    never,
-    always,
-    one_tab,
-    multiple_tabs,
+    never = 0,
+    multiple_tabs = 1,
+    one_tab = 2,
+    always = 3,
 };
 
 template <>
@@ -47,10 +48,14 @@ template<> void Converter<Inherit>::complete(Completion& complete, Inherit const
 
 typedef Either<Inherit,Color> MaybeColor;
 typedef Either<Inherit,unsigned long> MaybeULong;
+typedef Either<Inherit,int> MaybeInt;
+
 template<>
 inline Type Attribute_<MaybeColor>::staticType() { return Type::STRING; }
 template<>
 inline Type Attribute_<MaybeULong>::staticType() { return Type::STRING; }
+template<>
+inline Type Attribute_<MaybeInt>::staticType() { return Type::STRING; }
 
 /** The proxy interface
  */
@@ -111,6 +116,10 @@ public:
     Attribute* toAttribute() override {
         return this;
     }
+    void setInitialAndDefaultValue(const T& value) {
+        Attribute_<T>::payload_ = value;
+        Attribute_<T>::defaultValue_ = value;
+    }
 private:
     std::vector<Object*> targetObjects_;
 };
@@ -121,8 +130,8 @@ public:
     ~DecorationScheme() override = default;
     DynAttribute_<std::string> reset;
     AttributeProxy_<unsigned long>     border_width = {"border_width", 0};
-    AttributeProxy_<unsigned long>     title_height = {"title_height", 0};
-    AttributeProxy_<int>           title_depth = {"title_depth", 0};
+    AttributeProxy_<MaybeULong>     title_height = {"title_height", 0};
+    AttributeProxy_<MaybeInt>       title_depth = {"title_depth", 0};
     AttributeProxy_<TitleWhen>     title_when = {"title_when", TitleWhen::always};
     AttributeProxy_<Color>   border_color = {"color", {"black"}};
     AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
@@ -146,8 +155,6 @@ public:
 
     Signal scheme_changed_; //! whenever one of the attributes changes.
 
-    Rectangle inner_rect_to_outline(Rectangle rect, size_t tabCount) const;
-    Rectangle outline_to_inner_rect(Rectangle rect, size_t tabCount) const;
     bool showTitle(size_t tabCount) const;
 
     // after having called this with some vector 'decs', then if an attribute
@@ -195,12 +202,13 @@ enum class ThemeType {
 
 class Theme : public DecTriple {
 public:
-    const DecTriple& operator[](ThemeType t) const {
-        return *decTriples[static_cast<int>(t)];
-    };
     Theme();
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
+
+    Attribute_<CssFile::Ptr> name;
+    Attribute_<CssSource> style_override;
+    std::shared_ptr<BoxStyle> computeBoxStyle(DomTree* element);
 
     ChildMember_<DecTriple> fullscreen;
     ChildMember_<DecTriple> tiling;
@@ -208,6 +216,11 @@ public:
     ChildMember_<DecTriple> minimal;
 
 private:
+    const DecTriple& operator[](ThemeType t) const {
+        return *decTriples[static_cast<int>(t)];
+    };
+    CssSource generatedStyle; // style generated from DecTriples
+    void generateBuiltinCss();
     // a sub-decoration for each type
     std::vector<DecTriple*> decTriples;
 };

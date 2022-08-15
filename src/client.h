@@ -14,6 +14,7 @@
 #include "x11-types.h"
 
 class Decoration;
+class DecorationParameters;
 class ResizeAction;
 class DecTriple;
 class Ewmh;
@@ -108,7 +109,7 @@ public:
 
     Rectangle outer_floating_rect();
 
-    void setup_border(bool focused);
+    void recomputeStyle();
     void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, std::vector<Client*> tabs);
     void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
@@ -125,6 +126,7 @@ public:
     ResizeAction possibleResizeActions();
 
     void set_visible(bool visible);
+    void forgetOtherClient(Client* otherClient);
 
     void requestClose(); //! ask the client to close
 
@@ -151,9 +153,7 @@ private:
     Ewmh& ewmh;
     XConnection& X_;
     std::string tagName();
-    const DecTriple& getDecTriple();
-    const DecorationScheme& getDecorationScheme(bool focused);
-    ThemeType mostRecentThemeType;
+    std::unique_ptr<DecorationParameters> decParams; // pimpl
 };
 
 

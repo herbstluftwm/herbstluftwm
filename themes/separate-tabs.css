@@ -1,0 +1,110 @@
+
+.client-decoration {
+    border-width: 1px;
+    background-color: #282828;
+    border-style: solid;
+    border-color: #969696;
+
+    margin: 1px; /* make space for outline */
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: black;
+}
+
+.client-decoration.focus {
+    background-color: #174F6A;
+}
+
+.client-decoration.minimal {
+    padding: 0px;
+    border-width: 0px;
+    background-color: #000000;
+}
+.client-decoration.minimal > * {
+    display: none;
+}
+.client-decoration.minimal .client-content {
+    display: flex;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+}
+
+.client-content {
+    border-color: #868686;
+    border-width: 1px;
+    border-color: #616161;
+    background-color: #12121234;
+}
+
+.client-decoration.focus ,
+.client-decoration.focus .client-content {
+    border-color: #50A9D4;
+}
+
+.client-decoration > * {
+    margin: 4px;
+}
+
+.client-decoration > * + * {
+    margin-top: 0px;
+}
+
+.tabbar > .tab {
+    background-color: #343434;
+    border-width: 1px;
+    text-align: center;
+    margin: 0px 0px;
+    padding: 0px 8px;
+    color: #dedede;
+}
+
+.tabbar > .tab + .tab {
+    margin-left: 4px;
+}
+
+.tabbar > .tab.normal {
+    background-color: #343434;
+    border-color: #434343;
+    color: #898989;
+}
+
+.client-decoration.focus .tabbar > .tab {
+    background-color: #287092;
+    border-color: #4A98BC;
+    color: #ababab;
+}
+
+.client-decoration.normal .tabbar > .tab.focus {
+    background-color: #565656;
+    border-color: #656565;
+    color: #efefef;
+}
+
+.client-decoration.focus .tabbar > .tab.focus {
+    background-color: #64BCE6;
+    border-color: #C3D9E4;
+    color: #121212;
+}
+
+
+.tabbar > .tab.focus:first-child:last-child {
+    background-color: transparent;
+    border-width: 0px;
+    padding: 1px; /* compensate lack of border */
+    color: #dedede;
+}
+
+
+.tabbar > .tab.urgent {
+    background-color: #D787D7;
+    border-color: #FFC0FF;
+    color: #4C284C;
+}
+
+
+* {
+    font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
+    /* font: Dejavu Sans:pixelsize=12; */
+}
+
