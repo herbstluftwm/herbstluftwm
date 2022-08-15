@@ -377,13 +377,13 @@ void debugCssCommand(CallOrComplete invoc)
     bool treeIndexPresent = false;
     vector<int> treeIndex = {};
     ArgParse ap;
-    ap.mandatory(cssSource);
     ap.flags({
         {"--print-css", &print },
         {"--tree=", tree },
         {"--print-tree", &printTree },
         {"--query-tree-indices=", cssSelectorStr },
         {"--compute-style=", treeIndex, &treeIndexPresent},
+        {"--stylesheet=", cssSource },
     });
     ap.command(invoc,
         [&] (Output output) {

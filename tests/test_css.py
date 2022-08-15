@@ -55,10 +55,10 @@ def test_basic_css_normalize(hlwm):
     }
 
     for source, normalized in input2normalize.items():
-        output = hlwm.call(['debug-css', '--print-css', source]).stdout
+        output = hlwm.call(['debug_css', '--print-css', '--stylesheet=' + source]).stdout
         assert output == textwrap.dedent(normalized)
         # check that pretty printing is idempotent:
-        assert hlwm.call(['debug-css', '--print-css', output]).stdout == output
+        assert hlwm.call(['debug_css', '--print-css', '--stylesheet=' + output]).stdout == output
 
 
 def test_basic_css_parse_error(hlwm):
@@ -74,7 +74,7 @@ def test_basic_css_parse_error(hlwm):
         '* { // }': "Expected } but got EOF",
     }
     for source, error in input2error.items():
-        assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
+        assert hlwm.call_xfail(['debug_css', '--print-css', '--stylesheet=' + source]) \
             .expect_stderr(error)
 
 
@@ -88,10 +88,10 @@ def test_basic_dummy_tree(hlwm):
         '((() (e f)))': '(\n  (\n    ()\n    (e f)))',
     }
     for source, normalized in input2normalize.items():
-        output = hlwm.call(['debug-css', '--print-tree', '--tree=' + source, '']).stdout
+        output = hlwm.call(['debug_css', '--print-tree', '--tree=' + source]).stdout
         assert output == normalized + '\n'
         # check that pretty printing is idempotent:
-        assert hlwm.call(['debug-css', '--print-tree', '--tree=' + output, '']).stdout == output
+        assert hlwm.call(['debug_css', '--print-tree', '--tree=' + output]).stdout == output
 
     input2error = {
         '(': r'Expected \) but got EOF',
@@ -99,7 +99,7 @@ def test_basic_dummy_tree(hlwm):
         '() ()': r'Expected EOF but got.*\(',
     }
     for source, error in input2error.items():
-        hlwm.call_xfail(['debug-css', '--print-tree', '--tree=' + source, '']) \
+        hlwm.call_xfail(['debug_css', '--print-tree', '--tree=' + source]) \
             .expect_stderr(error)
 
 
@@ -112,7 +112,7 @@ def test_css_property_parsing(hlwm):
         '* { border-style: invalidstyle; }': 'Expected \"solid\"',
     }
     for source, error in input2error.items():
-        assert hlwm.call_xfail(['debug-css', '--print-css', source]) \
+        assert hlwm.call_xfail(['debug_css', '--print-css', '--stylesheet=' + source]) \
             .expect_stderr(error)
 
 
@@ -139,9 +139,8 @@ def test_css_basic_selectors(hlwm):
     }
     for selector, expected in selector2match.items():
         cmd = [
-            'debug-css', '--tree=' + tree,
-            '--query-tree-indices=' + selector,
-            ''  # empty css
+            'debug_css', '--tree=' + tree,
+            '--query-tree-indices=' + selector
         ]
         output = hlwm.call(cmd).stdout.splitlines()
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
@@ -160,9 +159,8 @@ def test_css_custom_name(hlwm):
     }
     for selector, expected in selector2match.items():
         cmd = [
-            'debug-css', '--tree=' + tree,
-            '--query-tree-indices=' + selector,
-            ''  # empty css
+            'debug_css', '--tree=' + tree,
+            '--query-tree-indices=' + selector
         ]
         output = hlwm.call(cmd).stdout.splitlines()
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
@@ -189,9 +187,8 @@ def test_css_sibling_cominbators(hlwm):
     }
     for selector, expected in selector2match.items():
         cmd = [
-            'debug-css', '--tree=' + tree,
+            'debug_css', '--tree=' + tree,
             '--query-tree-indices=' + selector,
-            ''  # empty css
         ]
         output = hlwm.call(cmd).stdout.splitlines()
         assert sorted(output) == ['match: ' + x for x in sorted(expected)]
@@ -260,9 +257,9 @@ def test_css_property_applier(hlwm):
         """
         tree = '((a) (testclass) (b))'
         cmd = [
-            'debug-css', '--tree=' + tree,
+            'debug_css', '--tree=' + tree,
             '--compute-style=1',
-            css
+            '--stylesheet=' + css
         ]
 
         def normalize(buf):
@@ -342,9 +339,9 @@ def test_css_computed_style(hlwm):
     }
     for tree_index, computed_style in index2style.items():
         cmd = [
-            'debug-css', '--tree=' + tree,
+            'debug_css', '--tree=' + tree,
             '--compute-style=' + tree_index,
-            css
+            '--stylesheet=' + css
         ]
         expected = sorted(textwrap.dedent(computed_style).strip().splitlines())
         output = sorted(hlwm.call(cmd).stdout.splitlines())
@@ -352,15 +349,15 @@ def test_css_computed_style(hlwm):
 
 
 def test_debug_css_errors(hlwm):
-    """test that the debug-css command itself does correct
+    """test that the debug_css command itself does correct
     error handling"""
-    hlwm.call_xfail('debug-css --compute-style=lkj ""') \
+    hlwm.call_xfail('debug_css --compute-style=lkj') \
         .expect_stderr("stoi")
-    hlwm.call_xfail('debug-css --compute-style=8 ""') \
+    hlwm.call_xfail('debug_css --compute-style=8') \
         .expect_stderr("--compute-style requires a tree")
-    hlwm.call_xfail('debug-css --tree="()" --compute-style=8 ""') \
+    hlwm.call_xfail('debug_css --tree="()" --compute-style=8') \
         .expect_stderr("invalid tree index")
-    hlwm.call_xfail('debug-css --tree="()" --compute-style="0 8" ""') \
+    hlwm.call_xfail('debug_css --tree="()" --compute-style="0 8"') \
         .expect_stderr("invalid tree index")
 
 
@@ -381,7 +378,7 @@ def test_css_names_tree_check(hlwm):
     """
 
     def computed_style_of_tree_index(tree_index):
-        cmd = ['debug-css', f'--tree={tree}', f'--compute-style={tree_index}', css]
+        cmd = ['debug_css', f'--tree={tree}', f'--compute-style={tree_index}', f'--stylesheet={css}']
         return sorted(hlwm.call(cmd).stdout.splitlines())
 
     assert computed_style_of_tree_index('0') == []

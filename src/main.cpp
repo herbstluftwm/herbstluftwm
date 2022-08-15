@@ -236,7 +236,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                        &Watchers::watchCompletion }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
-        {"debug-css",      { &debugCssCommand } },
+        {"debug_css",      { &debugCssCommand } },
     };
     return unique_ptr<CommandTable>(new CommandTable(init));
 }
