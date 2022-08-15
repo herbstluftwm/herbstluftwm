@@ -1441,6 +1441,15 @@ reload::
     to quit. This hook *should* be emitted in the first line of every 'autostart'
     file.
 
+
+[[THEMES]]
+THEMES/STYLESHEETS
+------------------
+The look of client decorations can be controlled via the attributes under
+the +theme.+ object, or in a more granular way via stylesheets, inspired by CSS.
+
+More documentation on the theme format will come soon.
+
 [[STACKING]]
 STACKING
 --------
