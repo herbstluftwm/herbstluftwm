@@ -102,6 +102,7 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     # two hc-calls and hope that this gives hc --wait enough time to boot up.
     hlwm.call('true')
     hlwm.call('true')
+
     for _ in range(0, num_hooks_sent):
         hlwm.call('emit_hook nonmatch nonarg')
         hlwm.call('emit_hook matcher somearg')
