@@ -73,7 +73,6 @@ void FontData::initFromStr(const string& source)
         // the rectangle is the boundary of the text when drawing the text
         // for a baseline at (0,0)
         ascent = -overallInk.y;
-        HSDebug("height: %d\n", overallInk.height);
         descent = overallInk.height + overallInk.y;
         return;
     } else {

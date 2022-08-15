@@ -21,7 +21,7 @@ class DomTree {
      * a very simple iterator to traverse a dom-like tree
      * when testing whether a css selector holds.
      *
-     * Also it exposes style() such that children can inherit
+     * Also it exposes cachedStyle() such that children can inherit
      * certain properties (e.g. font) from their parent element.
      */
 public:
