@@ -413,6 +413,11 @@ void Decoration::removeFromTabBar(Client* otherClientTab)
     }
 }
 
+void Decoration::printDomTree(Output output)
+{
+    tree_print_to(widMain.treeInterface(), output);
+}
+
 void Decoration::resize_outline(Rectangle outline)
 {
     Rectangle inner;

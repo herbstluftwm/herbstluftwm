@@ -106,6 +106,7 @@ public:
     ResizeAction positionTriggersResize(Point2D p);
     ResizeAction resizeFromRoughCursorPosition(Point2D cursor);
     void removeFromTabBar(Client* otherClientTab);
+    void printDomTree(Output output);
 
 private:
     Widget widMain;

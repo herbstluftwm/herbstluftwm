@@ -146,6 +146,21 @@ bool CssName::isBinaryOperator() const
             || *this == Builtin::child;
 }
 
+string CssName::str() const
+{
+    if (data_) {
+        return data_->name_;
+    } else {
+        CssNameData::initIfNecessary();
+        auto data =  CssNameData::index2data_[index_].lock();
+        if (data) {
+            return data->name_;
+        } else {
+            return {};
+        }
+    }
+}
+
 bool CssNameSet::contains(CssName className) const
 {
     if (className.index() < namesLength_) {
@@ -154,6 +169,29 @@ bool CssNameSet::contains(CssName className) const
         size_t idx = className.index() - namesLength_;
         return (idx < moreNames_.size()) ? moreNames_[idx] : false;
     }
+}
+
+vector<CssName> CssNameSet::toVector() const
+{
+    vector<CssName> vec;
+    // first collect builtin names:
+    CssName::Builtin i = CssName::Builtin::FIRST;
+    while (true) {
+        if (contains(CssName(i))) {
+            vec.push_back(CssName(i));
+        }
+        if (i == CssName::Builtin::LAST) {
+            break;
+        } else {
+            // increment
+            i = static_cast<CssName::Builtin>(1 + static_cast<size_t>(i));
+        }
+    }
+    // then collect other names:
+    for (const auto& n : customNames_) {
+        vec.push_back(n);
+    }
+    return vec;
 }
 
 CssNameSet::CssNameSet(std::initializer_list<pair<CssName, bool> > classes)
