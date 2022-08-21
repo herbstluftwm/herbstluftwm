@@ -241,6 +241,7 @@ public:
         return widget_->nestedWidgets_.size();
     }
     virtual void appendCaption(Output output) override {
+        output << " ";
         for (const auto& name : widget_->classes_.toVector()) {
             output << "." << name.str();
         }

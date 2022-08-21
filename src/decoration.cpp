@@ -54,12 +54,13 @@ Decoration::Decoration(Client* client, Settings& settings, Theme& theme)
     widMain.vertical_ = true;
     widMain.addChild(&widContent);
     widContent.addChild(&widPanel);
+    widContent.setClassEnabled(CssName::Builtin::content, true);
     widPanel.expandX_ = true;
     widPanel.addChild(&widTabBar);
     widTabBar.expandX_ = true;
-    widPanel.setClassEnabled(CssName::Builtin::bar, true);
+    widPanel.setClassEnabled(CssName::Builtin::panel, true);
     widMain.addChild(&widClient);
-    widTabBar.setClassEnabled(CssName::Builtin::tabbar, true);
+    widTabBar.setClassEnabled(CssName::Builtin::tabs, true);
     widClient.setClassEnabled(CssName::Builtin::client_content, true);
     widClient.expandX_ = true;
     widClient.expandY_ = true;
@@ -233,6 +234,7 @@ void Decoration::setParameters(const DecorationParameters& params, bool force)
        {{CssName::Builtin::normal}, !params.focused_ && !client_->urgent_()},
        {{CssName::Builtin::minimal}, params.minimal_},
        {{CssName::Builtin::fullscreen}, params.fullscreen_},
+       {{CssName::Builtin::regular}, !params.minimal_ && !params.fullscreen_},
        {{CssName::Builtin::no_tabs}, params.tabs_.empty()},
        {{CssName::Builtin::one_tab}, params.tabs_.size() == 1},
        {{CssName::Builtin::multiple_tabs}, params.tabs_.size() > 1},
@@ -687,6 +689,7 @@ TabWidget::TabWidget()
     // widContent.addChild(&widTitle);
     widContent.expandX_ = true;
     widContent.addChild(&widTitle);
+    widContent.setClassEnabled(CssName::Builtin::content, true);
     widTitle.expandX_ = true;
     widTitle.setClasses({
         {CssName::Builtin::title, true },

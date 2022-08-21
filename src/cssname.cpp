@@ -69,17 +69,19 @@ void CssNameData::initIfNecessary()
         { CssName::Builtin::descendant, " " },
         { CssName::Builtin::adjacent_sibling, "+" },
         { CssName::Builtin::any, "*" },
-        { CssName::Builtin::tabbar, "tabbar" },
+        { CssName::Builtin::tabs, "tabs" },
         { CssName::Builtin::tab, "tab" },
         { CssName::Builtin::notabs, "notabs" },
         { CssName::Builtin::no_tabs, "no-tabs" },
         { CssName::Builtin::one_tab, "one-tab" },
         { CssName::Builtin::multiple_tabs, "multiple-tabs" },
-        { CssName::Builtin::bar, "bar" },
+        { CssName::Builtin::panel, "panel" },
+        { CssName::Builtin::content, "content" },
         { CssName::Builtin::client_content, "client-content" },
         { CssName::Builtin::first_child, "first-child" },
         { CssName::Builtin::last_child, "last-child" },
         { CssName::Builtin::client_decoration, "client-decoration" },
+        { CssName::Builtin::regular, "regular" },
         { CssName::Builtin::minimal, "minimal" },
         { CssName::Builtin::fullscreen, "fullscreen" },
         { CssName::Builtin::urgent, "urgent" },
@@ -89,6 +91,7 @@ void CssNameData::initIfNecessary()
         { CssName::Builtin::tiling, "tiling" },
         { CssName::Builtin::title, "title" },
     };
+    HSAssert(names.size() == 1 + static_cast<size_t>(CssName::Builtin::LAST));
     for (const auto& it : names) {
         size_t index = static_cast<size_t>(it.first);
         auto data = make_shared<CssNameData>(index, it.second);

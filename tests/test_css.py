@@ -1,4 +1,5 @@
 import textwrap
+import re
 
 
 def test_basic_css_normalize(hlwm):
@@ -392,3 +393,65 @@ def test_css_names_tree_check(hlwm):
 def test_theme_name_invalid_path(hlwm):
     hlwm.call_xfail('attr theme.name this_does_not_exist') \
         .expect_stderr('this_does_not_exist.*No such file')
+
+
+def test_toplevel_css_classes_toplevel_client(hlwm):
+    hlwm.open_persistent_pipe()
+    winid, proc = hlwm.create_client()
+
+    class State:
+        def __init__(self):
+            self.tab_count = 0
+            self.client_count = 1
+            self.other_client = None
+            self.focused = True
+            self.floating = False
+            self.fullscreen = False
+
+    state = State()
+
+    def step0():
+        hlwm.call(['set_layout', 'vertical'])
+        pass
+
+    def step1():
+        hlwm.call(['set_layout', 'max'])
+        state.tab_count = 1
+
+    def step2():
+        winid, _ = hlwm.create_client()
+        state.other_client = winid
+        state.client_count += 1
+        state.tab_count = 2
+
+    def step3():
+        hlwm.create_client()
+        state.client_count += 1
+        state.tab_count = 2
+
+    def step4():
+        hlwm.call(['jumpto', state.other_client])
+        state.focused = False
+
+    def step5():
+        hlwm.attr.tags.focus.floating = True
+        state.tab_count = 0  # no tabs in floating mode
+        state.floating = True
+
+    for current_step in [step0, step1, step2, step3, step4, step5]:
+        current_step()
+        sep = '($|\\.|\\n)'
+        regexes = {
+            r'\.regular' + sep: not state.fullscreen,
+            r'\.fullscreen' + sep: False,
+            r'\.no-tabs' + sep: state.tab_count == 0,
+            r'\.one-tab' + sep: state.tab_count == 1,
+            r'\.multiple-tabs' + sep: state.tab_count >= 2,
+            r'\.floating' + sep: state.floating,
+            r'\.tiling' + sep: not state.floating,
+            r'\.focus' + sep: state.focused,
+        }
+        output = hlwm.call(['debug_css', f'--pretty-client-tree={winid}']).stdout.splitlines()[0]
+        for r, expected in regexes.items():
+            assert bool(re.search(r, output, flags=re.MULTILINE)) is expected, \
+                f'Checking that regex "{r}" is {expected}'
