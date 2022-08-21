@@ -10,7 +10,7 @@
 }
 
 .client-decoration .client-content ,
-.client-decoration .tabbar .tab {
+.client-decoration .tabs .tab {
     border-width: 2px;
     border-color: #ffffff;
 }
@@ -30,7 +30,7 @@
 }
 
 .client-decoration.focus .client-content ,
-.client-decoration.focus .tabbar .tab {
+.client-decoration.focus .tabs .tab {
     border-color: #E27176;
 }
 
@@ -47,8 +47,8 @@
     border-top-width: 0px;
 }
 
-.client-decoration .tabbar .tab.normal ,
-.client-decoration .tabbar .tab.urgent {
+.client-decoration .tabs .tab.normal ,
+.client-decoration .tabs .tab.urgent {
     border-top-width: 1px;
     border-right-width: 1px;
     border-left-width: 0px;
@@ -56,19 +56,19 @@
     padding: 2px 2px 0px 4px;
 }
 
-.client-decoration .tabbar .tab.normal:first-child ,
-.client-decoration .tabbar .tab.urgent:first-child {
+.client-decoration .tabs .tab.normal:first-child ,
+.client-decoration .tabs .tab.urgent:first-child {
     border-left-width: 1px;
     padding-left: 3px;
 }
 
-.client-decoration.no-tabs .tabbar .tab ,
-.client-decoration.one-tab .tabbar .tab {
+.client-decoration.no-tabs .tabs .tab ,
+.client-decoration.one-tab .tabs .tab {
     padding-left: 4px;
 }
 
 
-.client-decoration.multiple-tabs .tabbar .tab.focus {
+.client-decoration.multiple-tabs .tabs .tab.focus {
     border-bottom-width: 0px;
     padding: 0px 1px 0px 2px;
     background-color: #282828;

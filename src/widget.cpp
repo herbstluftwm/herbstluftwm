@@ -6,10 +6,12 @@
 #include "boxstyle.h"
 #include "fontdata.h"
 #include "globals.h"
+#include "utils.h"
 
 using std::function;
 using std::vector;
 using std::shared_ptr;
+using std::make_shared;
 using std::pair;
 
 Widget::Widget()
@@ -227,5 +229,29 @@ void Widget::setClasses(const CssNameSet& classes)
 void Widget::setClassEnabled(const CssName& className, bool enabled)
 {
     classes_.setEnabled(className, enabled);
+}
+
+class WidgetTI : public TreeInterface {
+public:
+    WidgetTI(Widget* wid) : widget_(wid) {}
+    virtual shared_ptr<TreeInterface> nthChild(size_t idx) override {
+        return make_shared<WidgetTI>(widget_->nestedWidgets_[idx]);
+    }
+    virtual size_t childCount() override {
+        return widget_->nestedWidgets_.size();
+    }
+    virtual void appendCaption(Output output) override {
+        output << " ";
+        for (const auto& name : widget_->classes_.toVector()) {
+            output << "." << name.str();
+        }
+    }
+private:
+    Widget* widget_;
+};
+
+shared_ptr<TreeInterface> Widget::treeInterface()
+{
+    return make_shared<WidgetTI>(this);
 }
 

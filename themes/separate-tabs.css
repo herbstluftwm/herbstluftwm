@@ -50,7 +50,7 @@
     margin-top: 0px;
 }
 
-.tabbar > .tab {
+.tabs > .tab {
     background-color: #343434;
     border-width: 1px;
     text-align: center;
@@ -59,36 +59,36 @@
     color: #dedede;
 }
 
-.tabbar > .tab + .tab {
+.tabs > .tab + .tab {
     margin-left: 4px;
 }
 
-.tabbar > .tab.normal {
+.tabs > .tab.normal {
     background-color: #343434;
     border-color: #434343;
     color: #898989;
 }
 
-.client-decoration.focus .tabbar > .tab {
+.client-decoration.focus .tabs > .tab {
     background-color: #287092;
     border-color: #4A98BC;
     color: #ababab;
 }
 
-.client-decoration.normal .tabbar > .tab.focus {
+.client-decoration.normal .tabs > .tab.focus {
     background-color: #565656;
     border-color: #656565;
     color: #efefef;
 }
 
-.client-decoration.focus .tabbar > .tab.focus {
+.client-decoration.focus .tabs > .tab.focus {
     background-color: #64BCE6;
     border-color: #C3D9E4;
     color: #121212;
 }
 
 
-.tabbar > .tab.focus:first-child:last-child {
+.tabs > .tab.focus:first-child:last-child {
     background-color: transparent;
     border-width: 0px;
     padding: 1px; /* compensate lack of border */
@@ -96,7 +96,7 @@
 }
 
 
-.tabbar > .tab.urgent {
+.tabs > .tab.urgent {
     background-color: #D787D7;
     border-color: #FFC0FF;
     color: #4C284C;

@@ -14,6 +14,7 @@ public:
     enum class Builtin {
         /* CSS Combinators */
         child,
+        FIRST = child,
         descendant,
         has_class,
         pseudo_class,
@@ -23,21 +24,23 @@ public:
         any,
         LAST_COMBINATOR = any,
         /* built in names */
-        tabbar,
+        tabs,
         tab,
         no_tabs,
         one_tab,
         multiple_tabs,
-        bar,
+        panel,
         notabs,
         focus,
         normal,
         urgent,
+        regular,
         minimal,
         fullscreen,
         floating,
         tiling,
         title,
+        content,
         client_decoration,
         /* insert above, so that this stays last */
         client_content,
@@ -62,6 +65,7 @@ public:
     bool operator==(Builtin builtin) const {
         return index_ == static_cast<size_t>(builtin);
     }
+    std::string str() const;
     inline size_t index() {
         return index_;
     }
@@ -83,6 +87,7 @@ public:
     CssNameSet(std::initializer_list<std::pair<CssName, bool>> classes);
     void setEnabled(CssName className, bool enabled);
     bool contains(CssName className) const;
+    std::vector<CssName> toVector() const;
 private:
     unsigned long long int names_ = 0; // at least 64 bits
     static constexpr size_t namesLength_ = sizeof(CssNameSet::names_) * 8;

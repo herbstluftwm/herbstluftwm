@@ -209,7 +209,7 @@ void Theme::generateBuiltinCss()
                   CssName::Builtin::has_class, tripleCssName,
                   CssName::Builtin::has_class, schemeCssName,
                   CssName::Builtin::descendant,
-                  CssName::Builtin::has_class, CssName::Builtin::tabbar,
+                  CssName::Builtin::has_class, CssName::Builtin::tabs,
                 },
             },
             {
@@ -440,7 +440,7 @@ void Theme::generateBuiltinCss()
                       CssName::Builtin::has_class, schemeCssName,
                       CssName::Builtin::has_class, cssClass,
                       CssName::Builtin::descendant,
-                      CssName::Builtin::has_class, CssName::Builtin::bar,
+                      CssName::Builtin::has_class, CssName::Builtin::panel,
                     },
                 },
                 {
@@ -461,12 +461,12 @@ void Theme::generateBuiltinCss()
         { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
           CssName::Builtin::has_class, CssName::Builtin::minimal,
           CssName::Builtin::descendant,
-          CssName::Builtin::has_class, CssName::Builtin::bar,
+          CssName::Builtin::has_class, CssName::Builtin::panel,
         },
         { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
           CssName::Builtin::has_class, CssName::Builtin::fullscreen,
           CssName::Builtin::descendant,
-          CssName::Builtin::has_class, CssName::Builtin::bar,
+          CssName::Builtin::has_class, CssName::Builtin::panel,
         },
     },
     {

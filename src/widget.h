@@ -8,6 +8,8 @@
 #include "rectangle.h"
 
 class BoxStyle;
+class TreeInterface;
+class WidgetTI;
 class X11WidgetRender;
 
 /**
@@ -61,8 +63,11 @@ public:
     size_t childCount() const override;
     void setClasses(const CssNameSet& classes);
     void setClassEnabled(const CssName& className, bool enabled);
+
+    std::shared_ptr<TreeInterface> treeInterface();
 private:
     friend class X11WidgetRender;
+    friend class WidgetTI;
     CssNameSet classes_ = {};
     Widget* parent_ = nullptr;
     size_t indexInParent_ = 0;

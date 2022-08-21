@@ -9,6 +9,9 @@
 #include <tuple>
 
 #include "argparse.h"
+#include "client.h"
+#include "clientmanager.h"
+#include "decoration.h"
 #include "globals.h"
 #include "parserutils.h"
 
@@ -376,14 +379,16 @@ void debugCssCommand(CallOrComplete invoc)
     string cssSelectorStr;
     bool treeIndexPresent = false;
     vector<int> treeIndex = {};
+    Client* client = nullptr;
     ArgParse ap;
     ap.flags({
+        {"--stylesheet=", cssSource },
         {"--print-css", &print },
         {"--tree=", tree },
         {"--print-tree", &printTree },
+        {"--pretty-client-tree=", client },
         {"--query-tree-indices=", cssSelectorStr },
         {"--compute-style=", treeIndex, &treeIndexPresent},
-        {"--stylesheet=", cssSource },
     });
     ap.command(invoc,
         [&] (Output output) {
@@ -408,6 +413,9 @@ void debugCssCommand(CallOrComplete invoc)
             }
             if (printTree) {
                 output << Converter<DummyTree::Ptr>::str(tree) << endl;
+            }
+            if (client) {
+                client->dec->printDomTree(output);
             }
             if (!cssSelectorStr.empty()) {
                 if (!tree) {
