@@ -453,5 +453,5 @@ def test_toplevel_css_classes_toplevel_client(hlwm):
         }
         output = hlwm.call(['debug_css', f'--pretty-client-tree={winid}']).stdout.splitlines()[0]
         for r, expected in regexes.items():
-            assert bool(re.search(r, output, flags=re.MULTILINE)) is expected, \
+            assert bool(re.search(r, output)) is expected, \
                 f'Checking that regex "{r}" is {expected}'
