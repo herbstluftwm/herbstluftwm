@@ -31,7 +31,7 @@ std::map<string, weak_ptr<FontData>> HSFont::s_fontDescriptionToData;
  * @brief remember a default font, which is used whenever text needs
  * to be drawn, without any concrete font provided.
  */
-std::shared_ptr<FontData> HSFont::s_defaultFont;
+shared_ptr<FontData> HSFont::s_defaultFont;
 
 /**
  * @brief Create a FontData object. If the font description
