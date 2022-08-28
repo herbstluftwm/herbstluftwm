@@ -95,8 +95,8 @@ void X11WidgetRender::render(const Widget& widget)
         HSFont font = style.font.cases<HSFont>(
         [](const Unit<BoxStyle::initial>& u) {
             return HSFont::defaultFont();
-        }, [](const HSFont& font) {
-            return font;
+        }, [](const HSFont& f) {
+            return f;
         });
         int textHeight = style.textHeight.rightOr(font.data().ascent);
         int textDepth = style.textDepth.rightOr(font.data().descent);
