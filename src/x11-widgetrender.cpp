@@ -92,12 +92,18 @@ void X11WidgetRender::render(const Widget& widget)
     if (widget.textContent_) {
         Rectangle contentGeo = widget.contentGeometryCached();
         Point2D textPos = contentGeo.tl();
-        int textHeight = style.textHeight.rightOr(style.font.data().ascent);
-        int textDepth = style.textDepth.rightOr(style.font.data().descent);
+        HSFont font = style.font.cases<HSFont>(
+        [](const Unit<BoxStyle::initial>& u) {
+            return HSFont::defaultFont();
+        }, [](const HSFont& font) {
+            return font;
+        });
+        int textHeight = style.textHeight.rightOr(font.data().ascent);
+        int textDepth = style.textDepth.rightOr(font.data().descent);
         int extraSpace = contentGeo.height - textHeight - textDepth;
         textPos.y += extraSpace / 2 + textHeight;
         if (textHeight != 0) {
-            drawText(pixmap_, gc_, style.font.data(), style.fontColor,
+            drawText(pixmap_, gc_, font.data(), style.fontColor,
                      textPos - pixmapPos_, widget.textContent_(), contentGeo.width, style.textAlign);
         }
     }

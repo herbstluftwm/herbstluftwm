@@ -102,9 +102,24 @@
     color: #4C284C;
 }
 
+/** hide decoration for minimal and fullscreen clients */
+.client-decoration.minimal .panel ,
+.client-decoration.fullscreen .panel {
+    display: none;
+}
+
+.client-decoration.minimal ,
+.client-decoration.fullscreen ,
+.client-decoration.fullscreen > * {
+    border-width: 0px;
+    background-color: black;
+    padding: 0px;
+    margin: 0px;
+}
+
 
 * {
-    font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
+    /* font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*; */
     /* font: Dejavu Sans:pixelsize=12; */
 }
 

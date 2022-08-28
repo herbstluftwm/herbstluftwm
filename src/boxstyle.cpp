@@ -13,6 +13,7 @@ using std::vector;
 const char BoxStyle::auto_[] = "auto";
 const char BoxStyle::solid[] = "solid";
 const char BoxStyle::transparent[] = "transparent";
+const char BoxStyle::initial[] = "initial";
 
 std::map<string, CssValueParser> CssValueParser::propName2Parser_;
 

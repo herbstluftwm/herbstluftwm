@@ -44,6 +44,7 @@ public:
     static const char auto_[];
     static const char solid[];
     static const char transparent[];
+    static const char initial[];
 
     Either<Unit<transparent>,Color> backgroundColor = Unit<transparent>();
 
@@ -89,7 +90,7 @@ public:
     TextAlign textAlign = TextAlign::left;
     Either<Unit<auto_>,CssLen> textDepth = Unit<auto_>();
     Either<Unit<auto_>,CssLen> textHeight = Unit<auto_>();
-    HSFont font = HSFont::fromStr("");
+    Either<Unit<initial>,HSFont> font = Unit<initial>();
 
     std::map<std::string, std::string> changedProperties() const;
     static const BoxStyle empty() {
