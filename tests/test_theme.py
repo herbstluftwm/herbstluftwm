@@ -243,3 +243,8 @@ def test_tabs_cleared_in_floating(hlwm, x11):
 
     assert hlwm.attr.clients[w2].floating_geometry() \
         == hlwm.attr.clients[w2].content_geometry()
+
+
+def test_font_not_empty(hlwm):
+    hlwm.call_xfail("set_attr theme.title_font ''") \
+        .expect_stderr("unknown font description")
