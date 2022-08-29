@@ -106,6 +106,11 @@ def test_font_type_non_existing_font(hlwm):
         .expect_stderr(f"(cannot allocate font.*'{value}'|{value}.*The following charsets are unknown)")
 
 
+def test_font_not_empty(hlwm):
+    hlwm.call_xfail("set_attr theme.title_font ''") \
+        .expect_stderr("cannot allocate font ''")
+
+
 @pytest.mark.parametrize("floating", [True, False])
 def test_decoration_geometry_vs_content_geometry(hlwm, floating):
     hlwm.attr.tags.focus.floating = floating
@@ -243,8 +248,3 @@ def test_tabs_cleared_in_floating(hlwm, x11):
 
     assert hlwm.attr.clients[w2].floating_geometry() \
         == hlwm.attr.clients[w2].content_geometry()
-
-
-def test_font_not_empty(hlwm):
-    hlwm.call_xfail("set_attr theme.title_font ''") \
-        .expect_stderr("cannot allocate font ''")
