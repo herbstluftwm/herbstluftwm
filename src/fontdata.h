@@ -29,4 +29,10 @@ public:
 
     static XConnection* s_xconnection;
 private:
+    // loaders for different fonts. They load the font into the
+    // pointers above, and return a boolean indicating success.
+    // on error, they may still throw an exception
+    bool loadXftFont(XConnection& xcon, const std::string& source);
+    bool loadXFontSet(XConnection& xcon, const std::string& source);
+    bool loadXFontStruct(XConnection& xcon, const std::string& source);
 };

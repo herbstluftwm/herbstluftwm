@@ -94,7 +94,7 @@ def test_tight_decoration(hlwm, tight_dec):
 
 
 def test_font_type_existing_font(hlwm):
-    for value in ['*FIXED*', '*FiXed*', 'fixed']:
+    for value in ['*FIXED*', '*FiXed*', 'fixed', 'monospace:14', 'serif:bold:12']:
         hlwm.call(['set_attr', 'theme.title_font', value])
 
         assert hlwm.attr.theme.title_font() == value
@@ -247,4 +247,4 @@ def test_tabs_cleared_in_floating(hlwm, x11):
 
 def test_font_not_empty(hlwm):
     hlwm.call_xfail("set_attr theme.title_font ''") \
-        .expect_stderr("unknown font description")
+        .expect_stderr("cannot allocate font ''")
