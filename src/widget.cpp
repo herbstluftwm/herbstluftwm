@@ -108,12 +108,7 @@ void Widget::computeMinimumSize()
 
     Point2D textSize = {0, 0};
     if (textContent_) {
-        HSFont font = style.font.cases<HSFont>(
-        [](const Unit<BoxStyle::initial>& u) {
-            return HSFont::defaultFont();
-        }, [](const HSFont& font) {
-            return font;
-        });
+        HSFont font = style.getFont();
         textSize.y =
                 style.textHeight.rightOr(font.data().ascent)
                 + style.textDepth.rightOr(font.data().descent);

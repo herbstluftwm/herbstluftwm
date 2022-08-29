@@ -92,6 +92,8 @@ public:
     Either<Unit<auto_>,CssLen> textHeight = Unit<auto_>();
     Either<Unit<initial>,HSFont> font = Unit<initial>();
 
+    HSFont getFont() const;
+
     std::map<std::string, std::string> changedProperties() const;
     static const BoxStyle empty() {
         return {};

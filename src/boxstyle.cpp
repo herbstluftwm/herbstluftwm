@@ -371,6 +371,16 @@ void CssValueParser::foreachParser(function<void (const CssValueParser&)> loopBo
     }
 }
 
+HSFont BoxStyle::getFont() const
+{
+    return font.cases<HSFont>(
+    [](const Unit<BoxStyle::initial>& u) {
+        return HSFont::defaultFont();
+    }, [](const HSFont& f) {
+        return f;
+    });
+}
+
 std::map<string, string> BoxStyle::changedProperties() const
 {
     std::map<string,string> properties;
