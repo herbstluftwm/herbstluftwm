@@ -43,6 +43,7 @@ public:
         return source_ != o.source_;
     }
     FontData& data() const { return *fontData_; }
+    static void shutdown();
 private:
     HSFont();
     std::string source_;

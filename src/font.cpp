@@ -75,6 +75,11 @@ HSFont HSFont::defaultFont()
     }
 }
 
+void HSFont::shutdown()
+{
+    s_defaultFont.reset();
+}
+
 HSFont::HSFont()
 {
 }
