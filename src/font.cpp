@@ -58,13 +58,18 @@ HSFont HSFont::fromStr(const string& source)
 
 HSFont HSFont::defaultFont()
 {
+    HSFont font;
+    string fontSource = "size=7";
     if (s_defaultFont) {
-        HSFont font;
         font.fontData_ = s_defaultFont;
-        font.source_ = "";
+        font.source_ = fontSource;
         return font;
     } else {
-        HSFont font = fromStr("*");
+        font.fontData_ = make_shared<FontData>();
+        try {
+            font = fromStr(fontSource);
+        } catch (const std::exception&) {
+        }
         s_defaultFont = font.fontData_;
         return font;
     }
