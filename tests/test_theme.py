@@ -248,3 +248,33 @@ def test_tabs_cleared_in_floating(hlwm, x11):
 
     assert hlwm.attr.clients[w2].floating_geometry() \
         == hlwm.attr.clients[w2].content_geometry()
+
+
+def test_font_initial(hlwm):
+    hlwm.attr.theme.name = '/dev/null'
+    # compute title bar height for a very small font
+    hlwm.attr.theme.style_override = """
+    * {
+        font: :size=1;
+    }
+    """
+    winid, _ = hlwm.create_client()
+    content = hlwm.attr.clients[winid].content_geometry()
+    dec = hlwm.attr.clients[winid].decoration_geometry()
+    title_height_before = content.y - dec.y
+
+    # compute title bar height for 'initial' font
+    hlwm.attr.theme.style_override = """
+    * {
+        font: initial;
+    }
+    """
+    winid, _ = hlwm.create_client()
+    content = hlwm.attr.clients[winid].content_geometry()
+    dec = hlwm.attr.clients[winid].decoration_geometry()
+    title_height_after = content.y - dec.y
+
+    # we assume that the 'initial' font is bigger than just the smallest
+    # font picked before. In particular, if the assertion passes, we know that
+    # window titles are shown:
+    assert title_height_before < title_height_after
