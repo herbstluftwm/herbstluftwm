@@ -59,7 +59,7 @@ HSFont HSFont::fromStr(const string& source)
 HSFont HSFont::defaultFont()
 {
     HSFont font;
-    string fontSource = "size=7";
+    string fontSource = ":size=7";
     if (s_defaultFont) {
         font.fontData_ = s_defaultFont;
         font.source_ = fontSource;
