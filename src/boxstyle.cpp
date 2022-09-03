@@ -13,6 +13,7 @@ using std::vector;
 const char BoxStyle::auto_[] = "auto";
 const char BoxStyle::solid[] = "solid";
 const char BoxStyle::transparent[] = "transparent";
+const char BoxStyle::initial[] = "initial";
 
 std::map<string, CssValueParser> CssValueParser::propName2Parser_;
 
@@ -368,6 +369,16 @@ void CssValueParser::foreachParser(function<void (const CssValueParser&)> loopBo
     for (const auto& it : propName2Parser_) {
         loopBody(it.second);
     }
+}
+
+HSFont BoxStyle::getFont() const
+{
+    return font.cases<HSFont>(
+    [](const Unit<BoxStyle::initial>& u) {
+        return HSFont::defaultFont();
+    }, [](const HSFont& f) {
+        return f;
+    });
 }
 
 std::map<string, string> BoxStyle::changedProperties() const

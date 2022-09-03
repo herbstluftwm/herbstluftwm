@@ -28,6 +28,12 @@ Finite<TextAlign>::ValueList Finite<TextAlign>::values = ValueListPlain {
 std::map<string, weak_ptr<FontData>> HSFont::s_fontDescriptionToData;
 
 /**
+ * @brief remember a default font, which is used whenever text needs
+ * to be drawn, without any concrete font provided.
+ */
+shared_ptr<FontData> HSFont::s_defaultFont;
+
+/**
  * @brief Create a FontData object. If the font description
  * is invalid or the font is not found, an exception is thrown.
  * @param The font description as the user would enter it
@@ -48,6 +54,30 @@ HSFont HSFont::fromStr(const string& source)
     font.source_ = source;
     font.fontData_ = data;
     return font;
+}
+
+HSFont HSFont::defaultFont()
+{
+    HSFont font;
+    string fontSource = ":size=7";
+    if (s_defaultFont) {
+        font.fontData_ = s_defaultFont;
+        font.source_ = fontSource;
+        return font;
+    } else {
+        font.fontData_ = make_shared<FontData>();
+        try {
+            font = fromStr(fontSource);
+        } catch (const std::exception&) {
+        }
+        s_defaultFont = font.fontData_;
+        return font;
+    }
+}
+
+void HSFont::shutdown()
+{
+    s_defaultFont.reset();
 }
 
 HSFont::HSFont()

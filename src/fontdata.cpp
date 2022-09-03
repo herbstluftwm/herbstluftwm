@@ -26,29 +26,49 @@ FontData::~FontData() {
 //! try to parse a font description or throw an exception
 void FontData::initFromStr(const string& source)
 {
-    if (source.empty()) {
-        return;
-    }
     if (!s_xconnection) {
         throw std::invalid_argument("X connection not established yet!");
     }
+    XConnection& xcon = *s_xconnection;
+    bool suc = false;
+    suc = suc || loadXftFont(xcon, source);
+    suc = suc || loadXFontSet(xcon, source);
+    suc = suc || loadXFontStruct(xcon, source);
+    if (!suc) {
+        throw std::invalid_argument(
+                string("cannot allocate font \'") + source + "\'");
+    }
+}
+
+bool FontData::loadXftFont(XConnection& xcon, const string& source)
+{
     // if the font starts with a '-', then treat it as a XLFD and
     // don't pass it to xft
     if (!source.empty() && source[0] != '-') {
-        xftFont_ = XftFontOpenName(s_xconnection->display(),
-                                   s_xconnection->screen(),
+        xftFont_ = XftFontOpenName(xcon.display(),
+                                   xcon.screen(),
                                    source.c_str());
     }
     if (xftFont_) {
         ascent = xftFont_->ascent;
         descent = xftFont_->descent;
-        return;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool FontData::loadXFontSet(XConnection& xcon, const string& source)
+{
+    if (source.empty()) {
+        // empty string crashes XCreateFontSet()
+        return false;
     }
     // fall back to plain X fonts with unicode support
     char** missingCharSetList = nullptr;
     int missingCharSetCount = 0;
     char* defString = nullptr;
-    xFontSet_ = XCreateFontSet(s_xconnection->display(), source.c_str(),
+    xFontSet_ = XCreateFontSet(xcon.display(), source.c_str(),
                                &missingCharSetList, &missingCharSetCount,
                                &defString);
     stringstream msg;
@@ -74,21 +94,24 @@ void FontData::initFromStr(const string& source)
         // for a baseline at (0,0)
         ascent = -overallInk.y;
         descent = overallInk.height + overallInk.y;
-        return;
+        return true;
     } else {
         if (missingCharSetCount > 0) {
             throw std::invalid_argument(msg.str());
         }
     }
+    return false;
+}
 
-    xFontStruct_ = XLoadQueryFont(s_xconnection->display(), source.c_str());
+bool FontData::loadXFontStruct(XConnection& xcon, const string& source)
+{
+    xFontStruct_ = XLoadQueryFont(xcon.display(), source.c_str());
     if (xFontStruct_) {
         ascent = xFontStruct_->ascent;
         descent = xFontStruct_->descent;
-        return;
+        return true;
     }
-    throw std::invalid_argument(
-            string("cannot allocate font \'") + source + "\'");
+    return false;
 }
 
 /**

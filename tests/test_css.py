@@ -238,6 +238,11 @@ def test_css_property_applier(hlwm):
         border-left-width: 5px;
         """,
         'display: flex': '',  # flex is the default
+        'font: initial': '',
+        'font: sans; font: initial': '',  # initial is the default
+        'font: fixed': """\
+        font: fixed;
+        """,
     }
     simple_props = [
         'min-height: 5px',

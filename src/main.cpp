@@ -18,6 +18,7 @@
 #include "commandio.h"
 #include "css.h"
 #include "ewmh.h"
+#include "font.h"
 #include "fontdata.h"
 #include "frametree.h"
 #include "globalcommands.h"
@@ -454,6 +455,7 @@ int main(int argc, char* argv[]) {
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
+    HSFont::shutdown();
     FontData::s_xconnection = nullptr;
     delete ipcServer;
     delete ewmh;

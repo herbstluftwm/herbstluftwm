@@ -108,10 +108,10 @@ void Widget::computeMinimumSize()
 
     Point2D textSize = {0, 0};
     if (textContent_) {
-        FontData& data = style.font.data();
+        HSFont font = style.getFont();
         textSize.y =
-                style.textHeight.rightOr(data.ascent)
-                + style.textDepth.rightOr(data.descent);
+                style.textHeight.rightOr(font.data().ascent)
+                + style.textDepth.rightOr(font.data().descent);
     }
     minimumSizeCached_ = surroundingsSize +
             Point2D::fold(
