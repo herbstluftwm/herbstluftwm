@@ -23,7 +23,14 @@ public:
 
     // connect signal to slot
     void connect(const Signal& slot) {
-        slots_0arg_.push_back(std::bind(&Signal::emit, slot));
+        slots_0arg_.push_back([&slot]() { slot.emit(); });
+        // WARNING: above lambda must not be replaced with a
+        // bind function:
+        //
+        //      slots_0arg_.push_back(std::bind(&Signal::emit, slot));
+        //
+        // because Signal::emit is virtual, so the wrong function
+        // may be called!
     }
 
     // emit the signal

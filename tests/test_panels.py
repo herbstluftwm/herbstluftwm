@@ -21,8 +21,37 @@ class NET_WM_STRUT_PARTIAL:
 
 
 @pytest.mark.parametrize("value", [True, False])
-def test_auto_detect_panels(hlwm, x11, value):
-    hlwm.attr.settings.auto_detect_panels = hlwm.bool(value)
+@pytest.mark.parametrize("geometry_fallback", [True, False])
+def test_auto_detect_panels_top_panel(hlwm, x11, value, geometry_fallback):
+    hlwm.attr.settings.auto_detect_panels = value
+
+    def set_wm_strut(winhandle):
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT')
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32, [0, 0, 30, 0])
+
+    x11.create_client(geometry=(0, 0, 800, 25),
+                      pre_map=set_wm_strut,
+                      window_type='_NET_WM_WINDOW_TYPE_DOCK')
+    expected = [
+        '30 0 0 0',
+        '0 0 0 0',
+        '30 0 0 0',
+        '0 0 0 0',
+        '30 0 0 0',
+    ]
+    if value is False:
+        expected = expected[1:]  # drop first element in above list
+
+    for e in expected:
+        assert hlwm.call('list_padding').stdout.strip() == e
+
+        hlwm.attr.settings.auto_detect_panels = 'toggle'
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_geometry_fallback(hlwm, x11, value):
+    hlwm.attr.settings.auto_detect_panels = True
+    hlwm.attr.panels.geometry_fallback = value
 
     x11.create_client(geometry=(0, 0, 800, 30),
                       window_type='_NET_WM_WINDOW_TYPE_DOCK')
@@ -34,12 +63,12 @@ def test_auto_detect_panels(hlwm, x11, value):
         '30 0 0 0',
     ]
     if value is False:
-        expected = expected[1:]  # drop first element
+        expected = expected[1:]  # drop first element in above list
 
     for e in expected:
         assert hlwm.call('list_padding').stdout.strip() == e
 
-        hlwm.attr.settings.auto_detect_panels = 'toggle'
+        hlwm.attr.panels.geometry_fallback = 'toggle'
 
 
 def test_panel_object(hlwm, x11):
@@ -69,6 +98,7 @@ def test_panel_based_on_intersection(hlwm, x11, which_pad, pad_size, geometry):
     # monitor 0 is affected by the panel, but the other monitor is not
     hlwm.call('add othertag')
     hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+    hlwm.attr.panels.geometry_fallback = True
     winhandle, _ = x11.create_client(geometry=geometry,
                                      window_type='_NET_WM_WINDOW_TYPE_DOCK')
 
