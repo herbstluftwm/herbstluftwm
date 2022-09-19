@@ -186,7 +186,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         # the command mentions a destructive command,
         # if and only if the sets are not disjoint
         mentions_destructive_command = \
-            not(destructive_commands.isdisjoint(set(command)))
+            not (destructive_commands.isdisjoint(set(command)))
         if mentions_destructive_command != run_destructives:
             # run commands involving destructive commands
             # iff run_destructives is set, and skip otherwise
