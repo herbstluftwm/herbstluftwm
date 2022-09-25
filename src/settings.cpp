@@ -284,7 +284,8 @@ Settings::Settings()
                 "- \'if_multiple\' shows decorations on the tags with at least two frames, \n"
                 "- \'if_empty\' shows decorations of frames that have no client windows, \n"
                 "- \'focused\' shows the decoration of focused and nonempty frames, \n"
-                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
+                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames.\n"
+                "- \'all\' shows all frame decorations."
                 );
 
     frame_active_opacity.setDoc(
