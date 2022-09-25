@@ -45,6 +45,7 @@ public:
     Signal panels_changed_;
     void rootWindowChanged(int width, int height);
     DynAttribute_<unsigned long> count;
+    Attribute_<bool> geometryFallback_;
 private:
     friend Panel;
     unsigned long getCount() {
