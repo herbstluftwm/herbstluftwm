@@ -534,13 +534,14 @@ shift_edge ['-i'|'-e'] 'DIRECTION'::
     'DIRECTION'. The 'DIRECTIONS' behave as specified at the 'focus' command and
     '-i' and '-e' behave as specified at the 'focus_edge' command.
 
-shift ['-i'|'-e'] 'DIRECTION'::
+shift ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     Shifts the focused window to the next frame in the specified 'DIRECTION'.
-    The 'DIRECTIONS' and '-i'|'-e' behave as specified at the 'focus' command.
-    If the focused client is floated instead of being tiled, then client is
-    shifted to the next window or screen edge. If the window cannot be moved
-    and the setting 'focus_crosses_monitor_boundaries' is activated, then the
-    window is moved to the monitor in the specified 'DIRECTION'.
+    The 'DIRECTIONS' and parameters '-i'|'-e'|*--level=*'LEVEL' behave as
+    specified at the 'focus' command. If the focused client is floated instead
+    of being tiled, then client is shifted to the next window or screen edge. If
+    the window cannot be moved and the setting
+    'focus_crosses_monitor_boundaries' is activated, then the window is moved to
+    the monitor in the specified 'DIRECTION'.
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
