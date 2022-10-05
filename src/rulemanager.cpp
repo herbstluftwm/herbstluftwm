@@ -206,7 +206,7 @@ size_t RuleManager::removeRules(string label) {
     return countAfter - countBefore;
 }
 
-std::string RuleManager::stripDoubleHyphens(string arg) {
+string RuleManager::stripDoubleHyphens(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }
