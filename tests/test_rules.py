@@ -51,10 +51,12 @@ def test_add_simple_rule(hlwm):
 
 
 def test_add_simple_rule_with_dashes(hlwm):
-    hlwm.call('rule --class=Foo --tag=bar')
+    for negation in ['not', '--not', '!', '--!']:
+        hlwm.call('unrule --all')
+        hlwm.call(f'rule {negation} --class=Foo --tag=bar')
 
-    rules = hlwm.call('list_rules')
-    assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
+        rules = hlwm.call('list_rules')
+        assert rules.stdout == 'label=0\tnot\tclass=Foo\ttag=bar\t\n'
 
 
 def test_add_many_labeled_rules(hlwm):
@@ -166,6 +168,15 @@ def test_remove_nonexistent_rule(hlwm):
 
 def test_singleuse_rule_disappears_after_matching(hlwm):
     hlwm.call('rule once hook=dummy_hook')
+    assert hlwm.call('list_rules').stdout != ''
+
+    hlwm.create_client()
+
+    assert hlwm.call('list_rules').stdout == ''
+
+    # and the same with --once
+    hlwm.call('rule --once --hook=dummy_hook')
+    assert hlwm.call('list_rules').stdout != ''
 
     hlwm.create_client()
 
