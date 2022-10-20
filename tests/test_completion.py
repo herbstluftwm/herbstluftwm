@@ -201,6 +201,28 @@ def test_completable_commands(hlwm, request, run_destructives):
             "Running " + ' '.join(command)
 
 
+@pytest.mark.exclude_from_coverage(
+    reason='This test does not verify functionality but only whether the \
+    commands can be called at all.')
+def test_every_arg_for_every_command(hlwm):
+    hlwm.open_persistent_pipe()
+
+    commands = []
+    # for cmdname in hlwm.call(['complete', '0']).stdout.splitlines():
+    for cmdname in ['debug_css']:
+        if cmdname not in ['wmexec', 'quit']:
+            for arg in hlwm.complete([cmdname], partial=True, checked_call=False):
+                if arg.endswith(' '):
+                    arg = arg[:-1]  # drop trailing ' '
+                commands.append([cmdname, arg])
+
+    assert ['debug_css', '--print-tree'] in commands
+    assert ['debug_css', '--print-css'] in commands
+
+    for cmd in commands:
+        hlwm.unchecked_call(cmd)
+
+
 def test_inputless_commands(hlwm):
     global commands_without_input
     hlwm.open_persistent_pipe()
