@@ -252,8 +252,9 @@ DummyTree::Ptr Converter<DummyTree::Ptr>::parse(const string& source) {
 template<>
 string Converter<DummyTree::Ptr>::str(DummyTree::Ptr payload) {
     stringstream output;
-
-    payload->print(output);
+    if (payload) {
+        payload->print(output);
+    }
     return output.str();
 }
 
@@ -375,7 +376,7 @@ void debugCssCommand(CallOrComplete invoc)
 {
     string cssSource;
     bool print = false, printTree = false;
-    DummyTree::Ptr tree;
+    DummyTree::Ptr tree = {};
     string cssSelectorStr;
     bool treeIndexPresent = false;
     vector<int> treeIndex = {};
@@ -412,6 +413,10 @@ void debugCssCommand(CallOrComplete invoc)
                 file.print(output.output());
             }
             if (printTree) {
+                if (!tree) {
+                    output.error() << "printing requires a tree";
+                    return 1;
+                }
                 output << Converter<DummyTree::Ptr>::str(tree) << endl;
             }
             if (client) {

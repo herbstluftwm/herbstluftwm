@@ -460,3 +460,9 @@ def test_toplevel_css_classes_toplevel_client(hlwm):
         for r, expected in regexes.items():
             assert bool(re.search(r, output)) is expected, \
                 f'Checking that regex "{r}" is {expected}'
+
+
+def test_debug_css_basic_flags_dont_crash(hlwm):
+    hlwm.call_xfail(['debug_css', '--print-tree']) \
+        .expect_stderr('requires a tree')
+    assert hlwm.call(['debug_css', '--print-css']).stdout == ''

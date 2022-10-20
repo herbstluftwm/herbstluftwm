@@ -164,7 +164,7 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
 
         return winid, proc
 
-    def complete(self, cmd, partial=False, position=None, evaluate_escapes=False):
+    def complete(self, cmd, partial=False, position=None, evaluate_escapes=False, checked_call=True):
         """
         Return a sorted list of all completions for the next argument for the
         given command, if position=None. If position is given, then the
@@ -176,11 +176,18 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         Set 'evaluate_escapes' if the escape sequences of completion items
         should be evaluated. If this is set, one cannot distinguish between
         partial and full completion results anymore.
+
+        If 'checked_call' is activated, then the exit code of the completion
+        command is checked to be zero.
         """
         args = self._parse_command(cmd)
         if position is None:
             position = len(args)
-        proc = self.call(['complete_shell', position] + args)
+        completion_command = ['complete_shell', position] + args
+        if checked_call:
+            proc = self.call(completion_command)
+        else:
+            proc = self.unchecked_call(completion_command)
         items = []
         for i in proc.stdout.splitlines(False):
             if partial:
