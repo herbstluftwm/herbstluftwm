@@ -341,6 +341,9 @@ ClientChanges ClientManager::applyDefaultRules(Window win)
  */
 void ClientManager::setSimpleClientAttributes(Client* client, const ClientChanges& changes)
 {
+    if (changes.decorated.has_value()) {
+        client->decorated_ = changes.decorated.value();
+    }
     if (changes.floating.has_value()) {
         client->floating_ = changes.floating.value();
     }

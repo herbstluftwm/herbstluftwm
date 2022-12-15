@@ -71,6 +71,7 @@ const std::map<string, function<Consequence::Applier(const string&)>> Consequenc
     { "focus",          setMember(&ClientChanges::focus) },
     { "switchtag",      setMember(&ClientChanges::switchtag) },
     { "manage",         setMember(&ClientChanges::manage) },
+    { "decorated",      setOptionalMember(&ClientChanges::decorated) },
     { "floating",       setOptionalMember(&ClientChanges::floating) },
     { "floating_geometry", parseFloatingGeometry },
     { "pseudotile",     setOptionalMember(&ClientChanges::pseudotile) },
