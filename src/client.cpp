@@ -40,6 +40,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
+    , sticky_(this,  "sticky", false)
     , minimized_(this,  "minimized", false)
     , floating_effectively_(this,  "floating_effectively", false)
     , title_(this,  "title", "")
@@ -75,6 +76,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     ewmhnotify_.setWritable();
     ewmhrequests_.setWritable();
     fullscreen_.setWritable();
+    sticky_.setWritable();
     pseudotile_.setWritable();
     sizehints_floating_.setWritable();
     sizehints_tiling_.setWritable();
@@ -97,6 +99,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     fullscreen_.changed().connect([this] {
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
+    });
+    sticky_.changed().connect([this] {
+            // TODO
     });
     minimized_.changed().connect([this]() {
         static long long minimizedTick = 0;
@@ -134,6 +139,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     fullscreen_.setDoc(
                 "whether this client covers all other "
                 "windows and panels on its monitor.");
+    sticky_.setDoc(
+                "whether this client is sticky, "
+                "i.e., stays on the focused monitor.");
     minimized_.setDoc(
                 "whether this client is minimized (also called "
                 "iconified).");

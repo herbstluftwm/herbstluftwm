@@ -389,6 +389,27 @@ void all_monitors_apply_layout() {
     }
 }
 
+void move_clients_to_tag(vector<Client*> &clients, HSTag* from_tag, HSTag* to_tag) {
+    Client* focused = from_tag->focusedClient();
+    for (auto client : clients) {
+        assert(client->tag() == from_tag);
+        from_tag->removeClient(client);
+        from_tag->removeClientSlice(client);
+        client->setTag(to_tag);
+        to_tag->insertClientSlice(client);
+        // only focus on new tag if the client was focused before
+        to_tag->insertClient(client, {}, focused == client);
+    }
+}
+
+void get_sticky_clients(vector<Client*> &sticky_clients, HSTag* tag) {
+    tag->foreachClient([&] (Client* c) {
+        if (c->sticky_) {
+            sticky_clients.push_back(c);
+        }
+    });
+}
+
 int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     Monitor* other = find_monitor_with_tag(tag);
     if (monitor == other) {
@@ -415,6 +436,18 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             }
             monitor->tag_previous = monitor->tag;
             other->tag_previous = other->tag;
+
+            HSTag* other_tag = monitor->tag;
+
+            // sticky clients should stay on their monitor, therefore
+            // swap the sticky clients between the tags
+            vector<Client*> sticky_clients;
+            get_sticky_clients(sticky_clients, tag);
+            vector<Client*> other_sticky_clients;
+            get_sticky_clients(other_sticky_clients, other_tag);
+            move_clients_to_tag(sticky_clients, tag, other_tag);
+            move_clients_to_tag(other_sticky_clients, other_tag, tag);
+
             // swap tags
             other->tag = monitor->tag;
             monitor->tag = tag;
@@ -437,6 +470,12 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     HSTag* old_tag = monitor->tag;
     // save old tag
     monitor->tag_previous = old_tag;
+
+    // move sticky clients to the new tag
+    vector<Client*> stickyClients;
+    get_sticky_clients(stickyClients, old_tag);
+    move_clients_to_tag(stickyClients, old_tag, tag);
+
     // 1. show new tag
     monitor->tag = tag;
     // first reset focus and arrange windows

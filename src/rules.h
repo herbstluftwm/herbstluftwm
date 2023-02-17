@@ -94,6 +94,7 @@ public:
     bool            manage = true; // whether we should manage it
     ClientPlacement floatplacement = ClientPlacement::Unchanged;
     std::experimental::optional<bool> fullscreen;
+    std::experimental::optional<bool> sticky;
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
 
