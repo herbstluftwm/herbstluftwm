@@ -35,6 +35,7 @@ enum {
     NetWmStateHidden,
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
+    NetWmStateSticky,
     /* window types */
     NetWmWindowTypeDesktop,
     NetWmWindowTypeFIRST = NetWmWindowTypeDesktop,

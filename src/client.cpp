@@ -101,7 +101,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
     sticky_.changed().connect([this] {
-            // TODO
+        this->updateEwmhState();
     });
     minimized_.changed().connect([this]() {
         static long long minimizedTick = 0;
