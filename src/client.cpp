@@ -140,8 +140,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "whether this client covers all other "
                 "windows and panels on its monitor.");
     sticky_.setDoc(
-                "whether this client is sticky, "
-                "i.e., stays on the focused monitor.");
+                "whether this client is sticky. "
+                "This means that the client stays on its monitor, even when "
+                "the monitor switches to another tag.");
     minimized_.setDoc(
                 "whether this client is minimized (also called "
                 "iconified).");
