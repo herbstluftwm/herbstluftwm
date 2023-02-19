@@ -673,7 +673,6 @@ def test_unmanaged_client_is_removed_from_tab_bars(hlwm, x11):
 
 def test_sticky_switch_tag(hlwm):
     hlwm.call('add othertag')
-    # hlwm.attr.tags['by-name'].othertag.floating = True
 
     client, _ = hlwm.create_client()
     clientobj = hlwm.attr.clients[client]
