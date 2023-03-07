@@ -1,6 +1,5 @@
 #include "settings.h"
 
-
 #include <sstream>
 
 #include "client.h"
