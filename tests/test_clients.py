@@ -704,7 +704,7 @@ def test_sticky_swap_tags(hlwm):
     tagobj2 = hlwm.attr.tags["by-name"][tag2]
     hlwm.call(f"add {tag2}")
 
-    monitor2="monitor2"
+    monitor2 = "monitor2"
     hlwm.call(f"add_monitor 800x600+40+40 {tag2} {monitor2}")
     hlwm.call(f"focus_monitor {monitor2}")
 
