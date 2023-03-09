@@ -273,8 +273,8 @@ Settings::Settings()
 
 
     always_show_frame.setDoc(
-                "DEPRECATED, use +show_frame_decorations+ instead. Setting "
-                "this corresponds to \'focused\' in \'show_frame_decorations\'."
+                "DEPRECATED, use +show_frame_decorations+ instead. If set, "
+                "\'show_frame_decorations\' will be set to \'all\' (or \'focused\' if unset)."
                 );
 
     show_frame_decorations.setDoc(
