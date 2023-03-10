@@ -443,7 +443,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                 void    (*callback)(Client*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen_,     [](Client* c, bool state){ c->fullscreen_ = state; } },
+                    client->ewmhfullscreen_,     [](Client* c, bool state){ c->ewmhfullscreen_ = state; } },
                 { NetWmStateDemandsAttention,
                     client->urgent_,         [](Client* c, bool state){ c->urgent_ = state; } },
             };
