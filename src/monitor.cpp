@@ -445,8 +445,11 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             get_sticky_clients(sticky_clients, tag);
             vector<Client*> other_sticky_clients;
             get_sticky_clients(other_sticky_clients, other_tag);
-            move_clients_to_tag(sticky_clients, tag, other_tag);
-            move_clients_to_tag(other_sticky_clients, other_tag, tag);
+            if ((sticky_clients.size()+other_sticky_clients.size()) > 0) {
+                move_clients_to_tag(sticky_clients, tag, other_tag);
+                move_clients_to_tag(other_sticky_clients, other_tag, tag);
+                tag_set_flags_dirty();
+            }
 
             // swap tags
             other->tag = monitor->tag;
@@ -472,9 +475,12 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     monitor->tag_previous = old_tag;
 
     // move sticky clients to the new tag
-    vector<Client*> stickyClients;
-    get_sticky_clients(stickyClients, old_tag);
-    move_clients_to_tag(stickyClients, old_tag, tag);
+    vector<Client*> sticky_clients;
+    get_sticky_clients(sticky_clients, old_tag);
+    if (sticky_clients.size() > 0) {
+        move_clients_to_tag(sticky_clients, old_tag, tag);
+        tag_set_flags_dirty();
+    }
 
     // 1. show new tag
     monitor->tag = tag;
