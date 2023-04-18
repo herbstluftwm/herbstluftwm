@@ -51,7 +51,6 @@ const std::array<const char*,NetCOUNT> Ewmh::netatomNames_ =
     { NetWmStateFullscreen           , "_NET_WM_STATE_FULLSCREEN"          },
     { NetWmStateHidden               , "_NET_WM_STATE_HIDDEN"              },
     { NetWmStateDemandsAttention     , "_NET_WM_STATE_DEMANDS_ATTENTION"   },
-    { NetWmStateSticky               , "_NET_WM_STATE_STICKY"              },
     /* window types */
     { NetWmWindowTypeDesktop         , "_NET_WM_WINDOW_TYPE_DESKTOP"       },
     { NetWmWindowTypeDock            , "_NET_WM_WINDOW_TYPE_DOCK"          },
@@ -523,7 +522,6 @@ void Ewmh::updateWindowState(Client* client) {
         { NetWmStateFullscreen,         client->ewmhfullscreen_  },
         { NetWmStateDemandsAttention,   client->urgent_          },
         { NetWmStateHidden,             client->minimized_       },
-        { NetWmStateSticky,             client->sticky_          },
     };
 
     /* find out which flags are set */
