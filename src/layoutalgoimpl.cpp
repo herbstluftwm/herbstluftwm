@@ -19,7 +19,7 @@ LayoutAlgoImpl::~LayoutAlgoImpl()
 }
 
 
-static inline TilingResult layoutLinear(const std::vector<Client*>& clients, Rectangle rect, bool vertical) {
+static inline TilingResult layoutLinear(const vector<Client*>& clients, Rectangle rect, bool vertical) {
     TilingResult res;
     auto cur = rect;
     int last_step_y;
@@ -97,7 +97,7 @@ class LayoutMax : public LayoutAlgoImpl {
 public:
     LayoutMax(Params p) : LayoutAlgoImpl(p) {}
     virtual TilingResult compute(Rectangle rect) override {
-        const std::vector<Client*>& clients = frame_.clientsConst();
+        const vector<Client*>& clients = frame_.clientsConst();
         int selection = frame_.getSelection();
         TilingResult res;
         // go through all clients from top to bottom and remember
@@ -252,7 +252,7 @@ public:
 };
 
 
-std::unique_ptr<LayoutAlgoImpl> LayoutAlgoImpl::createInstance(const FrameLeaf& frame, LayoutAlgorithm algoName)
+unique_ptr<LayoutAlgoImpl> LayoutAlgoImpl::createInstance(const FrameLeaf& frame, LayoutAlgorithm algoName)
 {
     Params p = {frame, algoName};
     switch (algoName) {
