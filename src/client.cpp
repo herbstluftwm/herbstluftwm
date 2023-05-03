@@ -100,9 +100,6 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
-    sticky_.changed().connect([this] {
-        this->updateEwmhState();
-    });
     minimized_.changed().connect([this]() {
         static long long minimizedTick = 0;
         minimizedLastChange_ = minimizedTick++;
@@ -140,7 +137,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "whether this client covers all other "
                 "windows and panels on its monitor.");
     sticky_.setDoc(
-                "whether this client is sticky. "
+                "whether this client is pinned to the monitor. "
                 "This means that the client stays on its monitor, even when "
                 "the monitor switches to another tag.");
     minimized_.setDoc(
