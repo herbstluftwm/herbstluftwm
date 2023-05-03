@@ -11,6 +11,7 @@ Current git version
     commands through a single herbstclient instance.
   * CSS-inspired theme engine (new attributes 'theme.name',
     'theme.style_override')
+  * New client attribute 'sticky' (does not react yet to EWMH requests)
 
 Release 0.9.5 on 2022-07-30
 ---------------------------
