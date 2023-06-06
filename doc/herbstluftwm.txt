@@ -1164,6 +1164,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 +pseudotile+::
     sets the pseudotile state of the client. 'VALUE' is a boolean.
 
++sticky+::
+    sets the sticky attribute of the client. 'VALUE' is a boolean.
+
 +ewmhrequests+::
     sets whether the window state (the fullscreen state and the demands
     attention flag) can be changed by the application via ewmh itself. This does
