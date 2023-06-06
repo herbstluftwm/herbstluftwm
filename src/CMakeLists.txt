@@ -44,6 +44,7 @@ target_sources(herbstluftwm PRIVATE
     keycombo.cpp keycombo.h
     keymanager.cpp keymanager.h
     layout.cpp layout.h
+    layoutalgoimpl.cpp layoutalgoimpl.h
     link.h
     metacommands.cpp metacommands.h
     monitor.cpp monitor.h
