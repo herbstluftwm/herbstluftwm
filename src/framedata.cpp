@@ -16,6 +16,7 @@ template<> Finite<LayoutAlgorithm>::ValueList Finite<LayoutAlgorithm>::values = 
     { LayoutAlgorithm::horizontal, "horizontal" },
     { LayoutAlgorithm::max, "max" },
     { LayoutAlgorithm::grid, "grid" },
+    { LayoutAlgorithm::masterstack, "masterstack" },
   }
 };
 
