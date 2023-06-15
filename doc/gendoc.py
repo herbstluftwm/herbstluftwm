@@ -394,6 +394,18 @@ class ObjectInformation:
             self.user_name = cpp_token
 
         def set_default_value(self, cpp_token):
+            def split_args(tokens):
+                chunks = []
+                current = []
+                for tok in tokens + [',']:
+                    if tok == ',':
+                        if current:
+                            chunks.append(current)
+                        current = []
+                    else:
+                        current.append(tok)
+                return chunks
+
             if TokenGroup.IsTokenGroup(cpp_token):
                 # drop surrounding '{' ... '}' if its an initializer list
                 if len(cpp_token.enclosed_tokens) == 0:
@@ -408,6 +420,12 @@ class ObjectInformation:
                 # assume that the next token in the list 'cpp_token' is a
                 # token group
                 cpp_token = cpp_token[4].enclosed_tokens[0]
+            if cpp_token[1:4] == [':', ':', 'approxFrac']:
+                approx_args = split_args(cpp_token[4].enclosed_tokens)
+                if len(approx_args) == 2:
+                    numerator = int(''.join(approx_args[0]))
+                    denominator = int(''.join(approx_args[1]))
+                    cpp_token = str(numerator / denominator)
             if len(cpp_token) == 4 and cpp_token[1:3] == [':', ':']:
                 # if the token is: EnumClass::value
                 cpp_token = cpp_token[3]

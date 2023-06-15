@@ -68,6 +68,8 @@ exactly one of the following conditions:
         * 'horizontal' - clients are placed next to each other
         * 'max' - all clients are maximized in this frame
         * 'grid' - clients are arranged in an almost quadratic grid
+        * 'masterstack' - the first client gets a larger master area and all
+          remaining clients are stacked in the remaining area
 
     . Frame is split into subframes: +
         It is split into exactly two *subframes* in a configurable 'fraction'

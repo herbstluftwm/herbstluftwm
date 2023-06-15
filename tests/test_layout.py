@@ -112,6 +112,21 @@ def test_explode_second_client(hlwm):
     verify_frame_objects_via_dump(hlwm)
 
 
+def test_explode_masterstack_keeps_horizontal_split(hlwm):
+    winids = hlwm.create_clients(2)
+    hlwm.attr.tags.focus.tiling.root.algorithm = 'masterstack'
+
+    hlwm.call('split explode')
+
+    expected_layout = normalize_layout_string(f"""\
+    (split horizontal:0.5:0
+    (clients masterstack:0 {winids[0]})
+    (clients masterstack:0 {winids[1]}))
+    """)
+    assert hlwm.call('dump').stdout == expected_layout
+    verify_frame_objects_via_dump(hlwm)
+
+
 @pytest.mark.parametrize("running_clients_num", [4])
 @pytest.mark.parametrize("focus_idx", range(0, 4))
 def test_explode_preserves_focus(hlwm, running_clients, running_clients_num, focus_idx):
@@ -1948,6 +1963,43 @@ def test_frame_leaf_algorithm_change(hlwm, x11):
     assert geom1_before.height < geom1_now.height
     assert geom1_now.width == geom2_now.width
     assert geom1_now.height == geom2_now.height
+
+
+def test_masterstack_master_ratio_changes_widths(hlwm, x11):
+    win1, _ = x11.create_client()
+    win2, _ = x11.create_client()
+    hlwm.call('set_layout masterstack')
+
+    x11.sync_with_hlwm()
+    geom1_before = win1.get_geometry()
+    geom2_before = win2.get_geometry()
+
+    hlwm.attr.settings.masterstack_master_ratio = '0.7'
+
+    x11.sync_with_hlwm()
+    geom1_after = win1.get_geometry()
+    geom2_after = win2.get_geometry()
+
+    assert geom1_after.width > geom1_before.width
+    assert geom2_after.width < geom2_before.width
+
+
+def test_masterstack_master_position_mirrors_layout(hlwm, x11):
+    win1, _ = x11.create_client()
+    win2, _ = x11.create_client()
+    hlwm.call('set_layout masterstack')
+
+    x11.sync_with_hlwm()
+    geom1_left = x11.get_absolute_geometry(win1)
+    geom2_left = x11.get_absolute_geometry(win2)
+    assert geom1_left.x < geom2_left.x
+
+    hlwm.attr.settings.masterstack_master_position = 'right'
+
+    x11.sync_with_hlwm()
+    geom1_right = x11.get_absolute_geometry(win1)
+    geom2_right = x11.get_absolute_geometry(win2)
+    assert geom1_right.x > geom2_right.x
 
 
 def test_frame_content_geometry_attribute(hlwm):

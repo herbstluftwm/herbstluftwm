@@ -114,6 +114,7 @@ def types_and_shorthands():
         'ShowFrameDecorations': 'n',
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
+        'MasterStackPosition': 'n',
         'TagSelectionStrategy': 'n',
         'TextAlign': 'n',
         'TitleWhen': 'n',
