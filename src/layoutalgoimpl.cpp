@@ -277,15 +277,13 @@ public:
         cur.x = r.x + r.width;
         cur.width = rect.width-r.width; // remaining width
         cur.height = rect.height / rows;
-        int i = 1;
-        for (int r = 0; r < rows; r++) {
-            if (r == rows -1) {
+        for (int row = 0; row < rows; row++) {
+            if (row == rows-1) {
                 // fill small pixel gap below last row
                 cur.height += rect.height % rows;
             }
-            res.add(clients[i], TilingStep(cur));
+            res.add(clients[row+1], TilingStep(cur));
             cur.y += cur.height;
-            i++;
         }
         return res;
     }
