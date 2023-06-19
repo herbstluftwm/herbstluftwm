@@ -1,4 +1,4 @@
-FROM ubuntu:trusty-20190122
+FROM ubuntu:trusty-20191217
 
 # Add i386 so that we can build with -m32 to catch more portability errors:
 RUN dpkg --add-architecture i386
