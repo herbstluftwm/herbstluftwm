@@ -10,6 +10,7 @@ def test_show_frame_decorations_one_frame(hlwm, x11, running_clients, running_cl
         'nonempty': 1 if running_clients_num > 0 else 0,
         'if_multiple': 1 if running_clients_num > 0 else 0,
         'if_empty': 0 if running_clients_num > 0 else 1,
+        'if_multiple_empty': 0,
         'none': 0,
     }
     for v in hlwm.complete(['set', 'show_frame_decorations']):
@@ -31,6 +32,7 @@ def test_show_frame_decorations_focus(hlwm, x11):
         'nonempty': 1,
         'if_multiple': 2,
         'if_empty': 1,
+        'if_multiple_empty': 1,
         'none': 0,
     }
     for v in hlwm.complete(['set', 'show_frame_decorations']):
