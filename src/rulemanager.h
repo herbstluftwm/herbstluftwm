@@ -18,6 +18,7 @@ public:
 
 private:
     size_t removeRules(std::string label);
+    static std::string stripDoubleHyphens(std::string arg);
     static std::tuple<std::string, char, std::string> tokenizeArg(std::string arg);
 
     //! Ever-incrementing index for labeling new rules

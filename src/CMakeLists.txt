@@ -9,10 +9,13 @@ target_sources(herbstluftwm PRIVATE
     argparse.cpp argparse.h
     attribute.cpp attribute.h attribute_.h
     autostart.cpp autostart.h
+    boxstyle.cpp boxstyle.h
     byname.cpp byname.h
     child.h
     client.cpp client.h
     clientmanager.cpp clientmanager.h
+    css.h css.cpp
+    cssname.h cssname.cpp
     command.cpp command.h
     commandio.cpp commandio.h
     completion.h
@@ -41,6 +44,7 @@ target_sources(herbstluftwm PRIVATE
     keycombo.cpp keycombo.h
     keymanager.cpp keymanager.h
     layout.cpp layout.h
+    layoutalgoimpl.cpp layoutalgoimpl.h
     link.h
     metacommands.cpp metacommands.h
     monitor.cpp monitor.h
@@ -54,6 +58,7 @@ target_sources(herbstluftwm PRIVATE
     optional.h
     plainstack.h
     panelmanager.h panelmanager.cpp
+    parserutils.h
     rectangle.cpp rectangle.h
     regexstr.cpp regexstr.h
     root.cpp root.h
@@ -72,11 +77,14 @@ target_sources(herbstluftwm PRIVATE
     typesdoc.cpp typesdoc.h
     utils.cpp utils.h
     watchers.h watchers.cpp
+    widget.h widget.cpp
     x11-types.cpp x11-types.h
     x11-utils.cpp x11-utils.h
+    x11-widgetrender.cpp x11-widgetrender.h
     xconnection.cpp xconnection.h
     xkeygrabber.cpp xkeygrabber.h
     xmainloop.cpp xmainloop.h
+    unit.h
     )
 
 # we require C++11

@@ -4,6 +4,15 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * New herbstclient mode *--binary-pipe* which allows to send multiple
+    commands through a single herbstclient instance.
+  * CSS-inspired theme engine (new attributes 'theme.name',
+    'theme.style_override')
+  * New client attribute 'sticky' (does not react yet to EWMH requests)
+
 Release 0.9.5 on 2022-07-30
 ---------------------------
 
@@ -18,6 +27,7 @@ Release 0.9.5 on 2022-07-30
   * New frame attribute 'content_geometry'
   * New tag attribute 'at_end'
   * New monitor attribute 'content_geometry'
+  * New attribute 'panels.geometry_fallback'
   * Fix bug in ipc protocol for big-endian systems
 
 Release 0.9.4 on 2022-03-16

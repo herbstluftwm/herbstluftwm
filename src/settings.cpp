@@ -274,8 +274,8 @@ Settings::Settings()
 
 
     always_show_frame.setDoc(
-                "DEPRECATED, use +show_frame_decorations+ instead. Setting "
-                "this corresponds to \'focused\' in \'show_frame_decorations\'."
+                "DEPRECATED, use +show_frame_decorations+ instead. If set, "
+                "\'show_frame_decorations\' will be set to \'all\' (or \'focused\' if unset)."
                 );
 
     show_frame_decorations.setDoc(
@@ -286,7 +286,8 @@ Settings::Settings()
                 "- \'if_empty\' shows decorations of frames that have no client windows, \n"
                 "- \'if_multiple_empty\' shows decorations of frames that have no client windows on tags with at least two frames, \n"
                 "- \'focused\' shows the decoration of focused and nonempty frames, \n"
-                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames."
+                "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames.\n"
+                "- \'all\' shows all frame decorations."
                 );
 
     frame_active_opacity.setDoc(

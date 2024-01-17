@@ -14,6 +14,7 @@
 #include "x11-types.h"
 
 class Decoration;
+class DecorationParameters;
 class ResizeAction;
 class DecTriple;
 class Ewmh;
@@ -69,6 +70,7 @@ public:
     bool x11urgent_ = false;
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
+    Attribute_<bool> sticky_;
     Attribute_<bool> minimized_;
     Attribute_<bool> floating_effectively_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
@@ -108,7 +110,7 @@ public:
 
     Rectangle outer_floating_rect();
 
-    void setup_border(bool focused);
+    void recomputeStyle();
     void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, std::vector<Client*> tabs);
     void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
@@ -125,6 +127,7 @@ public:
     ResizeAction possibleResizeActions();
 
     void set_visible(bool visible);
+    void forgetOtherClient(Client* otherClient);
 
     void requestClose(); //! ask the client to close
 
@@ -151,9 +154,7 @@ private:
     Ewmh& ewmh;
     XConnection& X_;
     std::string tagName();
-    const DecTriple& getDecTriple();
-    const DecorationScheme& getDecorationScheme(bool focused);
-    ThemeType mostRecentThemeType;
+    std::unique_ptr<DecorationParameters> decParams; // pimpl
 };
 
 

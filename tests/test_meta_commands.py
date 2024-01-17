@@ -658,9 +658,8 @@ def test_setenv_and_spawn(hlwm, hlwm_process):
     hlwm.call(['setenv', 'FOO', 'bar'])
 
     hlwm_process.read_and_echo_output()
-    hlwm.unchecked_call(['spawn', 'sh', '-c', 'echo FOO is $FOO .'],
-                        read_hlwm_output=False)
-    hlwm_process.read_and_echo_output(until_stdout='FOO is bar .')
+    with hlwm_process.wait_stdout_match('FOO is bar .'):
+        hlwm.call(['spawn', 'sh', '-c', 'echo FOO is $FOO .'])
 
 
 def test_setenv_completion_existing_var(hlwm):
@@ -845,7 +844,7 @@ def test_foreach_invalid_flag(hlwm):
     hlwm.call_xfail('foreach C --filter-typo=X tags. echo C') \
         .expect_stderr('"" has no child named "--filter-typo=X"')
     hlwm.call_xfail('foreach C --filter-name=( tags. echo C') \
-        .expect_stderr('Parenthesis is not closed')
+        .expect_stderr(r'(Parenthesis is not closed|Mismatched.*\(.*\).*in regular)')
     hlwm.call_xfail('foreach C tags. get_attr --filter-name=X') \
         .expect_stderr('has no attribute "--filter-name=X"')
 

@@ -27,6 +27,7 @@ consequences = [
     'floating',
     'floating_geometry',
     'pseudotile',
+    'sticky',
     'ewmhrequests',
     'ewmhnotify',
     'fullscreen',
@@ -51,10 +52,12 @@ def test_add_simple_rule(hlwm):
 
 
 def test_add_simple_rule_with_dashes(hlwm):
-    hlwm.call('rule --class=Foo --tag=bar')
+    for negation in ['not', '--not', '!', '--!']:
+        hlwm.call('unrule --all')
+        hlwm.call(f'rule {negation} --class=Foo --tag=bar')
 
-    rules = hlwm.call('list_rules')
-    assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
+        rules = hlwm.call('list_rules')
+        assert rules.stdout == 'label=0\tnot\tclass=Foo\ttag=bar\t\n'
 
 
 def test_add_many_labeled_rules(hlwm):
@@ -166,6 +169,15 @@ def test_remove_nonexistent_rule(hlwm):
 
 def test_singleuse_rule_disappears_after_matching(hlwm):
     hlwm.call('rule once hook=dummy_hook')
+    assert hlwm.call('list_rules').stdout != ''
+
+    hlwm.create_client()
+
+    assert hlwm.call('list_rules').stdout == ''
+
+    # and the same with --once
+    hlwm.call('rule --once --hook=dummy_hook')
+    assert hlwm.call('list_rules').stdout != ''
 
     hlwm.create_client()
 
@@ -380,7 +392,7 @@ def create_client(hlwm, rule_mode: RuleMode, rule):
 
 @pytest.mark.parametrize(
     'name',
-    ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
+    ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen', 'sticky'])
 @pytest.mark.parametrize('value', [True, False])
 @pytest.mark.parametrize('rule_mode', RuleMode.values)
 def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, rule_mode):
@@ -1059,3 +1071,22 @@ def test_fixedsize(hlwm, hc_idle, x11):
     assert ['rule', 'nofixedsize', win_fixed] not in hooks
     assert ['rule', 'nofixedsize', win_nofixed] in hooks
     assert ['rule', 'fixedsize', win_nofixed] not in hooks
+
+
+def test_sticky_plus_switchtag_rule(hlwm):
+    hlwm.call('add othertag')
+
+    hlwm.call('rule sticky=on tag=othertag switchtag=on focus=on')
+
+    client, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[client]
+
+    assert clientobj.sticky() is True
+
+    assert hlwm.attr.tags.focus.focused_client.winid() == client
+
+    hlwm.call('use default')
+    assert hlwm.attr.tags.focus.focused_client.winid() == client
+
+    hlwm.call('use othertag')
+    assert hlwm.attr.tags.focus.focused_client.winid() == client

@@ -98,13 +98,20 @@ public:
 
 PanelManager::PanelManager(XConnection& xcon)
     : count(this, "count", &PanelManager::getCount)
+    , geometryFallback_(this, "geometry_fallback", false)
     , xcon_(xcon)
 {
+    geometryFallback_.setWritable(true);
     atomWmStrut_ = xcon_.atom("_NET_WM_STRUT");
     atomWmStrutPartial_ = xcon_.atom("_NET_WM_STRUT_PARTIAL");
     rootWindowGeometry_ = xcon_.windowSize(xcon_.root());
     setDoc("For every panel window, there is an entry with "
            "the panel's window id here.");
+    geometryFallback_.setDoc("when auto-detecting panels: "
+                             "if a panel does not specify the amount of space it needs "
+                             "at the monitor edge, fall back to reserve the panel\'s geometry"
+                             "at the screen edge.");
+    geometryFallback_.changed().connect(panels_changed_);
 }
 
 PanelManager::~PanelManager()
@@ -214,6 +221,11 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
         Rectangle intersection = mon.intersectionWith(panelArea);
         if (!intersection) {
             // monitor does not intersect with panel at all
+            continue;
+        }
+        if (p.wmStrut_.empty() && !geometryFallback_) {
+            // if a panel does not define WM_STRUT, then we ignore it
+            // unless we are allowed to fall back to the panel's geometry
             continue;
         }
         // we only reserve space for the panel if the panel defines

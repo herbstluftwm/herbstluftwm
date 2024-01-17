@@ -34,19 +34,22 @@ class HSFont
 {
 public:
     static HSFont fromStr(const std::string& source);
+    static HSFont defaultFont();
     std::string str() { return source_; }
-    bool operator==(const HSFont& o) {
+    bool operator==(const HSFont& o) const {
         return source_ == o.source_;
     }
-    bool operator!=(const HSFont& o) {
+    bool operator!=(const HSFont& o) const {
         return source_ != o.source_;
     }
     FontData& data() const { return *fontData_; }
+    static void shutdown();
 private:
     HSFont();
     std::string source_;
     std::shared_ptr<FontData> fontData_;
     static std::map<std::string, std::weak_ptr<FontData>> s_fontDescriptionToData;
+    static std::shared_ptr<FontData> s_defaultFont;
 };
 
 

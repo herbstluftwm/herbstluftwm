@@ -180,12 +180,18 @@ def test_keys_inactive_regrab_all(hlwm, keyboard):
 def test_complete_keybind_offers_additional_mods_without_duplication(hlwm):
     complete = hlwm.complete('keybind Mod2+Mo', partial=True, position=1)
 
-    assert set(complete) == {
+    complete = set(complete)
+    # We disregard the Mode_Switch keysym because depending on the xkeyboard-config
+    # version, this might or might not appear.
+    complete.discard('Mod2+Mode_switch ')
+    # Anyway, it is irrelevant for the present test case. The main purpose of
+    # this test is to check that Mod2+Mod2+ isn't not among the completion results
+    # whereas e.g. Mod2+Mod1+ still is.
+    assert complete == {
         'Mod2+Mod1+',
         'Mod2+Mod3+',
         'Mod2+Mod4+',
         'Mod2+Mod5+',
-        'Mod2+Mode_switch ',
     }
 
 

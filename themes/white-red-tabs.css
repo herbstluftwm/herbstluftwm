@@ -1,0 +1,98 @@
+
+.client-decoration {
+    background-color: #cecece;
+    border-style: solid;
+
+    margin: 1px; /* make space for outline */
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: black;
+}
+
+.client-decoration .client-content ,
+.client-decoration .tabs .tab {
+    border-width: 2px;
+    border-color: #ffffff;
+}
+
+.client-decoration .tab.normal {
+    color: #232323;
+}
+
+.client-decoration.multiple-tas .tab.focus ,
+.client-decoration.focus .tab {
+    color: #efefef;
+}
+
+
+.client-decoration.focus {
+    background-color: #881319;
+}
+
+.client-decoration.focus .client-content ,
+.client-decoration.focus .tabs .tab {
+    border-color: #E27176;
+}
+
+.client-decoration .tab.urgent {
+    background-color: #C55B72;
+}
+
+.client-decoration.one-tab.urgent .client-content ,
+.client-decoration .tab.urgent {
+    border-color: #EA849A;
+}
+
+.client-decoration .client-content {
+    border-top-width: 0px;
+}
+
+.client-decoration .tabs .tab.normal ,
+.client-decoration .tabs .tab.urgent {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-left-width: 0px;
+    border-style: solid;
+    padding: 2px 2px 0px 4px;
+}
+
+.client-decoration .tabs .tab.normal:first-child ,
+.client-decoration .tabs .tab.urgent:first-child {
+    border-left-width: 1px;
+    padding-left: 3px;
+}
+
+.client-decoration.no-tabs .tabs .tab ,
+.client-decoration.one-tab .tabs .tab {
+    padding-left: 4px;
+}
+
+
+.client-decoration.multiple-tabs .tabs .tab.focus {
+    border-bottom-width: 0px;
+    padding: 0px 1px 0px 2px;
+    background-color: #282828;
+}
+
+.client-decoration.minimal {
+    padding: 0px;
+    border-width: 0px;
+    background-color: #000000;
+}
+.client-decoration.minimal > * {
+    display: none;
+}
+.client-decoration.minimal .client-content {
+    display: flex;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+}
+
+
+* {
+    color: white;
+    font: -*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*;
+    /* font: Dejavu Sans:pixelsize=12; */
+}
+

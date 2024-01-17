@@ -40,8 +40,8 @@ def extract_file_tokens(filepath):
         r'/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         TokenRe.identifier_re,  # identifiers
         r'[0-9][0-9\.a-z]*',  # numbers
-        '\'(?:\\\'|[^\']*)\'',
-        "\"(?:\\\"|[^\"]*)\"",
+        r"'(?:\\.|[^\\\'])*'",
+        r'"(?:\\.|[^\\\"])*"',
         "[-+<>/*]",  # operators
         r'[\(\),;:{}\[\]\?&|~]',
         '[\t ][\t ]*',

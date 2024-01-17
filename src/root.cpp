@@ -86,7 +86,13 @@ Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer
     clients->clientStateChanged.connect([](Client* c) {
         c->tag()->applyClientState(c);
     });
-    theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
+
+    theme->theme_changed_.connect([this]() {
+        for (const auto& it : clients->clients()) {
+            it.second->recomputeStyle();
+        }
+        monitors()->relayoutAll();
+    });
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 
     // X11 specific slots:

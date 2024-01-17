@@ -22,6 +22,7 @@ typedef std::function<void(Client*)> ClientAction;
 
 class HSTag;
 class FrameDecoration;
+class LayoutAlgoImpl;
 class FrameLeaf;
 class FrameSplit;
 class Settings;
@@ -126,7 +127,7 @@ public:
     bool split(SplitAlign alignment, FixPrecDec fraction, size_t childrenLeaving = 0);
     LayoutAlgorithm getLayout() { return layout; }
     void setLayout(LayoutAlgorithm l) { layout = l; }
-    int getSelection() { return selection; }
+    int getSelection() const { return selection; }
     size_t clientCount() { return clients.size(); }
     int clientIndex(Client* client);
     std::shared_ptr<Frame> neighbour(Direction direction);
@@ -136,22 +137,21 @@ public:
     std::shared_ptr<FrameLeaf> isLeaf() override { return thisLeaf(); }
 
     friend class Frame;
+    friend class LayoutAlgoImpl;
     void setVisible(bool visible);
     int getInnerNeighbourIndex(Direction direction, DirectionLevel depth, int startIndex = -1);
     DynAttribute_<int> client_count_;
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
+    const std::vector<Client*>& clientsConst() const { return clients; }
+    Settings* settingsConst() const { return settings_; }
 private:
+    LayoutAlgoImpl* algoImplementation();
+    std::unique_ptr<LayoutAlgoImpl> cachedAlgoImplementation_;
     std::string userSetsLayout(LayoutAlgorithm algo);
     std::string userSetsSelection(int index);
     friend class FrameDecoration;
     friend class FrameTree;
-    // layout algorithms
-    TilingResult layoutLinear(Rectangle rect, bool vertical);
-    TilingResult layoutHorizontal(Rectangle rect) { return layoutLinear(rect, false); };
-    TilingResult layoutVertical(Rectangle rect) { return layoutLinear(rect, true); };
-    TilingResult layoutMax(Rectangle rect);
-    TilingResult layoutGrid(Rectangle rect);
 
     // members
     FrameDecoration* decoration;

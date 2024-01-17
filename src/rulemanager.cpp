@@ -32,6 +32,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
 
     for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
         auto arg = *argIter;
+        arg = stripDoubleHyphens(arg);
 
         // Whether this argument is negated (only applies to conditions)
         bool negated = false;
@@ -53,6 +54,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
             // Skip forward to next argument, but remember that it is negated:
             negated = true;
             arg = *(++argIter);
+            arg = stripDoubleHyphens(arg);
         }
 
         if (arg == "fixedsize") {
@@ -204,11 +206,14 @@ size_t RuleManager::removeRules(string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<string, char, string> RuleManager::tokenizeArg(string arg) {
+string RuleManager::stripDoubleHyphens(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }
+    return arg;
+}
 
+std::tuple<string, char, string> RuleManager::tokenizeArg(string arg) {
     auto operPos = arg.find_first_of("~=");
     if (operPos == string::npos) {
         throw std::invalid_argument("No operator in given arg: " + arg);
