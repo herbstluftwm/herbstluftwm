@@ -1,13 +1,13 @@
-FROM ubuntu:focal-20200423
+FROM ubuntu:jammy-20230605
 
 # Build deps
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
-    clang-10 \
-    clang-tidy-10 \
+    clang-14 \
+    clang-tidy-14 \
     curl \
     cmake \
-    g++-9 \
+    g++-11 \
     git \
     iwyu \
     lcov \
@@ -20,7 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libxfixes-dev \
     ninja-build \
     pkg-config \
-    python3.8 \
+    python3.10 \
     tox \
     wget \
     x11-xserver-utils \
