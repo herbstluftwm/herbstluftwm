@@ -1253,7 +1253,7 @@ follows:
     window with hexadecimal X11 window id 'HEXID'.
   - +longest-minimized+ references the minimized window on the focused tag
     that has been minimized for the longest time.
-  - +latest-minimized+ references the minimized window on the focused tag
+  - +last-minimized+ references the minimized window on the focused tag
     that has been minimized most recently.
   - 'DECID' -- where 'DECID' is some decimal number -- references the window
     with the decimal X11 window id 'DECID'.
