@@ -131,7 +131,7 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
         window_cut_rect_holes(xcon, window, rect.width, rect.height, holes);
         window_transparent = true;
     } else if (window_transparent) {
-        window_make_intransparent(xcon, window, rect.width, rect.height);
+        window_make_intransparent(xcon, window);
         window_transparent = false;
     }
     if (isFocused) {
