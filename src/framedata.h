@@ -40,6 +40,7 @@ enum class LayoutAlgorithm {
     horizontal,
     max,
     grid,
+    masterstack
 };
 
 template <>
