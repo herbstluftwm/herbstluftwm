@@ -295,8 +295,8 @@ public:
             if (startIndex == 0) {
                 // we are main window
                 if (direction == Direction::Right) {
-                    // go to bottom window in the stack
-                    return count-1;
+                    // top window
+                    return 1;
                 }
             } else if (direction == Direction::Left) {
                 return 0;
