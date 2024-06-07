@@ -44,7 +44,7 @@ def test_frame_bg_transparency_area_bug(hlwm, x11, mouse):
     hlwm.call(['set', 'frame_bg_transparent', 'off'])
     hlwm.call(['set', 'always_show_frame', 'on'])
     # put two frames side by side:
-    hlwm.call(['split', 'right', 0.5 ])
+    hlwm.call(['split', 'right', 0.5])
     # put the mouse cursor on the right-hand frame
     screen_size = hlwm.attr.monitors[0].geometry()
     mouse.move_to(int(0.75 * screen_size.width), int(0.5 * screen_size.height))
@@ -71,4 +71,3 @@ def test_frame_bg_transparency_area_bug(hlwm, x11, mouse):
     hlwm_frames = x11.get_hlwm_frames()
     assert len(hlwm_frames) == 1
     assert hlwm_frames[0] == window
-
