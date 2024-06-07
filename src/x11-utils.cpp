@@ -45,26 +45,9 @@ void window_cut_rect_holes(XConnection& X, Window win, int width, int height,
     XFreePixmap(d, p);
 }
 
-void window_make_intransparent(XConnection& X, Window win, int width, int height) {
-    // inspired by the xhole.c example
-    // http://www.answers.com/topic/xhole-c
+void window_make_intransparent(XConnection& X, Window win) {
     Display* d = X.display();
-    GC gp;
-    int bw = 100; // add a large border, just to be sure the border is visible
-    width += 2*bw;
-    height += 2*bw;
-
-    /* create the pixmap that specifies the shape */
-    Pixmap p = XCreatePixmap(d, win, width, height, 1);
-    gp = XCreateGC(d, p, 0, nullptr);
-    XSetForeground(d, gp, WhitePixel(d, X.screen()));
-    XFillRectangle(d, p, gp, 0, 0, width, height);
-    /* set the pixmap as the new window mask;
-    the pixmap is slightly larger than the window to allow for the window
-    border and title bar (as added by the window manager) to be visible */
-    XShapeCombineMask(d, win, ShapeBounding, -bw, -bw, p, ShapeSet);
-    XFreeGC(d, gp);
-    XFreePixmap(d, p);
+    XShapeCombineMask(d, win, ShapeBounding, 0, 0, None, ShapeSet);
 }
 
 
