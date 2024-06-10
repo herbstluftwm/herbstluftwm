@@ -1,6 +1,3 @@
-# Xrandr is leaking...
-leak:libXrandr
-
 # libfontconfig too according to
 # https://chromium.googlesource.com/chromium/src/build/+/master/sanitizers/lsan_suppressions.cc#22
 # http://crbug.com/39050
