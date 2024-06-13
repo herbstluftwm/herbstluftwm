@@ -30,6 +30,7 @@ enum class ShowFrameDecorations {
     focused_if_multiple,
     focused,
     if_empty,
+    if_multiple_empty,
     if_multiple,
     all,
 };
