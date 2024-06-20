@@ -98,6 +98,7 @@ public:
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
 
+    std::experimental::optional<bool> decorated;
     std::experimental::optional<bool> floating;
     std::experimental::optional<Rectangle> floatingGeometry;
     std::experimental::optional<bool> pseudotile;
