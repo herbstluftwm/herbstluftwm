@@ -111,6 +111,7 @@ def types_and_shorthands():
         'string': 's',
         'regex': 'r',
         'SmartFrameSurroundings': 'n',
+        'SmartWindowSurroundings': 'n',
         'ShowFrameDecorations': 'n',
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',

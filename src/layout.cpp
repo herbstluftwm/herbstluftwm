@@ -249,9 +249,11 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
     bool smart_window_surroundings_active =
             // only omit the border
             // if 1. the settings is activated
-            settings_->smart_window_surroundings()
+            settings_->smart_window_surroundings() != SmartWindowSurroundings::off
             // and 2. only one window is shown
-            && (clientCount() == 1 || layout == LayoutAlgorithm::max);
+            && (layout == LayoutAlgorithm::max || clientCount() == 1)
+            // and 3. only one frame is shown (if applicable)
+            && (settings_->smart_window_surroundings() != SmartWindowSurroundings::one_window_and_frame || tag_->frame_count.str() == "1");
 
     auto window_gap = settings_->window_gap();
     if (!smart_window_surroundings_active) {
