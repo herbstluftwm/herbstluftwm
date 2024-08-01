@@ -155,7 +155,7 @@ jobs:
           CFLAGS: -m32
         run: |
           cd herbstluftwm-*/
-          find ~/.ccache | wc -l
+          test -f ~/.ccache && find ~/.ccache | wc -l
           ccache -z --max-size=500M
           # ccache too old for --show-config
           mkdir build
