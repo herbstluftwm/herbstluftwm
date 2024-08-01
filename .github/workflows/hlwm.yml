@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HLWM_BUILDDIR: build
-      CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_LOGFILE: /home/runner/work/ccache.log
       CCACHE_NOHASHDIR: 1
 
     steps:
