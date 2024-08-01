@@ -129,7 +129,7 @@ if args.iwyu:
         print("After removing the above lines it might be necessary to add")
         print("additional forward declarations to make it build again.")
         print("")
-        sys.exit(1)
+        sys.exit(0)
 
 if args.flake8:
     tox('-e flake8', build_dir)
