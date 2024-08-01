@@ -137,6 +137,8 @@ jobs:
     runs-on: ubuntu-latest
     container: hlwm/ci:trusty
     needs: build-doc  # using the tarball
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Download source tarball
         uses: actions/download-artifact@v2
