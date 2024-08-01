@@ -344,14 +344,13 @@ Settings::Settings()
                 "Turn \'off\' to always show frame borders and gaps.");
 
     smart_window_surroundings.setDoc(
-                "If set to \'one_window\', window borders and gaps will be removed "
-                "and minimal when there is no ambiguity regarding the focused window. "
-                "This minimal window decoration can be configured by "
+                "If set to \'one_window\' (or \'on\'), then window borders and gaps will be "
+                "hidden in each frame that shows only one window. "
+                "If set to \'one_window_and_frame\', then only those frames are affected "
+                "that are the only frames on their tag. "
+                "Still, these hidden decorations can be configured by "
                 "the +theme.minimal+ object. "
-                "If set to \'one_window_and_frame\', the behaviour is the same, "
-                "except that the setting will be activated only for single-frame tags. "
-                "Turn \'off\' to always show window borders and gaps, "
-                "with no usage of the +theme.minimal+.");
+                "Turn \'off\' to always show window borders and gaps.");
 
     focus_follows_mouse.setDoc(
                 "If set and a window is focused by mouse cursor, this window "
