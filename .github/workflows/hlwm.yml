@@ -20,29 +20,30 @@ jobs:
   build-test-current:
     strategy:
       matrix:
-        - container: "ubuntu/focal"
-          titlesuffix: "and test"
-          cc: gcc
-          cxx: g++
-          runtests: true
-          runlinters: false
-        - container: "ubuntu/focal"
-          titlesuffix: "with Clang, run linters and static analyzers"
-          cc: $PWD/ci/clang-and-tidy.sh
-          cxx: $PWD/ci/clang++-and-tidy.sh
-          runtests: false
-          runlinters: true
-          # - container: ubuntu/trusty
-          #   titlesuffix: ""
-          #   cc: gcc
-          #   cxx: g++
-          #   runtests: false
-          #   runlinters: false
+        cfg:
+          - container: "ubuntu/focal"
+            titlesuffix: "and test"
+            cc: gcc
+            cxx: g++
+            runtests: true
+            runlinters: false
+          - container: "ubuntu/focal"
+            titlesuffix: "with Clang, run linters and static analyzers"
+            cc: $PWD/ci/clang-and-tidy.sh
+            cxx: $PWD/ci/clang++-and-tidy.sh
+            runtests: false
+            runlinters: true
+            # - container: ubuntu/trusty
+            #   titlesuffix: ""
+            #   cc: gcc
+            #   cxx: g++
+            #   runtests: false
+            #   runlinters: false
     # Name the Job
-    name: Build ${{ matrix.titlesuffix }} on ${{ matrix.container }}
+    name: Build ${{ matrix.cfg.titlesuffix }} on ${{ matrix.cfg.container }}
     # Set the type of machine to run on
     runs-on: ubuntu-latest
-    container: ${{ matrix.container }}
+    container: ${{ matrix.cfg.container }}
     env:
       HLWM_BUILDDIR: build
       CCACHE_LOGFILE: /github/home/ccache.log
@@ -57,32 +58,32 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: ${{ matrix.container }}-${{ matrix.cc }}-ccache-${{ github.run_number }}
+          key: ${{ matrix.cfg.container }}-${{ matrix.cfg.cc }}-ccache-${{ github.run_number }}
           # since the every new gha run gets a new key, we need to search
           # for existing cache entries more sloppily:
           restore-keys: |
-            ${{ matrix.container }}-${{ matrix.cc }}-ccache-
+            ${{ matrix.cfg.container }}-${{ matrix.cfg.cc }}-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
-        if: ${{ matrix.runtests }}
+        if: ${{ matrix.cfg.runtests }}
         with:
           path: .tox-cache
-          key: ${{ matrix.container }}-tox
+          key: ${{ matrix.cfg.container }}-tox
 
       - name: Check usage of std-prefix
-        if: ${{ matrix.runlinters }}
+        if: ${{ matrix.cfg.runlinters }}
         run: |
           ci/build.py --check-using-std
 
       - name: Check python using flake8
-        if: ${{ matrix.runlinters }}
+        if: ${{ matrix.cfg.runlinters }}
         run: |
           ci/build.py --flake8
 
       - name: CMake
         run: |
-          ci/build.py --cmake --cxx=${{ matrix.cxx }} --cc=${{ matrix.cc }} --build-type=Debug --ccache=$HOME/.ccache
+          ci/build.py --cmake --cxx=${{ matrix.cfg.cxx }} --cc=${{ matrix.cfg.cc }} --build-type=Debug --ccache=$HOME/.ccache
 
       - name: Compile
         run: |
@@ -101,19 +102,19 @@ jobs:
           cat "$CCACHE_LOGFILE"
 
       - name: Test
-        if: ${{ matrix.runtests }}
+        if: ${{ matrix.cfg.runtests }}
         run: |
           ci/build.py --run-tests
 
       - name: Codecov report
         continue-on-error: true
-        if: ${{ matrix.runtests }}
+        if: ${{ matrix.cfg.runtests }}
         run: |
           wget -O codecov-io.bash https://codecov.io/bash
           bash codecov-io.bash -f coverage.info
 
       - name: Check includes using iwyu
-        if: ${{ matrix.runlinters }}
+        if: ${{ matrix.cfg.runlinters }}
         run: |
           ci/build.py --iwyu
 
