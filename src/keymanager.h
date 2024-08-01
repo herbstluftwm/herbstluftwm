@@ -1,6 +1,5 @@
 #pragma once
 
-#include <X11/Xlib.h>
 #include <memory>
 #include <string>
 #include <vector>
