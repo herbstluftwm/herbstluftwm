@@ -4,15 +4,12 @@
 #include <cerrno>
 #include <cstring>
 #include <fstream>
-#include <sstream>
 #include <system_error>
-#include <tuple>
 
 #include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "decoration.h"
-#include "globals.h"
 #include "parserutils.h"
 
 using std::endl;
