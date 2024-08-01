@@ -46,7 +46,7 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: install dependencies
+      - name: Install dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: ccache clang clang-tidy curl cmake g++ git iwyu lcov libx11-dev libxext-dev libxft-dev libfreetype-dev libxinerama-dev libxrandr-dev libxfixes-dev ninja-build pkg-config python tox wget x11-xserver-utils xdotool xterm xvfb xserver-xephyr
