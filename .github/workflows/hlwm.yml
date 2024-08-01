@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         cfg:
-            id: gcc
+          - id: gcc
             titlesuffix: "with GCC and test"
             cc: gcc
             cxx: g++
@@ -121,6 +121,8 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu:trusty-20191107
     needs: build-doc  # using the tarball
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Download source tarball
         uses: actions/download-artifact@v2
