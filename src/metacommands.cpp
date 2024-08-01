@@ -291,8 +291,8 @@ void MetaCommands::foreachCommand(CallOrComplete invoc)
 {
     RegexStr filterName = {};
     string ident;
-    bool unique;
-    bool recursive;
+    bool unique = false;
+    bool recursive = false;
     ObjectPointer object;
     ArgParse ap;
     ap.mandatory(ident).mandatory(object);
