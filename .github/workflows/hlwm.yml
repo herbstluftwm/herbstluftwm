@@ -21,12 +21,14 @@ jobs:
     strategy:
       matrix:
         cfg:
-          - titlesuffix: "with GCC and test"
+            id: gcc
+            titlesuffix: "with GCC and test"
             cc: gcc
             cxx: g++
             runtests: true
             runlinters: false
-          - titlesuffix: "with Clang, run linters and static analyzers"
+          - id: clang
+            titlesuffix: "with Clang, run linters and static analyzers"
             cc: $PWD/ci/clang-and-tidy.sh
             cxx: $PWD/ci/clang++-and-tidy.sh
             runtests: false
@@ -54,18 +56,18 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: ${{ matrix.cfg.gcc }}-${{ matrix.cfg.cc }}-ccache-${{ github.run_number }}
+          key: ${{ matrix.cfg.id }}-ccache-${{ github.run_number }}
           # since the every new gha run gets a new key, we need to search
           # for existing cache entries more sloppily:
           restore-keys: |
-            ${{ matrix.cfg.gcc }}-${{ matrix.cfg.cc }}-ccache-
+            ${{ matrix.cfg.id }}-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
         if: ${{ matrix.cfg.runtests }}
         with:
           path: .tox-cache
-          key: ${{ matrix.cfg.gcc }}-tox
+          key: ${{ matrix.cfg.id }}-tox
 
       - name: Check usage of std-prefix
         if: ${{ matrix.cfg.runlinters }}
