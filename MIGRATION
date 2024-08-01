@@ -15,14 +15,14 @@ put
 
 in your autostart.
 
-The command 'smart_window_surroundings' is no longer a boolean, and as such it is
+The setting 'smart_window_surroundings' is no longer a boolean, and as such it is
 now incompatible with the 'toggle' command. Use 'cycle_values' instead:
 
     hc cycle_value settings.smart_window_surroundings off one_window_and_frame one_window
 
 0.9.4 to 0.9.5
 --------------
-The command 'smart_frame_surroundings' is no longer a boolean, and as such it is
+The setting 'smart_frame_surroundings' is no longer a boolean, and as such it is
 now incompatible with the 'toggle' command. Use 'cycle_values' instead:
 
     hc cycle_value settings.smart_frame_surroundings off hide_gaps hide_all

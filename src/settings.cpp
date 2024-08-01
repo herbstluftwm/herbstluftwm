@@ -347,7 +347,7 @@ Settings::Settings()
                 "If set to \'one_window\' (or \'on\'), then window borders and gaps will be "
                 "hidden in each frame that shows only one window. "
                 "If set to \'one_window_and_frame\', then only those frames are affected "
-                "that are the only frames on their tag. "
+                "that are the only frame on their tag. "
                 "Still, these hidden decorations can be configured by "
                 "the +theme.minimal+ object. "
                 "Turn \'off\' to always show window borders and gaps.");
