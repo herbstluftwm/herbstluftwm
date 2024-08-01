@@ -22,7 +22,7 @@ jobs:
       matrix:
         cfg:
           - id: gcc
-            titlesuffix: "with GCC and test"
+            titlesuffix: "with GCC and run tests"
             cc: gcc
             cxx: g++
             runtests: true
