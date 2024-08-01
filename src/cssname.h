@@ -50,7 +50,6 @@ public:
         index_ = static_cast<size_t>(builtin);
     }
     CssName(const std::string& name);
-    CssName(const CssName& other) = default;
 
     bool isBinaryOperator() const;
     inline static bool isBuiltin(size_t index) {
