@@ -1,6 +1,5 @@
 #include "rules.h"
 
-#include <algorithm>
 #include <cstdio>
 
 #include "client.h"
