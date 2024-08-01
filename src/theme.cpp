@@ -1,7 +1,6 @@
 #include "theme.h"
 
 #include "completion.h"
-#include "globals.h"
 
 using std::function;
 using std::pair;

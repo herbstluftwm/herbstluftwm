@@ -14,7 +14,6 @@ class HSTag;
 class Monitor;
 class MonitorManager;
 class TagManager;
-class ResizeAction;
 
 /**
  * @brief The abstract class MouseDragHandler encapsulates what drag handling

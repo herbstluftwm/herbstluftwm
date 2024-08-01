@@ -1,7 +1,5 @@
 #include "hlwmcommon.h"
 
-#include <sstream>
-
 #include "clientmanager.h"
 #include "root.h"
 
