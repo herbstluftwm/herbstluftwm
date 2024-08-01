@@ -20,13 +20,13 @@ jobs:
   build-test-current:
     strategy:
       matrix:
-        - container: ubuntu/focal
+        - container: "ubuntu/focal"
           titlesuffix: "and test"
           cc: gcc
           cxx: g++
           runtests: true
           runlinters: false
-        - container: ubuntu/focal
+        - container: "ubuntu/focal"
           titlesuffix: "with Clang, run linters and static analyzers"
           cc: $PWD/ci/clang-and-tidy.sh
           cxx: $PWD/ci/clang++-and-tidy.sh
