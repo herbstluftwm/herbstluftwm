@@ -975,22 +975,22 @@ def test_smart_window_surroundings_geometry_attributes(hlwm):
     w1, _ = hlwm.create_client()
     w2, _ = hlwm.create_client()
     for value in ['one_window', 'one_window_and_frame']:
-      # a layout and a boolean value indicating whether
-      # w1 is supposed to have minimal decoration
-      layout2minimal = [
-        (f'(split horizontal:0.5:1 (clients horizontal:0 {w1} {w2}) (clients max:0))', False),
-        (f'(split horizontal:0.5:1 (clients max:0 {w1} {w2}) (clients max:0))', value == 'one_window'),
-        (f'(split horizontal:0.5:1 (clients max:0 {w1}) (clients max:0 {w2}))', value == 'one_window'),
-        (f'(clients max:0 {w1} {w2})', True),
-        (f'(clients horizontal:0 {w1} {w2})', False),
-      ]
-      for layout, min1 in layout2minimal:
-          # re-set the value in every loop to have a more readable debug log:
-          hlwm.attr.settings.smart_window_surroundings = value
-          hlwm.call(['load', layout])
-          assert min1 == \
-                  (hlwm.attr.clients[w1].decoration_geometry() == \
-                   hlwm.attr.clients[w1].content_geometry())
+        # a layout and a boolean value indicating whether
+        # w1 is supposed to have minimal decoration
+        layout2minimal = [
+            (f'(split horizontal:0.5:1 (clients horizontal:0 {w1} {w2}) (clients max:0))', False),
+            (f'(split horizontal:0.5:1 (clients max:0 {w1} {w2}) (clients max:0))', value == 'one_window'),
+            (f'(split horizontal:0.5:1 (clients max:0 {w1}) (clients max:0 {w2}))', value == 'one_window'),
+            (f'(clients max:0 {w1} {w2})', True),
+            (f'(clients horizontal:0 {w1} {w2})', False),
+        ]
+        for layout, min1 in layout2minimal:
+            # re-set the value in every loop to have a more readable debug log:
+            hlwm.attr.settings.smart_window_surroundings = value
+            hlwm.call(['load', layout])
+            assert min1 == \
+                (hlwm.attr.clients[w1].decoration_geometry() == \
+                hlwm.attr.clients[w1].content_geometry())
 
 
 def test_smart_window_surroundings_urgent(hlwm, x11):
