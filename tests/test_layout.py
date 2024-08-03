@@ -989,8 +989,8 @@ def test_smart_window_surroundings_geometry_attributes(hlwm):
             hlwm.attr.settings.smart_window_surroundings = value
             hlwm.call(['load', layout])
             assert min1 == \
-                (hlwm.attr.clients[w1].decoration_geometry() == \
-                hlwm.attr.clients[w1].content_geometry())
+                (hlwm.attr.clients[w1].decoration_geometry() ==
+                    hlwm.attr.clients[w1].content_geometry())
 
 
 def test_smart_window_surroundings_urgent(hlwm, x11):
