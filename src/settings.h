@@ -24,6 +24,17 @@ struct is_finite<SmartFrameSurroundings> : std::true_type {};
 template<> Finite<SmartFrameSurroundings>::ValueList Finite<SmartFrameSurroundings>::values;
 template<> inline Type Attribute_<SmartFrameSurroundings>::staticType() { return Type::NAMES; }
 
+enum class SmartWindowSurroundings {
+    one_window,
+    one_window_and_frame,
+    off,
+};
+
+template <>
+struct is_finite<SmartWindowSurroundings> : std::true_type {};
+template<> Finite<SmartWindowSurroundings>::ValueList Finite<SmartWindowSurroundings>::values;
+template<> inline Type Attribute_<SmartWindowSurroundings>::staticType() { return Type::NAMES; }
+
 enum class ShowFrameDecorations {
     none,
     nonempty,
@@ -87,7 +98,7 @@ public:
     Attribute_<bool>          tabbed_max = {"tabbed_max", true};
     Attribute_<bool>          hide_covered_windows = {"hide_covered_windows", false};
     Attribute_<SmartFrameSurroundings> smart_frame_surroundings = {"smart_frame_surroundings", SmartFrameSurroundings::off};
-    Attribute_<bool>          smart_window_surroundings = {"smart_window_surroundings", false};
+    Attribute_<SmartWindowSurroundings> smart_window_surroundings = {"smart_window_surroundings", SmartWindowSurroundings::off};
     Attribute_<unsigned long> monitors_locked = {"monitors_locked", 0};
     Attribute_<bool>          auto_detect_monitors = {"auto_detect_monitors", false};
     Attribute_<bool>          auto_detect_panels = {"auto_detect_panels", true};
