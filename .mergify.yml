@@ -2,7 +2,7 @@ queue_rules:
   - name: default
     conditions:
       # Conditions to get out of the queue (= merged)
-      - check-success=Build and test on current ubuntu
+      - check-success=Build with GCC and run tests
       - check-success=Build with Clang, run linters and static analyzers
       - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
 
@@ -10,7 +10,7 @@ pull_request_rules:
     - name: automatic merge on CI success and review
       conditions:
           - base=master
-          - check-success=Build and test on current ubuntu
+          - check-success=Build with GCC and run tests
           - check-success=Build with Clang, run linters and static analyzers
           - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
           - "#approved-reviews-by>=1"
@@ -28,7 +28,7 @@ pull_request_rules:
     - name: Implicitly allow t-wissmann to approve own pull requests
       conditions:
           - author=t-wissmann
-          - check-success=Build and test on current ubuntu
+          - check-success=Build with GCC and run tests
           - check-success=Build with Clang, run linters and static analyzers
           - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
           - label!=wip
