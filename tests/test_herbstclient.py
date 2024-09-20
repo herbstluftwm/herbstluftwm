@@ -7,10 +7,10 @@ import sys
 import struct
 import contextlib
 from herbstluftwm import Herbstluftwm
-from conftest import PROCESS_SHUTDOWN_TIME, HcIdle
+from conftest import BINDIR, PROCESS_SHUTDOWN_TIME, HcIdle
 from Xlib import X, Xatom
 
-HC_PATH = os.path.join(os.path.abspath(os.environ['PWD']), 'herbstclient')
+HC_PATH = BINDIR / 'herbstclient'
 
 
 @pytest.mark.parametrize('argument', ['version', '--idle'])
