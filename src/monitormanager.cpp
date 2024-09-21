@@ -43,6 +43,7 @@ MonitorManager* g_monitors;
 MonitorManager::MonitorManager()
     : IndexingObject<Monitor>()
     , focus(*this, "focus")
+    , tag_selection_strategy(this, "tag_selection_strategy", TagSelectionStrategy::any_unshown)
     , by_name_(*this)
     , panels_(nullptr)
     , tags_(nullptr)
@@ -55,6 +56,13 @@ MonitorManager::MonitorManager()
            "This has an entry \'INDEX\' for each monitor with "
            "index \'INDEX\'.");
     focus.setDoc("the focused monitor.");
+    tag_selection_strategy.setWritable();
+    tag_selection_strategy.setDoc(
+        "How to select a tag when a new monitor is created. \n"
+        "- \'any_unshown\': select the first tag that is not shown on any monitor\n"
+        "- \'only_empty\': select the first empty tag that isn't shown, abort if none is available\n"
+        "- \'prefer_empty\': prefer an empty tag, but select any unshown tag if no empty tag is available"
+    );
     // TODO: add this as soon as by_name_ is of type Child_<ByName>
     // by_name_.setDoc("contains an entry for each monitor with "
     //                 "a name.");
@@ -382,7 +390,7 @@ void MonitorManager::addMonitorCommand(CallOrComplete invoc)
             .command(invoc, [&] (Output output)
     {
         if (!tag) {
-            tag = tags_->unusedTag();
+            tag = tags_->newMonitorTag(tag_selection_strategy());
         }
         if (!tag) {
             output.perror() << "There are not enough free tags\n";
@@ -598,7 +606,7 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
     }
     // add additional monitors
     for (; i < templates.size(); i++) {
-        tag = tags_->unusedTag();
+        tag = tags_->newMonitorTag(tag_selection_strategy());
         if (!tag) {
             return HERBST_TAG_IN_USE;
         }

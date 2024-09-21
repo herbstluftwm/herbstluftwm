@@ -693,8 +693,9 @@ add_monitor 'RECT' ['TAG' ['NAME']]::
     Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
     string of the form 'WxH±X±Y'. If no or an empty 'TAG' is given, then any
-    free tag will be chosen. If a 'NAME' is given, you can reference to this
-    monitor by its name instead of using an index. Example:
+    free/empty tag will be chosen, depending on the
+    'monitors.tag_selection_strategy' attribute. If a 'NAME' is given, you can
+    reference to this monitor by its name instead of using an index. Example:
 
         * add_monitor 1024x768-20+0 mynewtag main
 

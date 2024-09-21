@@ -12,6 +12,7 @@
 #include "plainstack.h"
 #include "runtimeconverter.h"
 #include "signal.h"
+#include "tagmanager.h"
 
 extern MonitorManager* g_monitors;
 
@@ -38,6 +39,7 @@ public:
     void injectDependencies(Settings* s, TagManager* t, PanelManager* panels);
 
     Link_<Monitor> focus;
+    Attribute_<TagSelectionStrategy> tag_selection_strategy;
 
     void clearChildren();
     void ensure_monitors_are_available();

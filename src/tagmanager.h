@@ -3,8 +3,10 @@
 
 #include "byname.h"
 #include "commandio.h"
+#include "finite.h"
 #include "indexingobject.h"
 #include "link.h"
+#include "runtimeconverter.h"
 #include "runtimeconverter.h"
 #include "signal.h"
 #include "tag.h"
@@ -22,6 +24,18 @@ typedef void (FrameTree::*FrameCallOrComplete)(CallOrComplete);
 
 template<>
 RunTimeConverter<HSTag*>* Converter<HSTag*>::converter;
+
+enum class TagSelectionStrategy {
+    any_unshown,
+    prefer_empty,
+    only_empty
+};
+
+template <>
+struct is_finite<TagSelectionStrategy> : std::true_type {};
+template<> Finite<TagSelectionStrategy>::ValueList Finite<TagSelectionStrategy>::values;
+template<> inline Type Attribute_<TagSelectionStrategy>::staticType() { return Type::NAMES; }
+
 
 class TagManager : public IndexingObject<HSTag>, public Manager<HSTag> {
 public:
@@ -45,7 +59,7 @@ public:
     HSTag* find(const std::string& name);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
-    HSTag* unusedTag();
+    HSTag* newMonitorTag(TagSelectionStrategy strategy);
     void moveClient(Client* client, HSTag* target, std::string frameIndex = {}, bool focus = true);
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
