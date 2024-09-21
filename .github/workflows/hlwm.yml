@@ -124,17 +124,17 @@ jobs:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - name: Download source tarball
-        uses: actions/download-artifact@v2
-        # we do not specify a name, hence all artifacts are downloaded
-
       - name: Install Dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           dpkg --add-architecture i386
           apt-get update
-          apt-get -y install ccache cmake3 g++-4.8-multilib gcc-4.8-multilib libx11-dev:i386 libxext-dev:i386 libxft-dev:i386 libfreetype6-dev:i386 libxinerama-dev:i386 libxml2-utils libxrandr-dev:i386 libxfixes-dev:i386 ninja-build pkg-config:i386 xterm xvfb
+          apt-get -y install ccache cmake3 g++-4.8-multilib gcc-4.8-multilib libx11-dev:i386 libxext-dev:i386 libxft-dev:i386 libfreetype6-dev:i386 libxinerama-dev:i386 libxml2-utils libxrandr-dev:i386 libxfixes-dev:i386 ninja-build pkg-config:i386 xterm xvfb nodejs
+
+      - name: Download source tarball
+        uses: actions/download-artifact@v3
+        # we do not specify a name, hence all artifacts are downloaded
 
       - uses: actions/cache@v1
         name: Cache ~/.ccache
