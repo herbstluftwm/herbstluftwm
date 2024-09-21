@@ -29,6 +29,18 @@ Finite<SmartFrameSurroundings>::ValueList Finite<SmartFrameSurroundings>::values
 };
 
 template<>
+Finite<SmartWindowSurroundings>::ValueList Finite<SmartWindowSurroundings>::values = ValueListPlain {
+    { SmartWindowSurroundings::one_window, "one_window" },
+    { SmartWindowSurroundings::one_window, "on" },
+    { SmartWindowSurroundings::one_window, "true" },
+    { SmartWindowSurroundings::one_window, "1" },
+    { SmartWindowSurroundings::one_window_and_frame, "one_window_and_frame" },
+    { SmartWindowSurroundings::off, "off" },
+    { SmartWindowSurroundings::off, "false" },
+    { SmartWindowSurroundings::off, "0" },
+};
+
+template<>
 Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values = ValueListPlain {
     { ShowFrameDecorations::all, "all" },
     { ShowFrameDecorations::focused, "focused" },
@@ -139,12 +151,12 @@ Settings::Settings()
     frame_bg_transparent.setWritable();
     for (auto i : {&gapless_grid,
          &tabbed_max,
-         &smart_window_surroundings,
          &raise_on_focus_temporarily}) {
         i->changed().connect(&all_monitors_apply_layout);
     }
     show_frame_decorations.changed().connect(&all_monitors_apply_layout);
     smart_frame_surroundings.changed().connect(&all_monitors_apply_layout);
+    smart_window_surroundings.changed().connect(&all_monitors_apply_layout);
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
     // connect deprecated attribute to new settings:
     always_show_frame.changedByUser().connect([this](bool alwaysShow) {
@@ -332,10 +344,13 @@ Settings::Settings()
                 "Turn \'off\' to always show frame borders and gaps.");
 
     smart_window_surroundings.setDoc(
-                "If set, window borders and gaps will be removed and minimal "
-                "when there\'s no ambiguity regarding the focused window. "
-                "This minimal window decoration can be configured by the "
-                "+theme.minimal+ object.");
+                "If set to \'one_window\' (or \'on\'), then window borders and gaps will be "
+                "hidden in each frame that shows only one window. "
+                "If set to \'one_window_and_frame\', then only those frames are affected "
+                "that are the only frame on their tag. "
+                "Still, these hidden decorations can be configured by "
+                "the +theme.minimal+ object. "
+                "Turn \'off\' to always show window borders and gaps.");
 
     focus_follows_mouse.setDoc(
                 "If set and a window is focused by mouse cursor, this window "
