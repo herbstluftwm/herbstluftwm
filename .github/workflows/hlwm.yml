@@ -125,7 +125,7 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Download source tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         # we do not specify a name, hence all artifacts are downloaded
 
       - name: Install Dependencies
