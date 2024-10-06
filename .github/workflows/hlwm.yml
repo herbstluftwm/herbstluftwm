@@ -132,6 +132,14 @@ jobs:
           apt-get update
           apt-get -y install ccache cmake3 g++-4.8-multilib gcc-4.8-multilib libx11-dev:i386 libxext-dev:i386 libxft-dev:i386 libfreetype6-dev:i386 libxinerama-dev:i386 libxml2-utils libxrandr-dev:i386 libxfixes-dev:i386 ninja-build pkg-config:i386 xterm xvfb nodejs
 
+      - name: Fix nodejs version
+        run: |
+          mkdir -p "$RUNNER_HOME/actions-runner/"
+          rm -fv "$RUNNER_HOME/actions-runner/node20"
+          ln -s `which node` "$RUNNER_HOME/actions-runner/node20"
+          rm -fv /__e/node20/bin/node
+          ln -s `which node` /__e/node20/bin/node
+
       - name: Download source tarball
         uses: actions/download-artifact@v4
         # we do not specify a name, hence all artifacts are downloaded
