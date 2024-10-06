@@ -137,8 +137,12 @@ jobs:
           mkdir -p "$RUNNER_HOME/actions-runner/"
           rm -fv "$RUNNER_HOME/actions-runner/node20"
           ln -s `which node` "$RUNNER_HOME/actions-runner/node20"
-          rm -fv /__e/node20/bin/node
-          ln -s `which node` /__e/node20/bin/node
+          mkdir /patched-nodejs/
+          rm -rfv /patched-nodejs/bin
+          cp -r /__e/node20/bin /patched-nodejs/
+          mount -o bind /patched-nodejs/bin/ /__e/node20/bin/
+          rm -fv bin/node
+          ln -s `which node` /patched-nodejs/bin/node
 
       - name: Download source tarball
         uses: actions/download-artifact@v4
