@@ -667,7 +667,8 @@ void tag_force_update_flags() {
         t->flags = 0;
     }
     // update flags
-    for (auto c : Root::common().clients()) {
+    const auto& common = Root::common(); // I try to avoid the dangling reference
+    for (auto c : common.clients()) {
         auto client = c.second;
         TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
         if (client->urgent_) {

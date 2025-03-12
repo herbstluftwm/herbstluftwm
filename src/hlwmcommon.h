@@ -16,7 +16,7 @@ public:
     HlwmCommon(Root* root);
     //! The Client object for a window or nullptr if unmanaged.
     Client* client(Window window);
-    const std::unordered_map<Window, Client*>& clients();
+    const std::unordered_map<Window, Client*>& clients() const;
 private:
     Root* root_;
 };
