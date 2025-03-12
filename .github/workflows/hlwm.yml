@@ -31,7 +31,7 @@ jobs:
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         name: Cache ~/.ccache
@@ -88,7 +88,7 @@ jobs:
       CCACHE_LOGFILE: /github/home/ccache.log
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         name: Cache ~/.ccache
@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2  # fetch previous commits
 
@@ -249,7 +249,7 @@ jobs:
       BUILD: build-${{ github.run_number }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: install asciidoc
         run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
       - name: restrict cmake to doc
