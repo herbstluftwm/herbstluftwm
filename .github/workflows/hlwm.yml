@@ -33,7 +33,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
@@ -43,7 +43,7 @@ jobs:
           restore-keys: |
             focal-gcc-ccache-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache .tox-cache
         with:
           path: .tox-cache
@@ -90,7 +90,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
@@ -98,7 +98,7 @@ jobs:
           restore-keys: |
             focal-clang-ccache-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache .tox-cache
         with:
           path: .tox-cache
