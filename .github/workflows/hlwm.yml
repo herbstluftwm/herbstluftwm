@@ -52,7 +52,7 @@ jobs:
           packages: ccache clang clang-tidy curl cmake g++ git iwyu lcov libx11-dev libxext-dev libxft-dev libfreetype-dev libxinerama-dev libxrandr-dev libxfixes-dev ninja-build pkg-config python tox wget x11-xserver-utils xdotool xterm xvfb xserver-xephyr
           version: 1.0
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
@@ -62,7 +62,7 @@ jobs:
           restore-keys: |
             ${{ matrix.cfg.id }}-ccache-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache .tox-cache
         if: ${{ matrix.cfg.runtests }}
         with:
