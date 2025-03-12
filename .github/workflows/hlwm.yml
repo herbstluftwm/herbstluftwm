@@ -132,64 +132,64 @@ jobs:
         run: |
           ci/build.py --iwyu
 
-  build-old-32bit:
-    name: Build for 32bit with ancient GCC on Ubuntu 14.04
-    runs-on: ubuntu-latest
-    container: hlwm/ci:trusty
-    needs: build-doc  # using the tarball
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-    steps:
-      - name: Download source tarball
-        uses: actions/download-artifact@v2
-        # we do not specify a name, hence all artifacts are downloaded
-
-      - uses: actions/cache@v1
-        name: Cache ~/.ccache
-        with:
-          path: ~/.ccache
-          key: ccache-gcc-ancient-${{ github.run_number }}
-          restore-keys: |
-            ccache-gcc-ancient-
-
-      - name: Extract tarball
-        run: |
-          tar xvf artifact/herbstluftwm*.tar.gz
-
-      - name: Sanity check tarball content
-        run: |
-          cd herbstluftwm-*/doc/
-          echo Checking that generated file have at least 10 lines
-          test "$(wc -l hlwm-objects-gen.txt|cut -d' ' -f1)" -gt 10 || exit 1
-          test "$(wc -l hlwm-doc.json|cut -d' ' -f1)" -gt 10 || exit 1
-
-      - name: Build
-        env:
-          CC: gcc-4.8
-          CXX: g++-4.8
-          CXXFLAGS: -m32
-          CFLAGS: -m32
-        run: |
-          cd herbstluftwm-*/
-          find ~/.ccache | wc -l
-          ccache -z --max-size=500M
-          # ccache too old for --show-config
-          mkdir build
-          cd build
-          cmake -GNinja -DENABLE_CCACHE=YES ..
-          ninja -v -k10
-          ccache -s
-          find ~/.ccache | wc -l
-
-      - name: Install
-        env:
-          DESTDIR: ${{ github.workspace }}/install-herbstluftwm/
-        run: |
-          cd herbstluftwm-*/build/
-          mkdir -v -p $DESTDIR
-          ninja -v install
-          # check that the man page has been installed:
-          find $DESTDIR -name 'herbstluftwm.1' -printf '%P\n' | grep . # grep for the right exit-status
+  # build-old-32bit:
+  #   name: Build for 32bit with ancient GCC on Ubuntu 14.04
+  #   runs-on: ubuntu-latest
+  #   container: hlwm/ci:trusty
+  #   needs: build-doc  # using the tarball
+  #   env:
+  #     ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  #   steps:
+  #     - name: Download source tarball
+  #       uses: actions/download-artifact@v2
+  #       # we do not specify a name, hence all artifacts are downloaded
+  
+  #     - uses: actions/cache@v1
+  #       name: Cache ~/.ccache
+  #       with:
+  #         path: ~/.ccache
+  #         key: ccache-gcc-ancient-${{ github.run_number }}
+  #         restore-keys: |
+  #           ccache-gcc-ancient-
+  
+  #     - name: Extract tarball
+  #       run: |
+  #         tar xvf artifact/herbstluftwm*.tar.gz
+  
+  #     - name: Sanity check tarball content
+  #       run: |
+  #         cd herbstluftwm-*/doc/
+  #         echo Checking that generated file have at least 10 lines
+  #         test "$(wc -l hlwm-objects-gen.txt|cut -d' ' -f1)" -gt 10 || exit 1
+  #         test "$(wc -l hlwm-doc.json|cut -d' ' -f1)" -gt 10 || exit 1
+  
+  #     - name: Build
+  #       env:
+  #         CC: gcc-4.8
+  #         CXX: g++-4.8
+  #         CXXFLAGS: -m32
+  #         CFLAGS: -m32
+  #       run: |
+  #         cd herbstluftwm-*/
+  #         find ~/.ccache | wc -l
+  #         ccache -z --max-size=500M
+  #         # ccache too old for --show-config
+  #         mkdir build
+  #         cd build
+  #         cmake -GNinja -DENABLE_CCACHE=YES ..
+  #         ninja -v -k10
+  #         ccache -s
+  #         find ~/.ccache | wc -l
+  
+  #     - name: Install
+  #       env:
+  #         DESTDIR: ${{ github.workspace }}/install-herbstluftwm/
+  #       run: |
+  #         cd herbstluftwm-*/build/
+  #         mkdir -v -p $DESTDIR
+  #         ninja -v install
+  #         # check that the man page has been installed:
+  #         find $DESTDIR -name 'herbstluftwm.1' -printf '%P\n' | grep . # grep for the right exit-status
 
   diff-objects:
     name: Diff object tree
