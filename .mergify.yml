@@ -4,7 +4,6 @@ queue_rules:
       - base=master
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
-      - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - label!=wip
@@ -12,7 +11,6 @@ queue_rules:
       # Conditions to get out of the queue (= merged)
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
-      - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
     commit_message_template: |
       {{ title }} (#{{ number }})
 
@@ -25,7 +23,6 @@ pull_request_rules:
       - author=t-wissmann
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
-      - check-success=Build for 32bit with ancient GCC on Ubuntu 14.04
       - label!=wip
       - label=self-approved
     actions:
