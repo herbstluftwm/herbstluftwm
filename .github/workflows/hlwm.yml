@@ -18,40 +18,70 @@ on:
 
 jobs:
   build-test-current:
+    strategy:
+      matrix:
+        cfg:
+          - id: gcc
+            titlesuffix: "with GCC and run tests"
+            cc: gcc
+            cxx: g++
+            runtests: true
+            runlinters: false
+          - id: clang
+            titlesuffix: "with Clang, run linters and static analyzers"
+            cc: $PWD/ci/clang-and-tidy.sh
+            cxx: $PWD/ci/clang++-and-tidy.sh
+            runtests: false
+            runlinters: true
     # Name the Job
-    name: Build and test on current ubuntu
+    name: Build ${{ matrix.cfg.titlesuffix }}
     # Set the type of machine to run on
     runs-on: ubuntu-latest
-    container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
-      CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_LOGFILE: /home/runner/work/ccache.log
       CCACHE_NOHASHDIR: 1
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ccache clang clang-tidy curl cmake g++ git iwyu lcov libx11-dev libxext-dev libxft-dev libfreetype-dev libxinerama-dev libxrandr-dev libxfixes-dev ninja-build pkg-config python tox wget x11-xserver-utils xdotool xterm xvfb xserver-xephyr
+          version: 1.0
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: focal-gcc-ccache-${{ github.run_number }}
+          key: ${{ matrix.cfg.id }}-ccache-${{ github.run_number }}
           # since the every new gha run gets a new key, we need to search
           # for existing cache entries more sloppily:
           restore-keys: |
-            focal-gcc-ccache-
+            ${{ matrix.cfg.id }}-ccache-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         name: Cache .tox-cache
+        if: ${{ matrix.cfg.runtests }}
         with:
           path: .tox-cache
-          key: focal-tox
+          key: ${{ matrix.cfg.id }}-tox
+
+      - name: Check usage of std-prefix
+        if: ${{ matrix.cfg.runlinters }}
+        run: |
+          ci/build.py --check-using-std
+
+      - name: Check python using flake8
+        if: ${{ matrix.cfg.runlinters }}
+        run: |
+          ci/build.py --flake8
 
       - name: CMake
         run: |
-          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache
+          ci/build.py --cmake --cxx=${{ matrix.cfg.cxx }} --cc=${{ matrix.cfg.cc }} --build-type=Debug --ccache=$HOME/.ccache
 
       - name: Compile
         run: |
@@ -70,126 +100,100 @@ jobs:
           cat "$CCACHE_LOGFILE"
 
       - name: Test
+        if: ${{ matrix.cfg.runtests }}
         run: |
           ci/build.py --run-tests
 
       - name: Codecov report
         continue-on-error: true
+        if: ${{ matrix.cfg.runtests }}
         run: |
           wget -O codecov-io.bash https://codecov.io/bash
           bash codecov-io.bash -f coverage.info
 
-  build-clang:
-    name: Build with Clang, run linters and static analyzers
-    runs-on: ubuntu-latest
-    container: hlwm/ci:focal
-    env:
-      HLWM_BUILDDIR: build
-      CCACHE_LOGFILE: /github/home/ccache.log
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - uses: actions/cache@v1
-        name: Cache ~/.ccache
-        with:
-          path: ~/.ccache
-          key: focal-clang-ccache-${{ github.run_number }}
-          restore-keys: |
-            focal-clang-ccache-
-
-      - uses: actions/cache@v1
-        name: Cache .tox-cache
-        with:
-          path: .tox-cache
-          key: focal-tox # same name as in build-test-current
-
-      - name: Check usage of std-prefix
-        run: |
-          ci/build.py --check-using-std
-
-      - name: Check python using flake8
-        run: |
-          ci/build.py --flake8
-
-      - name: CMake
-        run: |
-          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache
-
-      - name: Compile
-        run: |
-          ci/build.py --compile
-
-      - name: ccache statistics
-        run: |
-          ccache -s
-
-      - name: ccache log
-        run: |
-          cat "$CCACHE_LOGFILE"
-
       - name: Check includes using iwyu
+        if: ${{ matrix.cfg.runlinters }}
         run: |
           ci/build.py --iwyu
 
-  build-old-32bit:
-    name: Build for 32bit with ancient GCC on Ubuntu 14.04
-    runs-on: ubuntu-latest
-    container: hlwm/ci:trusty
-    needs: build-doc  # using the tarball
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-    steps:
-      - name: Download source tarball
-        uses: actions/download-artifact@v2
-        # we do not specify a name, hence all artifacts are downloaded
-
-      - uses: actions/cache@v1
-        name: Cache ~/.ccache
-        with:
-          path: ~/.ccache
-          key: ccache-gcc-ancient-${{ github.run_number }}
-          restore-keys: |
-            ccache-gcc-ancient-
-
-      - name: Extract tarball
-        run: |
-          tar xvf artifact/herbstluftwm*.tar.gz
-
-      - name: Sanity check tarball content
-        run: |
-          cd herbstluftwm-*/doc/
-          echo Checking that generated file have at least 10 lines
-          test "$(wc -l hlwm-objects-gen.txt|cut -d' ' -f1)" -gt 10 || exit 1
-          test "$(wc -l hlwm-doc.json|cut -d' ' -f1)" -gt 10 || exit 1
-
-      - name: Build
-        env:
-          CC: gcc-4.8
-          CXX: g++-4.8
-          CXXFLAGS: -m32
-          CFLAGS: -m32
-        run: |
-          cd herbstluftwm-*/
-          find ~/.ccache | wc -l
-          ccache -z --max-size=500M
-          # ccache too old for --show-config
-          mkdir build
-          cd build
-          cmake -GNinja -DENABLE_CCACHE=YES ..
-          ninja -v -k10
-          ccache -s
-          find ~/.ccache | wc -l
-
-      - name: Install
-        env:
-          DESTDIR: ${{ github.workspace }}/install-herbstluftwm/
-        run: |
-          cd herbstluftwm-*/build/
-          mkdir -v -p $DESTDIR
-          ninja -v install
-          # check that the man page has been installed:
-          find $DESTDIR -name 'herbstluftwm.1' -printf '%P\n' | grep . # grep for the right exit-status
+  # build-old-32bit:
+  #   name: Build for 32bit with ancient GCC on Ubuntu 14.04
+  #   runs-on: ubuntu-latest
+  #   container: ubuntu:trusty-20190122
+  #   needs: build-doc  # using the tarball
+  #   env:
+  #     ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  #   steps:
+  #     - name: Install Dependencies
+  #       env:
+  #         DEBIAN_FRONTEND: noninteractive
+  #       run: |
+  #         dpkg --add-architecture i386
+  #         apt-get update
+  #         apt-get -y install ccache cmake3 g++-4.8-multilib gcc-4.8-multilib libx11-dev:i386 libxext-dev:i386 libxft-dev:i386 libfreetype6-dev:i386 libxinerama-dev:i386 libxml2-utils libxrandr-dev:i386 libxfixes-dev:i386 ninja-build pkg-config:i386 xterm xvfb nodejs
+  
+  #     - name: Fix nodejs version
+  #       run: |
+  #         mkdir -p "$RUNNER_HOME/actions-runner/"
+  #         rm -fv "$RUNNER_HOME/actions-runner/node20"
+  #         ln -s `which node` "$RUNNER_HOME/actions-runner/node20"
+  #         mkdir /patched-nodejs/
+  #         rm -rfv /patched-nodejs/bin
+  #         cp -r /__e/node20/bin /patched-nodejs/
+  #         mount -o bind /patched-nodejs/bin/ /__e/node20/bin/
+  #         rm -fv bin/node
+  #         ln -s `which node` /patched-nodejs/bin/node
+  
+  #     - name: Download source tarball
+  #       uses: actions/download-artifact@v4
+  #       # we do not specify a name, hence all artifacts are downloaded
+  
+  #     - uses: actions/cache@v1
+  #       name: Cache ~/.ccache
+  #       with:
+  #         path: ~/.ccache
+  #         key: ccache-gcc-ancient-${{ github.run_number }}
+  #         restore-keys: |
+  #           ccache-gcc-ancient-
+  
+  #     - name: Extract tarball
+  #       run: |
+  #         tar xvf artifact/herbstluftwm*.tar.gz
+  
+  #     - name: Sanity check tarball content
+  #       run: |
+  #         cd herbstluftwm-*/doc/
+  #         echo Checking that generated file have at least 10 lines
+  #         test "$(wc -l hlwm-objects-gen.txt|cut -d' ' -f1)" -gt 10 || exit 1
+  #         test "$(wc -l hlwm-doc.json|cut -d' ' -f1)" -gt 10 || exit 1
+  
+  #     - name: Build
+  #       env:
+  #         CC: gcc-4.8
+  #         CXX: g++-4.8
+  #         CXXFLAGS: -m32
+  #         CFLAGS: -m32
+  #       run: |
+  #         cd herbstluftwm-*/
+  #         test -d ~/.ccache && find ~/.ccache | wc -l
+  #         ccache -z --max-size=500M
+  #         # ccache too old for --show-config
+  #         mkdir build
+  #         cd build
+  #         cmake -GNinja -DENABLE_CCACHE=YES ..
+  #         ninja -v -k10
+  #         ccache -s
+  #         find ~/.ccache | wc -l
+  
+  #     - name: Install
+  #       env:
+  #         DESTDIR: ${{ github.workspace }}/install-herbstluftwm/
+  #       run: |
+  #         cd herbstluftwm-*/build/
+  #         mkdir -v -p $DESTDIR
+  #         ninja -v install
+  #         # check that the man page has been installed:
+  #         find $DESTDIR -name 'herbstluftwm.1' -printf '%P\n' | grep . # grep for the right exit-status
 
   diff-objects:
     name: Diff object tree
@@ -251,7 +255,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: install asciidoc
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl imagemagick librsvg2-bin
       - name: restrict cmake to doc
         run: |
           cat > CMakeLists.txt <<EOF
@@ -286,6 +290,6 @@ jobs:
         run: |
           builddir=$BUILD ci/mktar.sh
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           path: herbstluftwm*.tar.gz

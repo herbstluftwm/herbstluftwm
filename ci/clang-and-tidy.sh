@@ -27,9 +27,9 @@ set -o nounset
 # Perform the regular compiler invocation:
 progname=$(basename "$0")
 if [[ $progname == clang-* ]]; then
-    clang-10 "$@"
+    clang "$@"
 elif [[ $progname == clang++-* ]]; then
-    clang++-10 "$@"
+    clang++ "$@"
 else
     echo >&2 "Error: Cannot handle program name: $progname"
     exit 1
@@ -75,7 +75,7 @@ clang_tidy_args="-header-filter=.* -extra-arg=-Wno-unknown-warning-option -p=${C
 
 # Run clang-tidy, but hide its output unless it fails (non-failing stdout
 # confuses ccache!)
-if ! out="$(clang-tidy-10 $clang_tidy_args "$sourcefile" 2>&1)"; then
+if ! out="$(clang-tidy $clang_tidy_args "$sourcefile" 2>&1)"; then
     echo "$out"
     exit 1
 fi

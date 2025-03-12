@@ -17,7 +17,7 @@ Client* HlwmCommon::client(Window window) {
     return root_->clients->client(window);
 }
 
-const std::unordered_map<Window, Client*>& HlwmCommon::clients() {
+const std::unordered_map<Window, Client*>& HlwmCommon::clients() const {
     return root_->clients->clients();
 }
 
