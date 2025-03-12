@@ -255,7 +255,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: install asciidoc
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl imagemagick
       - name: restrict cmake to doc
         run: |
           cat > CMakeLists.txt <<EOF

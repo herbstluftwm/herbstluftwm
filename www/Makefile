@@ -51,7 +51,7 @@ faq-toc.html: faq-content.html ./gentoc.sh
 faq.html: faq-toc.html
 
 favicon.ico: ../share/herbstluftwm.svg
-	magick convert -density 256x256 -background transparent $< \
+	convert -density 256x256 -background transparent $< \
         -define icon:auto-resize -colors 256 $@
 
 hlwm-doc.json: ../doc/gendoc.py $(wildcard ../src/*.*)
