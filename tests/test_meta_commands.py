@@ -339,7 +339,8 @@ def test_attribute_completion(hlwm):
     assert complete('monitors.') == ['monitors.0.',
                                      'monitors.by-name.',
                                      'monitors.count ',
-                                     'monitors.focus.']
+                                     'monitors.focus.',
+                                     'monitors.tag_selection_strategy ']
     assert complete('monitors.fo') == ['monitors.focus.']
     assert complete('monitors.count') == ['monitors.count ']
     assert complete('monitors.focus') == ['monitors.focus.']
