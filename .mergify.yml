@@ -1,12 +1,14 @@
 queue_rules:
   - name: default
     queue_conditions:
+      # conditions on a PR to be added to the merge queue
       - base=master
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - label!=wip
+    branch_protection_injection_mode: merge
     merge_conditions:
       # Conditions to get out of the queue (= merged)
       - check-success=Build and test on current ubuntu
@@ -21,9 +23,6 @@ pull_request_rules:
   - name: Implicitly allow t-wissmann to approve own pull requests
     conditions:
       - author=t-wissmann
-      - check-success=Build and test on current ubuntu
-      - check-success=Build with Clang, run linters and static analyzers
-      - label!=wip
       - label=self-approved
     actions:
       review:
@@ -33,3 +32,4 @@ pull_request_rules:
     conditions: []
     actions:
       queue:
+        name: default
