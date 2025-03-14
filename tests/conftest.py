@@ -4,7 +4,6 @@ from Xlib import X, Xutil, Xatom
 import Xlib
 import ewmh
 import os
-import os.path
 import re
 import select
 import selectors
@@ -13,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import pathlib
 import time
 import types
 
@@ -22,7 +22,7 @@ pytest.register_assert_rewrite("herbstluftwm")
 import herbstluftwm  # noqa: E402
 
 
-BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
+BINDIR = pathlib.Path.cwd()
 
 # List of environment variables copied during hlwm process creation:
 # * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
@@ -40,7 +40,7 @@ def extend_env_with_whitelist(environment):
 
 class HlwmBridge(herbstluftwm.Herbstluftwm):
 
-    HC_PATH = os.path.join(BINDIR, 'herbstclient')
+    HC_PATH = BINDIR / 'herbstclient'
     # if there is some HlwmBridge, then it is registered here:
     INSTANCE = None
 
@@ -315,7 +315,7 @@ class HlwmProcess:
         self.stdout_scanners = []
         self.stderr_scanners = []
 
-        self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
+        self.bin_path = BINDIR / 'herbstluftwm'
         self.proc = subprocess.Popen(
             [self.bin_path, '--exit-on-xerror', '--verbose'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
@@ -612,7 +612,7 @@ def hc_idle(hlwm):
 
 
 @pytest.fixture()
-def hlwm_spawner(tmpdir):
+def hlwm_spawner(tmp_path):
     """yield a function to spawn hlwm"""
     assert xvfb is not None, 'Refusing to run tests in a non-Xvfb environment (possibly your actual X server?)'
 
@@ -621,12 +621,12 @@ def hlwm_spawner(tmpdir):
             display = os.environ['DISPLAY']
         env = {
             'DISPLAY': display,
-            'XDG_CONFIG_HOME': str(tmpdir),
+            'XDG_CONFIG_HOME': str(tmp_path),
         }
         env = extend_env_with_whitelist(env)
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        autostart.ensure()
-        autostart.write(textwrap.dedent("""
+        autostart = tmp_path / 'herbstluftwm' / 'autostart'
+        autostart.parent.mkdir(exist_ok=True)
+        autostart.write_text(textwrap.dedent("""
             #!/usr/bin/env bash
             echo "hlwm started"
         """.lstrip('\n')))

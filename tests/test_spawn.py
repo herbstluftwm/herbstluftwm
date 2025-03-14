@@ -14,8 +14,8 @@ def test_spawn_command_not_exist(hlwm, hlwm_process):
         .expect_stderr('No such file')
 
 
-def test_spawn_command_no_permission(hlwm, tmpdir, hlwm_process):
-    dirname = str(tmpdir)
+def test_spawn_command_no_permission(hlwm, tmp_path, hlwm_process):
+    dirname = str(tmp_path)
     hlwm.call_xfail(['spawn', dirname]) \
         .expect_stderr(dirname) \
         .expect_stderr('Permission denied')
