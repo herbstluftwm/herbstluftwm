@@ -83,6 +83,7 @@ Settings::Settings()
         &window_gap,
         &snap_distance,
         &snap_gap,
+        &no_mouse_restore,
         &mouse_recenter_gap,
         &frame_border_active_color,
         &frame_border_normal_color,
@@ -199,6 +200,11 @@ Settings::Settings()
                 "Specifies the remaining gap if a dragged client snaps "
                 "to an edge in floating mode. If snap_gap is set to 0, "
                 "no gap will remain.");
+    no_mouse_restore.setDoc(
+                "Disables mouse pointer position restore/recenter when "
+                "a different monitor is selected. This setting overrides "
+                "the function of mouse_recenter_gap and will prevent "
+                "mouse position from being changed when switching monitors.");
     mouse_recenter_gap.setDoc(
                 "Specifies the gap around a monitor. If the monitor is "
                 "selected and the mouse position would be restored into "
