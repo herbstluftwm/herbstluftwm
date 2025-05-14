@@ -71,6 +71,7 @@ public:
     Attribute_<int>           window_gap = {"window_gap", 0};
     Attribute_<int>           snap_distance = {"snap_distance", 10};
     Attribute_<int>           snap_gap = {"snap_gap", 5};
+    Attribute_<bool>          mouse_follows_monitor_focus = {"mouse_follows_monitor_focus", true};
     Attribute_<int>           mouse_recenter_gap = {"mouse_recenter_gap", 0};
     Attribute_<Color>         frame_border_active_color = {"frame_border_active_color", {"red"}};
     Attribute_<Color>         frame_border_normal_color = {"frame_border_normal_color", {"blue"}};
