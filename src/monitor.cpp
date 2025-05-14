@@ -537,9 +537,9 @@ void monitor_focus_by_index(unsigned new_selection) {
     }
     // restore position of new monitor
     // but only if mouse pointer is not already on new monitor
-    // and only if the user has not requested no_mouse_restore
+    // and only if the user has not disabled mouse_follows_monitor_focus
     int new_x, new_y;
-    if (g_settings->no_mouse_restore() || 
+    if (!g_settings->mouse_follows_monitor_focus() || 
         ((monitor->rect->x <= rx) && (rx < monitor->rect->x + monitor->rect->width)
         && (monitor->rect->y <= ry) && (ry < monitor->rect->y + monitor->rect->height))) {
         // mouse already is on new monitor or user disabled pointer position restore
