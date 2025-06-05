@@ -409,7 +409,18 @@ int HSTag::shiftInDir(Direction direction, DirectionLevel depth, Output output)
         // try to move the floating window
         success = Floating::shiftDirection(direction);
     } else {
-        success = frame->shiftInDirection(direction, depth);
+        // For max layout, use DirectionLevel::All to enable cycling within the frame
+        DirectionLevel adjustedDepth = depth;
+        auto focusedFrame = frame->focusedFrame();
+        if (focusedFrame && focusedFrame->getLayout() == LayoutAlgorithm::max) {
+            // In max layout, we want to enable cycling within the frame for all directions
+            // Check if we have multiple clients
+            if (focusedFrame->clientCount() > 1) {
+                adjustedDepth = DirectionLevel::All;
+            }
+        }
+
+        success = frame->shiftInDirection(direction, adjustedDepth);
         if (success) {
             needsRelayout_.emit();
         }
