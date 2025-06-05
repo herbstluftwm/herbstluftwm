@@ -108,6 +108,7 @@ Settings::Settings()
         &raise_on_click,
         &gapless_grid,
         &tabbed_max,
+        &max_tab_reorder,
         &hide_covered_windows,
         &smart_frame_surroundings,
         &smart_window_surroundings,
@@ -440,6 +441,12 @@ Settings::Settings()
     tabbed_max.setDoc(
         "if activated, multiple windows in a frame with the \'max\' "
         "layout algorithm are drawn as tabs."
+    );
+    max_tab_reorder.setDoc(
+        "if activated, moving a window in the max layout with shift+direction "
+        "commands will change the tab order when moving between tabs within "
+        "the same frame. When disabled (default), the tab order is preserved "
+        "and only movement to different frames is allowed."
     );
     ellipsis.setDoc(
         "string to append when window or tab titles are shortened "
