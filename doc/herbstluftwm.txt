@@ -541,7 +541,13 @@ shift ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     of being tiled, then client is shifted to the next window or screen edge. If
     the window cannot be moved and the setting
     'focus_crosses_monitor_boundaries' is activated, then the window is moved to
-    the monitor in the specified 'DIRECTION'.
+    the monitor in the specified 'DIRECTION'. +
+    +
+    In the max layout, the behavior depends on the 'max_tab_reorder' setting:
+    when enabled, windows can be shifted between tabs within the same frame,
+    changing their tab order. When disabled (default), windows in max layout
+    can only be moved to different frames, preserving the tab order within the
+    frame.
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
