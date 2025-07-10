@@ -101,6 +101,7 @@ Settings::Settings()
         &default_direction_external_only,
         &default_frame_layout,
         &focus_follows_mouse,
+	&mouse_follows_focus,
         &focus_stealing_prevention,
         &swap_monitors_to_get_tag,
         &raise_on_focus,
@@ -361,6 +362,10 @@ Settings::Settings()
                 "If another window is hidden by the focus change (e.g. "
                 "when having pseudotiled windows in the max layout) "
                 "then an extra click is required to change the focus.");
+    mouse_follows_focus.setDoc(
+		"If set and the focus is changed by a means other than the mouse"
+		" the mouse will be warped to the center of the area. Also known"
+		" as mouse warping");
 
     focus_stealing_prevention.setDoc(
                 "If set, only pagers and taskbars are allowed to change "
