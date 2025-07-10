@@ -89,7 +89,7 @@ public:
     Attribute_<bool>          default_direction_external_only = {"default_direction_external_only", false};
     Attribute_<LayoutAlgorithm> default_frame_layout = {"default_frame_layout", LayoutAlgorithm::vertical};
     Attribute_<bool>          focus_follows_mouse = {"focus_follows_mouse", false};
-    Attribute_<bool>          mouse_follows_focus = {"mouse_follows_focus", true};
+    Attribute_<bool>          mouse_follows_focus = {"mouse_follows_focus", false};
     Attribute_<bool>          focus_stealing_prevention = {"focus_stealing_prevention", true};
     Attribute_<bool>          swap_monitors_to_get_tag = {"swap_monitors_to_get_tag", true};
     Attribute_<bool>          raise_on_focus = {"raise_on_focus", false};
