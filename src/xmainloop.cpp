@@ -736,16 +736,14 @@ void XMainLoop::focusedClientChanges(Client* newFocus)
 	  Window mousein_root;
 	  Window mousein_child;
 	  int root_x, root_y, child_x, child_y;
-	  unsigned int dummy_uint;
-	  XQueryPointer(g_display, newFocus->window_, &mousein_root, &mousein_child, &root_x, &root_y, &child_x, &child_y, &dummy_uint);
+	  unsigned int throwaway_uint;
+	  XQueryPointer(g_display, newFocus->window_, &mousein_root, &mousein_child, &root_x, &root_y, &child_x, &child_y, &throwaway_uint);
 	  // check if mouse is in window
 	  Rectangle border = newFocus->dec->last_inner();
-	  std::cout << border << std::endl;
 	  if (root_x < border.x  || root_x > border.width + border.x ||
 	      root_y < border.y || root_y > border.height + border.y) {
 	  XWarpPointer(g_display, None, newFocus->window_, 0, 0, 0, 0,
 		       newFocus->last_size_.width/2, newFocus->last_size_.height/2);
-	  std::cout << "Changing!" << std::endl;
 	  }
 	}
     } else { // if no client is focused
