@@ -19,6 +19,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Simplified BSD License",
         "Operating System :: OS Independent",
+        "Changes" :: "new-user"
     ],
     python_requires='>=3.6',
 )
