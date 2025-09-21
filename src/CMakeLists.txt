@@ -68,6 +68,7 @@ target_sources(herbstluftwm PRIVATE
     settings.cpp settings.h
     signal.h
     stack.cpp stack.h
+    sizehints.h
     tag.cpp tag.h
     tagmanager.cpp tagmanager.h
     theme.cpp theme.h

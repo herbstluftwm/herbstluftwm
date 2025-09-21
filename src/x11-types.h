@@ -94,6 +94,7 @@ struct Point2D {
        return y * other.x > other.y * x;
     }
     int manhattanLength() const;
+    inline void set(int new_x, int new_y) { x = new_x; y = new_y; }
 };
 
 

@@ -11,6 +11,7 @@
 #include "object.h"
 #include "rectangle.h"
 #include "regexstr.h"
+#include "sizehints.h"
 #include "x11-types.h"
 
 class Decoration;
@@ -51,16 +52,7 @@ public:
     //! the last time when minimized_ was changed (with discrete time ticks).
     long long int minimizedLastChange_ = 0;
     // for size hints; 0 means 'unset'
-    float mina_ = 0;
-    float maxa_ = 0;
-    int basew_ = 0;
-    int baseh_ = 0;
-    int incw_ = 0;
-    int inch_ = 0;
-    int maxw_ = 0;
-    int maxh_ = 0;
-    int minw_ = 0;
-    int minh_ = 0;
+    SizeHints sizeHints;
 
     // for other modules
     Signal_<HSTag*> needsRelayout;
@@ -123,7 +115,7 @@ public:
 
     void send_configure(bool force);
     bool applysizehints(int* w, int* h, bool force = false);
-    void updatesizehints();
+    bool updatesizehints();
     ResizeAction possibleResizeActions();
 
     void set_visible(bool visible);

@@ -359,25 +359,30 @@ bool Client::applysizehints(int* w, int* h, bool force) {
     if (*w < WINDOW_MIN_WIDTH) {
         *w = WINDOW_MIN_WIDTH;
     }
-    bool sizehints = force || (this->is_client_floated() || this->pseudotile_)
+    bool considerHints = force || (this->is_client_floated() || this->pseudotile_)
                         ? this->sizehints_floating_
                         : this->sizehints_tiling_;
-    if (sizehints) {
+    Point2D target = { *w, *h };
+    if (considerHints) {
         /* see last two sentences in ICCCM 4.1.2.3 */
-        baseismin = this->basew_ == this->minw_ && this->baseh_ == this->minh_;
+        baseismin = sizeHints.base == sizeHints.min;
         if(!baseismin) { /* temporarily remove base dimensions */
-            *w -= this->basew_;
-            *h -= this->baseh_;
+            target = target - sizeHints.base;
         }
         /* adjust for aspect limits */
-        if(this->mina_ > 0 && this->maxa_ > 0) {
+        if (sizeHints.minAspect > Point2D {0,0} && sizeHints.maxAspect > Point2D {0,0} {
+            if (target.biggerSlopeThan(sizeHints.maxAspect)) {
+                
+            }
+        }
+        if (this->mina_ > 0 && this->maxa_ > 0) {
             if (this->maxa_ < (float)*w / *h) {
                 *w = int(*h * this->maxa_ + 0.5f);
             } else if (this->mina_ < (float)*h / *w) {
                 *h = int(*w * this->mina_ + 0.5f);
             }
         }
-        if(baseismin) { /* increment calculation requires this */
+        if (baseismin) { /* increment calculation requires this */
             *w -= this->basew_;
             *h -= this->baseh_;
         }
@@ -400,58 +405,54 @@ bool Client::applysizehints(int* w, int* h, bool force) {
             *h = std::min(*h, this->maxh_);
         }
     }
+    *w = target.x;
+    *h = target.y;
     return *w != this->last_size_.width || *h != this->last_size_.height;
 }
 
 // from dwm.c
-void Client::updatesizehints() {
+bool Client::updatesizehints() {
     long msize;
-    XSizeHints size;
+    XSizeHints xsize;
 
-    if (!XGetWMNormalHints(X_.display(), this->window_, &size, &msize)) {
-        /* size is uninitialized, ensure that size.flags aren't used */
-        size.flags = PSize;
+    if (!XGetWMNormalHints(X_.display(), this->window_, &xsize, &msize)) {
+        /* xsize is uninitialized, ensure that xsize.flags aren't used */
+        xsize.flags = PSize;
     }
-    if(size.flags & PBaseSize) {
-        this->basew_ = size.base_width;
-        this->baseh_ = size.base_height;
-    }
-    else if(size.flags & PMinSize) {
-        this->basew_ = size.min_width;
-        this->baseh_ = size.min_height;
+    SizeHints hints;
+    if (size.flags & PBaseSize) {
+        hints.base.set(size.base_width, size.base_height);
+    } else if(size.flags & PMinSize) {
+        hints.base.set(size.min_width, size.min_height);
     } else {
-        this->basew_ = this->baseh_ = 0;
+        hints.base.set(0, 0);
     }
     if(size.flags & PResizeInc) {
-        this->incw_ = size.width_inc;
-        this->inch_ = size.height_inc;
+        hints.inc.set(size.width_inc, size.height_inc);
     } else {
-        this->incw_ = this->inch_ = 0;
+        hints.inc.set(0, 0);
     }
     if(size.flags & PMaxSize) {
-        this->maxw_ = size.max_width;
-        this->maxh_ = size.max_height;
+        hints.max.set(size.max_width, size.max_height);
     } else {
-        this->maxw_ = this->maxh_ = 0;
+        hints.max.set(0, 0);
     }
     if(size.flags & PMinSize) {
-        this->minw_ = size.min_width;
-        this->minh_ = size.min_height;
-    }
-    else if(size.flags & PBaseSize) {
-        this->minw_ = size.base_width;
-        this->minh_ = size.base_height;
+        hints.min.set(size.min_width, size.min_height);
+    } else if(size.flags & PBaseSize) {
+        hints.min.set(size.base_width, size.base_height);
     } else {
-        this->minw_ = this->minh_ = 0;
+        hints.min.set(0, 0);
     }
     if(size.flags & PAspect) {
-        this->mina_ = (float)size.min_aspect.y / size.min_aspect.x;
-        this->maxa_ = (float)size.max_aspect.x / size.max_aspect.y;
-    } else {
-        this->maxa_ = this->mina_ = 0.0;
+        hints.minAspect.set(size.min_aspect.x, size.min_aspect.y);
+        hints.maxAspect.set(size.max_aspect.x, size.max_aspect.y);
     }
     //this->isfixed = (this->maxw && this->minw && this->maxh && this->minh
     //             && this->maxw == this->minw && this->maxh == this->minh);
+    bool changes = sizeHints == hints;
+    sizeHints = hints;
+    return changes;
 }
 
 ResizeAction Client::possibleResizeActions()
