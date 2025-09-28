@@ -18,6 +18,8 @@ Current git version
     window surroundings when there is only one window and one frame in a tag,
     'one_window' and 'off' mirror the old behaviour with regards to 'true' and
     'false'.
+  * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
+    clients geometry.
 
 Release 0.9.5 on 2022-07-30
 ---------------------------

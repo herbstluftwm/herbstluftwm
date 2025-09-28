@@ -330,6 +330,7 @@ def test_sizehint_change_applied(hlwm, x11, floating):
     handle, winid = x11.create_client()
     old_geometry = Rectangle(x=30, y=40, width=111, height=121)
     hlwm.attr.clients[winid].floating_geometry = old_geometry
+    hlwm.attr.clients[winid].sizehints_floating = True
     if floating:
         assert hlwm.attr.clients[winid].content_geometry().size() == old_geometry.size()
 
