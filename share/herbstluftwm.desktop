@@ -2,5 +2,5 @@
 Encoding=UTF-8
 Name=herbstluftwm
 Comment=Manual tiling window manager
-Exec=herbstluftwm --locked
+Exec=herbstluftwm --version
 Type=Application
