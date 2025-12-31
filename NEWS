@@ -18,6 +18,9 @@ Current git version
     window surroundings when there is only one window and one frame in a tag,
     'one_window' and 'off' mirror the old behaviour with regards to 'true' and
     'false'.
+  * New support for extra mouse buttons (up to 9). These values are hard-coded,
+    but upstream X.h also uses hardcoded values, so potential for breakage
+    should be minimal.
   * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
     clients geometry.
 
