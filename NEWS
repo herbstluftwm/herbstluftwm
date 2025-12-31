@@ -12,6 +12,14 @@ Current git version
   * CSS-inspired theme engine (new attributes 'theme.name',
     'theme.style_override')
   * New client attribute 'sticky' (does not react yet to EWMH requests)
+  * The setting 'smart_window_surroundings' has been changed to accept the
+    following new values: 'off', 'one_window' (equivalently 'on'), and
+    'one_window_and_frame'. Setting it to 'one_window_and_frame' will only hide
+    window surroundings when there is only one window and one frame in a tag,
+    'one_window' and 'off' mirror the old behaviour with regards to 'true' and
+    'false'.
+  * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
+    clients geometry.
 
 Release 0.9.5 on 2022-07-30
 ---------------------------

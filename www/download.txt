@@ -5,7 +5,7 @@ following platforms:
 
   * Arch Linux via the package in the community repository or the git-version
     in the
-    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm-git[Arch
+    link:https://aur.archlinux.org/packages/herbstluftwm-git[Arch
     User Repository]
   * link:http://packages.debian.org/search?keywords=herbstluftwm[Debian]
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]

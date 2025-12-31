@@ -5,7 +5,6 @@
 
 #include "boxstyle.h"
 #include "fontdata.h"
-#include "globals.h"
 #include "utils.h"
 
 using std::function;
