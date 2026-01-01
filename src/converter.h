@@ -48,6 +48,11 @@ struct Converter {
     }
 };
 
+template<typename T>
+inline std::string ConvertToStr(const T& payload) {
+    return Converter<T>::str(payload);
+}
+
 #define ConverterInstance(T) \
     template<> T Converter<T>::parse(const std::string& source); \
     template<> std::string Converter<T>::str(T payload); \

@@ -929,35 +929,36 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
             .expect_stderr('No neighbour')
 
 
+@pytest.mark.parametrize("value", ['on', 'one_window', 'one_window_and_frame'])
 @pytest.mark.parametrize("border_width", [0, 2])
 @pytest.mark.parametrize("minimal_border_width", [0, 7])
-def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width):
+def test_smart_window_surroundings(hlwm, border_width, minimal_border_width, value):
     hlwm.call('set_layout vertical')
-    hlwm.call('set frame_gap 0')
+    hlwm.attr.settings.frame_gap = 0
     mbw = minimal_border_width
-    hlwm.call(f'attr theme.minimal.border_width {mbw}')
-    hlwm.call(f'set window_border_width {border_width}')
-    hlwm.call('set frame_border_width 0')
-    hlwm.call('set frame_padding 0')
-    hlwm.call('set smart_window_surroundings on')
+    hlwm.attr.theme.minimal.border_width = mbw
+    hlwm.attr.settings.window_border_width = border_width
+    hlwm.attr.settings.frame_border_width = 0
+    hlwm.attr.settings.frame_padding = 0
+    hlwm.attr.settings.smart_window_surroundings = value
     window_gap = 10
-    hlwm.call(f'set window_gap {window_gap}')
+    hlwm.attr.settings.window_gap = window_gap
     mon_rect_str = hlwm.call('monitor_rect').stdout
     mon_width, mon_height = [int(v) for v in mon_rect_str.split(' ')[2:4]]
     # works only if mon_height is even...
 
     # with only one client and smart_window_surroundings, no window gap is
     # applied and the minimal decoration scheme is used
-    win1, _ = x11.create_client()
-    geo1 = win1.get_geometry()
+    win1, _ = hlwm.create_client()
+    geo1 = hlwm.attr.clients[win1].content_geometry()
     assert (geo1.x, geo1.y) == (mbw, mbw)
     assert (geo1.width + 2 * mbw, geo1.height + 2 * mbw) \
         == (mon_width, mon_height)
 
     # but window_gap with the second one
-    win2, _ = x11.create_client()
-    geo1 = win1.get_geometry()
-    geo2 = win2.get_geometry()
+    win2, _ = hlwm.create_client()
+    geo1 = hlwm.attr.clients[win1].content_geometry()
+    geo2 = hlwm.attr.clients[win2].content_geometry()
     # in vertical layout they have the same size
     assert (geo1.width, geo1.height) == (geo2.width, geo2.height)
     # we have twice the window gap (left and right) and twice the border_width
@@ -967,6 +968,29 @@ def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width
     # every client)
     assert geo1.height + geo2.height + 3 * window_gap + 4 * border_width \
         == mon_height
+
+
+def test_smart_window_surroundings_geometry_attributes(hlwm):
+    hlwm.attr.settings.window_border_width = 5
+    w1, _ = hlwm.create_client()
+    w2, _ = hlwm.create_client()
+    for value in ['one_window', 'one_window_and_frame']:
+        # a layout and a boolean value indicating whether
+        # w1 is supposed to have minimal decoration
+        layout2minimal = [
+            (f'(split horizontal:0.5:1 (clients horizontal:0 {w1} {w2}) (clients max:0))', False),
+            (f'(split horizontal:0.5:1 (clients max:0 {w1} {w2}) (clients max:0))', value == 'one_window'),
+            (f'(split horizontal:0.5:1 (clients max:0 {w1}) (clients max:0 {w2}))', value == 'one_window'),
+            (f'(clients max:0 {w1} {w2})', True),
+            (f'(clients horizontal:0 {w1} {w2})', False),
+        ]
+        for layout, min1 in layout2minimal:
+            # re-set the value in every loop to have a more readable debug log:
+            hlwm.attr.settings.smart_window_surroundings = value
+            hlwm.call(['load', layout])
+            assert min1 == \
+                (hlwm.attr.clients[w1].decoration_geometry()
+                    == hlwm.attr.clients[w1].content_geometry())
 
 
 def test_smart_window_surroundings_urgent(hlwm, x11):
@@ -992,6 +1016,14 @@ def test_smart_window_surroundings_urgent(hlwm, x11):
     # The minimal theme should still apply!
     geo1 = win1.get_geometry()
     assert (geo1.x, geo1.y) == (0, 0)
+
+
+def test_smart_window_surroundings_completion(hlwm, x11):
+    res = hlwm.complete(['set', 'smart_window_surroundings'])
+    assert 'on' in res
+    assert 'off' in res
+    assert 'one_window' in res
+    assert 'one_window_and_frame' in res
 
 
 @pytest.mark.parametrize('running_clients_num,start_idx_range', [

@@ -5,7 +5,7 @@ following platforms:
 
   * Arch Linux via the package in the community repository or the git-version
     in the
-    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm-git[Arch
+    link:https://aur.archlinux.org/packages/herbstluftwm-git[Arch
     User Repository]
   * link:http://packages.debian.org/search?keywords=herbstluftwm[Debian]
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
@@ -54,6 +54,7 @@ the most current released tarball:
 | 0.9.2   | 2021-02-17 | 52c55b5671351...               | link:tarballs/herbstluftwm-0.9.2.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.9.2.tar.gz.sig[sig]
 | 0.9.3   | 2021-05-15 | 1fe15cbf5abca...               | link:tarballs/herbstluftwm-0.9.3.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.9.3.tar.gz.sig[sig]
 | 0.9.4   | 2022-03-16 | 41f5a543d1401...               | link:tarballs/herbstluftwm-0.9.4.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.9.4.tar.gz.sig[sig]
+| 0.9.5   | 2022-07-30 | d62c066ea25dc...               | link:tarballs/herbstluftwm-0.9.5.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.9.5.tar.gz.sig[sig]
 // do not remove this: next version line will be added here
 |====================================================================================================================
 

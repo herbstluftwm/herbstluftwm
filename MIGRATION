@@ -5,9 +5,24 @@ This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 See the link:NEWS[] file for a list of all changes and new features.
 
-0.9.4 to current git version
+0.9.5 to current git version
 ----------------------------
-The command 'smart_frame_surroundings' is no longer a boolean, and as such it is
+The geometry based detection of panels now is only active if the setting
+'panels.geometry_fallback' is activated. In order to restore the old behaviour,
+put
+
+    hc set_attr panels.geometry_fallback on
+
+in your autostart.
+
+The setting 'smart_window_surroundings' is no longer a boolean, and as such it is
+now incompatible with the 'toggle' command. Use 'cycle_values' instead:
+
+    hc cycle_value settings.smart_window_surroundings off one_window_and_frame one_window
+
+0.9.4 to 0.9.5
+--------------
+The setting 'smart_frame_surroundings' is no longer a boolean, and as such it is
 now incompatible with the 'toggle' command. Use 'cycle_values' instead:
 
     hc cycle_value settings.smart_frame_surroundings off hide_gaps hide_all

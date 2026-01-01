@@ -1,14 +1,12 @@
 import re
-import os
 import pytest
 import subprocess
 from conftest import BINDIR, PROCESS_SHUTDOWN_TIME, HlwmBridge
 import conftest
-import os.path
 from Xlib import X, Xatom
 
 
-HLWM_PATH = os.path.join(BINDIR, 'herbstluftwm')
+HLWM_PATH = BINDIR / 'herbstluftwm'
 
 
 def test_reload(hlwm_process, hlwm):
@@ -34,7 +32,7 @@ def test_wmexec_to_self(hlwm, hlwm_process, with_client, explicit_arg):
     p = hlwm.unchecked_call(['wmexec'] + args,
                             read_hlwm_output=False)
     assert p.returncode == 0
-    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+    hlwm_process.read_and_echo_output_until_stdout('hlwm started')
 
     assert hlwm.attr.settings.snap_gap() != 13
     if with_client:
@@ -56,21 +54,21 @@ def test_wmexec_failure(hlwm, hlwm_process, args, errormsg):
     assert p.returncode == 0
     # but the actual exec fails:
     expected_error = f'execvp "{args[0]}" failed: {errormsg}'
-    hlwm_process.read_and_echo_output(until_stderr=expected_error)
+    hlwm_process.read_and_echo_output_until_stderr(expected_error)
     # and so hlwm does the exec to itself:
-    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+    hlwm_process.read_and_echo_output_until_stdout('hlwm started')
 
     assert hlwm.attr.settings.snap_gap() != 13
 
 
 @pytest.mark.parametrize("with_client", [True, False])
-def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
+def test_wmexec_to_other(hlwm_process, xvfb, tmp_path, with_client):
     hlwm = HlwmBridge(xvfb.display, hlwm_process)
     if with_client:
         hlwm.create_client()
 
-    file_path = tmpdir / 'witness.txt'
-    assert not os.path.isfile(file_path)
+    file_path = tmp_path / 'witness.txt'
+    assert not file_path.is_file()
     p = hlwm.unchecked_call(['wmexec', 'touch', file_path],
                             read_hlwm_output=False)
     assert p.returncode == 0
@@ -78,7 +76,7 @@ def test_wmexec_to_other(hlwm_process, xvfb, tmpdir, with_client):
     # the hlwm process execs to 'touch' which then terminates on its own.
     hlwm_process.proc.wait()
 
-    os.path.isfile(file_path)
+    assert file_path.is_file()
 
 
 def test_herbstluftwm_already_running(hlwm):
@@ -118,7 +116,7 @@ def test_herbstluftwm_replace(hlwm_spawner, xvfb):
 
 
 def test_herbstluftwm_help_flags():
-    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    hlwm = BINDIR / 'herbstluftwm'
     for cmd in [[hlwm, '-h'], [hlwm, '--help']]:
         proc = subprocess.run(cmd,
                               stdout=subprocess.PIPE,
@@ -131,7 +129,7 @@ def test_herbstluftwm_help_flags():
 
 
 def test_herbstluftwm_unrecognized_option():
-    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    hlwm = BINDIR / 'herbstluftwm'
     proc = subprocess.run([hlwm, '--foobar'],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE,
@@ -143,7 +141,7 @@ def test_herbstluftwm_unrecognized_option():
 
 
 def test_herbstluftwm_version_flags():
-    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    hlwm = BINDIR / 'herbstluftwm'
     for cmd in [[hlwm, '-v'], [hlwm, '--version']]:
         proc = subprocess.run(cmd,
                               stdout=subprocess.PIPE,

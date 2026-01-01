@@ -2,7 +2,11 @@
 
 #include "completion.h"
 
+using std::function;
+using std::pair;
+using std::make_shared;
 using std::vector;
+using std::shared_ptr;
 using std::string;
 
 template<>
@@ -15,21 +19,51 @@ Finite<TitleWhen>::ValueList Finite<TitleWhen>::values = ValueListPlain {
 
 
 Theme::Theme()
-    : fullscreen(*this, "fullscreen")
+    : name(this, "name", {})
+    , style_override(this, "style_override", {})
+    , fullscreen(*this, "fullscreen")
     , tiling(*this, "tiling")
     , floating(*this, "floating")
     , minimal(*this, "minimal")
     // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
+    name.setWritable();
+    name.changed().connect([this]() {
+        this->theme_changed_.emit();
+    });
+
+    style_override.setWritable();
+    style_override.changed().connect([this]() {
+        this->theme_changed_.emit();
+    });
+
     for (auto dec : decTriples) {
-        dec->triple_changed_.connect([this](){ this->theme_changed_.emit(); });
+        dec->triple_changed_.connect([this]() {
+            this->theme_changed_.emit();
+        });
     }
 
     // forward attribute changes: only to tiling and floating
     active.makeProxyFor({&tiling.active, &floating.active});
     normal.makeProxyFor({&tiling.normal, &floating.normal});
     urgent.makeProxyFor({&tiling.urgent, &floating.urgent});
+
+    // deactivate window titles for minimal and fullscreen decorations per default:
+    vector<DecorationScheme*> schemesWithoutTitle = {
+        &minimal,
+        &minimal.active,
+        &minimal.normal,
+        &minimal.urgent,
+        &fullscreen,
+        &fullscreen.active,
+        &fullscreen.normal,
+        &fullscreen.urgent,
+    };
+    for (DecorationScheme* s : schemesWithoutTitle) {
+        s->title_when.setInitialAndDefaultValue(TitleWhen::never);
+    }
+
 
     setDoc(
           "    inner_color/inner_width\n"
@@ -62,6 +96,390 @@ Theme::Theme()
     minimal.setChildDoc("configures clients with minimal decorations "
                         "triggered by +smart_window_surroundings+");
     fullscreen.setChildDoc("configures clients in fullscreen state");
+
+    name.setDoc("the absolute path to a css theme file. if this is empty, "
+                "then the theme is specified by the attributes.");
+    style_override.setDoc(
+                "additional css source to overwrite parts of the theme. "
+                "All rules here have higher precedence than all rules "
+                "in the theme");
+    generateBuiltinCss();
+}
+
+shared_ptr<BoxStyle> Theme::computeBoxStyle(DomTree* element)
+{
+    if (!element) {
+        return nullptr;
+    }
+    shared_ptr<BoxStyle> style = make_shared<BoxStyle>();
+    if (element->parent()) {
+        style->inheritFromParent(element->parent()->cachedStyle());
+    }
+    if (name()) {
+        name()->content_.computeStyle(element, style);
+    } else {
+        generatedStyle.computeStyle(element, style);
+    }
+    style_override->computeStyle(element, style);
+    return style;
+}
+
+void Theme::generateBuiltinCss()
+{
+    vector<pair<ThemeType, CssName>> triples = {
+        { ThemeType::Tiling, CssName::Builtin::tiling },
+        { ThemeType::Floating, CssName::Builtin::floating },
+        { ThemeType::Minimal, CssName::Builtin::minimal },
+        { ThemeType::Fullscreen, CssName::Builtin::fullscreen },
+    };
+    vector<shared_ptr<CssRuleSet>> blocks;
+    for (const auto& triple2cssname : triples) {
+        const DecTriple& decTriple = (*this)[triple2cssname.first];
+        CssName tripleCssName = triple2cssname.second;
+        vector<pair<const DecorationScheme&, CssName>> tripleEntries = {
+            { decTriple.normal, CssName::Builtin::normal },
+            { decTriple.active, CssName::Builtin::focus },
+            { decTriple.urgent, CssName::Builtin::urgent },
+        };
+        for (const auto& scheme2cssname : tripleEntries) {
+            const DecorationScheme& scheme = scheme2cssname.first;
+            CssName schemeCssName = scheme2cssname.second;
+
+            // the decoration
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.backgroundColor = scheme.border_color();
+                     auto bw = scheme.border_width() - scheme.outer_width() - scheme.inner_width();
+                     style.paddingTop = bw + scheme.padding_top();
+                     style.paddingRight = bw + scheme.padding_right();
+                     style.paddingBottom = bw + scheme.padding_bottom();
+                     style.paddingLeft = bw + scheme.padding_left();
+
+                     style.borderWidthTop =
+                         style.borderWidthRight =
+                         style.borderWidthBottom =
+                         style.borderWidthLeft =
+                         scheme.outer_width();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorBottom =
+                         style.borderColorLeft =
+                         scheme.outer_color();
+                }},
+            }}));
+
+            // the client content
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::client_content,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.backgroundColor = scheme.background_color();
+                     style.borderWidthTop =
+                         style.borderWidthRight =
+                         style.borderWidthBottom =
+                         style.borderWidthLeft =
+                         scheme.inner_width();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorBottom =
+                         style.borderColorLeft =
+                         scheme.inner_color();
+                }},
+            }}));
+
+            // tab bar
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tabs,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     // negative top margin to move tab
+                     // close to upper edge of decorations
+                     auto bw = scheme.border_width() - scheme.inner_width();
+                     style.marginTop = - bw - scheme.padding_top();
+                     style.marginLeft = - bw - scheme.padding_left();
+                     style.marginRight = - bw - scheme.padding_right();
+                     style.marginBottom = bw;
+                     style.borderWidthBottom = scheme.outer_width();
+                     style.borderColorBottom = scheme.outer_color();
+                }},
+            }}));
+
+            // tab default style
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.backgroundColor =
+                        scheme.tab_color().rightOr(decTriple.normal.border_color());
+
+                     style.borderWidthTop =
+                         scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.paddingTop =
+                        // allow overlap with border color:
+                        -1 * style.borderWidthTop
+                        // but apply custom the padding
+                        + scheme.padding_top();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             scheme.tab_outer_color().rightOr(decTriple.normal.outer_color());
+
+                     style.borderWidthTop =
+                             scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width();
+                     style.paddingRight = scheme.padding_right() + scheme.border_width();
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     style.fontColor =
+                        scheme.tab_title_color().rightOr(decTriple.normal.title_color());
+
+                     style.font = decTriple.normal.title_font();
+                     style.textAlign = scheme.title_align();
+                     style.textHeight = scheme.title_height().cases<__typeof__(style.textHeight)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const int& len) {
+                             return CssLen(len);
+                         });
+
+                     style.textDepth = scheme.title_depth().cases<__typeof__(style.textDepth)>(
+                         [](const Inherit&) {
+                             return Unit<BoxStyle::auto_>();
+                         },
+                         [](const unsigned long& len) {
+                             return CssLen(static_cast<int>(len));
+                         });
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::pseudo_class, CssName::Builtin::first_child,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     auto bw = scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.borderWidthLeft = bw;
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width() - bw;
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::pseudo_class, CssName::Builtin::last_child,
+                },
+            },
+            {
+                {[&scheme,&decTriple](BoxStyle& style) {
+                     auto bw = scheme.tab_outer_width().rightOr(decTriple.normal.outer_width());
+                     style.borderWidthRight = bw;
+                     style.paddingRight = scheme.padding_right() + scheme.border_width() - bw;
+                }},
+            }}));
+
+            // the selected tab
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::focus,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.backgroundColor = scheme.border_color();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             scheme.outer_color();
+                     style.borderWidthTop =
+                         style.borderWidthLeft =
+                         style.borderWidthRight =
+                         scheme.outer_width();
+                     style.paddingTop =
+                        // allow overlap with border color:
+                        -1 * style.borderWidthTop
+                        // but apply custom the padding
+                        + scheme.padding_top();
+
+                     style.borderWidthBottom = 0;
+                     style.paddingLeft = scheme.padding_left() + scheme.border_width() - scheme.outer_width();
+                     style.paddingRight = scheme.padding_right() + scheme.border_width() - scheme.outer_width();
+                     style.paddingBottom = scheme.outer_width();
+                     style.marginBottom = -scheme.outer_width();
+                }},
+            }}));
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::focus,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&scheme](BoxStyle& style) {
+                     style.font = scheme.title_font();
+                     style.fontColor = scheme.title_color();
+                     style.textAlign = scheme.title_align();
+                }},
+            }}));
+            // the urgent tab
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::urgent,
+                },
+            },
+            {
+                {[&decTriple](BoxStyle& style) {
+                     style.backgroundColor = decTriple.urgent.border_color();
+                     style.borderColorTop =
+                         style.borderColorRight =
+                         style.borderColorLeft =
+                             decTriple.urgent.outer_color();
+                }},
+            }}));
+            // the urgent tab title
+            blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+            {
+                { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                  CssName::Builtin::has_class, tripleCssName,
+                  CssName::Builtin::has_class, schemeCssName,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::tab,
+                  CssName::Builtin::has_class, CssName::Builtin::urgent,
+                  CssName::Builtin::descendant,
+                  CssName::Builtin::has_class, CssName::Builtin::title,
+                },
+            },
+            {
+                {[&decTriple](BoxStyle& style) {
+                     style.fontColor = decTriple.urgent.title_color();
+                }},
+            }}));
+            // Implement 'title_when' for
+            vector<pair<CssName::Builtin, TitleWhen>> css2titlewhen = {
+                // for each css class, what is the minimum value of 'title_when'
+                // such that the tab bar is shown:
+                { CssName::Builtin::no_tabs, TitleWhen::always },
+                { CssName::Builtin::one_tab, TitleWhen::one_tab },
+                { CssName::Builtin::multiple_tabs, TitleWhen::multiple_tabs },
+            };
+            for (const auto& it : css2titlewhen) {
+                CssName::Builtin cssClass = it.first;
+                TitleWhen minimumValue = it.second;
+                blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+                {
+                    { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+                      CssName::Builtin::has_class, tripleCssName,
+                      CssName::Builtin::has_class, schemeCssName,
+                      CssName::Builtin::has_class, cssClass,
+                      CssName::Builtin::descendant,
+                      CssName::Builtin::has_class, CssName::Builtin::panel,
+                    },
+                },
+                {
+                    {[&scheme,minimumValue,tripleCssName,schemeCssName](BoxStyle& style) {
+                         if (scheme.title_when() >= minimumValue) {
+                             style.display = CssDisplay::flex;
+                         } else {
+                             style.display = CssDisplay::none;
+                         }
+                    }},
+                }}));
+            }
+        }
+    }
+    // Hide tab bar for 'fullscreen' and 'minimal' per default
+    blocks.push_back(make_shared<CssRuleSet>(CssRuleSet {
+    {
+        { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+          CssName::Builtin::has_class, CssName::Builtin::minimal,
+          CssName::Builtin::descendant,
+          CssName::Builtin::has_class, CssName::Builtin::panel,
+        },
+        { CssName::Builtin::has_class, CssName::Builtin::client_decoration,
+          CssName::Builtin::has_class, CssName::Builtin::fullscreen,
+          CssName::Builtin::descendant,
+          CssName::Builtin::has_class, CssName::Builtin::panel,
+        },
+    },
+    {
+        {[](BoxStyle& style) {
+             style.display = CssDisplay::none;
+        }},
+    }}));
+
+    generatedStyle.content_.resize(blocks.size());
+    size_t idx = 0;
+    for (const auto& ptr : blocks) {
+        generatedStyle.content_[idx++] = *ptr;
+    }
+    generatedStyle.recomputeSortedSelectors();
 }
 
 DecorationScheme::DecorationScheme()
@@ -112,7 +530,10 @@ DecorationScheme::DecorationScheme()
                             "the window decoration or only the window "
                             "contents of tiled clients (requires enabled "
                             "sizehints_tiling)");
-    title_depth.setDoc("the space below the baseline of the window title");
+    title_height.setDoc("the space above the baseline of the window title, "
+                       "or \'\' for an automatic calculation based on the font.");
+    title_depth.setDoc("the space below the baseline of the window title, "
+                       "or \'\' for an automatic calculation based on the font.");
     title_when.setDoc("when to show the window title: always, never, "
                       "if the the client is in a tabbed scenario like a max frame (+one_tab+), "
                       "if there are +multiple_tabs+ to be shown.");
@@ -126,13 +547,6 @@ DecorationScheme::DecorationScheme()
     tab_outer_width.setDoc("if non-empty, the outer border width of non-urgent and unfocused tabs");
     tab_title_color.setDoc("if non-empty, the title color of non-urgent and unfocused tabs");
     reset.setDoc("writing this resets all attributes to a default value");
-}
-
-Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect, size_t tabCount) const {
-    return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left,
-                      -*padding_top - (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
-                      -*padding_right, -*padding_bottom);
 }
 
 /**
@@ -153,14 +567,6 @@ bool DecorationScheme::showTitle(size_t tabCount) const
     }
     return true; // Dead code. But otherwise, gcc complains
 }
-
-Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect, size_t tabCount) const {
-    return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left,
-                      *padding_top + (showTitle(tabCount) ? (*title_height + *title_depth) : 0),
-                      *padding_right, *padding_bottom);
-}
-
 
 DecTriple::DecTriple()
    : normal(*this, "normal")

@@ -1,13 +1,12 @@
 import json
 import pytest
 import conftest
-import os
 import re
 
 
 @pytest.fixture()
 def json_doc():
-    json_filepath = os.path.join(conftest.BINDIR, 'doc/hlwm-doc.json')
+    json_filepath = conftest.BINDIR / "doc" / "hlwm-doc.json"
     with open(json_filepath, 'r') as fh:
         doc = json.loads(fh.read())
     return doc
@@ -111,6 +110,7 @@ def types_and_shorthands():
         'string': 's',
         'regex': 'r',
         'SmartFrameSurroundings': 'n',
+        'SmartWindowSurroundings': 'n',
         'ShowFrameDecorations': 'n',
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
@@ -121,6 +121,9 @@ def types_and_shorthands():
         'WindowID': 'w',
         'MaybeColor': 's',
         'MaybeULong': 's',
+        'MaybeInt': 's',
+        'CssSource': 's',
+        'CssFile::Ptr': 's',
     }
 
 

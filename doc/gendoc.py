@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import sys
 import re
 import ast
 import json
+import pathlib
 
 
 def findfiles(sourcedir, regex_object):
     """find all files in the given 'sourcedir' whose
     filename matches 'regex_object'
     """
-    for root, _, files in os.walk(sourcedir):
-        for file in sorted(files):
-            if regex_object.match(file):
-                yield os.path.join(root, file)
+    for path in sorted(sourcedir.iterdir()):
+        if regex_object.match(str(path)):
+            yield path
 
 
 class TokenRe:
@@ -40,8 +39,8 @@ def extract_file_tokens(filepath):
         r'/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         TokenRe.identifier_re,  # identifiers
         r'[0-9][0-9\.a-z]*',  # numbers
-        '\'(?:\\\'|[^\']*)\'',
-        "\"(?:\\\"|[^\"]*)\"",
+        r"'(?:\\.|[^\\\'])*'",
+        r'"(?:\\.|[^\\\"])*"',
         "[-+<>/*]",  # operators
         r'[\(\),;:{}\[\]\?&|~]',
         '[\t ][\t ]*',
@@ -803,7 +802,7 @@ class TokTreeInfoExtrator:
 def main():
     parser = argparse.ArgumentParser(description='extract hlwm doc from the source code')
     parser.add_argument('--sourcedir', default='./src/',
-                        help='directory containing the source files')
+                        help='directory containing the source files', type=pathlib.Path)
     parser.add_argument('--fileregex', default=r'.*\.(h|cpp)$',
                         help='consider files whose name matches this regex')
     parser.add_argument('--tokenize-single-file',

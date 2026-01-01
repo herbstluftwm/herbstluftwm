@@ -31,7 +31,12 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *--replace*::
         Replace existing window manager.
     *-l*, *--locked*::
-        Initially set the monitors_locked setting to 1
+        Initially set the monitors_locked setting to 1. WARNING: this keeps
+        herbstluftwm locked until the *unlock* command is invoked (usually by
+        the *autostart*). If *--locked* is activated but the autostart does not
+        invoke *unlock* (or if its invokation is unreachable because of a
+        blocking command before), then herbstluftwm stays locked, resulting in
+        frozen state. Only use with care!
     *--exit-on-xerror*::
         Make herbstluftwm exit whenever xlib reports an error. This may only
         be activated for automated testing and never for actual sessions.
@@ -260,11 +265,10 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
     '-' or '+', valid modifiers are listed in the description of 'keybind') and
     exactly one button name:
 
-        * +B1+ or +Button1+
-        * +B2+ or +Button2+
-        * +B3+ or +Button3+
-        * +B4+ or +Button4+
-        * +B5+ or +Button5+
+        * +B1+ or +Button1+ 
+        * +B2+ or +Button2+ 
+        * ...
+        * +B9+ or +Button9+ 
  ::
     'ACTION' must be one of the following actions:
 
@@ -534,13 +538,14 @@ shift_edge ['-i'|'-e'] 'DIRECTION'::
     'DIRECTION'. The 'DIRECTIONS' behave as specified at the 'focus' command and
     '-i' and '-e' behave as specified at the 'focus_edge' command.
 
-shift ['-i'|'-e'] 'DIRECTION'::
+shift ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     Shifts the focused window to the next frame in the specified 'DIRECTION'.
-    The 'DIRECTIONS' and '-i'|'-e' behave as specified at the 'focus' command.
-    If the focused client is floated instead of being tiled, then client is
-    shifted to the next window or screen edge. If the window cannot be moved
-    and the setting 'focus_crosses_monitor_boundaries' is activated, then the
-    window is moved to the monitor in the specified 'DIRECTION'.
+    The 'DIRECTIONS' and parameters '-i'|'-e'|*--level=*'LEVEL' behave as
+    specified at the 'focus' command. If the focused client is floated instead
+    of being tiled, then client is shifted to the next window or screen edge. If
+    the window cannot be moved and the setting
+    'focus_crosses_monitor_boundaries' is activated, then the window is moved to
+    the monitor in the specified 'DIRECTION'.
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
@@ -900,6 +905,9 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
       - +%s+ inserts an attribute value whose path is given by the string value
         of the next 'FORMATARG'
       - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%\{ATTR\}+ inserts the current value of the attribute 'ATTR'. The path
+        'ATTR' can itself contain format placeholders. This can be used to
+        compose attribute paths at run time, e.g. in a +foreach+ loop.
       - +%%+ stands for a plain +%+
 
  ::
@@ -923,6 +931,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +sprintf VALUE "%{%c.client_count}" tags.0 echo VALUE+ +
+          +
+          Prints the number of clients on the tag with index 0
+        * +foreach --filter-name="[0-9]*" T tags. sprintf S "%{%c.client_count}" T echo T S+ +
+          +
+          Prints the number of clients for each tag.
         * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
           +
           has the same output as +
@@ -1014,6 +1028,27 @@ unsetenv 'NAME'::
     herbstluftwm, you can run +herbstclient export FOO=BAR+ from within your
     herbstluftwm session for the same effect. The +export+ command is the same
     as the <<SETENV, setenv command>> with different syntax.
+
+debug_css ['FLAGS']::
+    This command exists solely for testing herbstluftwm; it has no use in normal
+    hlwm sessions. Moreover, the interface of this command may change in
+    incompatible ways. The command performs various
+    operations, specified by the optional 'FLAGS':
+
+      - *--stylesheet=CSS* specify some stylesheet that is possibly used in one of
+        the other commands.
+      - *--print-css* print the stylesheet in some normalized form
+      - *--tree=TREE* a dom-style tree specification, where the syntax of a tree
+        starts with *(* and ends with *)*. In between, the tree contains a
+        space-separated list of class names and subtrees.
+      - *--print-tree* print the tree specification of 'TREE' again.
+      - *--pretty-client-tree=CLIENT* for the given 'CLIENT', print the tree of
+        its widgets together with the classes, each widget has. Each class is
+        preceeded with a dot *.* in the same way as in a css selector.
+      - *--query-tree-indices=SELECTOR* print the tree indices (analogously to
+        frame indices) of those nodes that match the given css-style *SELECTOR*.
+      - *--compute-style=INDEX* compute the box style of the node in above
+        'TREE' that has the tree index 'INDEX'.
 
 
 [[RULES]]
@@ -1133,6 +1168,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 +pseudotile+::
     sets the pseudotile state of the client. 'VALUE' is a boolean.
 
++sticky+::
+    sets the sticky attribute of the client. 'VALUE' is a boolean.
+
 +ewmhrequests+::
     sets whether the window state (the fullscreen state and the demands
     attention flag) can be changed by the application via ewmh itself. This does
@@ -1218,7 +1256,7 @@ follows:
     window with hexadecimal X11 window id 'HEXID'.
   - +longest-minimized+ references the minimized window on the focused tag
     that has been minimized for the longest time.
-  - +latest-minimized+ references the minimized window on the focused tag
+  - +last-minimized+ references the minimized window on the focused tag
     that has been minimized most recently.
   - 'DECID' -- where 'DECID' is some decimal number -- references the window
     with the decimal X11 window id 'DECID'.
@@ -1413,6 +1451,15 @@ reload::
     Tells all daemons that the 'autostart' file is reloaded -- and tells them
     to quit. This hook *should* be emitted in the first line of every 'autostart'
     file.
+
+
+[[THEMES]]
+THEMES/STYLESHEETS
+------------------
+The look of client decorations can be controlled via the attributes under
+the +theme.+ object, or in a more granular way via stylesheets, inspired by CSS.
+
+More documentation on the theme format will come soon.
 
 [[STACKING]]
 STACKING

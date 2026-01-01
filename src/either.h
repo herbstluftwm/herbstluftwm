@@ -46,13 +46,64 @@ public:
             return onB(data_.b_);
         }
     }
+
+    void ifRight(std::function<void(const B&)> onB) const {
+        if (!isA_) {
+            return onB(data_.b_);
+        }
+    }
     Either(const A& a)
         : data_(a), isA_(true)
     {}
     Either(const B& b)
         : data_(b), isA_(false)
     {}
-    bool operator==(const Either<A,B>& other) {
+    Either(const Either<A,B>& other)
+    {
+        isA_ = other.isA_;
+        if (other.isA_) {
+            new (&data_.a_) A(other.data_.a_);
+        } else {
+            new (&data_.b_) B(other.data_.b_);
+        }
+    }
+    ~Either() {
+        if (isA_) {
+            data_.a_.~A();
+        } else {
+            data_.b_.~B();
+        }
+    }
+    bool isLeft() const {
+        return isA_;
+    }
+    bool isRight() const {
+        return !isA_;
+    }
+    void operator=(const Either<A,B>& other) {
+        if (isA_ == other.isA_) {
+            if (isA_) {
+                data_.a_ = other.data_.a_;
+            } else {
+                data_.b_ = other.data_.b_;
+            }
+        } else {
+            // destructor
+            if (isA_) {
+                data_.a_.~A();
+            } else {
+                data_.b_.~B();
+            }
+            // constructor
+            isA_ = other.isA_;
+            if (other.isA_) {
+                new (&data_.a_) A(other.data_.a_);
+            } else {
+                new (&data_.b_) B(other.data_.b_);
+            }
+        }
+    }
+    bool operator==(const Either<A,B>& other) const {
         if (isA_ && other.isA_) {
             return data_.a_ == other.data_.a_;
         }
@@ -61,7 +112,7 @@ public:
         }
         return false;
     }
-    bool operator!=(const Either<A,B>& other) {
+    bool operator!=(const Either<A,B>& other) const {
         return !(*this == other);
     }
 
@@ -77,8 +128,15 @@ public:
 private:
     Either() = delete;
     union UnionAB {
+    public:
+        UnionAB() {
+            // A/B constructors are called by ~Either;
+        }
         UnionAB(A a) : a_(a) {}
         UnionAB(B b) : b_(b) {}
+        ~UnionAB() {
+            // A/B destructors are called by ~Either;
+        }
         A a_;
         B b_;
     };

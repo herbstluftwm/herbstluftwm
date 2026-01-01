@@ -18,12 +18,20 @@ public:
     : count(this, "count", &IndexingObject<T>::sizeUnsignedLong)
     { }
     void addIndexed(T* newChild) {
+        addIndexed(newChild, data.size());
+    }
+
+    void addIndexed(T* newChild, size_t index) {
         // the current array size is the index for the new child
-        unsigned long index = data.size();
-        data.push_back(newChild);
-        // add a child object
+        data.insert(data.begin() + index, newChild);
+        // add a child object at the specified index
         addChild(newChild, std::to_string(index));
         newChild->setIndexAttribute(index);
+        // update the index of all the later elements
+        for (size_t i = index + 1; i < data.size(); i++) {
+            addChild(data[i], std::to_string(i));
+            data[i]->setIndexAttribute(i);
+        }
     }
     ~IndexingObject() override {
         clearChildren();

@@ -16,7 +16,9 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "commandio.h"
+#include "css.h"
 #include "ewmh.h"
+#include "font.h"
 #include "fontdata.h"
 #include "frametree.h"
 #include "globalcommands.h"
@@ -235,6 +237,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                        &Watchers::watchCompletion }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
+        {"debug_css",      { &debugCssCommand } },
     };
     return unique_ptr<CommandTable>(new CommandTable(init));
 }
@@ -452,6 +455,7 @@ int main(int argc, char* argv[]) {
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
+    HSFont::shutdown();
     FontData::s_xconnection = nullptr;
     delete ipcServer;
     delete ewmh;
