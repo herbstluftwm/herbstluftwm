@@ -533,7 +533,17 @@ void Decoration::updateFrameExtends() {
         right = br.x;
         bottom = br.y;
     }
-    client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
+    if (left != lastFrameExtentsLeft
+        || top != lastFrameExtentsTop
+        || right != lastFrameExtentsRight
+        || bottom != lastFrameExtentsBottom)
+    {
+        lastFrameExtentsTop = top;
+        lastFrameExtentsRight = right;
+        lastFrameExtentsBottom = bottom;
+        lastFrameExtentsLeft = left;
+        client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
+    }
 }
 
 XConnection& Decoration::xconnection()

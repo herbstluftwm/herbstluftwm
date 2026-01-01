@@ -131,7 +131,7 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
         window_cut_rect_holes(xcon, window, rect.width, rect.height, holes);
         window_transparent = true;
     } else if (window_transparent) {
-        window_make_intransparent(xcon, window, rect.width, rect.height);
+        window_make_intransparent(xcon, window);
         window_transparent = false;
     }
     if (isFocused) {
@@ -156,6 +156,9 @@ void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isF
         break;
     case ShowFrameDecorations::if_empty:
         show = !data.hasClients;
+        break;
+    case ShowFrameDecorations::if_multiple_empty:
+        show = !data.hasClients && !isRootFrame;
         break;
     case ShowFrameDecorations::focused:
         show = data.hasClients || isFocused;

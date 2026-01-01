@@ -98,9 +98,7 @@ herbstluftwm in your login manager or by starting it in your +~/.xinitrc+,
 mostly by writing to your xinitrc (or +.xsession+ on some systems):
 
 ----
-# start herbstluftwm in locked mode (it will be unlocked at the end of your
-# autostart)
-exec herbstluftwm --locked
+exec herbstluftwm
 ----
 
 After logging in the next time, you will get a default herbstluftwm session.

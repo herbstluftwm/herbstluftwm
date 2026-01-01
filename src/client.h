@@ -70,6 +70,7 @@ public:
     bool x11urgent_ = false;
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
+    Attribute_<bool> sticky_;
     Attribute_<bool> minimized_;
     Attribute_<bool> floating_effectively_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL

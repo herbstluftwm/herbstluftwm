@@ -1,6 +1,5 @@
 #include "rules.h"
 
-#include <algorithm>
 #include <cstdio>
 
 #include "client.h"
@@ -76,6 +75,7 @@ const std::map<string, function<Consequence::Applier(const string&)>> Consequenc
     { "floating_geometry", parseFloatingGeometry },
     { "pseudotile",     setOptionalMember(&ClientChanges::pseudotile) },
     { "fullscreen",     setOptionalMember(&ClientChanges::fullscreen) },
+    { "sticky",         setOptionalMember(&ClientChanges::sticky) },
     { "ewmhrequests",   setOptionalMember(&ClientChanges::ewmhRequests) },
     { "ewmhnotify",     setOptionalMember(&ClientChanges::ewmhNotify) },
     { "hook",           [] (const string&) { return &Consequence::applyHook; } },

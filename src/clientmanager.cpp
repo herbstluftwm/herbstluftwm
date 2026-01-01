@@ -351,6 +351,10 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
         client->pseudotile_ = changes.pseudotile.value();
     }
 
+    if (changes.sticky.has_value()) {
+        client->sticky_ = changes.sticky.value();
+    }
+
     if (changes.ewmhNotify.has_value()) {
         client->ewmhnotify_ = changes.ewmhNotify.value();
     }

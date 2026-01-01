@@ -13,6 +13,7 @@
 #include "frametree.h" // TODO: remove this dependency!
 #include "globals.h"
 #include "ipc-protocol.h"
+#include "layoutalgoimpl.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "settings.h"
@@ -51,8 +52,9 @@ Frame::~Frame() = default;
 FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
     : Frame(tag, settings, parent)
     , client_count_(this, "client_count", [this]() {return clientCount(); })
-    , selectionAttr_(this, "selection", &FrameLeaf::getSelection, &FrameLeaf::userSetsSelection)
+    , selectionAttr_(this, "selection", (int (FrameLeaf::*)()) (&FrameLeaf::getSelection), &FrameLeaf::userSetsSelection)
     , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout, &FrameLeaf::userSetsLayout)
+    , cachedAlgoImplementation_() // have it as a null pointer per default
 {
     layout = settings->default_frame_layout();
 
@@ -210,123 +212,6 @@ void Frame::relayout()
     tag_->needsRelayout_.emit();
 }
 
-TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
-    TilingResult res;
-    auto cur = rect;
-    int last_step_y;
-    int last_step_x;
-    int step_y;
-    int step_x;
-    int count = clients.size();
-    if (vertical) {
-        // only do steps in y direction
-        last_step_y = cur.height % count; // get the space on bottom
-        last_step_x = 0;
-        cur.height /= count;
-        step_y = cur.height;
-        step_x = 0;
-    } else {
-        // only do steps in x direction
-        last_step_y = 0;
-        last_step_x = cur.width % count; // get the space on the right
-        cur.width /= count;
-        step_y = 0;
-        step_x = cur.width;
-    }
-    int i = 0;
-    for (auto client : clients) {
-        // add the space, if count does not divide frameheight without remainder
-        cur.height += (i == count-1) ? last_step_y : 0;
-        cur.width += (i == count-1) ? last_step_x : 0;
-        res.add(client, TilingStep(cur));
-        cur.y += step_y;
-        cur.x += step_x;
-        i++;
-    }
-    return res;
-}
-
-TilingResult FrameLeaf::layoutMax(Rectangle rect) {
-    TilingResult res;
-    // go through all clients from top to bottom and remember
-    // whether they are still visible. The stacking order is such that
-    // the windows at the end of 'clients' are on top of the windows
-    // at the beginning of 'clients'. So start at the selection and go
-    // downwards in the stack, i.e. backwards in the 'clients' array
-    bool stillVisible = true;
-    for (size_t idx = 0; idx < clients.size(); idx++) {
-        Client* client = clients[(selection + clients.size() - idx) % clients.size()];
-        TilingStep step(rect);
-        step.visible = stillVisible;
-        // the next is only visible, if the current client is visible
-        // and if the current client is pseudotiled
-        stillVisible = stillVisible && client->pseudotile_();
-        if (client == clients[selection]) {
-            step.needsRaise = true;
-        }
-        if (settings_->tabbed_max()) {
-            step.tabs = clients;
-        }
-        res.add(client, step);
-    }
-    return res;
-}
-
-void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
-    unsigned cols = 0;
-    while (cols * cols < count) {
-        cols++;
-    }
-    *res_cols = cols;
-    if (*res_cols != 0) {
-        *res_rows = (count / cols) + (count % cols ? 1 : 0);
-    } else {
-        *res_rows = 0;
-    }
-}
-
-TilingResult FrameLeaf::layoutGrid(Rectangle rect) {
-    TilingResult res;
-    if (clients.empty()) {
-        return res;
-    }
-
-    int rows, cols;
-    frame_layout_grid_get_size(clients.size(), &rows, &cols);
-    int width = rect.width / cols;
-    int height = rect.height / rows;
-    int i = 0;
-    auto cur = rect; // current rectangle
-    for (int r = 0; r < rows; r++) {
-        // reset to left
-        cur.x = rect.x;
-        cur.width = width;
-        cur.height = height;
-        if (r == rows -1) {
-            // fill small pixel gap below last row
-            cur.height += rect.height % rows;
-        }
-        int count = clients.size();
-        for (int c = 0; c < cols && i < count; c++) {
-            if (settings_->gapless_grid() && (i == count - 1) // if last client
-                && (count % cols != 0)) {           // if cols remain
-                // fill remaining cols with client
-                cur.width = rect.x + rect.width - cur.x;
-            } else if (c == cols - 1) {
-                // fill small pixel gap in last col
-                cur.width += rect.width % cols;
-            }
-
-            // apply size
-            res.add(clients[i], TilingStep(cur));
-            cur.x += width;
-            i++;
-        }
-        cur.y += height;
-    }
-    return res;
-}
-
 TilingResult FrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
     if (settings_->smart_frame_surroundings() == SmartFrameSurroundings::off
@@ -364,9 +249,11 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
     bool smart_window_surroundings_active =
             // only omit the border
             // if 1. the settings is activated
-            settings_->smart_window_surroundings()
+            settings_->smart_window_surroundings() != SmartWindowSurroundings::off
             // and 2. only one window is shown
-            && (clientCount() == 1 || layout == LayoutAlgorithm::max);
+            && (layout == LayoutAlgorithm::max || clientCount() == 1)
+            // and 3. the present frame is the only one frame and hence the root (if applicable)
+            && (settings_->smart_window_surroundings() != SmartWindowSurroundings::one_window_and_frame || parent_.expired());
 
     auto window_gap = settings_->window_gap();
     if (!smart_window_surroundings_active) {
@@ -387,21 +274,7 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
         rect.width  -= frame_padding * 2;
         rect.height -= frame_padding * 2;
     }
-    TilingResult layoutResult;
-    switch (layout) {
-        case LayoutAlgorithm::max:
-            layoutResult = layoutMax(rect);
-            break;
-        case LayoutAlgorithm::grid:
-            layoutResult = layoutGrid(rect);
-            break;
-        case LayoutAlgorithm::vertical:
-            layoutResult = layoutVertical(rect);
-            break;
-        case LayoutAlgorithm::horizontal:
-            layoutResult = layoutHorizontal(rect);
-            break;
-    }
+    TilingResult layoutResult = algoImplementation()->compute(rect);
     if (smart_window_surroundings_active) {
         for (auto& it : layoutResult.data) {
             it.second.minimalDecoration = true;
@@ -679,88 +552,20 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction, DirectionLevel depth,
     if (startIndex < 0) {
         startIndex = selection;
     }
-    int index = -1;
-    int count = clientCount();
-    switch (getLayout()) {
-        case LayoutAlgorithm::vertical:
-            if (direction == Direction::Down) {
-                index = startIndex + 1;
-            }
-            if (direction == Direction::Up) {
-                index = startIndex - 1;
-            }
-            break;
-        case LayoutAlgorithm::horizontal:
-            if (direction == Direction::Right) {
-                index = startIndex + 1;
-            }
-            if (direction == Direction::Left) {
-                index = startIndex - 1;
-            }
-            break;
-        case LayoutAlgorithm::max:
-            if (settings_->tabbed_max()) {
-                if (depth >= DirectionLevel::Tabs) {
-                    if (direction == Direction::Right) {
-                        index = startIndex + 1;
-                    }
-                    if (direction == Direction::Left) {
-                        index = startIndex - 1;
-                    }
-                }
-            } else {
-                // ordinary max layout without tabs:
-                if (depth == DirectionLevel::All) {
-                    switch (direction) {
-                        case Direction::Right:
-                        case Direction::Down:
-                            index = startIndex + 1;
-                            break;
-                        case Direction::Left:
-                        case Direction::Up:
-                            index = startIndex - 1;
-                            break;
-                    }
-                }
-            }
-            break;
-        case LayoutAlgorithm::grid: {
-            int rows, cols;
-            frame_layout_grid_get_size(count, &rows, &cols);
-            if (cols == 0) {
-                break;
-            }
-            int r = startIndex / cols;
-            int c = startIndex % cols;
-            switch (direction) {
-                case Direction::Down:
-                    index = startIndex + cols;
-                    if (g_settings->gapless_grid() && index >= count && r == (rows - 2)) {
-                        // if grid is gapless and we're in the second-last row
-                        // then it means last client is below us
-                        index = count - 1;
-                    }
-                    break;
-                case Direction::Up: index = startIndex - cols; break;
-                case Direction::Right:
-                    if (c < cols - 1) {
-                        index = startIndex + 1;
-                    }
-                    break;
-                case Direction::Left:
-                    if (c > 0) {
-                        index = startIndex - 1;
-                    }
-                    break;
-            }
-            break;
-        }
-    }
+    int index = algoImplementation()->neighbour(direction, depth, startIndex);
     // check that index is valid
-    if (index < 0 || index >= count) {
+    if (index < 0 || index >= static_cast<int>(clients.size())) {
         index = -1;
     }
     return index;
+}
+
+LayoutAlgoImpl* FrameLeaf::algoImplementation()
+{
+    if (!cachedAlgoImplementation_ || cachedAlgoImplementation_->name() != layout) {
+        cachedAlgoImplementation_ = LayoutAlgoImpl::createInstance(*this, layout);
+    }
+    return cachedAlgoImplementation_.get();
 }
 
 string FrameLeaf::userSetsLayout(LayoutAlgorithm algo)

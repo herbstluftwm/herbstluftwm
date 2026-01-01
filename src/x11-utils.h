@@ -12,8 +12,7 @@ void window_cut_rect_holes(XConnection& X,
                            Window win, int width, int height,
                            const std::vector<Rectangle>& holes);
 // fill the hole again, i.e. remove all masks
-void window_make_intransparent(XConnection& X,
-                               Window win, int width, int height);
+void window_make_intransparent(XConnection& X, Window win);
 
 Point2D get_cursor_position();
 

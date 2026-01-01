@@ -669,3 +669,63 @@ def test_unmanaged_client_is_removed_from_tab_bars(hlwm, x11):
     # bar of tab_handle/tab_winid)
 
     assert tab_winid in hlwm.list_children('clients')
+
+
+def test_sticky_switch_tag(hlwm):
+    hlwm.call('add othertag')
+
+    client, _ = hlwm.create_client()
+    clientobj = hlwm.attr.clients[client]
+
+    assert clientobj.winid() == client
+
+    clientobj.sticky = True
+    assert clientobj.sticky() is True
+
+    hlwm.call('use othertag')
+    assert hlwm.attr.tags.focus.focused_client.winid() == client
+
+    hlwm.call('use default')
+    assert hlwm.attr.tags.focus.focused_client.winid() == client
+
+    hlwm.call('use othertag')
+    assert hlwm.attr.tags.focus.focused_client.winid() == client
+
+
+def test_sticky_swap_tags(hlwm):
+    tag1 = hlwm.attr.tags.focus.name()
+    tagobj1 = hlwm.attr.tags["by-name"][tag1]
+    monitor1 = hlwm.attr.monitors.focus.index()
+    client1, _ = hlwm.create_client()
+    clientobj1 = hlwm.attr.clients[client1]
+    clientobj1.sticky = True
+
+    tag2 = "tag2"
+    tagobj2 = hlwm.attr.tags["by-name"][tag2]
+    hlwm.call(f"add {tag2}")
+
+    monitor2 = "monitor2"
+    hlwm.call(f"add_monitor 800x600+40+40 {tag2} {monitor2}")
+    hlwm.call(f"focus_monitor {monitor2}")
+
+    client2, _ = hlwm.create_client()
+    clientobj2 = hlwm.attr.clients[client2]
+    clientobj2.sticky = True
+
+    hlwm.call(f"use {tag1}")
+    assert tagobj1.client_count() == 1
+    assert tagobj1.focused_client.winid() == client2
+    assert tagobj2.client_count() == 1
+    assert tagobj2.focused_client.winid() == client1
+
+    hlwm.call(f"use {tag2}")
+    assert tagobj2.focused_client.winid() == client2
+    assert tagobj1.focused_client.winid() == client1
+
+    hlwm.call(f"focus_monitor {monitor1}")
+    assert tagobj2.focused_client.winid() == client2
+    assert tagobj1.focused_client.winid() == client1
+    assert hlwm.attr.tags.focus.focused_client.winid() == client1
+
+    hlwm.call(f"focus_monitor {monitor2}")
+    assert hlwm.attr.tags.focus.focused_client.winid() == client2
