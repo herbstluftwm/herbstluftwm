@@ -157,6 +157,9 @@ void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isF
     case ShowFrameDecorations::if_empty:
         show = !data.hasClients;
         break;
+    case ShowFrameDecorations::if_multiple_empty:
+        show = !data.hasClients && !isRootFrame;
+        break;
     case ShowFrameDecorations::focused:
         show = data.hasClients || isFocused;
         break;

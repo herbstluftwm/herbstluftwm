@@ -48,6 +48,7 @@ Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values = V
     { ShowFrameDecorations::if_multiple, "if_multiple" },
     { ShowFrameDecorations::nonempty, "nonempty" },
     { ShowFrameDecorations::if_empty, "if_empty" },
+    { ShowFrameDecorations::if_multiple_empty, "if_multiple_empty" },
     { ShowFrameDecorations::none, "none" },
 };
 
@@ -295,6 +296,7 @@ Settings::Settings()
                 "- \'nonempty\' shows decorations of frames that have client windows, \n"
                 "- \'if_multiple\' shows decorations on the tags with at least two frames, \n"
                 "- \'if_empty\' shows decorations of frames that have no client windows, \n"
+                "- \'if_multiple_empty\' shows decorations of frames that have no client windows on tags with at least two frames, \n"
                 "- \'focused\' shows the decoration of focused and nonempty frames, \n"
                 "- \'focused_if_multiple\' shows decorations of focused and non-empty frames on tags with at least two frames.\n"
                 "- \'all\' shows all frame decorations."
