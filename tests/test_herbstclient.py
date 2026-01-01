@@ -1,6 +1,5 @@
 import itertools
 import subprocess
-import os
 import re
 import pytest
 import sys
