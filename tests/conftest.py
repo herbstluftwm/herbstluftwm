@@ -22,7 +22,7 @@ pytest.register_assert_rewrite("herbstluftwm")
 import herbstluftwm  # noqa: E402
 
 
-BINDIR = pathlib.Path.cwd()
+BINDIR = pathlib.Path(os.environ['PWD'])  # use workdir
 
 # List of environment variables copied during hlwm process creation:
 # * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
