@@ -265,11 +265,10 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
     '-' or '+', valid modifiers are listed in the description of 'keybind') and
     exactly one button name:
 
-        * +B1+ or +Button1+
-        * +B2+ or +Button2+
-        * +B3+ or +Button3+
-        * +B4+ or +Button4+
-        * +B5+ or +Button5+
+        * +B1+ or +Button1+ 
+        * +B2+ or +Button2+ 
+        * ...
+        * +B9+ or +Button9+ 
  ::
     'ACTION' must be one of the following actions:
 
