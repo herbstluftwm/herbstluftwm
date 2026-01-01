@@ -1165,6 +1165,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 +floating+::
     sets the floating state of the client. 'VALUE' is a boolean.
 
++decorated+::
+    sets whether the client obtains window decorations (see the *decorated*
+    attribute).
+
 +pseudotile+::
     sets the pseudotile state of the client. 'VALUE' is a boolean.
 
