@@ -100,10 +100,7 @@ valgrind-xephyr.sh from your existing X session:
 ==== Starting Herbstluftwm ====
 To start the window manager within a running X-session, execute:
 
-    herbstluftwm --locked
-
-`--locked` causes herbstluftwm not to update the screen until you unlock it
-with: `herbstclient unlock` (This is done automatically by the default autostart)
+    herbstluftwm
 
 ==== Quirks ====
 Mac OSX:
