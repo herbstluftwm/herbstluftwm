@@ -1,13 +1,12 @@
 import json
 import pytest
 import conftest
-import os
 import re
 
 
 @pytest.fixture()
 def json_doc():
-    json_filepath = os.path.join(conftest.BINDIR, 'doc/hlwm-doc.json')
+    json_filepath = conftest.BINDIR / "doc" / "hlwm-doc.json"
     with open(json_filepath, 'r') as fh:
         doc = json.loads(fh.read())
     return doc
