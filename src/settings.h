@@ -97,6 +97,7 @@ public:
     Attribute_<bool>          raise_on_click = {"raise_on_click", true};
     Attribute_<bool>          gapless_grid = {"gapless_grid", true};
     Attribute_<bool>          tabbed_max = {"tabbed_max", true};
+    Attribute_<bool>          max_tab_reorder = {"max_tab_reorder", false};
     Attribute_<bool>          hide_covered_windows = {"hide_covered_windows", false};
     Attribute_<SmartFrameSurroundings> smart_frame_surroundings = {"smart_frame_surroundings", SmartFrameSurroundings::off};
     Attribute_<SmartWindowSurroundings> smart_window_surroundings = {"smart_window_surroundings", SmartWindowSurroundings::off};
