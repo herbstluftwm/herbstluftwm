@@ -17,6 +17,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     strategy:
       fail-fast: false
@@ -29,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
