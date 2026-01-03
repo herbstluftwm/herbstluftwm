@@ -35,6 +35,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings, *cm.theme))
     , float_size_(this, "floating_geometry",  {0, 0, 100, 100})
+    , ewmhfullscreen_(this, "fullscreen_ewmh", false)
     , decorated_(this, "decorated", true)
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
@@ -75,6 +76,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     keysInactive_.setWritable();
     ewmhnotify_.setWritable();
     ewmhrequests_.setWritable();
+    ewmhfullscreen_.setWritable();
     fullscreen_.setWritable();
     sticky_.setWritable();
     pseudotile_.setWritable();
@@ -97,8 +99,16 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
             }
             });
     fullscreen_.changed().connect([this] {
-        updateEwmhState();
+        if (ewmhnotify_()) {
+            ewmhfullscreen_ = fullscreen_();
+        }
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
+    });
+    ewmhfullscreen_.changed().connect([this] {
+        if (ewmhnotify_()) {
+            fullscreen_ = ewmhfullscreen_();
+        }
+        updateEwmhState();
     });
     minimized_.changed().connect([this]() {
         static long long minimizedTick = 0;
@@ -135,7 +145,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_instance_.setDoc("the instance of it (first entry in WM_CLASS)");
     fullscreen_.setDoc(
                 "whether this client covers all other "
-                "windows and panels on its monitor.");
+                "windows and panels on its monitor. If +ewmhnotify+ is "
+                "activated, this also reflects the appearance of the "
+                "client (see +fullscreen_ewmh+).");
     sticky_.setDoc(
                 "whether this client is pinned to the monitor. "
                 "This means that the client stays on its monitor, even when "
@@ -154,7 +166,13 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "if activated, the client always has its floating "
                 "window size, even if it is in tiling mode.");
     ewmhrequests_.setDoc("if ewmh requests are permitted for this client");
-    ewmhnotify_.setDoc("if the client is told about its state via ewmh");
+    ewmhnotify_.setDoc("if set, the attributes +fullscreen+ and +fullscreen_ewmh+ "
+                       "are kept identical. So if set, the state of +fullscreen+ is "
+                       "synchronized with +fullscreen_ewmh+ such that "
+                       "the client is told about its fullscreen state via ewmh.");
+    ewmhfullscreen_.setDoc("whether the client thinks it is in fullscreen state. "
+                           "if +ewmhnotify+ is disabled, this can be set independently "
+                           "from the +fullscreen+ attribute.");
     urgent_.setDoc("the urgency state (also known as: demands attention). "
                    "The focused client can not be urgent.");
     sizehints_tiling_.setDoc("if sizehints for this client "
@@ -662,9 +680,6 @@ Client* get_current_client() {
 }
 
 void Client::updateEwmhState() {
-    if (ewmhnotify_) {
-        ewmhfullscreen_ = fullscreen_();
-    }
     ewmh.updateWindowState(this);
 }
 
