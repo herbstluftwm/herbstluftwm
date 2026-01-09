@@ -602,6 +602,7 @@ void Client::urgencyAttributeChanged(bool state)
     }
     hook_emit({"urgent", state ? "on" : "off", WindowID(window_).str() });
     decParams->urgent_ = urgent_();
+    recomputeStyle();
     redraw();
     redrawRelevantTabBars();
     if (state != x11urgent_) {
