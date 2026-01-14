@@ -9,9 +9,9 @@ from conftest import BINDIR, HlwmProcess
 
 def test_herbstluftwm_default_autostart(hlwm):
     expected_tags = [str(tag) for tag in range(1, 10)]
-    default_autostart = os.path.join(os.path.abspath(BINDIR), 'share/autostart')
+    default_autostart = BINDIR / "share" / "autostart"
     env_with_bindir_path = os.environ.copy()
-    env_with_bindir_path['PATH'] = BINDIR + ":" + env_with_bindir_path['PATH']
+    env_with_bindir_path['PATH'] = str(BINDIR) + os.pathsep + env_with_bindir_path['PATH']
     subprocess.run(['bash', '-e', default_autostart], check=True, env=env_with_bindir_path)
 
     assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
@@ -20,27 +20,27 @@ def test_herbstluftwm_default_autostart(hlwm):
 
 
 @pytest.mark.parametrize("method", ['home', 'xdg', 'shortopt', 'longopt'])
-def test_autostart_path(tmpdir, method, xvfb):
+def test_autostart_path(tmp_path, method, xvfb):
     # herbstluftwm environment:
     env = {
         'DISPLAY': xvfb.display,
     }
     args = []  # extra command line args
     if method == 'home':
-        autostart = tmpdir / '.config' / 'herbstluftwm' / 'autostart'
-        env['HOME'] = str(tmpdir)
+        autostart = tmp_path / '.config' / 'herbstluftwm' / 'autostart'
+        env['HOME'] = str(tmp_path)
     elif method == 'xdg':
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        env['XDG_CONFIG_HOME'] = str(tmpdir)
+        autostart = tmp_path / 'herbstluftwm' / 'autostart'
+        env['XDG_CONFIG_HOME'] = str(tmp_path)
     elif method == 'longopt':
-        autostart = tmpdir / 'somename'
+        autostart = tmp_path / 'somename'
         args += ['--autostart', str(autostart)]
     else:
-        autostart = tmpdir / 'somename'
+        autostart = tmp_path / 'somename'
         args += ['-c', str(autostart)]
 
-    autostart.ensure()
-    autostart.write(textwrap.dedent("""
+    autostart.parent.mkdir(parents=True, exist_ok=True)
+    autostart.write_text(textwrap.dedent("""
         #!/usr/bin/env bash
         echo "hlwm autostart test"
     """.lstrip('\n')))
@@ -77,8 +77,8 @@ def wait_actively_for(callback):
     assert False, "The returned value was not 'True'"
 
 
-def run_autostart(hlwm, tmpdir, autostart_src, wait=True):
-    tmpfile = tmpdir / 'custom_autostart'
+def run_autostart(hlwm, tmp_path, autostart_src, wait=True):
+    tmpfile = tmp_path / 'custom_autostart'
     hc_path = hlwm.HC_PATH
     full_src = textwrap.dedent(f"""\
     #!/usr/bin/env bash
@@ -89,8 +89,7 @@ def run_autostart(hlwm, tmpdir, autostart_src, wait=True):
     """)
     full_src += autostart_src
 
-    tmpfile.ensure()
-    tmpfile.write(full_src)
+    tmpfile.write_text(full_src)
     tmpfile.chmod(0o755)
     hlwm.attr.autostart.path = tmpfile
     hlwm.call('reload')
@@ -100,9 +99,9 @@ def run_autostart(hlwm, tmpdir, autostart_src, wait=True):
         wait_actively_for(lambda: not hlwm.attr.autostart.running())
 
 
-def test_autostart_pid(hlwm, tmpdir):
+def test_autostart_pid(hlwm, tmp_path):
     run_autostart(hlwm,
-                  tmpdir,
+                  tmp_path,
                   """
                   hc new_attr int my_pid
                   # copy pid of bash to the attribute system
@@ -112,9 +111,9 @@ def test_autostart_pid(hlwm, tmpdir):
     assert hlwm.attr.my_pid() == hlwm.attr.autostart.pid()
 
 
-def test_autostart_running(hlwm, tmpdir):
+def test_autostart_running(hlwm, tmp_path):
     run_autostart(hlwm,
-                  tmpdir,
+                  tmp_path,
                   """
                   hc new_attr bool my_running
                   # copy the value of 'running' during autostart execution
@@ -125,10 +124,10 @@ def test_autostart_running(hlwm, tmpdir):
     assert hlwm.attr.autostart.running() is False
 
 
-def test_autostart_last_status(hlwm, tmpdir):
+def test_autostart_last_status(hlwm, tmp_path):
     for status in [0, 1, 2, 4, 9]:
         run_autostart(hlwm,
-                      tmpdir,
+                      tmp_path,
                       f"""
                       exit {status}
                       """)
@@ -143,9 +142,9 @@ def process_status(pid):
     return proc.stdout.splitlines()[1].strip()
 
 
-def test_autostart_sigstop(hlwm, tmpdir):
+def test_autostart_sigstop(hlwm, tmp_path):
     run_autostart(hlwm,
-                  tmpdir,
+                  tmp_path,
                   """
                   hc new_attr string my_attr firststop
                   kill -STOP $$

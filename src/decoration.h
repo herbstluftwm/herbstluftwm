@@ -131,6 +131,10 @@ private:
     Pixmap                  pixmap = 0;
     int                     pixmap_height = 0;
     int                     pixmap_width = 0;
+    int                     lastFrameExtentsTop = 0;
+    int                     lastFrameExtentsRight = 0;
+    int                     lastFrameExtentsBottom = 0;
+    int                     lastFrameExtentsLeft = 0;
     // fill the area behind client with another window that does nothing,
     // especially not repainting or background filling to avoid flicker on
     // unmap

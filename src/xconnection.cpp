@@ -6,6 +6,7 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrender.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <climits>
 #include <cstring>

@@ -1,17 +1,17 @@
 import pytest
-import os.path
 import subprocess
 import sys
 import os
 import conftest
+import pathlib
 from herbstluftwm.types import Rectangle
 
 
 def test_example(hlwm):
     # test the example.py shipped with the bindings
-    example_py = os.path.join(os.path.dirname(__file__), '..', 'python', 'example.py')
+    example_py = pathlib.Path(__file__).parents[1] / 'python' / 'example.py'
     # make 'herbstclient' binary available in the PATH
-    os.environ['PATH'] = conftest.BINDIR + ':' + os.environ['PATH']
+    os.environ['PATH'] = str(conftest.BINDIR) + os.pathsep + os.environ['PATH']
     assert subprocess.call([sys.executable, example_py]) == 0
 
 

@@ -31,7 +31,12 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *--replace*::
         Replace existing window manager.
     *-l*, *--locked*::
-        Initially set the monitors_locked setting to 1
+        Initially set the monitors_locked setting to 1. WARNING: this keeps
+        herbstluftwm locked until the *unlock* command is invoked (usually by
+        the *autostart*). If *--locked* is activated but the autostart does not
+        invoke *unlock* (or if its invokation is unreachable because of a
+        blocking command before), then herbstluftwm stays locked, resulting in
+        frozen state. Only use with care!
     *--exit-on-xerror*::
         Make herbstluftwm exit whenever xlib reports an error. This may only
         be activated for automated testing and never for actual sessions.
@@ -260,11 +265,10 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
     '-' or '+', valid modifiers are listed in the description of 'keybind') and
     exactly one button name:
 
-        * +B1+ or +Button1+
-        * +B2+ or +Button2+
-        * +B3+ or +Button3+
-        * +B4+ or +Button4+
-        * +B5+ or +Button5+
+        * +B1+ or +Button1+ 
+        * +B2+ or +Button2+ 
+        * ...
+        * +B9+ or +Button9+ 
  ::
     'ACTION' must be one of the following actions:
 

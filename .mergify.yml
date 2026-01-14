@@ -1,16 +1,37 @@
+merge_queue:
+  max_parallel_checks: 1
+
+# message from mergify (as of 2025-12-30):
+#
+#    The branch protection setting
+#       'Require branches to be up to date before merging'
+#    is not compatible with draft PR checks. To keep this branch
+#    protection enabled, update your Mergify configuration to enable
+#    in-place checks: set merge_queue.max_parallel_checks: 1,
+#    set every queue rule batch_size: 1, and avoid two-step CI
+#    (make merge_conditions identical to queue_conditions). Otherwise, disable
+#    this branch protection.
+
 queue_rules:
   - name: default
+    batch_size: 1
     queue_conditions:
+      # conditions on a PR to be added to the merge queue
       - base=master
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - label!=wip
+    branch_protection_injection_mode: merge
     merge_conditions:
+      - base=master
       # Conditions to get out of the queue (= merged)
       - check-success=Build and test on current ubuntu
       - check-success=Build with Clang, run linters and static analyzers
+      - "#approved-reviews-by>=1"
+      - "#changes-requested-reviews-by=0"
+      - label!=wip
     commit_message_template: |
       {{ title }} (#{{ number }})
 
@@ -21,9 +42,6 @@ pull_request_rules:
   - name: Implicitly allow t-wissmann to approve own pull requests
     conditions:
       - author=t-wissmann
-      - check-success=Build and test on current ubuntu
-      - check-success=Build with Clang, run linters and static analyzers
-      - label!=wip
       - label=self-approved
     actions:
       review:
@@ -33,3 +51,4 @@ pull_request_rules:
     conditions: []
     actions:
       queue:
+        name: default
