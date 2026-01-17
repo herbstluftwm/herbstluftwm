@@ -7,7 +7,6 @@
 #include "indexingobject.h"
 #include "link.h"
 #include "runtimeconverter.h"
-#include "runtimeconverter.h"
 #include "signal.h"
 #include "tag.h"
 
