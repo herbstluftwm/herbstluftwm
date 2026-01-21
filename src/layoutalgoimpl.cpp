@@ -252,6 +252,66 @@ public:
 };
 
 
+class LayoutMasterStack : public LayoutAlgoImpl {
+public:
+    LayoutMasterStack (Params p) : LayoutAlgoImpl(p) {}
+public:
+    virtual TilingResult compute(Rectangle rect) override {
+        TilingResult res;
+        const vector<Client*>& clients = frame_.clientsConst();
+        if (clients.empty()) {
+            return res;
+        } else if (clients.size() == 1) {
+            res.add(clients[0], TilingStep(rect));
+            return res;
+        }
+
+        Client* main = clients[0];
+        auto r = rect; // current rectangle
+        r.width = rect.width * 0.6;
+        res.add(main, TilingStep(r));
+
+        int rows = clients.size()-1;
+
+        auto cur = rect; // current rectangle
+        cur.x = r.x + r.width;
+        cur.width = rect.width-r.width; // remaining width
+        cur.height = rect.height / rows;
+        for (int row = 0; row < rows; row++) {
+            if (row == rows-1) {
+                // fill small pixel gap below last row
+                cur.height += rect.height % rows;
+            }
+            res.add(clients[row+1], TilingStep(cur));
+            cur.y += cur.height;
+        }
+        return res;
+    }
+
+    virtual int neighbour(Direction direction, DirectionLevel depth, int startIndex) override {
+        size_t count = frame_.clientsConst().size();
+
+        if (count > 1) {
+            if (startIndex == 0) {
+                // we are main window
+                if (direction == Direction::Right) {
+                    // top window
+                    return 1;
+                }
+            } else if (direction == Direction::Left) {
+                return 0;
+            } else if (startIndex > 1 && direction == Direction::Up) {
+                return startIndex - 1;
+            } else if (direction == Direction::Down) {
+                return startIndex + 1;
+            }
+        }
+
+        return -1;
+    }
+};
+
+
 unique_ptr<LayoutAlgoImpl> LayoutAlgoImpl::createInstance(const FrameLeaf& frame, LayoutAlgorithm algoName)
 {
     Params p = {frame, algoName};
@@ -264,6 +324,8 @@ unique_ptr<LayoutAlgoImpl> LayoutAlgoImpl::createInstance(const FrameLeaf& frame
         return make_unique<LayoutGrid>(p);
     case LayoutAlgorithm::max:
         return make_unique<LayoutMax>(p);
+    case LayoutAlgorithm::masterstack:
+        return make_unique<LayoutMasterStack>(p);
     }
     // this can never be reached...
     return {};

@@ -976,6 +976,7 @@ void FrameTree::splitFrame(string frameIndex, SplitModeName mode, FixPrecDec fra
         } else if (layout == LayoutAlgorithm::max) {
             m.align = align_auto;
         } else if (layout == LayoutAlgorithm::grid && windowcount == 2) {
+            // TODO: or masterstack here?
             m.align = SplitAlign::horizontal;
         } else if (layout == LayoutAlgorithm::horizontal) {
             m.align = SplitAlign::horizontal;
