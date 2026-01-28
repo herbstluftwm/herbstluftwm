@@ -30,6 +30,7 @@ Current git version
   * New support for extra mouse buttons (up to 9). These values are hard-coded,
     but upstream X.h also uses hardcoded values, so potential for breakage
     should be minimal.
+  * New rule consequence 'decorated'
   * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
     clients geometry.
 
