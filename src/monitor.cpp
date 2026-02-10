@@ -687,8 +687,8 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
         case ClientPlacement::TopLeft:
             {
                                                 // the top left of the monitor
-                client->float_size_ = Rectangle(0,
-                                                0,
+                client->float_size_ = Rectangle(settings->snap_gap,
+                                                settings->snap_gap,
                                                 client->float_size_->width,
                                                 client->float_size_->height);
             }
@@ -698,8 +698,8 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
             {
                                                 // the top right of the monitor minus the width of the client
                                                 // plus the height of the client
-                client->float_size_ = Rectangle(getFloatingArea().width - client->float_size_->width,
-                                                0,
+                client->float_size_ = Rectangle(getFloatingArea().width - client->float_size_->width - settings->snap_gap,
+                                                settings->snap_gap,
                                                 client->float_size_->width,
                                                 client->float_size_->height);
             }
@@ -708,8 +708,8 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
         case ClientPlacement::BottomLeft:
             {
                                                 // the bottom left of the monitor minus the height of the client
-                client->float_size_ = Rectangle(0,
-                                                getFloatingArea().height - client->float_size_->height,
+                client->float_size_ = Rectangle(settings->snap_gap,
+                                                getFloatingArea().height - client->float_size_->height - settings->snap_gap,
                                                 client->float_size_->width,
                                                 client->float_size_->height);
             }
@@ -718,8 +718,8 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
         case ClientPlacement::BottomRight:
             {
                                                 // the bottom right of the monitor minus the height,width of the client
-                client->float_size_ = Rectangle(getFloatingArea().width - client->float_size_->width,
-                                                getFloatingArea().height - client->float_size_->height,
+                client->float_size_ = Rectangle(getFloatingArea().width - client->float_size_->width - settings->snap_gap,
+                                                getFloatingArea().height - client->float_size_->height - settings->snap_gap,
                                                 client->float_size_->width,
                                                 client->float_size_->height);
             }
