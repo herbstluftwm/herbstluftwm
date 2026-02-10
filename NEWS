@@ -23,6 +23,9 @@ Current git version
     should be minimal.
   * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
     clients geometry.
+  * New options to rule consequence 'floatplacement' which allow placement of
+    floating clients into monitor corners; 'topleft', 'topright', 'bottomleft',
+    'bottomright'
 
 Release 0.9.5 on 2022-07-30
 ---------------------------
