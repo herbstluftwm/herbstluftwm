@@ -683,6 +683,48 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
             }
             break;
 
+
+        case ClientPlacement::TopLeft:
+            {
+                                                // the top left of the monitor
+                client->float_size_ = Rectangle(getFloatingArea().tl().x,
+                                                getFloatingArea().tl().y,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
+            }
+            break;
+
+        case ClientPlacement::TopRight:
+            {
+                                                // the top right of the monitor minus the width of the client
+                                                // plus the height of the client
+                client->float_size_ = Rectangle(getFloatingArea().tr().x - client->float_size_->width,
+                                                getFloatingArea().tr().y,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
+            }
+            break;
+
+        case ClientPlacement::BottomLeft:
+            {
+                                                // the bottom left of the monitor minus the height of the client
+                client->float_size_ = Rectangle(getFloatingArea().bl().x,
+                                                getFloatingArea().bl().y - client->float_size_->height,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
+            }
+            break;
+
+        case ClientPlacement::BottomRight:
+            {
+                                                // the bottom right of the monitor minus the height,width of the client
+                client->float_size_ = Rectangle(getFloatingArea().br().x - client->float_size_->width,
+                                                getFloatingArea().br().y - client->float_size_->height,
+                                                client->float_size_->width,
+                                                client->float_size_->height);
+            }
+            break;
+
         case ClientPlacement::Unchanged:
             // do not do anything
             break;
