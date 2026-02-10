@@ -731,7 +731,7 @@ def test_floatplacement_none_or_center(hlwm, floatplacement, x11):
         assert (geom.x, geom.y) == (30, 40)
 
 
-@pytest.mark.parametrize('floatplacement', ['topleft','topright','bottomleft','bottomright'])
+@pytest.mark.parametrize('floatplacement', ['topleft', 'topright', 'bottomleft', 'bottomright'])
 def test_floatplacement_corners(hlwm, floatplacement, x11):
     # create sizes involving only even numbers
     hlwm.call('move_monitor 0 500x550+0+0')
