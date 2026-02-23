@@ -656,6 +656,26 @@ string Monitor::getDescription() {
     return label.str();
 }
 
+/**
+ * special case of evaluateClientPlacement() where 'corner' is a Rectangle member function
+ * that returns the corner of the monitor to which the client should
+ * be moved
+ */
+void Monitor::evaluateClientPlacementCorner(Client* client, Point2D (Rectangle::*corner)() const) const
+{
+    // The float_size_ is relative to the monitor's content.
+    // Hence, as the base 'area', we take the rectangle with the montior's content dimensions
+    // and shrink it further by snap_gap on each side:
+    Point2D gap = {settings->snap_gap, settings->snap_gap};
+    Rectangle area = Rectangle::fromCorners(gap, getFloatingArea().dimensions() - gap);
+    // We then compute the 'delta' by which we need to shift the client's corner
+    // such that it coincides with the corner of the base area.
+    // If the client already happens to be in this corner, then delta is {0,0}.
+    Point2D delta = (area.*corner)() - (client->outer_floating_rect().*corner)();
+    client->float_size_ = client->float_size_->shifted(delta);
+
+}
+
 void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement) const
 {
     switch (placement) {
@@ -686,46 +706,25 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
 
         case ClientPlacement::TopLeft:
             {
-                // the top left of the monitor: the float_size_ is relative to the monitor's content,
-                // so as the base 'area', we take the rectangle with the montior's content dimensions
-                // and shrink it further by snap_gap on each side:
-                Point2D gap = {settings->snap_gap, settings->snap_gap};
-                Rectangle area = Rectangle::fromCorners(gap, getFloatingArea().dimensions() - gap);
-                // We then compute the 'delta' by which we need to shift the client's corner
-                // such that it coincides with the corner of the base area. If the client already happens
-                // to be in this corner, then delta is {0,0}.
-                Point2D delta = area.tl() - client->outer_floating_rect().tl();
-                client->float_size_ = client->float_size_->shifted(delta);
+                evaluateClientPlacementCorner(client, &Rectangle::tl);
             }
             break;
 
         case ClientPlacement::TopRight:
             {
-                // same as TopRight, just with 'tr' instead of 'tl'
-                Point2D gap = {settings->snap_gap, settings->snap_gap};
-                Rectangle area = Rectangle::fromCorners(gap, getFloatingArea().dimensions() - gap);
-                Point2D delta = area.tr() - client->outer_floating_rect().tr();
-                client->float_size_ = client->float_size_->shifted(delta);
+                evaluateClientPlacementCorner(client, &Rectangle::tr);
             }
             break;
 
         case ClientPlacement::BottomLeft:
             {
-                // same as TopRight, just with 'bl' instead of 'tl'
-                Point2D gap = {settings->snap_gap, settings->snap_gap};
-                Rectangle area = Rectangle::fromCorners(gap, getFloatingArea().dimensions() - gap);
-                Point2D delta = area.bl() - client->outer_floating_rect().bl();
-                client->float_size_ = client->float_size_->shifted(delta);
+                evaluateClientPlacementCorner(client, &Rectangle::bl);
             }
             break;
 
         case ClientPlacement::BottomRight:
             {
-                // same as TopRight, just with 'br' instead of 'tl'
-                Point2D gap = {settings->snap_gap, settings->snap_gap};
-                Rectangle area = Rectangle::fromCorners(gap, getFloatingArea().dimensions() - gap);
-                Point2D delta = area.br() - client->outer_floating_rect().br();
-                client->float_size_ = client->float_size_->shifted(delta);
+                evaluateClientPlacementCorner(client, &Rectangle::br);
             }
             break;
 
