@@ -56,14 +56,17 @@ variables which you can set on the initial cmake call and alter with ccmake:
 
 Individual paths for special files can be set with the *DIR variables, typically
 relative to CMAKE_INSTALL_PREFIX. If you are building a package, you would
-typically build regularly, and install with DESTDIR=./path/to/fakeroot. If you
-are building from a source tarball, you can disable WITH_DOCUMENTATION because
-the built documentation is already contained in the tarball.
+typically build regularly, and install with DESTDIR=./path/to/fakeroot.
 
     mkdir build && cd build
     cmake ..
     make
     sudo make DESTDIR=./pkg/ install
+
+If you are building from a source tarball or do not want to build the
+documentation, you can disable WITH_DOCUMENTATION during cmake:
+
+    cmake -DWITH_DOCUMENTATION=NO ..
 
 To use the software locally, create your own autostart file:
 
@@ -100,10 +103,7 @@ valgrind-xephyr.sh from your existing X session:
 ==== Starting Herbstluftwm ====
 To start the window manager within a running X-session, execute:
 
-    herbstluftwm --locked
-
-`--locked` causes herbstluftwm not to update the screen until you unlock it
-with: `herbstclient unlock` (This is done automatically by the default autostart)
+    herbstluftwm
 
 ==== Quirks ====
 Mac OSX:

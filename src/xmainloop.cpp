@@ -658,12 +658,28 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                 client->readWmHints(forceNotUrgent);
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
-                Rectangle geom = client->float_size_;
-                client->applysizehints(&geom.width, &geom.height, true);
-                client->float_size_ = geom;
-                Monitor* m = find_monitor_with_tag(client->tag());
-                if (m) {
-                    m->applyLayout();
+                Rectangle geom = client->content_geometry_();
+                // check if the new size hints would affect the current
+                // size of the client:
+                client->applysizehints(&geom.width, &geom.height, false);
+                bool sizeChanged = client->content_geometry_ != geom;
+                // Update the source attribute of the floating geometry if
+                // sizehints_floating is set. If the client is currently
+                // in floating mode, then 'sizeChanged' is already
+                // triggered above via content_geometry.
+                if (client->sizehints_floating_()) {
+                    geom = client->float_size_;
+                    client->applysizehints(&geom.width, &geom.height, true);
+                    if (client->float_size_ != geom) {
+                        client->float_size_ = geom;
+                    }
+                }
+                if (sizeChanged) {
+                    // only redraw if the client's content geometry would be affected:
+                    Monitor* m = find_monitor_with_tag(client->tag());
+                    if (m) {
+                        m->applyLayout();
+                    }
                 }
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == root_->ewmh_.netatom(NetWmName)) {

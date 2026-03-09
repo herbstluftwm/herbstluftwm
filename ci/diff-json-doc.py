@@ -3,6 +3,7 @@
 import re
 import subprocess
 import os
+import pathlib
 import sys
 import argparse
 import json
@@ -20,8 +21,8 @@ class GitDir:
         tmp_dir = self.dirpath
         full_cmd = [
             'git',
-            '--git-dir=' + os.path.join(tmp_dir, '.git'),
-            '--work-tree=' + tmp_dir
+            f'--git-dir={tmp_dir / ".git"}',
+            f'--work-tree={tmp_dir}',
         ] + list(cmd)
         print(':: ' + ' '.join(full_cmd), file=sys.stderr)
         return subprocess.run(full_cmd, check=check)
@@ -116,15 +117,17 @@ def main():
     else:
         comment_target = args.post_comment
 
-    git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
+    git_root = pathlib.Path(
+        run_pipe_stdout(["git", "rev-parse", "--show-toplevel"]).rstrip()
+    )
     if args.no_tmp_dir:
         # use this repository for checking different revisions
         tmp_dir = git_root
     else:
-        tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
+        tmp_dir = git_root / '.hlwm-tmp-diff-json'
     git_tmp = GitDir(tmp_dir)
 
-    if not os.path.isdir(tmp_dir):
+    if not tmp_dir.is_dir():
         subprocess.call(['git', 'clone', git_root, tmp_dir])
 
     # fetch all pull request heads
