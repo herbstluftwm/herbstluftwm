@@ -59,6 +59,7 @@ public:
     void restack();
     std::string getDescription();
     void evaluateClientPlacement(Client* client, ClientPlacement placement) const;
+    void evaluateClientPlacementCorner(Client* client, Point2D (Rectangle::*corner)() const) const;
     static std::string atLeastMinWindowSize(Rectangle geom);
 private:
     std::string getTagString();
