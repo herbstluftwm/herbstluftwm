@@ -32,6 +32,12 @@ Current git version
     should be minimal.
   * Bug fix: Only redraw after new WM_NORMAL_HINTS if it would affect the
     clients geometry.
+  * New setting 'mouse_follows_monitor_focus' to allow user to disable hlwm
+    moving their mouse on monitor focus changes. Default behavior is unchanged,
+    default value is True. False currently disables all hlwm-induced mouse
+    movement (XWarpPointer, used once) -- thus overriding user configuration of
+    'mouse_recenter_gap' -- but does not prevent saving of pointer position on
+    change of focus.
 
 Release 0.9.5 on 2022-07-30
 ---------------------------
