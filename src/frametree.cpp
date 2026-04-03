@@ -15,6 +15,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
@@ -504,6 +505,15 @@ bool FrameTree::shiftInDirection(Direction direction, DirectionLevel depth) {
     }
     // don't look for neighbours within the frame if 'external_only' is set
     int indexInFrame = sourceFrame->getInnerNeighbourIndex(direction, depth);
+    if (indexInFrame >= 0) {
+        // For max layout with tabs, check if tab reordering is enabled
+        if (sourceFrame->getLayout() == LayoutAlgorithm::max &&
+            settings_->tabbed_max() &&
+            !settings_->max_tab_reorder()) {
+            // Tab reordering is disabled, skip inner movement and try external
+            indexInFrame = -1;
+        }
+    }
     if (indexInFrame >= 0) {
         sourceFrame->moveClient(indexInFrame);
         return true;
