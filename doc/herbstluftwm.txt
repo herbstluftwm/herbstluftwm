@@ -1179,10 +1179,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     a boolean; it defaults to *on*.
 
 +ewmhnotify+::
-    sets whether hlwm should let the client know about EMWH changes (currently
-    only the fullscreen state). If this is set, applications do not change to
-    their fullscreen-mode while still being fullscreen. 'VALUE' is a boolean,
-    it defaults to *on*.
+    sets whether hlwm should let the client know about the EMWH fullscreen
+    state. If this is set, applications do not change to their fullscreen-mode
+    while still being fullscreen. 'VALUE' is a boolean, it defaults to *on*.
 
 +fullscreen+::
     sets the fullscreen flag of the client. 'VALUE' is a boolean.

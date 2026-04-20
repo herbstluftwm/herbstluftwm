@@ -40,7 +40,7 @@ public:
     Attribute_<Rectangle> float_size_;     // floating size without the window border
     HSTag*      tag_ = {};
     Slice* slice = {};
-    bool        ewmhfullscreen_ = false; // ewmh fullscreen state
+    Attribute_<bool> ewmhfullscreen_; // ewmh fullscreen state
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
     Attribute_<bool> decorated_;
     Attribute_<bool> visible_;
