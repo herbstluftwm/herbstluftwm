@@ -19,3 +19,5 @@ doxygen-html/
 # ignore various other IDE config dirs
 .vscode/
 .idea/
+
+.direnv
