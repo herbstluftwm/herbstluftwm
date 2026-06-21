@@ -25,6 +25,7 @@ consequences = [
     'manage',
     'index',
     'floating',
+    'main_client',
     'floating_geometry',
     'pseudotile',
     'sticky',
@@ -392,7 +393,7 @@ def create_client(hlwm, rule_mode: RuleMode, rule):
 
 @pytest.mark.parametrize(
     'name',
-    ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen', 'sticky'])
+    ['floating', 'main_client', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen', 'sticky'])
 @pytest.mark.parametrize('value', [True, False])
 @pytest.mark.parametrize('rule_mode', RuleMode.values)
 def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, rule_mode):

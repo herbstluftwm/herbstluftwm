@@ -39,6 +39,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
+    , main_client_(this, "main_client", false)
     , fullscreen_(this,  "fullscreen", false)
     , sticky_(this,  "sticky", false)
     , minimized_(this,  "minimized", false)
@@ -71,6 +72,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_id_str = WindowID(window).str();
     decorated_.setWritable();
     floating_.setWritable();
+    main_client_.setWritable();
     keyMask_.setWritable();
     keysInactive_.setWritable();
     ewmhnotify_.setWritable();
@@ -145,6 +147,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "iconified).");
     floating_.setDoc("whether this client is set as a (single-window) floating client. "
                      "If set, the client is floated above the tiled clients.");
+    main_client_.setDoc(
+                "whether this client should be treated as a main application "
+                "for tag-local placement rules.");
     floating_effectively_.setDoc(
                 "whether this client is in the floating state currently. "
                 "This is the case if the client\'s tag is set to floating mode or "
@@ -783,4 +788,3 @@ string Client::tagName() {
 Window Client::decorationWindow() {
     return dec->decorationWindow();
 }
-

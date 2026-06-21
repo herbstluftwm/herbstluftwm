@@ -69,6 +69,7 @@ public:
     Attribute_<bool> urgent_;
     bool x11urgent_ = false;
     Attribute_<bool> floating_;
+    Attribute_<bool> main_client_;
     Attribute_<bool> fullscreen_;
     Attribute_<bool> sticky_;
     Attribute_<bool> minimized_;

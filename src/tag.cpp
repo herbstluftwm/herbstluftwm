@@ -36,6 +36,9 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , index(this, "index", 0, &HSTag::isValidTagIndex)
     , visible(this, "visible", false)
     , floating(this, "floating", false, [](bool){return "";})
+    , auto_sidepane(this, "auto_sidepane", false)
+    , auto_sidepane_layout(this, "auto_sidepane_layout", LayoutAlgorithm::vertical)
+    , auto_sidepane_fraction(this, "auto_sidepane_fraction", FixPrecDec::approxFrac(3, 5))
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
         [tags](string newName) { return tags->isValidTagName(newName); })
@@ -73,12 +76,21 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     floating_focused.setValidator([this](bool v) {
         return this->floatingLayerCanBeFocused(v);
     });
+    auto_sidepane.setWritable();
+    auto_sidepane_layout.setWritable();
+    auto_sidepane_fraction.setWritable();
     atEnd.setWritable();
 
     name.setDoc("name of the tag (must be non-empty)");
     index.setDoc("index of this tag (the first index is 0)");
     visible.setDoc("if this tag is shown on some monitor");
     floating.setDoc("if the entire tag is set to floating mode");
+    auto_sidepane.setDoc("if enabled, non-floating non-main clients are inserted "
+                         "into an automatically managed side pane on this tag");
+    auto_sidepane_layout.setDoc("the layout algorithm used within the auto-managed "
+                                "side pane");
+    auto_sidepane_fraction.setDoc("the fraction of the tag width assigned to the "
+                                  "main pane when the auto-managed side pane is created");
     floating_focused.setDoc("if the floating layer is focused"
                             " (otherwise the tiling layer is)");
     frame_count.setDoc("the number of frames on this tag");
@@ -159,6 +171,7 @@ void HSTag::applyClientState(Client* client)
     if (!hasVisibleFloatingClients()) {
         floating_focused = false;
     }
+    autoSidepaneCleanup();
     client->floating_effectively_ = floating() || client->floating_();
     bool client_becomes_visible = !client->minimized_() && this->visible();
     if (client_becomes_visible) {
@@ -194,6 +207,7 @@ bool HSTag::removeClient(Client* client) {
         }
     });
     if (frame->root_->removeClient(client)) {
+        autoSidepaneCleanup();
         return true;
     }
     auto it = std::find(floating_clients_.begin(), floating_clients_.end(), client);
@@ -207,6 +221,7 @@ bool HSTag::removeClient(Client* client) {
         // focus back the tiling
         floating_focused = false;
     }
+    autoSidepaneCleanup();
     return true;
 }
 
@@ -305,6 +320,64 @@ void HSTag::insertClient(Client* client, string frameIndex, bool focus)
         target->insertClient(client, focus);
     }
     client->floating_effectively_ = floating() || client->floating_();
+}
+
+shared_ptr<FrameSplit> HSTag::autoSidepaneRootSplit()
+{
+    if (!auto_sidepane()) {
+        return {};
+    }
+    auto split = frame->root_->isSplit();
+    if (!split || split->getAlign() != SplitAlign::horizontal) {
+        return {};
+    }
+    if (!split->firstChild()->isLeaf() || !split->secondChild()->isLeaf()) {
+        return {};
+    }
+    return split;
+}
+
+string HSTag::autoSidepaneInsertIndex(Client* client)
+{
+    if (!auto_sidepane() || client->floating_()) {
+        return {};
+    }
+    if (client->main_client_()) {
+        return autoSidepaneRootSplit() ? "0" : "";
+    }
+    if (autoSidepaneRootSplit()) {
+        return "1";
+    }
+    auto rootLeaf = frame->root_->isLeaf();
+    if (!rootLeaf) {
+        return {};
+    }
+    if (!rootLeaf->split(SplitAlign::horizontal, auto_sidepane_fraction(), 0)) {
+        return {};
+    }
+    auto split = autoSidepaneRootSplit();
+    if (!split) {
+        return {};
+    }
+    auto sideLeaf = split->secondChild()->isLeaf();
+    if (sideLeaf) {
+        sideLeaf->setLayout(auto_sidepane_layout());
+    }
+    split->setSelection(1);
+    return "1";
+}
+
+void HSTag::autoSidepaneCleanup()
+{
+    auto split = autoSidepaneRootSplit();
+    if (!split) {
+        return;
+    }
+    auto sideLeaf = split->secondChild()->isLeaf();
+    if (!sideLeaf || sideLeaf->clientCount() != 0) {
+        return;
+    }
+    frame->replaceNode(split, split->firstChild());
 }
 
 void HSTag::insertClientSlice(Client* client)
@@ -411,6 +484,7 @@ int HSTag::shiftInDir(Direction direction, DirectionLevel depth, Output output)
     } else {
         success = frame->shiftInDirection(direction, depth);
         if (success) {
+            autoSidepaneCleanup();
             needsRelayout_.emit();
         }
     }
@@ -749,4 +823,3 @@ int HSTag::closeAndRemoveCommand() {
     }
     return 0;
 }
-

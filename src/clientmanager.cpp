@@ -251,6 +251,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     client->slice = Slice::makeClientSlice(client);
     client->tag()->insertClientSlice(client);
     // insert window to the tag
+    if (changes.tree_index.empty()) {
+        changes.tree_index = client->tag()->autoSidepaneInsertIndex(client);
+    }
     client->tag()->insertClient(client, changes.tree_index, changes.focus);
 
     tag_set_flags_dirty();
@@ -343,6 +346,9 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
 {
     if (changes.floating.has_value()) {
         client->floating_ = changes.floating.value();
+    }
+    if (changes.mainClient.has_value()) {
+        client->main_client_ = changes.mainClient.value();
     }
     if (changes.pseudotile.has_value()) {
         client->pseudotile_ = changes.pseudotile.value();
@@ -648,4 +654,3 @@ void ClientManager::fullscreen_complete(Completion& complete)
         complete.none();
     }
 }
-

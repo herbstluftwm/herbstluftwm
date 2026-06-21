@@ -84,6 +84,138 @@ def test_single_frame_layout_three(hlwm):
     verify_frame_objects_via_dump(hlwm)
 
 
+def test_auto_sidepane_places_non_main_clients_in_sidepane(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.call('rule once class=main_app main_client=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    _, side = x11.create_client(wm_class=('aux_app', 'aux_app'))
+
+    expected_layout = normalize_layout_string(f"""\
+    (split horizontal:0.6:1
+      (clients vertical:0 {main})
+      (clients vertical:0 {side}))
+    """)
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_auto_sidepane_stacks_multiple_side_clients(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.call('rule once class=main_app main_client=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    _, side1 = x11.create_client(wm_class=('aux_app_1', 'aux_app_1'))
+    _, side2 = x11.create_client(wm_class=('aux_app_2', 'aux_app_2'))
+
+    expected_layout = normalize_layout_string(f"""\
+    (split horizontal:0.6:1
+      (clients vertical:0 {main})
+      (clients vertical:0 {side1} {side2}))
+    """)
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_auto_sidepane_ignores_rule_floating_clients(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.call('rule once class=main_app main_client=on')
+    hlwm.call('rule once class=floater floating=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    _, floater = x11.create_client(wm_class=('floater', 'floater'))
+
+    assert hlwm.call('dump').stdout == f'(clients vertical:0 {main})'
+    assert hlwm.get_attr(f'clients.{floater}.floating') == hlwm.bool(True)
+
+
+def test_auto_sidepane_ignores_dialog_windows(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.call('rule once class=main_app main_client=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    _, dialog = x11.create_client(
+        wm_class=('dialog', 'dialog'),
+        window_type='_NET_WM_WINDOW_TYPE_DIALOG',
+    )
+
+    assert hlwm.call('dump').stdout == f'(clients vertical:0 {main})'
+    assert hlwm.get_attr(f'clients.{dialog}.floating') == hlwm.bool(True)
+
+
+def test_auto_sidepane_cleanup_after_last_side_client_is_closed(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.call('rule once class=main_app main_client=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    side_window, side = x11.create_client(wm_class=('aux_app', 'aux_app'))
+
+    side_window.unmap()
+    side_window.destroy()
+    x11.sync_with_hlwm()
+
+    assert hlwm.call('dump').stdout == f'(clients vertical:0 {main})'
+
+
+def test_auto_sidepane_obeys_layout_and_fraction_settings(hlwm, x11):
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+    hlwm.attr.tags.focus.auto_sidepane_layout = 'max'
+    hlwm.attr.tags.focus.auto_sidepane_fraction = '0.7'
+    hlwm.call('rule once class=main_app main_client=on')
+
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    _, side = x11.create_client(wm_class=('aux_app', 'aux_app'))
+
+    expected_layout = normalize_layout_string(f"""\
+    (split horizontal:0.7:1
+      (clients vertical:0 {main})
+      (clients max:0 {side}))
+    """)
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_move_client_to_auto_sidepane_tag_goes_to_sidepane(hlwm, x11):
+    target_tag = hlwm.get_attr('tags.focus.name')
+    hlwm.call('add othertag')
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+
+    hlwm.call('rule once class=main_app main_client=on')
+    _, main = x11.create_client(wm_class=('main_app', 'main_app'))
+    hlwm.call('use othertag')
+    _, moved = x11.create_client(wm_class=('aux_app', 'aux_app'))
+
+    hlwm.call('jumpto ' + moved)
+    hlwm.call('move ' + target_tag)
+
+    expected_layout = normalize_layout_string(f"""\
+    (split horizontal:0.6:1
+      (clients vertical:0 {main})
+      (clients vertical:0 {moved}))
+    """)
+    assert hlwm.call('use ' + target_tag).returncode == 0
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_move_main_client_to_auto_sidepane_tag_stays_in_main_pane(hlwm, x11):
+    target_tag = hlwm.get_attr('tags.focus.name')
+    hlwm.call('add othertag')
+    hlwm.attr.tags.focus.auto_sidepane = 'on'
+
+    hlwm.call('rule once class=main_app main_client=on')
+    _, main1 = x11.create_client(wm_class=('main_app', 'main_app'))
+
+    hlwm.call('use othertag')
+    hlwm.call('rule once class=main_app2 main_client=on')
+    _, main2 = x11.create_client(wm_class=('main_app2', 'main_app2'))
+
+    hlwm.call('jumpto ' + main2)
+    hlwm.call('move ' + target_tag)
+
+    expected_layout = normalize_layout_string(f"""\
+    (clients vertical:1 {main1} {main2})
+    """)
+    assert hlwm.call('use ' + target_tag).returncode == 0
+    assert hlwm.call('dump').stdout == expected_layout
+
+
 @pytest.mark.parametrize("running_clients_num", [2, 3])
 def test_explode(hlwm, running_clients, running_clients_num):
     assert running_clients_num >= 2, "explode behaves as auto for one client"
