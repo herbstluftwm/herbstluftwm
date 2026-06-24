@@ -57,8 +57,10 @@ public:
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);
+    int maximize_cmd(Input input, Output output);
     void pseudotile_complete(Completion& complete);
     void fullscreen_complete(Completion& complete);
+    void maximize_complete(Completion& complete);
 
     // adds a new client to list of managed client windows
     Client* manage_client(Window win, bool visible_already, bool force_unmanage,

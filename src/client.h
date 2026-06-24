@@ -71,6 +71,7 @@ public:
     Attribute_<bool> floating_;
     Attribute_<bool> main_client_;
     Attribute_<bool> fullscreen_;
+    Attribute_<bool> maximized_;
     Attribute_<bool> sticky_;
     Attribute_<bool> minimized_;
     Attribute_<bool> floating_effectively_;
@@ -115,6 +116,7 @@ public:
     void resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration, std::vector<Client*> tabs);
     void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
+    void resize_maximized(Rectangle usable_area, bool isFocused);
     bool is_client_floated();
     void set_urgent(bool state);
     void readWmHints(bool forceNotUrgent = false);

@@ -17,6 +17,7 @@ const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
      { LAYER_FOCUS       , "Focus-Layer"                },
      { LAYER_FULLSCREEN  , "Fullscreen-Layer"           },
+     { LAYER_MAXIMIZED   , "Maximized-Layer"            },
      { LAYER_FLOATING    , "Floating-Layer"             },
      { LAYER_NORMAL      , "Tiling-Layer"               },
      { LAYER_FRAMES      , "Frame Layer"                },

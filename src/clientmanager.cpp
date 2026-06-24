@@ -558,13 +558,17 @@ void ClientManager::applyTmpRuleCompletion(Completion& complete)
 void ClientManager::focusedClientChanges(Client* newFocus)
 {
     // When the focus moves to another client on the same tag, the previously
-    // focused client leaves fullscreen. Switching to a different tag keeps the
-    // fullscreen state, so a fullscreen window can be left untouched while
-    // peeking at another tag.
+    // focused client leaves fullscreen/maximized. Switching to a different tag
+    // keeps the state, so such a window can be left untouched while peeking at
+    // another tag.
     if (lastFocus_ && newFocus && lastFocus_ != newFocus
-        && lastFocus_->fullscreen_()
         && lastFocus_->tag() == newFocus->tag()) {
-        lastFocus_->fullscreen_ = false;
+        if (lastFocus_->fullscreen_()) {
+            lastFocus_->fullscreen_ = false;
+        }
+        if (lastFocus_->maximized_()) {
+            lastFocus_->maximized_ = false;
+        }
     }
     if (newFocus) {
         hook_emit({"focus_changed", newFocus->window_id_str(), newFocus->title_()});
@@ -653,6 +657,11 @@ int ClientManager::fullscreen_cmd(Input input, Output output)
     return clientSetAttribute("fullscreen", input, output);
 }
 
+int ClientManager::maximize_cmd(Input input, Output output)
+{
+    return clientSetAttribute("maximized", input, output);
+}
+
 void ClientManager::pseudotile_complete(Completion& complete)
 {
     fullscreen_complete(complete);
@@ -668,4 +677,9 @@ void ClientManager::fullscreen_complete(Completion& complete)
     } else {
         complete.none();
     }
+}
+
+void ClientManager::maximize_complete(Completion& complete)
+{
+    fullscreen_complete(complete);
 }
