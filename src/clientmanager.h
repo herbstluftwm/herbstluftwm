@@ -80,6 +80,7 @@ protected:
     Settings* settings;
     Ewmh* ewmh;
     XConnection* X_;
+    Client* lastFocus_ = nullptr; //! the previously focused client, for disabling fullscreen on focus change
     std::unordered_map<Window, Client*> clients_;
     friend class Client;
 };

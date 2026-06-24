@@ -36,6 +36,50 @@ def test_alter_fullscreen(hlwm):
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
 
+def test_fullscreen_disabled_when_focusing_other_client_same_tag(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].fullscreen = True
+    assert hlwm.attr.clients[first].fullscreen() is True
+
+    # focusing another client on the same tag disables fullscreen on the
+    # previously focused client
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients.focus.winid() == second
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+
+def test_fullscreen_not_restored_when_refocusing(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].fullscreen = True
+
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+    # refocusing the previously fullscreen client does not restore fullscreen
+    hlwm.call(['jumpto', first])
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+
+def test_fullscreen_kept_when_switching_tag(hlwm):
+    hlwm.call('add othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].fullscreen = True
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+    # switching to another tag keeps the fullscreen state (peeking)
+    hlwm.call('use othertag')
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+    # and switching back keeps it, too
+    hlwm.call('use_index 0')
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+
 @pytest.mark.parametrize("command", ["fullscreen", "pseudotile"])
 def test_fullscreen_pseudotile_invalid_arg(hlwm, command):
     hlwm.create_client()

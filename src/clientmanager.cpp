@@ -180,6 +180,9 @@ void ClientManager::setDragged(Client* client) {
 
 void ClientManager::remove(Window window)
 {
+    if (lastFocus_ == clients_[window]) {
+        lastFocus_ = nullptr;
+    }
     removeChild(*clients_[window]->window_id_str);
     clients_.erase(window);
 }
@@ -554,10 +557,22 @@ void ClientManager::applyTmpRuleCompletion(Completion& complete)
  */
 void ClientManager::focusedClientChanges(Client* newFocus)
 {
+    // When the focus moves to another client on the same tag, the previously
+    // focused client leaves fullscreen. Switching to a different tag keeps the
+    // fullscreen state, so a fullscreen window can be left untouched while
+    // peeking at another tag.
+    if (lastFocus_ && newFocus && lastFocus_ != newFocus
+        && lastFocus_->fullscreen_()
+        && lastFocus_->tag() == newFocus->tag()) {
+        lastFocus_->fullscreen_ = false;
+    }
     if (newFocus) {
         hook_emit({"focus_changed", newFocus->window_id_str(), newFocus->title_()});
     } else {
         hook_emit({"focus_changed", "0x0", ""});
+    }
+    if (newFocus) {
+        lastFocus_ = newFocus;
     }
 }
 
