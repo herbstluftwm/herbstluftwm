@@ -39,7 +39,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
+    , main_client_(this, "main_client", false)
     , fullscreen_(this,  "fullscreen", false)
+    , maximized_(this,  "maximized", false)
     , sticky_(this,  "sticky", false)
     , minimized_(this,  "minimized", false)
     , floating_effectively_(this,  "floating_effectively", false)
@@ -71,11 +73,13 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_id_str = WindowID(window).str();
     decorated_.setWritable();
     floating_.setWritable();
+    main_client_.setWritable();
     keyMask_.setWritable();
     keysInactive_.setWritable();
     ewmhnotify_.setWritable();
     ewmhrequests_.setWritable();
     fullscreen_.setWritable();
+    maximized_.setWritable();
     sticky_.setWritable();
     pseudotile_.setWritable();
     sizehints_floating_.setWritable();
@@ -85,6 +89,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
         i->changed().connect(this, &Client::requestRedraw);
     }
+    maximized_.changed().connect(this, &Client::requestRedraw);
 
     keyMask_.changed().connect([this] {
             if (Root::get()->clients()->focus() == this) {
@@ -97,8 +102,19 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
             }
             });
     fullscreen_.changed().connect([this] {
+        if (fullscreen_()) {
+            // fullscreen and maximized are mutually exclusive
+            maximized_ = false;
+        }
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
+    });
+    maximized_.changed().connect([this] {
+        if (maximized_()) {
+            // fullscreen and maximized are mutually exclusive
+            fullscreen_ = false;
+        }
+        hook_emit({"maximized", maximized_() ? "on" : "off", WindowID(window_).str()});
     });
     minimized_.changed().connect([this]() {
         static long long minimizedTick = 0;
@@ -136,6 +152,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     fullscreen_.setDoc(
                 "whether this client covers all other "
                 "windows and panels on its monitor.");
+    maximized_.setDoc(
+                "whether this client covers the entire usable area of "
+                "its monitor (like 'fullscreen', but panels stay visible "
+                "and the window keeps its border). Mutually exclusive "
+                "with 'fullscreen'.");
     sticky_.setDoc(
                 "whether this client is pinned to the monitor. "
                 "This means that the client stays on its monitor, even when "
@@ -145,6 +166,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 "iconified).");
     floating_.setDoc("whether this client is set as a (single-window) floating client. "
                      "If set, the client is floated above the tiled clients.");
+    main_client_.setDoc(
+                "whether this client should be treated as a main application "
+                "for tag-local placement rules.");
     floating_effectively_.setDoc(
                 "whether this client is in the floating state currently. "
                 "This is the case if the client\'s tag is set to floating mode or "
@@ -294,6 +318,16 @@ void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
     decParams->urgent_ = urgent_();
     dec->setParameters(*decParams);
     dec->resize_outline(monitor_rect);
+}
+
+void Client::resize_maximized(Rectangle usable_area, bool isFocused) {
+    // like fullscreen, but the window keeps a normal decoration and is laid
+    // out within the monitor's usable area, so panels stay visible.
+    *decParams = DecorationParameters();
+    decParams->focused_ = isFocused;
+    decParams->urgent_ = urgent_();
+    dec->setParameters(*decParams);
+    dec->resize_outline(usable_area);
 }
 
 void Client::raise() {
@@ -783,4 +817,3 @@ string Client::tagName() {
 Window Client::decorationWindow() {
     return dec->decorationWindow();
 }
-

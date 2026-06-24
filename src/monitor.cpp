@@ -190,8 +190,8 @@ void Monitor::applyLayout() {
     }
     // preprocessing
     for (auto& p : res.data) {
-        if (p.first->fullscreen_() || p.second.floated) {
-            // do not hide fullscreen windows
+        if (p.first->fullscreen_() || p.first->maximized_() || p.second.floated) {
+            // do not hide fullscreen/maximized windows
             p.second.visible = true;
         }
         if (settings->hide_covered_windows) {
@@ -210,6 +210,11 @@ void Monitor::applyLayout() {
             tag->stack->sliceAddLayer(c->slice, LAYER_FULLSCREEN);
         } else {
             tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
+        }
+        if (c->maximized_()) {
+            tag->stack->sliceAddLayer(c->slice, LAYER_MAXIMIZED);
+        } else {
+            tag->stack->sliceRemoveLayer(c->slice, LAYER_MAXIMIZED);
         }
         // special raise rules for tiled clients:
         if (!p.second.floated) {
@@ -231,10 +236,11 @@ void Monitor::applyLayout() {
     tag->stack->clearLayer(LAYER_FOCUS);
     if (res.focus) {
         // activate the focus layer if requested by the setting
-        // or if there is a fullscreen client potentially covering
-        // the focused client.
+        // or if there is a fullscreen or maximized client potentially
+        // covering the focused client.
         if ((isFocused && g_settings->raise_on_focus_temporarily())
-            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false)
+            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false
+            || tag->stack->isLayerEmpty(LAYER_MAXIMIZED) == false)
         {
             tag->stack->sliceAddLayer(res.focus->slice, LAYER_FOCUS);
         }
@@ -246,6 +252,8 @@ void Monitor::applyLayout() {
         bool clientFocused = isFocused && res.focus == c;
         if (c->fullscreen_()) {
             c->resize_fullscreen(rect, clientFocused);
+        } else if (c->maximized_()) {
+            c->resize_maximized(getFloatingArea(), clientFocused);
         } else if (p.second.floated) {
             c->resize_floating(this, clientFocused);
         } else {
@@ -256,6 +264,8 @@ void Monitor::applyLayout() {
     for (auto& c : tag->floating_clients_) {
         if (c->fullscreen_()) {
             c->resize_fullscreen(rect, res.focus == c && isFocused);
+        } else if (c->maximized_()) {
+            c->resize_maximized(getFloatingArea(), res.focus == c && isFocused);
         } else {
             c->resize_floating(this, res.focus == c && isFocused);
         }

@@ -68,6 +68,8 @@ exactly one of the following conditions:
         * 'horizontal' - clients are placed next to each other
         * 'max' - all clients are maximized in this frame
         * 'grid' - clients are arranged in an almost quadratic grid
+        * 'masterstack' - the first client gets a larger master area and all
+          remaining clients are stacked in the remaining area
 
     . Frame is split into subframes: +
         It is split into exactly two *subframes* in a configurable 'fraction'
@@ -845,6 +847,13 @@ apply_tmp_rule 'WINID'|*--all* ['RULEDESCRIPTION'...]::
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument
     is given, fullscreen mode is toggled.
+
+maximize [*on*|*off*|*toggle*]::
+    Sets or toggles the maximized state of the focused client. A maximized
+    client covers the entire usable area of its monitor, similar to
+    +fullscreen+, but panels stay visible and the client keeps its window
+    border. The maximized and fullscreen states are mutually exclusive. If no
+    argument is given, maximized mode is toggled.
 
 pseudotile [*on*|*off*|*toggle*]::
     Sets or toggles the pseudotile state of the focused client. If a client is

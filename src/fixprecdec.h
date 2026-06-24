@@ -27,6 +27,14 @@ public:
         return value_ > other.value_;
     }
 
+    bool operator==(FixPrecDec other) {
+        return value_ == other.value_;
+    }
+
+    bool operator!=(FixPrecDec other) {
+        return value_ != other.value_;
+    }
+
     static FixPrecDec fromInteger(int integer) {
         return integer * unit_;
     }

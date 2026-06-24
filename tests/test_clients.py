@@ -36,6 +36,94 @@ def test_alter_fullscreen(hlwm):
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
 
+def test_fullscreen_disabled_when_focusing_other_client_same_tag(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].fullscreen = True
+    assert hlwm.attr.clients[first].fullscreen() is True
+
+    # focusing another client on the same tag disables fullscreen on the
+    # previously focused client
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients.focus.winid() == second
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+
+def test_fullscreen_not_restored_when_refocusing(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].fullscreen = True
+
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+    # refocusing the previously fullscreen client does not restore fullscreen
+    hlwm.call(['jumpto', first])
+    assert hlwm.attr.clients[first].fullscreen() is False
+
+
+def test_fullscreen_kept_when_switching_tag(hlwm):
+    hlwm.call('add othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].fullscreen = True
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+    # switching to another tag keeps the fullscreen state (peeking)
+    hlwm.call('use othertag')
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+    # and switching back keeps it, too
+    hlwm.call('use_index 0')
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.clients[winid].fullscreen() is True
+
+
+def test_maximized_disabled_when_focusing_other_client_same_tag(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].maximized = True
+    assert hlwm.attr.clients[first].maximized() is True
+
+    # focusing another client on the same tag disables maximized on the
+    # previously focused client
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients.focus.winid() == second
+    assert hlwm.attr.clients[first].maximized() is False
+
+
+def test_maximized_not_restored_when_refocusing(hlwm):
+    first, _ = hlwm.create_client()
+    second, _ = hlwm.create_client()
+    hlwm.call(['jumpto', first])
+    hlwm.attr.clients[first].maximized = True
+
+    hlwm.call(['jumpto', second])
+    assert hlwm.attr.clients[first].maximized() is False
+
+    # refocusing the previously maximized client does not restore maximized
+    hlwm.call(['jumpto', first])
+    assert hlwm.attr.clients[first].maximized() is False
+
+
+def test_maximized_kept_when_switching_tag(hlwm):
+    hlwm.call('add othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].maximized = True
+    assert hlwm.attr.clients[winid].maximized() is True
+
+    # switching to another tag keeps the maximized state (peeking)
+    hlwm.call('use othertag')
+    assert hlwm.attr.clients[winid].maximized() is True
+
+    # and switching back keeps it, too
+    hlwm.call('use_index 0')
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.clients[winid].maximized() is True
+
+
 @pytest.mark.parametrize("command", ["fullscreen", "pseudotile"])
 def test_fullscreen_pseudotile_invalid_arg(hlwm, command):
     hlwm.create_client()
@@ -45,6 +133,59 @@ def test_fullscreen_pseudotile_invalid_arg(hlwm, command):
 
 def test_fullscreen_completion(hlwm):
     assert hlwm.complete("fullscreen") == 'false off on toggle true'.split(' ')
+
+
+def test_maximize_command_and_attr(hlwm):
+    hlwm.create_client()
+    positives = ('true', 'on', '1')
+    negatives = ('false', 'off', '0')
+    for on, off in zip(positives, negatives):
+        hlwm.call(['maximize', on])
+        assert hlwm.get_attr('clients.focus.maximized') == 'true'
+        hlwm.call(['maximize', off])
+        assert hlwm.get_attr('clients.focus.maximized') == 'false'
+    hlwm.call('maximize toggle')
+    assert hlwm.get_attr('clients.focus.maximized') == 'true'
+    hlwm.call('maximize toggle')
+    assert hlwm.get_attr('clients.focus.maximized') == 'false'
+
+
+def test_maximize_completion(hlwm):
+    assert hlwm.complete("maximize") == 'false off on toggle true'.split(' ')
+
+
+def test_maximize_invalid_arg(hlwm):
+    hlwm.create_client()
+    hlwm.call_xfail(['maximize', 'novalue']) \
+        .expect_stderr('illegal argument "novalue"')
+
+
+def test_maximize_and_fullscreen_mutually_exclusive(hlwm):
+    hlwm.create_client()
+    hlwm.attr.clients.focus.fullscreen = True
+    hlwm.attr.clients.focus.maximized = True
+    # enabling maximized clears fullscreen
+    assert hlwm.attr.clients.focus.fullscreen() is False
+    assert hlwm.attr.clients.focus.maximized() is True
+
+    # and the other way around
+    hlwm.attr.clients.focus.fullscreen = True
+    assert hlwm.attr.clients.focus.maximized() is False
+    assert hlwm.attr.clients.focus.fullscreen() is True
+
+
+def test_maximize_fills_usable_area_keeping_panel_space(hlwm):
+    # reserve space at the top of the monitor like a panel would
+    hlwm.call('pad 0 30')
+    mx, my, mw, mh = (int(v) for v in hlwm.call('monitor_rect 0').stdout.split())
+
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].maximized = True
+
+    # the maximized window covers the usable area (monitor minus the panel
+    # reservation), so the reserved panel space stays free
+    assert hlwm.attr.clients[winid].decoration_geometry() \
+        == Rectangle(mx, my + 30, mw, mh - 30)
 
 
 def test_close_without_clients(hlwm):
@@ -297,6 +438,7 @@ def test_fullscreen_pseudotile_command(hlwm, command):
     'ewmhnotify',
     'ewmhrequests',
     'fullscreen',
+    'maximized',
     'pseudotile',
     'sizehints_floating',
     'sizehints_tiling',

@@ -51,6 +51,16 @@ struct is_finite<ShowFrameDecorations> : std::true_type {};
 template<> Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values;
 template<> inline Type Attribute_<ShowFrameDecorations>::staticType() { return Type::NAMES; }
 
+enum class MasterStackPosition {
+    left,
+    right,
+};
+
+template <>
+struct is_finite<MasterStackPosition> : std::true_type {};
+template<> Finite<MasterStackPosition>::ValueList Finite<MasterStackPosition>::values;
+template<> inline Type Attribute_<MasterStackPosition>::staticType() { return Type::NAMES; }
+
 
 class Settings : public Object {
 public:
@@ -96,6 +106,8 @@ public:
     Attribute_<bool>          raise_on_focus_temporarily = {"raise_on_focus_temporarily", false};
     Attribute_<bool>          raise_on_click = {"raise_on_click", true};
     Attribute_<bool>          gapless_grid = {"gapless_grid", true};
+    Attribute_<MasterStackPosition> masterstack_master_position = {"masterstack_master_position", MasterStackPosition::left};
+    Attribute_<FixPrecDec>    masterstack_master_ratio = {"masterstack_master_ratio", FixPrecDec::approxFrac(3, 5)};
     Attribute_<bool>          tabbed_max = {"tabbed_max", true};
     Attribute_<bool>          hide_covered_windows = {"hide_covered_windows", false};
     Attribute_<SmartFrameSurroundings> smart_frame_surroundings = {"smart_frame_surroundings", SmartFrameSurroundings::off};

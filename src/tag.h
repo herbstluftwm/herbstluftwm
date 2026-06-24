@@ -6,6 +6,8 @@
 
 #include "attribute_.h"
 #include "child.h"
+#include "fixprecdec.h"
+#include "framedata.h"
 #include "object.h"
 #include "signal.h"
 
@@ -21,6 +23,7 @@ enum class DirectionLevel;
 class Client;
 class Completion;
 class FrameLeaf;
+class FrameSplit;
 class FrameTree;
 class Settings;
 class Stack;
@@ -34,6 +37,9 @@ public:
     Attribute_<unsigned long> index;
     Attribute_<bool>         visible;
     Attribute_<bool>         floating;
+    Attribute_<bool>         auto_sidepane;
+    Attribute_<LayoutAlgorithm> auto_sidepane_layout;
+    Attribute_<FixPrecDec>   auto_sidepane_fraction;
     Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
     Attribute_<bool>         atEnd;
@@ -68,6 +74,8 @@ public:
     void insertClientSlice(Client* client);
     //! remove the client's slice from this tag's stack
     void removeClientSlice(Client* client);
+    std::string autoSidepaneInsertIndex(Client* client);
+    void autoSidepaneCleanup();
 
     void focusInDirCommand(CallOrComplete invoc);
     int focusInDir(Direction direction, DirectionLevel depth, Output output);
@@ -88,6 +96,7 @@ private:
     std::string isValidTagIndex(unsigned long newIndex);
     std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
+    std::shared_ptr<FrameSplit> autoSidepaneRootSplit();
     void fixFocusIndex();
     //! get the number of clients on this tag
     int computeClientCount();
@@ -108,4 +117,3 @@ void tag_update_flags();
 void tag_set_flags_dirty();
 
 #endif
-

@@ -977,7 +977,8 @@ void FrameTree::splitFrame(string frameIndex, SplitModeName mode, FixPrecDec fra
             m.align = align_auto;
         } else if (layout == LayoutAlgorithm::grid && windowcount == 2) {
             m.align = SplitAlign::horizontal;
-        } else if (layout == LayoutAlgorithm::horizontal) {
+        } else if (layout == LayoutAlgorithm::horizontal
+            || layout == LayoutAlgorithm::masterstack) {
             m.align = SplitAlign::horizontal;
         } else {
             m.align = SplitAlign::vertical;
@@ -985,7 +986,8 @@ void FrameTree::splitFrame(string frameIndex, SplitModeName mode, FixPrecDec fra
         size_t count1 = windowcount;
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
         if ((layout == LayoutAlgorithm::horizontal
-            || layout == LayoutAlgorithm::vertical)
+            || layout == LayoutAlgorithm::vertical
+            || layout == LayoutAlgorithm::masterstack)
             && !userDefinedFraction && count1 > 1) {
             fraction.value_ = (nc1 * fraction.unit_) / count1;
         }
@@ -1065,4 +1067,3 @@ void FrameTree::dumpLayoutCompletion(Completion& complete) {
         complete.none();
     }
 }
-

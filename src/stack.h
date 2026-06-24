@@ -13,6 +13,7 @@ enum HSLayer {
     /* layers on each tag, from top to bottom */
     LAYER_FOCUS,
     LAYER_FULLSCREEN,
+    LAYER_MAXIMIZED,
     LAYER_FLOATING,
     LAYER_NORMAL,
     LAYER_FRAMES,
