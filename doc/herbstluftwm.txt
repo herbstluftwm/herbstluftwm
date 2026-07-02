@@ -1208,6 +1208,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     * +smart+ tries to place it with as little overlap to other floating windows
       as possible. If there are multiple options with the least overlap, then
       the position with the least overlap to tiling windows is chosen.
+    * +topleft+, +topright+, +bottomleft+, +bottomright+ moves the window
+      to the respective corner of the monitor but leaves a gap of
+      *settings.snap_gap* pixels.
 
 +floating_geometry+::
     Sets the client's +floating_geometry+ attribute. The 'VALUE' is a rectangle,
