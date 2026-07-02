@@ -65,6 +65,7 @@ public:
                 && floating_ == other.floating_
                 && minimal_ == other.minimal_
                 && tabs_ == other.tabs_
+                && urgent_ == other.urgent_
                 && urgentTabs_ == other.urgentTabs_;
     }
     void updateTabUrgencyFlags();

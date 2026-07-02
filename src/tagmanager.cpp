@@ -23,6 +23,13 @@ TagManager* global_tags;
 template<>
 RunTimeConverter<HSTag*>* Converter<HSTag*>::converter = nullptr;
 
+template<>
+Finite<TagSelectionStrategy>::ValueList Finite<TagSelectionStrategy>::values = ValueListPlain {
+    { TagSelectionStrategy::any_unshown, "any_unshown" },
+    { TagSelectionStrategy::only_empty, "only_empty" },
+    { TagSelectionStrategy::prefer_empty, "prefer_empty" },
+};
+
 TagManager::TagManager()
     : IndexingObject()
     , focus_(*this, "focus")
@@ -400,11 +407,20 @@ function<void(Completion&)> TagManager::frameCompletion(FrameCompleter completer
     };
 }
 
-HSTag* TagManager::unusedTag() {
+HSTag* TagManager::newMonitorTag(TagSelectionStrategy strategy) {
+    if (strategy != TagSelectionStrategy::any_unshown) {
+        tag_update_flags();
+    }
+
     for (auto t : *this) {
-        if (!find_monitor_with_tag(&* t)) {
+        if (!find_monitor_with_tag(&* t) && (strategy == TagSelectionStrategy::any_unshown || !(t->flags & TAG_FLAG_USED))) {
             return t;
         }
+    }
+
+    if (strategy == TagSelectionStrategy::prefer_empty) {
+        // no empty tag found, so try again with any tag
+        return newMonitorTag(TagSelectionStrategy::any_unshown);
     }
     return nullptr;
 }

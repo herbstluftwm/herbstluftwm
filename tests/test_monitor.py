@@ -26,6 +26,92 @@ def test_add_monitor(hlwm):
     assert hlwm.attr.monitors[1].geometry() == Rectangle(40, 41, 800, 600)
 
 
+@pytest.mark.parametrize("strategy, expected_tag", [
+    (None, "tag2"),
+    ("any_unshown", "tag2"),
+    ("prefer_empty", "tag3"),
+    ("only_empty", "tag3"),
+])
+@pytest.mark.parametrize("default_has_client", [True, False])
+@pytest.mark.parametrize("monitor_command", [
+    "add_monitor 80x80+80+0",
+    "set_monitors 80x80+0+0 80x80+80+0"
+])
+def test_tag_selection_strategy(hlwm, strategy, expected_tag, default_has_client, monitor_command):
+    """Check how tags are selected when a new monitor appears.
+
+    Sets up the following scenario:
+
+    - default tag displayed on monitor 0 (default), with 0 or 1 clients
+    - tag2 with a client
+    - tag3 which is empty
+
+    Depending on the tag selection strategy, the new monitor will
+    display either tag2 or tag3.
+    """
+    if default_has_client:
+        hlwm.create_client()
+
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+
+    hlwm.call('rule once tag=tag2')
+    hlwm.create_client()
+
+    # sanity checks
+    assert hlwm.get_attr('monitors.0.tag') == 'default'
+    assert hlwm.get_attr('tags.focus.name') == 'default'
+    for tag, count in [
+        ("default", 1 if default_has_client else 0),
+        ("tag2", 1),
+        ("tag3", 0),
+    ]:
+        assert hlwm.get_attr(f'tags.by-name.{tag}.client_count') == str(count)
+
+    if strategy is not None:
+        hlwm.call(['set_attr', 'monitors.tag_selection_strategy', strategy])
+
+    hlwm.call(monitor_command)
+
+    assert hlwm.get_attr('monitors.1.tag') == expected_tag
+
+
+@pytest.mark.parametrize("strategy, finds_tag", [
+    ("any_unshown", True),
+    ("prefer_empty", True),
+    ("only_empty", False),
+])
+def test_tag_selection_strategy_no_empty(hlwm, strategy, finds_tag):
+    """Check behavior with *_empty strategies when no empty tag is available.
+
+    Sets up the following scenario:
+
+    - default tag displayed on monitor 0 (default)
+    - tag2 with a client
+
+    Depending on the tag selection strategy, the new monitor will display tag2,
+    or we'll get an error.
+    """
+    hlwm.call('add tag2')
+    hlwm.call('rule once tag=tag2')
+    hlwm.create_client()
+
+    # sanity checks
+    assert hlwm.get_attr('monitors.0.tag') == 'default'
+    assert hlwm.get_attr('tags.focus.name') == 'default'
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == "1"
+
+    hlwm.call(['set_attr', 'monitors.tag_selection_strategy', strategy])
+
+    if finds_tag:
+        hlwm.call('add_monitor 800x600+40+41')
+        assert hlwm.get_attr('monitors.1.tag') == "tag2"
+    else:
+        hlwm.call_xfail('add_monitor 800x600+40+41') \
+            .expect_stderr("There are not enough free tags")
+        assert hlwm.get_attr('monitors.count') == '1'
+
+
 def test_add_monitor_invalid_geometry(hlwm):
     hlwm.call('add tag2')
 

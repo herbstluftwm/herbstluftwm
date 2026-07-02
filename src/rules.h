@@ -72,6 +72,10 @@ enum class ClientPlacement {
     Center, //! place in the center of a monitor
     Unchanged, //! don't change the position
     Smart, //! as little overlaps as possible
+    TopLeft, //! top left corner of monitor
+    TopRight, //! top right corner of monitor
+    BottomLeft, //! bottom left corner of monitor
+    BottomRight, // bottom right corner of monitor
 };
 
 template <>
