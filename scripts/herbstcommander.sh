@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # herbstcommander.sh - launch herbstluftwm-commands via dmenu
-# Written by Florian Bruhin <me@the-compiler.org>
+# Written by Freya Bruhin <me@the-compiler.org>
 
 # To customize dmenu-colors, create a file named "herbstcommander" in your
 # herbstluftwm config-directory, with something like this in it:
