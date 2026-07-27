@@ -8,3 +8,4 @@ After=graphical-session-pre.target
 ExecStart=herbstluftwm
 ExecReload=herbstluftwm reload
 Restart=on-failure
+Type=notify
