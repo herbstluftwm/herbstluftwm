@@ -1,4 +1,5 @@
 import pytest
+import re
 import random
 from conftest import PROCESS_SHUTDOWN_TIME
 from herbstluftwm.types import Rectangle
@@ -729,3 +730,36 @@ def test_sticky_swap_tags(hlwm):
 
     hlwm.call(f"focus_monitor {monitor2}")
     assert hlwm.attr.tags.focus.focused_client.winid() == client2
+
+
+def helper_client_stack(hlwm):
+    """the winids of the clients in the 'stack' output, top to bottom"""
+    winids = re.findall(r'Client (0x[0-9a-f]+)', hlwm.call('stack').stdout)
+    unique = []
+    for w in winids:
+        if w not in unique:
+            unique.append(w)
+    return unique
+
+
+@pytest.mark.parametrize('floating', ['tag', 'client'])
+def test_sticky_switch_tag_keeps_stacking_order(hlwm, floating):
+    hlwm.call('add othertag')
+    if floating == 'tag':
+        hlwm.call('floating on')
+        hlwm.call('attr tags.by-name.othertag.floating true')
+    clients = hlwm.create_clients(3)
+    for c in clients:
+        hlwm.attr.clients[c].sticky = True
+        if floating == 'client':
+            hlwm.attr.clients[c].floating = True
+    # stack the middle client on top: order top to bottom = 1, 2, 0
+    hlwm.call(['raise', clients[1]])
+    expected = [clients[1], clients[2], clients[0]]
+    assert helper_client_stack(hlwm) == expected
+
+    hlwm.call('use othertag')
+    assert helper_client_stack(hlwm) == expected
+
+    hlwm.call('use default')
+    assert helper_client_stack(hlwm) == expected
