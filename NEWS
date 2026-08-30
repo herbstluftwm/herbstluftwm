@@ -4,6 +4,15 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * Fix the stacking order of sticky clients: switching the tag (or
+    swapping the tags of two monitors) moved the sticky clients to the new
+    tag one by one, each on top, so their relative stacking order was
+    replaced by the order of the tag's client list and a covered sticky
+    window could end up on top of the focused one.
+
 Release 0.9.6 on 2026-04-03
 ---------------------------
 
