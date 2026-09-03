@@ -5,7 +5,6 @@ import Xlib
 import ewmh
 import os
 import re
-import select
 import selectors
 import shlex
 import shutil
