@@ -27,6 +27,9 @@ static bool g_quiet = false;
 static regex_t* g_hook_regex = NULL;
 static int g_hook_regex_count = 0;
 static int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
+static int g_hook_indicate_bootup = 0; // print a message after having connected to the hlwm window
+
+#define HOOK_BOOTUP_MESSAGE "hook_connected"
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
@@ -92,6 +95,9 @@ void print_help(char* command, FILE* file) {
             "connect to the running herbstluftwm instance.\n"
         "\t--binary-pipe: run multiple commands via a binary interface"
             "on the standard channels.\n"
+        "\t--indicate-connected: Print a (synthetic) line \'" HOOK_BOOTUP_MESSAGE "\' "
+            "as soon as --idle/--wait have connected to herbstluftwm (only has effect "
+            "when listening to hooks\n"
         "\t-v, --version: Print the herbstclient version. To get the "
             "herbstluftwm version, use 'herbstclient version'.\n"
         "\t-h, --help: Print this help."
@@ -124,7 +130,22 @@ int main_hook(int argc, char* argv[]) {
     signal(SIGINT,  quit_herbstclient);
     signal(SIGQUIT, quit_herbstclient);
     int exit_code = 0;
-    while (1) {
+    // explicitly connect to hlwm's hook window
+    if (!hc_hook_window_connect(con)) {
+        fprintf(stderr, "Cannot listen for hooks\n");
+        exit_code = EXIT_FAILURE;
+    }
+    if (g_hook_indicate_bootup) {
+        printf("%s", HOOK_BOOTUP_MESSAGE);
+        if (g_null_char_as_delim) {
+            putchar(0);
+        } else {
+            printf("\n");
+        }
+        fflush(stdout);
+    }
+    // repeat while there has been no error
+    while (exit_code == 0) {
         bool print_signal = true;
         int hook_argc;
         char** hook_argv;
@@ -283,6 +304,7 @@ int main(int argc, char* argv[]) {
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
         {"quiet", 0, 0, 'q'},
+        {"indicate-connected", 0, &g_hook_indicate_bootup, 1},
         {"version", 0, 0, 'v'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}

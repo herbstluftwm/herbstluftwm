@@ -55,12 +55,15 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         self.env = extend_env_with_whitelist(self.env)
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
-            [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
+            [self.HC_PATH, '--indicate-connected', '--idle', 'rule', 'here_is_.*'],
             bufsize=1,  # line buffered
             universal_newlines=True,
             env=self.env,
             stdout=subprocess.PIPE
         )
+        # wait for hc --idle to connect to hlwm's hook window
+        bootup_message = self.hc_idle.stdout.readline()
+        assert bootup_message.rstrip() == "hook_connected"
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
