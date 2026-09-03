@@ -1,0 +1,11 @@
+[Unit]
+Description=A manual tiling window manager for X11
+Documentation=man:herbstluftwm(1)
+PartOf=graphical-session.target
+After=graphical-session-pre.target
+
+[Service]
+ExecStart=herbstluftwm
+ExecReload=herbstluftwm reload
+Restart=on-failure
+Type=notify

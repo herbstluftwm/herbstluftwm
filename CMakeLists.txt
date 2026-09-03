@@ -39,6 +39,27 @@ set(FISHCOMPLETIONDIR ${DATADIR}/fish/vendor_completions.d
 set(BASHCOMPLETIONDIR ${DATADIR}/bash-completion/completions
     CACHE PATH "Install path for bash completions file")
 
+option(WITH_SYSTEMD "Enable systemd sd_notify integration" OFF)
+
+if(WITH_SYSTEMD)
+    pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+    add_compile_definitions(HAVE_SYSTEMD)
+    include_directories(${SYSTEMD_INCLUDE_DIRS})
+    link_libraries(${SYSTEMD_LIBRARIES})
+
+    execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=systemduserunitdir systemd
+                    OUTPUT_VARIABLE SYSTEMD_USER_UNIT_DIR_DEFAULT
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT SYSTEMD_USER_UNIT_DIR_DEFAULT)
+        set(SYSTEMD_USER_UNIT_DIR_DEFAULT "lib/systemd/user")
+    endif()
+
+    set(SYSTEMD_USER_UNIT_DIR "${SYSTEMD_USER_UNIT_DIR_DEFAULT}"
+        CACHE PATH "Install path for systemd user unit")
+
+    install(FILES share/herbstluftwm.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
+endif()
+
 ## do the actual work
 add_subdirectory(ipc-client)
 add_subdirectory(src)
