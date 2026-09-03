@@ -587,6 +587,45 @@ def test_decorated_change_while_minimized(hlwm, x11):
         assert_decoration_state_correct(hlwm, x11, winid)
 
 
+@pytest.mark.parametrize("hide_by", ["visible", "minimized", "hidden_tag"])
+def test_decorated_change_on_unmapped_client_then_self_unmap(hlwm, x11, hide_by):
+    """
+    Changing 'decorated' on an unmapped client must not increment the
+    counter of unmap events to ignore, because XReparentWindow() only
+    generates an UnmapNotify for a mapped window. Otherwise, a later unmap
+    by the application itself (e.g. hiding to the tray) would be ignored
+    and hlwm would keep managing an unmapped window. The "visible" case
+    checks that the counter is still incremented for a mapped window.
+    """
+    handle, winid = x11.create_client()
+    hlwm.attr.theme.border_width = 11
+    client_obj = hlwm.attr.clients[winid]
+    if hide_by == "minimized":
+        client_obj.minimized = True
+    elif hide_by == "hidden_tag":
+        hlwm.call('add othertag')
+        hlwm.call(['move', 'othertag'])
+    assert client_obj.visible() is (hide_by == "visible")
+
+    # toggle decorations
+    client_obj.decorated = False
+    client_obj.decorated = True
+
+    # make the client visible again
+    if hide_by == "minimized":
+        client_obj.minimized = False
+    elif hide_by == "hidden_tag":
+        hlwm.call(['bring', winid])
+    assert client_obj.visible() is True
+    assert_decoration_state_correct(hlwm, x11, winid)
+
+    # the application withdraws its window
+    handle.unmap()
+    x11.sync_with_hlwm()
+
+    assert winid not in hlwm.list_children('clients')
+
+
 def test_decorated_off_floating_geometry_correct(hlwm):
     winid, _ = hlwm.create_client()
     hlwm.attr.theme.border_width = 8
