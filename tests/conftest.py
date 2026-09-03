@@ -548,31 +548,18 @@ class HcIdle:
         """
         self.hlwm = hlwm
         self.separator = b'\n'
-        command = [hlwm.HC_PATH, '--idle']
+        command = [hlwm.HC_PATH, '--hook-ready-text=hc_idle_bootup', '--idle']
         if zero_separated:
-            command = [hlwm.HC_PATH, '-0', '--idle']
+            command = [hlwm.HC_PATH, '--hook-ready-text=hc_idle_bootup', '-0', '--idle']
             self.separator = b'\x00'
         self.proc = subprocess.Popen(command,
                                      stdout=subprocess.PIPE,
                                      bufsize=0)
-        # we don't know how fast self.proc connects to hlwm.
-        # So we keep sending messages via hlwm util we receive some
-        number_sent = 0
-        while [] == select.select([self.proc.stdout], [], [], 0.1)[0]:
-            # while there hasn't been a message received, send something
-            number_sent += 1
-            self.hlwm.call(['emit_hook', 'hc_idle_bootup', number_sent])
-        # now that we know that self.proc is connected, we need to consume
-        # its output up to the last message we have sent
-        assert number_sent > 0
-        number_received = 0
-        while number_received < number_sent:
-            line = self.read_hook()
-            assert line[0] == 'hc_idle_bootup'
-            number_received = int(line[1])
+        bootup = self.read_hook()
+        assert bootup[0] == 'hc_idle_bootup'
 
     def read_hook(self):
-        """read exactly one hook. This blocks if there is on herbstclient's stdout none."""
+        """read exactly one hook. This blocks until there is one on herbstclient's stdout."""
         line_bytes = b''
         while True:
             b = self.proc.stdout.read(1)
