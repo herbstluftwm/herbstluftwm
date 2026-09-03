@@ -51,6 +51,10 @@ OPTIONS
     Let *--wait* exit after 'COUNT' hooks were received and printed. The default
     'COUNT' is 1.
 
+*--hook-ready-text* 'TEXT'::
+   Print a the specified 'TEXT' as soon as *--idle*/*--wait* has connected to
+   herbstluftwm (so it only has effect when listening to hooks).
+
 *-q*, *--quiet*::
     Do not print error messages if herbstclient cannot connect to the running
     herbstluftwm instance.

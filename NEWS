@@ -4,6 +4,11 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+  * New herbstclient option *--hook-ready-text* (to indicate established
+    connection of the *--idle* mode)
+
 Release 0.9.6 on 2026-04-03
 ---------------------------
 

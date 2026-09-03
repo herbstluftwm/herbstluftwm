@@ -28,6 +28,9 @@ static regex_t* g_hook_regex = NULL;
 static int g_hook_regex_count = 0;
 static int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 
+#define HOOK_BOOTUP_MESSAGE_OPT 1000
+static char* g_hook_bootup_message = 0; // print this message after having connected to the hlwm window
+
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
     fprintf(stderr, "interrupted by signal %d\n", signal);
@@ -92,6 +95,9 @@ void print_help(char* command, FILE* file) {
             "connect to the running herbstluftwm instance.\n"
         "\t--binary-pipe: run multiple commands via a binary interface"
             "on the standard channels.\n"
+        "\t--hook-ready-text=TEXT: Print a the specified TEXT "
+            "as soon as --idle/--wait has connected to herbstluftwm (only has effect "
+            "when listening to hooks)\n"
         "\t-v, --version: Print the herbstclient version. To get the "
             "herbstluftwm version, use 'herbstclient version'.\n"
         "\t-h, --help: Print this help."
@@ -124,7 +130,22 @@ int main_hook(int argc, char* argv[]) {
     signal(SIGINT,  quit_herbstclient);
     signal(SIGQUIT, quit_herbstclient);
     int exit_code = 0;
-    while (1) {
+    // explicitly connect to hlwm's hook window
+    if (!hc_hook_window_connect(con)) {
+        fprintf(stderr, "Cannot listen for hooks\n");
+        exit_code = EXIT_FAILURE;
+    }
+    if (g_hook_bootup_message) {
+        printf("%s", g_hook_bootup_message);
+        if (g_null_char_as_delim) {
+            putchar(0);
+        } else {
+            printf("\n");
+        }
+        fflush(stdout);
+    }
+    // repeat while there has been no error
+    while (exit_code == 0) {
         bool print_signal = true;
         int hook_argc;
         char** hook_argv;
@@ -283,6 +304,7 @@ int main(int argc, char* argv[]) {
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
         {"quiet", 0, 0, 'q'},
+        {"hook-ready-text", 1, 0, HOOK_BOOTUP_MESSAGE_OPT},
         {"version", 0, 0, 'v'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
@@ -295,8 +317,13 @@ int main(int argc, char* argv[]) {
             break;
         }
         switch (c) {
+            case HOOK_BOOTUP_MESSAGE_OPT:
+                // optarg should (hopefully) point to a suffix within
+                // one of the entries of argv
+                g_hook_bootup_message = optarg;
+                break;
             case 0:
-                /* ignore recognized long option */
+                /* ignore any other recognized long option */
                 break;
             case 'i':
                 g_hook_count = 0;
