@@ -13,6 +13,10 @@ Current git version
     disables all hlwm-induced mouse movement (XWarpPointer, used once) -- thus
     overriding user configuration of 'mouse_recenter_gap' -- but does not
     prevent saving of pointer position on change of focus.
+  * Fix the counting of unmap events when the 'decorated' attribute of an
+    unmapped (e.g. minimized) client changes. Previously, the next unmap by
+    the application itself (e.g. hiding to the system tray) was ignored and
+    the window stayed managed although it was not shown anymore.
 
 Release 0.9.6 on 2026-04-03
 ---------------------------
