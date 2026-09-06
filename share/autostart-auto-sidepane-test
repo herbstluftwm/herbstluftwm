@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+hc() {
+    herbstclient "$@"
+}
+
+hc emit_hook reload
+hc keyunbind --all
+hc mouseunbind --all
+hc unrule -F
+
+xsetroot -solid '#20242b'
+
+Mod=Mod1
+
+hc rename default com || true
+hc add misc
+
+hc keybind $Mod-Shift-q quit
+hc keybind $Mod-Shift-r reload
+hc keybind $Mod-1 use com
+hc keybind $Mod-2 use misc
+hc keybind $Mod-Left focus left
+hc keybind $Mod-Down focus down
+hc keybind $Mod-Up focus up
+hc keybind $Mod-Right focus right
+hc keybind $Mod-Shift-Left shift left
+hc keybind $Mod-Shift-Down shift down
+hc keybind $Mod-Shift-Up shift up
+hc keybind $Mod-Shift-Right shift right
+hc keybind $Mod-s floating toggle
+hc keybind $Mod-space cycle_layout +1
+
+# test spawns
+hc keybind $Mod-Return spawn xterm -class main_app -title main-app -geometry 90x28
+hc keybind $Mod-Shift-Return spawn xterm -class side_app -title side-app -geometry 90x28
+hc keybind $Mod-f spawn xterm -class float_app -title floating-app -geometry 90x28
+hc keybind $Mod-m spawn xterm -class misc_app -title misc-app -geometry 90x28
+
+hc set frame_gap 8
+hc set window_gap 0
+hc set frame_border_width 2
+hc set smart_frame_surroundings on
+hc set smart_window_surroundings off
+hc set frame_border_active_color '#7aa2f7'
+hc set frame_border_normal_color '#3b4252'
+hc set frame_bg_active_color '#7aa2f733'
+hc set frame_bg_normal_color '#00000000'
+hc set frame_transparent_width 0
+hc set frame_bg_transparent on
+
+hc attr theme.tiling.reset 1
+hc attr theme.floating.reset 1
+hc attr theme.title_height 18
+hc attr theme.title_when always
+hc attr theme.active.color '#7aa2f7'
+hc attr theme.normal.color '#3b4252'
+hc attr theme.urgent.color '#bf616a'
+hc attr theme.title_color '#e5e9f0'
+hc attr theme.normal.title_color '#d8dee9'
+hc attr theme.active.title_color '#ffffff'
+
+# Enable the new mode only on the communication tag.
+hc set_attr tags.by-name.com.auto_sidepane on
+
+# Main apps stay in the primary pane.
+hc rule class=main_app tag=com main_client=on focus=on switchtag=on
+
+# Side apps go to the auto-managed pane on the right.
+hc rule class=side_app focus=on
+
+# Floating test case: should not participate in sidepane placement.
+hc rule class=float_app floating=on
+
+# Misc apps go to the second tag for comparison.
+hc rule class=misc_app tag=misc focus=on switchtag=on
+
+# Keep usual popup/dialog behavior.
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on
+hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
+hc rule fixedsize floating=on
+
+hc set tree_style '╾│ ├└╼─┐'
+hc unlock

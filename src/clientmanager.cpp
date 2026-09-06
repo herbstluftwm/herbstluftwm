@@ -180,6 +180,9 @@ void ClientManager::setDragged(Client* client) {
 
 void ClientManager::remove(Window window)
 {
+    if (lastFocus_ == clients_[window]) {
+        lastFocus_ = nullptr;
+    }
     removeChild(*clients_[window]->window_id_str);
     clients_.erase(window);
 }
@@ -251,6 +254,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     client->slice = Slice::makeClientSlice(client);
     client->tag()->insertClientSlice(client);
     // insert window to the tag
+    if (changes.tree_index.empty()) {
+        changes.tree_index = client->tag()->autoSidepaneInsertIndex(client);
+    }
     client->tag()->insertClient(client, changes.tree_index, changes.focus);
 
     tag_set_flags_dirty();
@@ -343,6 +349,9 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
 {
     if (changes.floating.has_value()) {
         client->floating_ = changes.floating.value();
+    }
+    if (changes.mainClient.has_value()) {
+        client->main_client_ = changes.mainClient.value();
     }
     if (changes.pseudotile.has_value()) {
         client->pseudotile_ = changes.pseudotile.value();
@@ -548,10 +557,26 @@ void ClientManager::applyTmpRuleCompletion(Completion& complete)
  */
 void ClientManager::focusedClientChanges(Client* newFocus)
 {
+    // When the focus moves to another client on the same tag, the previously
+    // focused client leaves fullscreen/maximized. Switching to a different tag
+    // keeps the state, so such a window can be left untouched while peeking at
+    // another tag.
+    if (lastFocus_ && newFocus && lastFocus_ != newFocus
+        && lastFocus_->tag() == newFocus->tag()) {
+        if (lastFocus_->fullscreen_()) {
+            lastFocus_->fullscreen_ = false;
+        }
+        if (lastFocus_->maximized_()) {
+            lastFocus_->maximized_ = false;
+        }
+    }
     if (newFocus) {
         hook_emit({"focus_changed", newFocus->window_id_str(), newFocus->title_()});
     } else {
         hook_emit({"focus_changed", "0x0", ""});
+    }
+    if (newFocus) {
+        lastFocus_ = newFocus;
     }
 }
 
@@ -632,6 +657,11 @@ int ClientManager::fullscreen_cmd(Input input, Output output)
     return clientSetAttribute("fullscreen", input, output);
 }
 
+int ClientManager::maximize_cmd(Input input, Output output)
+{
+    return clientSetAttribute("maximized", input, output);
+}
+
 void ClientManager::pseudotile_complete(Completion& complete)
 {
     fullscreen_complete(complete);
@@ -649,3 +679,7 @@ void ClientManager::fullscreen_complete(Completion& complete)
     }
 }
 
+void ClientManager::maximize_complete(Completion& complete)
+{
+    fullscreen_complete(complete);
+}

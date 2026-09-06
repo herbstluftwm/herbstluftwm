@@ -52,6 +52,12 @@ Finite<ShowFrameDecorations>::ValueList Finite<ShowFrameDecorations>::values = V
     { ShowFrameDecorations::none, "none" },
 };
 
+template<>
+Finite<MasterStackPosition>::ValueList Finite<MasterStackPosition>::values = ValueListPlain {
+    { MasterStackPosition::left, "left" },
+    { MasterStackPosition::right, "right" },
+};
+
 
 Settings* g_settings = nullptr; // the global settings object
 
@@ -108,6 +114,8 @@ Settings::Settings()
         &raise_on_focus_temporarily,
         &raise_on_click,
         &gapless_grid,
+        &masterstack_master_position,
+        &masterstack_master_ratio,
         &tabbed_max,
         &hide_covered_windows,
         &smart_frame_surroundings,
@@ -155,6 +163,16 @@ Settings::Settings()
          &raise_on_focus_temporarily}) {
         i->changed().connect(&all_monitors_apply_layout);
     }
+    masterstack_master_position.changed().connect(&all_monitors_apply_layout);
+    masterstack_master_ratio.changed().connect(&all_monitors_apply_layout);
+    masterstack_master_ratio.setValidator([] (FixPrecDec new_value) {
+        auto maxFrac = FixPrecDec::fromInteger(1) - FRAME_MIN_FRACTION;
+        if (new_value < FRAME_MIN_FRACTION || new_value > maxFrac) {
+            return string("masterstack_master_ratio must be between ")
+                + FRAME_MIN_FRACTION.str() + " and " + maxFrac.str();
+        }
+        return string();
+    });
     show_frame_decorations.changed().connect(&all_monitors_apply_layout);
     smart_frame_surroundings.changed().connect(&all_monitors_apply_layout);
     smart_window_surroundings.changed().connect(&all_monitors_apply_layout);
@@ -329,6 +347,18 @@ Settings::Settings()
                 "client always fills the gap within this frame. If unset, "
                 "then the last client has the same size as all other clients "
                 "in this frame.");
+    masterstack_master_position.setDoc(
+                "Controls on which side the master area is placed in the "
+                "'masterstack' layout. If set to 'left', then the first client "
+                "is shown on the left and the stack is shown on the right. "
+                "If set to 'right', the arrangement is mirrored. The default "
+                "value is 'left'."
+                );
+    masterstack_master_ratio.setDoc(
+                "Controls the size of the master area in the 'masterstack' "
+                "layout. The value must be between '0.1' and '0.9'. The "
+                "default value is '0.6'."
+                );
 
     hide_covered_windows.setDoc(
                 "If activated, windows are explicitly hidden when they are "

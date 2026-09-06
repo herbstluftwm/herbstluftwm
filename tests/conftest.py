@@ -26,7 +26,13 @@ BINDIR = pathlib.Path(os.environ['PWD'])  # use workdir
 
 # List of environment variables copied during hlwm process creation:
 # * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
-COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
+COPY_ENV_WHITELIST = [
+    'FONTCONFIG_FILE',
+    'FONTCONFIG_PATH',
+    'LSAN_OPTIONS',
+    'PATH',
+    'XDG_CACHE_HOME',
+]
 
 # time in seconds to wait for a process to shut down
 PROCESS_SHUTDOWN_TIME = 30

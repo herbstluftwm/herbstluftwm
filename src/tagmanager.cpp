@@ -321,6 +321,9 @@ void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bo
         // nothing to do
         return;
     }
+    if (frameIndex.empty()) {
+        frameIndex = target->autoSidepaneInsertIndex(client);
+    }
     Monitor* monitor_target = find_monitor_with_tag(target);
     tag_source->removeClient(client);
     // insert window into target
@@ -330,6 +333,8 @@ void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bo
         client->setTag(target);
         client->tag()->insertClientSlice(client);
     }
+    tag_source->autoSidepaneCleanup();
+    target->autoSidepaneCleanup();
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {

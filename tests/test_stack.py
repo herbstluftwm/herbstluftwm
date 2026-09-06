@@ -227,6 +227,7 @@ def test_stack_tree(hlwm):
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
       - Fullscreen-Layer
+      - Maximized-Layer
       - Floating-Layer
       - Tiling-Layer
         - Client <windowid> "bash"
@@ -236,6 +237,7 @@ def test_stack_tree(hlwm):
     - Monitor 0 with tag "default"
       - Focus-Layer
       - Fullscreen-Layer
+      - Maximized-Layer
       - Floating-Layer
       - Tiling-Layer
         - Client <windowid> "bash"
@@ -259,6 +261,7 @@ def test_stack_tree_desktop_windows(hlwm, x11):
     - Monitor 0 with tag "default"
       - Focus-Layer
       - Fullscreen-Layer
+      - Maximized-Layer
       - Floating-Layer
       - Tiling-Layer
       - Frame Layer

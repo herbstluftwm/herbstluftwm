@@ -152,6 +152,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                    &TagManager::floatingComplete }},
         {"fullscreen",     {clients, &ClientManager::fullscreen_cmd,
                                      &ClientManager::fullscreen_complete}},
+        {"maximize",       {clients, &ClientManager::maximize_cmd,
+                                     &ClientManager::maximize_complete}},
         {"pseudotile",     {clients, &ClientManager::pseudotile_cmd,
                                      &ClientManager::pseudotile_complete}},
         {"tag_status",     {global_cmds, &GlobalCommands::tagStatusCommand}},
