@@ -50,6 +50,7 @@ const std::array<const char*,NetCOUNT> Ewmh::netatomNames_ =
     /* window states */
     { NetWmStateFullscreen           , "_NET_WM_STATE_FULLSCREEN"          },
     { NetWmStateHidden               , "_NET_WM_STATE_HIDDEN"              },
+    { NetWmStateAbove                , "_NET_WM_STATE_ABOVE"               },
     { NetWmStateDemandsAttention     , "_NET_WM_STATE_DEMANDS_ATTENTION"   },
     /* window types */
     { NetWmWindowTypeDesktop         , "_NET_WM_WINDOW_TYPE_DESKTOP"       },
@@ -444,6 +445,8 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
             } client_atoms[] = {
                 { NetWmStateFullscreen,
                     client->fullscreen_,     [](Client* c, bool state){ c->fullscreen_ = state; } },
+                { NetWmStateAbove,
+                    client->ewmhabove_,      [](Client* c, bool state){ c->setEwmhAbove(state); } },
                 { NetWmStateDemandsAttention,
                     client->urgent_,         [](Client* c, bool state){ c->urgent_ = state; } },
             };
@@ -520,6 +523,7 @@ void Ewmh::updateWindowState(Client* client) {
         bool    enabled;
     } client_atoms[] = {
         { NetWmStateFullscreen,         client->ewmhfullscreen_  },
+        { NetWmStateAbove,              client->ewmhabove_       },
         { NetWmStateDemandsAttention,   client->urgent_          },
         { NetWmStateHidden,             client->minimized_       },
     };
