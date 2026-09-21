@@ -389,8 +389,43 @@ void all_monitors_apply_layout() {
     }
 }
 
+/**
+ * @brief Reorder the given clients by their position in the stack of the
+ * given tag, from bottom to top. Clients that are not in the stack (which
+ * should not happen) are kept in their given order at the top.
+ */
+static void sort_clients_by_stack(vector<Client*> &clients, HSTag* tag) {
+    vector<Client*> top_to_bottom;
+    // the stack lists the layers from top to bottom and the slices
+    // within each layer from top to bottom; a slice is stacked at its
+    // highest layer, i.e. where it is encountered first.
+    for (int layer = 0; layer < LAYER_COUNT; layer++) {
+        for (Slice* slice : tag->stack->layers_[layer]) {
+            for (Client* client : clients) {
+                if (client->slice == slice
+                    && std::find(top_to_bottom.begin(), top_to_bottom.end(), client)
+                       == top_to_bottom.end())
+                {
+                    top_to_bottom.push_back(client);
+                }
+            }
+        }
+    }
+    for (Client* client : clients) {
+        if (std::find(top_to_bottom.begin(), top_to_bottom.end(), client)
+            == top_to_bottom.end())
+        {
+            top_to_bottom.insert(top_to_bottom.begin(), client);
+        }
+    }
+    clients.assign(top_to_bottom.rbegin(), top_to_bottom.rend());
+}
+
 void move_clients_to_tag(vector<Client*> &clients, HSTag* from_tag, HSTag* to_tag) {
     Client* focused = from_tag->focusedClient();
+    // every client is inserted on top of the stack of to_tag, so moving
+    // them from bottom to top preserves their relative stacking order.
+    sort_clients_by_stack(clients, from_tag);
     for (auto client : clients) {
         assert(client->tag() == from_tag);
         from_tag->removeClient(client);
