@@ -17,6 +17,7 @@ const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
      { LAYER_FOCUS       , "Focus-Layer"                },
      { LAYER_FULLSCREEN  , "Fullscreen-Layer"           },
+     { LAYER_ABOVE       , "Above-Layer"                },
      { LAYER_FLOATING    , "Floating-Layer"             },
      { LAYER_NORMAL      , "Tiling-Layer"               },
      { LAYER_FRAMES      , "Frame Layer"                },
@@ -58,6 +59,9 @@ Slice* Slice::makeClientSlice(Client* client) {
     if (client->floating_()) {
         s->layers.clear();
         s->layers.insert(LAYER_FLOATING);
+    }
+    if (client->ewmhabove_) {
+        s->layers.insert(LAYER_ABOVE);
     }
     return s;
 }
@@ -189,4 +193,3 @@ void Stack::clearLayer(HSLayer layer) {
         dirty = true;
     }
 }
-
