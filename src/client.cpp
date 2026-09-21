@@ -190,6 +190,7 @@ void Client::init_from_X() {
     update_title();
     readWmHints();
     updatesizehints();
+    updateTransientFor();
 }
 
 void Client::make_full_client() {
@@ -296,13 +297,104 @@ void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
     dec->resize_outline(monitor_rect);
 }
 
-void Client::raise() {
-    this->tag()->stack->raiseSlice(this->slice);
+//! re-read the WM_TRANSIENT_FOR hint
+void Client::updateTransientFor() {
+    transientFor_ = X_.getTransientForHint(window_).value_or(None);
 }
 
-void Client::lower()
-{
-    this->tag()->stack->lowerSlice(this->slice);
+//! this client followed by the clients on its tag that are transient for
+//! it, recursively. The transients of a client are listed from the lowest to
+//! the topmost in the current stacking order, such that putting the clients
+//! on top of a layer one after the other in this order keeps every transient
+//! above the client it belongs to and keeps the relative order of the
+//! transients. A cycle in the WM_TRANSIENT_FOR hints is visited only once.
+vector<Client*> Client::withTransients() {
+    vector<Client*> result;
+    std::set<Client*> visited;
+    collectWithTransients(result, visited);
+    return result;
+}
+
+void Client::collectWithTransients(vector<Client*>& result, std::set<Client*>& visited) {
+    visited.insert(this);
+    result.push_back(this);
+    // collect the clients that are transient for this one, from top to
+    // bottom of the current stack of the tag.
+    vector<Client*> transients;
+    tag()->stack->extractWindows(true, [&](Window win) {
+        Client* client = manager.client(win);
+        if (client && client->transientFor_ == window_
+            && visited.count(client) == 0)
+        {
+            transients.push_back(client);
+        }
+    });
+    for (auto it = transients.rbegin(); it != transients.rend(); ++it) {
+        (*it)->collectWithTransients(result, visited);
+    }
+}
+
+/**
+ * @brief put this client on top of the given layer of its tag's stack, and
+ * its transient windows above it. A transient that is already in the layer
+ * is re-inserted above the client; a transient that is not in the layer is
+ * inserted only if bringTransients is set (e.g. the fullscreen layer takes
+ * the dialogs of a fullscreen window with it, whereas the floating layer
+ * leaves a tiled dialog of a floated window where it is).
+ */
+void Client::raiseIntoLayer(HSLayer layer, bool bringTransients) {
+    for (Client* client : withTransients()) {
+        bool inLayer = client->slice->layers.count(layer) != 0;
+        if (client == this || inLayer || bringTransients) {
+            if (inLayer) {
+                tag()->stack->sliceRemoveLayer(client->slice, layer);
+            }
+            tag()->stack->sliceAddLayer(client->slice, layer);
+        }
+    }
+}
+
+/**
+ * @brief raise this client and keep its transient windows above it: after
+ * the client itself, every client on the same tag whose WM_TRANSIENT_FOR
+ * names this client is raised as well (recursively), preserving their
+ * relative stacking order. So a dialog never ends up covered by the window
+ * it belongs to.
+ */
+void Client::raise() {
+    for (Client* client : withTransients()) {
+        tag()->stack->raiseSlice(client->slice);
+    }
+}
+
+//! the client on the same tag that this client is transient for, if any
+Client* Client::transientForClient() {
+    if (transientFor_ == None) {
+        return nullptr;
+    }
+    Client* parent = manager.client(transientFor_);
+    if (!parent || parent->tag() != tag()) {
+        return nullptr;
+    }
+    return parent;
+}
+
+/**
+ * @brief lower this client and keep it above the window it is transient
+ * for: after the client itself, the client it is transient for is lowered
+ * as well (recursively up the chain of WM_TRANSIENT_FOR hints on the same
+ * tag), such that every one of them ends up below the client that was
+ * lowered. The transients of the lowered client itself need no move, they
+ * stay above it. A cycle in the hints is visited only once.
+ */
+void Client::lower() {
+    std::set<Client*> visited;
+    Client* client = this;
+    while (client && visited.count(client) == 0) {
+        visited.insert(client);
+        tag()->stack->lowerSlice(client->slice);
+        client = client->transientForClient();
+    }
 }
 
 /**

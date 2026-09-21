@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstring>
 #include <sstream>
+#include <set>
 #include <vector>
 
 #include "client.h"
@@ -204,13 +205,31 @@ void Monitor::applyLayout() {
         }
     }
     // 1. Update stack (TODO: why stack first?)
-    for (auto& p : res.data) {
-        Client* c = p.first;
-        if (c->fullscreen_()) {
-            tag->stack->sliceAddLayer(c->slice, LAYER_FULLSCREEN);
-        } else {
+    // The fullscreen layer holds the fullscreen clients (tiled or floated)
+    // and their transient clients (their dialogs), such that a dialog stays
+    // above its fullscreen window.
+    std::set<Client*> inFullscreenLayer;
+    tag->foreachClient([&](Client* c) {
+        if (!c->fullscreen_()) {
+            return;
+        }
+        if (c->slice->layers.count(LAYER_FULLSCREEN) == 0) {
+            // the client enters the fullscreen layer now: on top, and its
+            // transients above it (also those already in the layer)
+            c->raiseIntoLayer(LAYER_FULLSCREEN, true);
+        }
+        for (Client* client : c->withTransients()) {
+            tag->stack->sliceAddLayer(client->slice, LAYER_FULLSCREEN);
+            inFullscreenLayer.insert(client);
+        }
+    });
+    tag->foreachClient([&](Client* c) {
+        if (inFullscreenLayer.count(c) == 0) {
             tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
         }
+    });
+    for (auto& p : res.data) {
+        Client* c = p.first;
         // special raise rules for tiled clients:
         if (!p.second.floated) {
             // this client is the globally focused client if this monitor
@@ -236,7 +255,8 @@ void Monitor::applyLayout() {
         if ((isFocused && g_settings->raise_on_focus_temporarily())
             || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false)
         {
-            tag->stack->sliceAddLayer(res.focus->slice, LAYER_FOCUS);
+            // the transients of the focused client come along, above it
+            res.focus->raiseIntoLayer(LAYER_FOCUS, true);
         }
     }
     restack();

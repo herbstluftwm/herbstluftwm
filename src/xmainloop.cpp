@@ -684,6 +684,8 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == root_->ewmh_.netatom(NetWmName)) {
                 client->update_title();
+            } else if (ev->atom == XA_WM_TRANSIENT_FOR) {
+                client->updateTransientFor();
             } else if (ev->atom == XA_WM_CLASS && client) {
                 // according to the ICCCM specification, the WM_CLASS property may only
                 // be changed in the withdrawn state:
@@ -695,6 +697,10 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             }
         } else {
             root_->panels->propertyChanged(ev->window, ev->atom);
+        }
+    } else if (ev->state == PropertyDelete && client != nullptr) {
+        if (ev->atom == XA_WM_TRANSIENT_FOR) {
+            client->updateTransientFor();
         }
     }
 }

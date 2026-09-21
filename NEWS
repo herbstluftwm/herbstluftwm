@@ -11,6 +11,20 @@ Current git version
     unmapped (e.g. minimized) client changes. Previously, the next unmap by
     the application itself (e.g. hiding to the system tray) was ignored and
     the window stayed managed although it was not shown anymore.
+  * Put a floating client (the 'floating' attribute set) that is fullscreen
+    in the fullscreen layer, like a tiled fullscreen client. Previously it
+    was resized to the monitor but stayed in the floating layer, below any
+    floating window raised after it.
+  * Keep transient windows (dialogs with a WM_TRANSIENT_FOR hint) above the
+    window they belong to: raising a client now also raises its transient
+    clients, and a client in the fullscreen layer or in the focus layer
+    (raise_on_focus_temporarily) takes its transient clients with it, and a
+    client that is set floating (or tiled again) enters the new layer below
+    its transients that are there, and lowering a client also lowers the
+    client it is transient for, so a dialog is no longer covered by its
+    own application after the application window is raised, focused,
+    clicked, made fullscreen or set floating, or after the dialog is
+    lowered.
 
 Release 0.9.6 on 2026-04-03
 ---------------------------

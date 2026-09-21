@@ -3,6 +3,8 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <set>
+#include <vector>
 
 #include "attribute_.h"
 #include "child.h"
@@ -11,6 +13,7 @@
 #include "object.h"
 #include "rectangle.h"
 #include "regexstr.h"
+#include "stack.h"
 #include "x11-types.h"
 
 class Decoration;
@@ -19,7 +22,6 @@ class ResizeAction;
 class DecTriple;
 class Ewmh;
 class FrameLeaf;
-class Slice;
 class HSTag;
 class Monitor;
 class Settings;
@@ -40,6 +42,8 @@ public:
     Attribute_<Rectangle> float_size_;     // floating size without the window border
     HSTag*      tag_ = {};
     Slice* slice = {};
+    //! the window named by WM_TRANSIENT_FOR, or None if there is no such hint
+    Window      transientFor_ = None;
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
     Attribute_<bool> decorated_;
@@ -118,6 +122,10 @@ public:
     void set_urgent(bool state);
     void readWmHints(bool forceNotUrgent = false);
     void update_title();
+    void updateTransientFor();
+    std::vector<Client*> withTransients();
+    Client* transientForClient();
+    void raiseIntoLayer(HSLayer layer, bool bringTransients);
     void raise();
     void lower();
 
@@ -136,6 +144,7 @@ public:
 
     void updateEwmhState();
 private:
+    void collectWithTransients(std::vector<Client*>& result, std::set<Client*>& visited);
     void floatingGeometryChanged();
     void urgencyAttributeChanged(bool state);
     void fixParentWindow(bool decorated);

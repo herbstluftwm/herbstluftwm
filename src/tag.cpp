@@ -142,7 +142,9 @@ void HSTag::applyClientState(Client* client)
                 floating_clients_focus_ = floating_clients_.size() - 1;
             }
             stack->sliceRemoveLayer(client->slice, LAYER_NORMAL);
-            stack->sliceAddLayer(client->slice, LAYER_FLOATING);
+            // on top of the floating layer, below its transients that
+            // float already (a tiled transient stays where it is)
+            client->raiseIntoLayer(LAYER_FLOATING, false);
         }
     } else {
         // client wants to be tiled again
@@ -153,7 +155,8 @@ void HSTag::applyClientState(Client* client)
             if (!floating()) {
                 stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
             }
-            stack->sliceAddLayer(client->slice, LAYER_NORMAL);
+            // on top of the tiling layer, below its tiled transients
+            client->raiseIntoLayer(LAYER_NORMAL, false);
         }
     }
     if (!hasVisibleFloatingClients()) {
