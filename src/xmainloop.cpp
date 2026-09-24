@@ -745,14 +745,37 @@ void XMainLoop::focusedClientChanges(Client* newFocus)
         root_->ewmh_.updateActiveWindow(newFocus->window_);
         root_->mouse->grab_client_buttons(newFocus, true);
         root_->keys()->ensureKeyMask(newFocus);
-    } else { // if no client is focused
-        Ewmh::get().clearInputFocus();
-        if (lastFocus_) {
-            root_->ewmh_.updateActiveWindow(None);
 
-            // Enable all keys in the root window
-            root_->keys()->clearActiveKeyMask();
-        }
+	// mouse_follows_focus checks if the mouse is already in the focused window, if not,
+	// move pointer to the center of the window
+	if (root_->settings->mouse_follows_focus) {
+	  Window mousein_root;
+	  Window mousein_child;
+	  int root_x, root_y, child_x, child_y;
+	  unsigned int throwaway_uint;
+	  XQueryPointer(g_display, newFocus->window_, &mousein_root, &mousein_child, &root_x, &root_y, &child_x, &child_y, &throwaway_uint);
+	  // check if mouse is in window
+	  Rectangle border = newFocus->dec->last_inner();
+	  if (root_x < border.x  || root_x > border.width + border.x ||
+	      root_y < border.y || root_y > border.height + border.y) {
+	  XWarpPointer(g_display, None, newFocus->window_, 0, 0, 0, 0,
+		       newFocus->last_size_.width/2, newFocus->last_size_.height/2);
+	  }
+	}
+    } else { // if no client is focused
+      Ewmh::get().clearInputFocus();
+      if (lastFocus_) {
+        root_->ewmh_.updateActiveWindow(None);
+
+        // Enable all keys in the root window
+        root_->keys()->clearActiveKeyMask();
+
+	// warp mouse to focus in center of frame
+	if (root_->settings->mouse_follows_focus) {
+	  Rectangle frame_rect = get_current_monitor()->tag->frame->focusedFrame()->lastRect();
+	  XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, frame_rect.x + (frame_rect.width / 2), frame_rect.y + (frame_rect.height /2));
+	}
+      }
     }
     lastFocus_ = newFocus;
 }
