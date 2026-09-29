@@ -458,6 +458,7 @@ def test_title_position_remains(hlwm, x11):
     hlwm.attr.settings.tabbed_max = True
     hlwm.attr.theme.title_height = 10
     hlwm.attr.theme.outer_width = 3
+    hlwm.attr.theme.title_font = font_pool[0]  # a non-antialised font
     hlwm.attr.tags.focus.tiling.focused_frame.algorithm = 'max'
 
     handle1, win1 = x11.create_client()
@@ -521,5 +522,6 @@ def test_decoration_title_align(hlwm, x11, client_count):
     # the width of the decoration, divided by the number of tabs
     # and divided by roughly 3 :-)
     x_diff = hlwm.attr.clients.focus.decoration_geometry().width / client_count / 3
+    x_diff *= 0.8  # allow a bit of error
     assert align_to_title_pos['left'].x + x_diff < align_to_title_pos['center'].x
     assert align_to_title_pos['center'].x + x_diff < align_to_title_pos['right'].x

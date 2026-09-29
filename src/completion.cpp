@@ -99,12 +99,10 @@ const string& Completion::needle() const
  * operator[](index) is the same as needle();
  */
 string Completion::operator[](size_t index) const {
-    auto it = args_.begin() + index;
-    if (it == args_.end()) {
+    if (index >= args_.size()) {
         return "";
-    } else {
-        return *it;
     }
+    return *(args_.begin() + index);
 }
 
 /** create a new Completion context with the first 'offset' args dropped.

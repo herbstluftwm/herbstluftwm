@@ -694,8 +694,12 @@ void Client::fixParentWindow(bool decorated)
         }
         XReparentWindow(X_.display(), window_, dec->decorationWindow(), 40, 40);
     }
-    // the unmap triggers an unmap notify for the window itself
-    ignore_unmaps_++;
+    // XReparentWindow() temporarily unmaps the window and thus triggers an
+    // unmap notify for the window itself, but only if the window is currently
+    // mapped
+    if (visible_()) {
+        ignore_unmaps_++;
+    }
     needsRelayout.emit(this->tag());
 }
 
