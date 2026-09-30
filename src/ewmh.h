@@ -34,6 +34,7 @@ enum {
     /* window states */
     NetWmStateHidden,
     NetWmStateFullscreen,
+    NetWmStateAbove,
     NetWmStateDemandsAttention,
     /* window types */
     NetWmWindowTypeDesktop,
@@ -202,4 +203,3 @@ private:
 };
 
 #endif
-

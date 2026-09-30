@@ -41,6 +41,7 @@ public:
     HSTag*      tag_ = {};
     Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
+    bool        ewmhabove_ = false; // ewmh above state
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
     Attribute_<bool> decorated_;
     Attribute_<bool> visible_;
@@ -116,6 +117,7 @@ public:
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
     void set_urgent(bool state);
+    void setEwmhAbove(bool state);
     void readWmHints(bool forceNotUrgent = false);
     void update_title();
     void raise();

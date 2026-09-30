@@ -1,5 +1,6 @@
 import re
 import pytest
+from Xlib import Xatom
 
 
 def strip_winids(string):
@@ -112,6 +113,167 @@ def test_lower_topmost_client(hlwm):
     hlwm.call(['lower', clients[0]])
 
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == clients[1:] + [clients[0]]
+
+
+def test_initial_net_wm_state_above_stays_above_later_clients(hlwm, x11):
+    above_atom = x11.display.intern_atom('_NET_WM_STATE_ABOVE')
+    state_atom = x11.display.intern_atom('_NET_WM_STATE')
+
+    def request_above_before_map(window):
+        window.change_property(state_atom, Xatom.ATOM, 32, [above_atom])
+
+    _, above = x11.create_client(pre_map=request_above_before_map)
+    _, ordinary = x11.create_client()
+
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, ordinary]
+    assert '_NET_WM_STATE_ABOVE' in \
+        x11.ewmh.getWmState(x11.window(above), str=True)
+
+
+def test_net_wm_state_above_client_messages_control_stacking(hlwm, x11):
+    hlwm.call('floating on')
+    above_window, above = x11.create_client()
+    _, ordinary = x11.create_client()
+    above_atom = '_NET_WM_STATE_ABOVE'
+
+    x11.ewmh.setWmState(above_window, 1, above_atom)
+    x11.sync_with_hlwm()
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, ordinary]
+
+    hlwm.call(['raise', ordinary])
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, ordinary]
+
+    x11.ewmh.setWmState(above_window, 2, above_atom)
+    x11.sync_with_hlwm()
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [ordinary, above]
+
+    x11.ewmh.setWmState(above_window, 2, above_atom)
+    x11.sync_with_hlwm()
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, ordinary]
+
+    x11.ewmh.setWmState(above_window, 0, above_atom)
+    x11.sync_with_hlwm()
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [ordinary, above]
+
+
+def test_net_wm_state_above_survives_floating_changes(hlwm, x11):
+    above_window, above = x11.create_client()
+    _, ordinary = x11.create_client()
+    x11.ewmh.setWmState(above_window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    changes = [
+        ['set_attr', f'clients.{above}.floating', 'true'],
+        ['set_attr', f'clients.{above}.floating', 'false'],
+        ['floating', 'on'],
+        ['floating', 'off'],
+    ]
+    for command in changes:
+        hlwm.call(command)
+        hlwm.call(['raise', ordinary])
+        assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+            == [above, ordinary]
+
+
+def test_fullscreen_stays_above_net_wm_state_above(hlwm, x11):
+    above_window, above = x11.create_client()
+    fullscreen, _ = hlwm.create_client()
+    x11.ewmh.setWmState(above_window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    hlwm.attr.clients[fullscreen].fullscreen = True
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [fullscreen, above]
+
+    hlwm.attr.clients[fullscreen].fullscreen = False
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, fullscreen]
+
+
+def test_focus_layer_stays_above_net_wm_state_above(hlwm, x11):
+    above_window, above = x11.create_client()
+    focused, _ = hlwm.create_client()
+    x11.ewmh.setWmState(above_window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    hlwm.attr.settings.raise_on_focus_temporarily = True
+    hlwm.call(['jumpto', focused])
+
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=False)[:2] \
+        == [focused, above]
+
+
+@pytest.mark.parametrize('method', ['move', 'bring'])
+def test_net_wm_state_above_survives_tag_transfer(hlwm, x11, method):
+    hlwm.call('add there')
+    above_window, above = x11.create_client()
+    x11.ewmh.setWmState(above_window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    if method == 'move':
+        hlwm.call('move there')
+        hlwm.call('use there')
+    else:
+        hlwm.call('use there')
+        hlwm.call(['bring', above])
+
+    _, ordinary = x11.create_client()
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [above, ordinary]
+
+
+def test_raise_and_lower_multiple_net_wm_state_above_clients(hlwm, x11):
+    hlwm.call('floating on')
+    windows = [x11.create_client() for _ in range(2)]
+    for window, _ in windows:
+        x11.ewmh.setWmState(window, 1, '_NET_WM_STATE_ABOVE')
+        x11.sync_with_hlwm()
+    clients = [winid for _, winid in windows]
+
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == list(reversed(clients))
+    hlwm.call(['raise', clients[0]])
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == clients
+    hlwm.call(['lower', clients[0]])
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == list(reversed(clients))
+
+
+def test_net_wm_state_above_request_respects_ewmhrequests(hlwm, x11):
+    hlwm.call('floating on')
+    above_window, above = x11.create_client()
+    hlwm.attr.clients[above].ewmhrequests = False
+    _, ordinary = x11.create_client()
+
+    x11.ewmh.setWmState(above_window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=True)[:2] \
+        == [ordinary, above]
+    assert '_NET_WM_STATE_ABOVE' not in \
+        x11.ewmh.getWmState(above_window, str=True)
+
+
+def test_net_wm_state_above_is_preserved_with_fullscreen_state(hlwm, x11):
+    window, winid = x11.create_client()
+    x11.ewmh.setWmState(window, 1, '_NET_WM_STATE_ABOVE')
+    x11.sync_with_hlwm()
+
+    hlwm.attr.clients[winid].fullscreen = True
+    assert set(x11.ewmh.getWmState(window, str=True)) >= {
+        '_NET_WM_STATE_ABOVE',
+        '_NET_WM_STATE_FULLSCREEN',
+    }
+
+    hlwm.attr.clients[winid].fullscreen = False
+    assert '_NET_WM_STATE_ABOVE' in x11.ewmh.getWmState(window, str=True)
 
 
 @pytest.mark.parametrize('command', ['lower', 'raise'])
@@ -227,6 +389,7 @@ def test_stack_tree(hlwm):
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
       - Fullscreen-Layer
+      - Above-Layer
       - Floating-Layer
       - Tiling-Layer
         - Client <windowid> "bash"
@@ -236,6 +399,7 @@ def test_stack_tree(hlwm):
     - Monitor 0 with tag "default"
       - Focus-Layer
       - Fullscreen-Layer
+      - Above-Layer
       - Floating-Layer
       - Tiling-Layer
         - Client <windowid> "bash"
@@ -259,6 +423,7 @@ def test_stack_tree_desktop_windows(hlwm, x11):
     - Monitor 0 with tag "default"
       - Focus-Layer
       - Fullscreen-Layer
+      - Above-Layer
       - Floating-Layer
       - Tiling-Layer
       - Frame Layer

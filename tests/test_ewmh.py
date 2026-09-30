@@ -456,6 +456,7 @@ def test_net_supported(hlwm, x11):
         '_NET_SUPPORTED',
         '_NET_WM_DESKTOP',
         '_NET_WM_NAME',
+        '_NET_WM_STATE_ABOVE',
         '_NET_WM_WINDOW_TYPE',
     ]
     for prop in expected_actions:

@@ -190,6 +190,7 @@ void Client::init_from_X() {
     update_title();
     readWmHints();
     updatesizehints();
+    ewmhabove_ = ewmh.isWindowStateSet(window_, ewmh.netatom(NetWmStateAbove));
 }
 
 void Client::make_full_client() {
@@ -303,6 +304,22 @@ void Client::raise() {
 void Client::lower()
 {
     this->tag()->stack->lowerSlice(this->slice);
+}
+
+void Client::setEwmhAbove(bool state) {
+    if (ewmhabove_ == state) {
+        return;
+    }
+    ewmhabove_ = state;
+    if (slice && tag_) {
+        if (state) {
+            tag_->stack->sliceAddLayer(slice, LAYER_ABOVE);
+        } else {
+            tag_->stack->sliceRemoveLayer(slice, LAYER_ABOVE);
+        }
+        requestRedraw();
+    }
+    updateEwmhState();
 }
 
 /**
@@ -787,4 +804,3 @@ string Client::tagName() {
 Window Client::decorationWindow() {
     return dec->decorationWindow();
 }
-
