@@ -95,7 +95,7 @@ void print_help(char* command, FILE* file) {
             "connect to the running herbstluftwm instance.\n"
         "\t--binary-pipe: run multiple commands via a binary interface"
             "on the standard channels.\n"
-        "\t--hook-ready-text=TEXT: Print a the specified TEXT "
+        "\t--hook-ready-text=TEXT: Print the specified TEXT "
             "as soon as --idle/--wait has connected to herbstluftwm (only has effect "
             "when listening to hooks)\n"
         "\t-v, --version: Print the herbstclient version. To get the "
