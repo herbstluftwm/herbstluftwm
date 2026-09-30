@@ -52,7 +52,7 @@ OPTIONS
     'COUNT' is 1.
 
 *--hook-ready-text* 'TEXT'::
-   Print a the specified 'TEXT' as soon as *--idle*/*--wait* has connected to
+   Print the specified 'TEXT' as soon as *--idle*/*--wait* has connected to
    herbstluftwm (so it only has effect when listening to hooks).
 
 *-q*, *--quiet*::
