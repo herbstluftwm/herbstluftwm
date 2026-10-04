@@ -390,4 +390,8 @@ Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = ValueListPl
     { ClientPlacement::Center, "center" },
     { ClientPlacement::Unchanged, "none" },
     { ClientPlacement::Smart, "smart" },
+    { ClientPlacement::TopLeft, "topleft" },
+    { ClientPlacement::TopRight, "topright" },
+    { ClientPlacement::BottomLeft, "bottomleft" },
+    { ClientPlacement::BottomRight, "bottomright" },
 };

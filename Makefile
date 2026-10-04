@@ -17,12 +17,15 @@ $(BUILDDIR):
 clean:
 	rm -r $(BUILDDIR)/
 
+$(BUILDDIR)/doc/hlwm-doc.json:
+	make -C $(BUILDDIR)/doc doc_json
+
 .PHONY: smoke-test
-smoke-test: all
+smoke-test: all $(BUILDDIR)/doc/hlwm-doc.json
 	$(MAKE) tox EXTRA_TOX_ARGS="-m 'not exclude_from_coverage'"
 
 .PHONY: long-test
-long-test: all
+long-test: all $(BUILDDIR)/doc/hlwm-doc.json
 	$(MAKE) tox EXTRA_TOX_ARGS="-m 'exclude_from_coverage'"
 
 .PHONY: test

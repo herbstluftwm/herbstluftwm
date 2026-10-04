@@ -731,6 +731,40 @@ def test_floatplacement_none_or_center(hlwm, floatplacement, x11):
         assert (geom.x, geom.y) == (30, 40)
 
 
+@pytest.mark.parametrize('floatplacement', ['topleft', 'topright', 'bottomleft', 'bottomright'])
+def test_floatplacement_corners(hlwm, floatplacement, x11):
+    # create sizes involving only even numbers
+    mx = 8
+    my = 9
+    hlwm.call(f'move_monitor 0 500x550+{mx}+{my}')
+    snap_gap = 5
+    hlwm.call(f'set snap_gap {snap_gap}')
+    hlwm.call('floating on')
+    hlwm.call('rule floatplacement={}'.format(floatplacement))
+    winhandle, _ = x11.create_client(geometry=(30, 40, 600, 400))
+
+    geom = x11.get_absolute_geometry(winhandle)
+    # in any case, the size is not affected
+    assert (geom.width, geom.height) == (600, 400)
+
+    if floatplacement == 'topleft':
+        window_tl = (geom.x, geom.y)
+        monitor_tl = (5 + mx, 5 + my)
+        assert window_tl == monitor_tl
+    if floatplacement == 'topright':
+        window_tr = (geom.x + 600, geom.y)
+        monitor_tr = (495 + mx, 5 + my)
+        assert window_tr == monitor_tr
+    if floatplacement == 'bottomleft':
+        window_bl = (geom.x, geom.y + 400)
+        monitor_bl = (5 + mx, 545 + my)
+        assert window_bl == monitor_bl
+    if floatplacement == 'bottomright':
+        window_br = (geom.x + 600, geom.y + 400)
+        monitor_br = (495 + mx, 545 + my)
+        assert window_br == monitor_br
+
+
 def test_floatplacement_uses_other_visible_monitor(hlwm, x11):
     hlwm.call('add othertag')
     hlwm.call('set_monitors 300x350+0+0 500x550+300+0')

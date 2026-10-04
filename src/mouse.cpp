@@ -29,11 +29,19 @@ vector<pair<string, unsigned int>> MouseCombo::name2button =
     { "Button3",  Button3 },
     { "Button4",  Button4 },
     { "Button5",  Button5 },
+    { "Button6",  6 }, // X.h doesn't have Button6+ but
+    { "Button7",  7 }, // they're literally just const int
+    { "Button8",  8 }, // so that shouldn't stop us from
+    { "Button9",  9 }, // supporting common buttons
     { "B1",       Button1 },
     { "B2",       Button2 },
     { "B3",       Button3 },
     { "B4",       Button4 },
     { "B5",       Button5 },
+    { "B6",       6 },
+    { "B7",       7 },
+    { "B8",       8 },
+    { "B9",       9 },
 };
 
 template<>

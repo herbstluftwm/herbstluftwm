@@ -4,15 +4,14 @@ from Xlib import X, Xutil, Xatom
 import Xlib
 import ewmh
 import os
-import os.path
 import re
-import select
 import selectors
 import shlex
 import shutil
 import subprocess
 import sys
 import textwrap
+import pathlib
 import time
 import types
 
@@ -22,7 +21,7 @@ pytest.register_assert_rewrite("herbstluftwm")
 import herbstluftwm  # noqa: E402
 
 
-BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
+BINDIR = pathlib.Path(os.environ['PWD'])  # use workdir
 
 # List of environment variables copied during hlwm process creation:
 # * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
@@ -40,7 +39,7 @@ def extend_env_with_whitelist(environment):
 
 class HlwmBridge(herbstluftwm.Herbstluftwm):
 
-    HC_PATH = os.path.join(BINDIR, 'herbstclient')
+    HC_PATH = BINDIR / 'herbstclient'
     # if there is some HlwmBridge, then it is registered here:
     INSTANCE = None
 
@@ -55,12 +54,15 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         self.env = extend_env_with_whitelist(self.env)
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
-            [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
+            [self.HC_PATH, '--hook-ready-text=IDLE_IS_READY', '--idle', 'rule', 'here_is_.*'],
             bufsize=1,  # line buffered
             universal_newlines=True,
             env=self.env,
             stdout=subprocess.PIPE
         )
+        # wait for hc --idle to connect to hlwm's hook window
+        bootup_message = self.hc_idle.stdout.readline()
+        assert bootup_message.rstrip() == "IDLE_IS_READY"
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
@@ -315,7 +317,7 @@ class HlwmProcess:
         self.stdout_scanners = []
         self.stderr_scanners = []
 
-        self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
+        self.bin_path = BINDIR / 'herbstluftwm'
         self.proc = subprocess.Popen(
             [self.bin_path, '--exit-on-xerror', '--verbose'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
@@ -545,31 +547,18 @@ class HcIdle:
         """
         self.hlwm = hlwm
         self.separator = b'\n'
-        command = [hlwm.HC_PATH, '--idle']
+        command = [hlwm.HC_PATH, '--hook-ready-text=hc_idle_bootup', '--idle']
         if zero_separated:
-            command = [hlwm.HC_PATH, '-0', '--idle']
+            command = [hlwm.HC_PATH, '--hook-ready-text=hc_idle_bootup', '-0', '--idle']
             self.separator = b'\x00'
         self.proc = subprocess.Popen(command,
                                      stdout=subprocess.PIPE,
                                      bufsize=0)
-        # we don't know how fast self.proc connects to hlwm.
-        # So we keep sending messages via hlwm util we receive some
-        number_sent = 0
-        while [] == select.select([self.proc.stdout], [], [], 0.1)[0]:
-            # while there hasn't been a message received, send something
-            number_sent += 1
-            self.hlwm.call(['emit_hook', 'hc_idle_bootup', number_sent])
-        # now that we know that self.proc is connected, we need to consume
-        # its output up to the last message we have sent
-        assert number_sent > 0
-        number_received = 0
-        while number_received < number_sent:
-            line = self.read_hook()
-            assert line[0] == 'hc_idle_bootup'
-            number_received = int(line[1])
+        bootup = self.read_hook()
+        assert bootup[0] == 'hc_idle_bootup'
 
     def read_hook(self):
-        """read exactly one hook. This blocks if there is on herbstclient's stdout none."""
+        """read exactly one hook. This blocks until there is one on herbstclient's stdout."""
         line_bytes = b''
         while True:
             b = self.proc.stdout.read(1)
@@ -612,7 +601,7 @@ def hc_idle(hlwm):
 
 
 @pytest.fixture()
-def hlwm_spawner(tmpdir):
+def hlwm_spawner(tmp_path):
     """yield a function to spawn hlwm"""
     assert xvfb is not None, 'Refusing to run tests in a non-Xvfb environment (possibly your actual X server?)'
 
@@ -621,12 +610,12 @@ def hlwm_spawner(tmpdir):
             display = os.environ['DISPLAY']
         env = {
             'DISPLAY': display,
-            'XDG_CONFIG_HOME': str(tmpdir),
+            'XDG_CONFIG_HOME': str(tmp_path),
         }
         env = extend_env_with_whitelist(env)
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        autostart.ensure()
-        autostart.write(textwrap.dedent("""
+        autostart = tmp_path / 'herbstluftwm' / 'autostart'
+        autostart.parent.mkdir(exist_ok=True)
+        autostart.write_text(textwrap.dedent("""
             #!/usr/bin/env bash
             echo "hlwm started"
         """.lstrip('\n')))
