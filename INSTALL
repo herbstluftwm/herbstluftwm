@@ -13,6 +13,8 @@ Build dependencies:
     - asciidoc (only when building from git, not when building from tarball)
     - a posix system with _POSIX_TIMERS and _POSIX_MONOTONIC_CLOCK or a system
       with a current mach kernel
+    - optionally: pkg-config and systemd development files for systemd
+      sd_notify integration
 
 Runtime dependencies:
 
@@ -67,6 +69,17 @@ If you are building from a source tarball or do not want to build the
 documentation, you can disable WITH_DOCUMENTATION during cmake:
 
     cmake -DWITH_DOCUMENTATION=NO ..
+
+If you want to build with systemd sd_notify integration, enable it
+using WITH_SYSTEMD:
+
+    cmake -DWITH_SYSTEMD=ON ..
+
+By default, the systemd user unit is installed to the directory provided by
+pkg-config (falling back to lib/systemd/user). You can override this using
+SYSTEMD_USER_UNIT_DIR:
+
+    cmake -DWITH_SYSTEMD=ON -DSYSTEMD_USER_UNIT_DIR=/custom/path ..
 
 To use the software locally, create your own autostart file:
 

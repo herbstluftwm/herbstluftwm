@@ -43,6 +43,10 @@
 #include "xconnection.h"
 #include "xmainloop.h"
 
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 using std::endl;
 using std::make_shared;
 using std::pair;
@@ -444,6 +448,11 @@ int main(int argc, char* argv[]) {
     }
     mainloop.childExited.connect(root->autostart(), &Autostart::childExited);
     root->autostart()->reloadCmd();
+
+#ifdef HAVE_SYSTEMD
+    // Signal systemd that herbstluftwm has finished initializing
+    sd_notify(0, "READY=1\n");
+#endif
 
     // main loop
     mainloop.run();
