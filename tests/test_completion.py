@@ -241,6 +241,15 @@ def test_completionless_commands(hlwm):
             assert hlwm.call(['complete', idx, cmd])
 
 
+def test_completion_position_beyond_argument_list(hlwm):
+    result = hlwm.unchecked_call(['complete', '3', 'merge_tag'])
+
+    assert result.returncode == 7
+    assert result.stdout == ''
+    assert result.stderr == ''
+    hlwm.call('true')
+
+
 def test_remove_attr(hlwm):
     hlwm.open_persistent_pipe()
     attr_path = "monitors.my_test"

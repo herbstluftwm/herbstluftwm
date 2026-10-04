@@ -17,6 +17,8 @@ Current git version
     unmapped (e.g. minimized) client changes. Previously, the next unmap by
     the application itself (e.g. hiding to the system tray) was ignored and
     the window stayed managed although it was not shown anymore.
+  * New herbstclient option *--hook-ready-text* (to indicate established
+    connection of the *--idle* mode)
 
 Release 0.9.6 on 2026-04-03
 ---------------------------
