@@ -463,7 +463,15 @@ focus ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
     to change focus in the specified 'DIRECTION'. From there the focus goes back
     to the leaf. +
     +
-    Example: The focus is at frame A. After executing 'focus right' focus will
+    With 'LEVEL' 'frame', the descent follows remembered selections. At other
+    levels, the nearest visible tile or empty leaf in the neighbouring subtree
+    is selected instead. Candidates overlapping the current tile's row or column
+    are preferred, then the nearest edge, then the nearest perpendicular centre.
+    Exact ties follow tree and layout traversal order. A max layout is entered at
+    its selected client, even when pseudotiling exposes a client underneath. Tile
+    slots, not fullscreen or pseudotiled window sizes, determine the geometry. +
+    +
+    Example: The focus is at frame A. After executing 'focus -e right' focus will
     be at frame C.
 +
 ----
@@ -474,7 +482,7 @@ focus ['-i'|'-e'|*--level=*'LEVEL'] 'DIRECTION'::
      ╱ ╲   ╱ ╲          │  A* ││  D  │
     B  A* C   D         └─────┘└─────┘
 
- Tree:  H,1     Screen: ┌─────┐┌─────┐ (after focus right)
+ Tree:  H,1     Screen: ┌─────┐┌─────┐ (after focus -e right)
         ╱ ╲             │  B  ││  C* │
        ╱   ╲            └─────┘└─────┘
      V,1   V,0          ┌─────┐┌─────┐

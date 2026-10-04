@@ -1055,10 +1055,10 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
     clients = hlwm.create_clients(4)
     layout = '(split horizontal:0.5:0 (clients vertical:0 W W) (clients vertical:1 W W))'
     client2direction = [
-        {'u': None, 'd': 1, 'l': None, 'r': 3},
+        {'u': None, 'd': 1, 'l': None, 'r': 2},
         {'u': 0, 'd': None, 'l': None, 'r': 3},
         {'u': None, 'd': 3, 'l': 0, 'r': None},
-        {'u': 2, 'd': None, 'l': 0, 'r': None},
+        {'u': 2, 'd': None, 'l': 1, 'r': None},
     ]
     for winid in clients:
         # replace the next W by the window ID

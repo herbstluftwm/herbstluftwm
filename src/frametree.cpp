@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <limits>
 #include <regex>
+#include <tuple>
 
 #include "argparse.h"
 #include "client.h"
@@ -15,6 +17,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
@@ -485,6 +488,70 @@ bool FrameTree::focusInDirection(Direction direction, DirectionLevel depth)
     }
     // if this didn't succeed, find a frame:
     shared_ptr<Frame> neighbour = curframe->neighbour(direction);
+    if (neighbour && depth != DirectionLevel::Frame) {
+        // Compute tile slots, not X window sizes (pseudotile/fullscreen).
+        // Recompute even while locked: cached geometry may predate a split.
+        auto area = get_current_monitor()->getFloatingArea();
+        int gap = settings_->frame_gap();
+        // A neighbour implies a split root, so Monitor::applyLayout applies
+        // this outer frame gap regardless of smart_frame_surroundings.
+        area.x += gap;
+        area.y += gap;
+        area.width -= gap;
+        area.height -= gap;
+        auto tiles = root_->computeLayout(area);
+        Rectangle origin = curframe->contentGeometry_();
+        for (const auto& tile : tiles.data) {
+            if (tile.first == curframe->focusedClient()) {
+                origin = tile.second.geometry;
+                break;
+            }
+        }
+
+        shared_ptr<FrameLeaf> target;
+        Client* targetClient = nullptr;
+        std::tuple<bool, int, int> best;
+        bool horizontal = direction == Direction::Left || direction == Direction::Right;
+        auto consider = [&](FrameLeaf* leaf, Client* client, Rectangle rect) {
+            if (!origin || !rect) {
+                return;
+            }
+            int a = horizontal ? origin.y : origin.x;
+            int b = horizontal ? rect.y : rect.x;
+            int aSize = horizontal ? origin.height : origin.width;
+            int bSize = horizontal ? rect.height : rect.width;
+            bool overlaps = std::max(a, b) < std::min(a + aSize, b + bSize);
+            // Prefer the same row/column, then the nearest edge, then the
+            // nearest perpendicular centre. Exact ties use traversal order.
+            auto score = std::make_tuple(!overlaps, origin.manhattanDistanceTo(rect),
+                                        std::abs((a + aSize / 2) - (b + bSize / 2)));
+            if (!target || score < best) {
+                best = score;
+                target = leaf->thisLeaf();
+                targetClient = client;
+            }
+        };
+        neighbour->fmap([](FrameSplit*) {}, [&](FrameLeaf* leaf) {
+            auto layout = leaf->computeLayout(leaf->lastRect());
+            if (leaf->clientCount() == 0) {
+                consider(leaf, nullptr, leaf->contentGeometry_());
+            }
+            // In max layouts the selected client comes first. Its slot wins
+            // ties, including when pseudotiling exposes a client underneath.
+            for (const auto& tile : layout.data) {
+                if (tile.second.visible) {
+                    consider(leaf, tile.first, tile.second.geometry);
+                }
+            }
+        });
+        if (target) {
+            if (targetClient) {
+                target->select(targetClient);
+            }
+            focusFrame(target);
+            return true;
+        }
+    }
     if (neighbour) { // if neighbour was found
         shared_ptr<FrameSplit> parent = neighbour->getParent();
         if (parent) {
