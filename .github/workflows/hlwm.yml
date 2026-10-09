@@ -33,9 +33,9 @@ jobs:
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
@@ -45,7 +45,7 @@ jobs:
           restore-keys: |
             focal-gcc-ccache-
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         name: Cache .tox-cache
         with:
           path: .tox-cache
@@ -90,9 +90,9 @@ jobs:
       CCACHE_LOGFILE: /github/home/ccache.log
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
@@ -100,7 +100,7 @@ jobs:
           restore-keys: |
             focal-clang-ccache-
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         name: Cache .tox-cache
         with:
           path: .tox-cache
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2  # fetch previous commits
 
@@ -192,7 +192,7 @@ jobs:
       BUILD: build-${{ github.run_number }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: install asciidoc
         run: sudo apt-get update && sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl imagemagick librsvg2-bin
       - name: restrict cmake to doc
@@ -229,6 +229,6 @@ jobs:
         run: |
           builddir=$BUILD ci/mktar.sh
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           path: herbstluftwm*.tar.gz
