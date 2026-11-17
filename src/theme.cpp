@@ -444,7 +444,10 @@ void Theme::generateBuiltinCss()
                 },
                 {
                     {[&scheme,minimumValue,tripleCssName,schemeCssName](BoxStyle& style) {
-                         if (scheme.title_when() >= minimumValue) {
+                         // like DecorationScheme::showTitle(): a title_height
+                         // of 0 hides the tab bar (as in herbstluftwm <= 0.9.5)
+                         if (scheme.title_when() >= minimumValue
+                             && !(scheme.title_height() == 0)) {
                              style.display = CssDisplay::flex;
                          } else {
                              style.display = CssDisplay::none;
