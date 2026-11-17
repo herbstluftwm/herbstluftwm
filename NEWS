@@ -19,6 +19,8 @@ Current git version
     the window stayed managed although it was not shown anymore.
   * New herbstclient option *--hook-ready-text* (to indicate established
     connection of the *--idle* mode)
+  * Bug fix: remove erroneous space in decoration if *title_height* is 0
+    (introduced in 0.9.6)
 
 Release 0.9.6 on 2026-04-03
 ---------------------------
