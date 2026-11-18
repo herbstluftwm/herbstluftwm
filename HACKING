@@ -72,6 +72,33 @@ command in the build directory:
 [2] https://tox.readthedocs.io/
 [3] https://www.x.org/archive/current/doc/man/man1/Xvfb.1.xhtml
 
+
+Pull Requests
+-------------
+In this project, we consider each pull request as a proposed commit for the
+repository's history. This makes easier for contributors and maintainers and
+entails the following:
+
+  - Create small pull requests. This makes the PR discussion and code
+    adjustments easier.
+  - The pull request's title and the opening comment will be used as the commit
+    message for the proposed commit.
+  - If you want (or need) to adjust your PR, you can just push additional
+    commits to your PR branch, without the necessity to care about the pull
+    request's internal history.
+  - If your PR is approved, the PR history will be squashed to one commit,
+    bundled with your PR title and description, and then merged.
+
+In the same pull request, the documentation should be updated accordingly:
+
+  - herbstluftwm.txt and herbstclient.txt in doc/ describe the main settings and
+    flags. The documentation of attributes is auto-generated from the source
+    code.
+  - Each user visible change should be mentioned in the 'NEWS' file (both new
+    features and bug fixed).
+  - Ideally, each change should be reflected by a new test case in the test
+    suite under tests/
+
 Sending patches
 ---------------
 You can hand in pull requests on github[1], but also send patches directly
